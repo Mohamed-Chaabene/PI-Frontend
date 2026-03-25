@@ -1,0 +1,22 @@
+.recruiter-header {
+    background-color: #fff;
+    padding: 20px 0;
+    border-bottom: 1px solid #e9ecef;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+
+    h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    p {
+        color: #718096;
+        margin: 0;
+    }
+}

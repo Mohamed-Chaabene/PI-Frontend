@@ -1,0 +1,116 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4>Ajouter des Questions à l'Entretien #{{ entretienId }}</h4>
+          <div>
+            <button class="btn btn-info btn-sm me-2" (click)="testAuth()">Test Auth</button>
+            <button class="btn btn-secondary" (click)="goBack()">Retour aux Entretiens</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Form to add question -->
+          <div class="mb-4 p-3 border rounded">
+            <h5>Ajouter une Nouvelle Question</h5>
+            <form (ngSubmit)="createQuestion()">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="contenu" class="form-label">Contenu de la Question <span class="text-danger">*</span></label>
+                  <textarea class="form-control" id="contenu" [(ngModel)]="newQuestion.contenu" name="contenu" rows="3" required></textarea>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="type" class="form-label">Type de Question <span class="text-danger">*</span></label>
+                  <select class="form-control" id="type" [(ngModel)]="newQuestion.type" name="type" required>
+                    <option value="">-- Sélectionner --</option>
+                    <option *ngFor="let type of typesQuestion" [value]="type">{{ type }}</option>
+                  </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="niveau" class="form-label">Niveau <span class="text-danger">*</span></label>
+                  <select class="form-control" id="niveau" [(ngModel)]="newQuestion.niveau" name="niveau" required>
+                    <option value="">-- Sélectionner --</option>
+                    <option *ngFor="let niveau of niveaux" [value]="niveau">{{ niveau }}</option>
+                  </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="domaineId" class="form-label">Domaine <span class="text-danger">*</span></label>
+                  <select class="form-control" id="domaineId" [(ngModel)]="newQuestion.domaineId" name="domaineId" required>
+                    <option [ngValue]="null">-- Sélectionner --</option>
+                    <option *ngFor="let domaine of domaines" [value]="domaine.id">{{ domaine.nom }}</option>
+                    <option [value]="-1">Autre domaine d'emploi</option>
+                  </select>
+                  <input *ngIf="newQuestion.domaineId === -1" type="text" class="form-control mt-2" placeholder="Précisez le domaine" [(ngModel)]="newQuestion.domaineTexte" name="domaineTexte" />
+                </div>
+              </div>
+
+              <!-- Choices for QCM/QCU -->
+              <div *ngIf="newQuestion.type !== 'VRAI_FAUX'" class="mb-3">
+                <label class="form-label">Réponses Possibles</label>
+                <div *ngFor="let choice of newQuestion.choix; let i = index" class="input-group mb-2">
+                  <input type="text" class="form-control" [(ngModel)]="newQuestion.choix[i]" [name]="'choice' + i" placeholder="Réponse {{ i + 1 }}">
+                  <button type="button" class="btn btn-outline-danger" (click)="removeChoice(i)" *ngIf="newQuestion.choix.length > 2">
+                    <i class="ri-delete-bin-line"></i>
+                  </button>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" (click)="addChoice()">
+                  <i class="ri-add-line"></i> Ajouter une réponse
+                </button>
+              </div>
+
+              <div class="mb-3">
+                <label for="bonneReponse" class="form-label">Bonne réponse <span class="text-danger">*</span></label>
+                <ng-container *ngIf="newQuestion.type === 'VRAI_FAUX'">
+                  <select class="form-control" id="bonneReponse" [(ngModel)]="newQuestion.bonneReponse" name="bonneReponse" required>
+                    <option value="">-- Choisir --</option>
+                    <option value="VRAI">VRAI</option>
+                    <option value="FAUX">FAUX</option>
+                  </select>
+                </ng-container>
+                <ng-container *ngIf="newQuestion.type !== 'VRAI_FAUX'">
+                  <select class="form-control" id="bonneReponse" [(ngModel)]="newQuestion.bonneReponse" name="bonneReponse" required>
+                    <option value="">-- Choisir --</option>
+                    <option *ngFor="let choice of newQuestion.choix; let i = index" [value]="choice" [disabled]="!choice.trim()">{{ choice || ('Réponse ' + (i + 1)) }}</option>
+                  </select>
+                </ng-container>
+              </div>
+
+              <button type="submit" class="btn btn-success">Ajouter la Question</button>
+            </form>
+          </div>
+
+          <!-- List of existing questions -->
+          <div class="table-responsive">
+            <h5>Questions Existantes</h5>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Contenu</th>
+                  <th>Type</th>
+                  <th>Domaine</th>
+                  <th>Niveau</th>
+                  <th>Bonne réponse</th>
+                  <th>Réponses</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let question of questions">
+                  <td>{{ question.contenu }}</td>
+                  <td>{{ question.type }}</td>
+                  <td>{{ question.domaine?.nom || question.domaine || '-' }}</td>
+                  <td>{{ question.niveau || '-' }}</td>
+                  <td>{{ question.bonneReponse || '-' }}</td>
+                  <td>
+                    <ul class="list-unstyled mb-0">
+                      <li *ngFor="let choix of (question.choix || [])">{{ choix.contenu || choix }}</li>
+                    </ul>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,25 @@
+.main-content {
+    overflow: hidden;
+    min-height: 100vh;
+    background-color: #f5f9fc;
+    padding: {
+        top: 130px;
+        left: 300px;
+        right: 30px;
+        bottom: 30px;
+    };
+}
+
+/* Max width 767px */
+@media only screen and (max-width : 767px) {
+
+    .main-content {
+        padding: {
+            top: 105px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+        };
+    }
+
+}

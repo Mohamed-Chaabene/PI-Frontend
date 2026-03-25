@@ -1,0 +1,245 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+
+  private apiUrl = 'http://localhost:8080/api'; // URL de votre backend Spring Boot
+
+  constructor(private http: HttpClient) { }
+
+  // Exemple de méthode GET
+  getData(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/data`);
+  }
+
+  // Exemple de méthode POST
+  postData(data: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(`${this.apiUrl}/data`, data, { headers });
+  }
+
+  // CRUD utilisateurs (Admin)
+  getUsers(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/users`);
+  }
+
+  // Candidats (pour lier un entretien à un candidat)
+  // See getCandidats() method below in Candidat methods section
+
+  getUser(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/users/${id}`);
+  }
+
+  // Recruteur courant (permets d'obtenir l'id du recruteur connecté)
+  getCurrentRecruteur(): Observable<any> {
+    // endpoint probable du backend, peut être adapté si le chemin diffère
+    return this.http.get(`${this.apiUrl}/recruteurs/me`);
+  }
+
+  createUser(user: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(`${this.apiUrl}/users`, user, { headers });
+  }
+
+  updateUser(id: number, user: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.put(`${this.apiUrl}/users/${id}`, user, { headers });
+  }
+
+  deleteUser(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/users/${id}`);
+  }
+
+  // Ajoutez d'autres méthodes selon vos besoins API
+
+  // Register
+  register(user: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(`${this.apiUrl}/auth/register`, user, { headers });
+  }
+
+  // Login
+  login(credentials: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(`${this.apiUrl}/auth/login`, credentials, { headers });
+  }
+
+  // Entretiens (Interviews)
+  getEntretiens(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/entretiens`);
+  }
+
+  getEntretiensByCandidat(candidatId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/entretiens/candidat/${candidatId}`);
+  }
+
+  getEntretien(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/entretiens/${id}`);
+  }
+
+  createEntretien(entretien: any, recruteurId?: number): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (recruteurId != null && !isNaN(recruteurId) && recruteurId > 0) {
+      headers = headers.set('Recruteur-ID', String(recruteurId));
+      console.log('📤 Header Recruteur-ID ajouté:', recruteurId);
+    } else {
+      console.warn('⚠️ Header Recruteur-ID non ajouté (valeur invalide):', recruteurId);
+    }
+    return this.http.post(`${this.apiUrl}/entretiens`, entretien, { headers });
+  }
+
+  completeEntretien(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/entretiens/${id}/complete`, {});
+  }
+
+  // Questions
+  getQuestionsByEntretien(entretienId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/questions/entretien/${entretienId}`);
+  }
+
+  createQuestion(question: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const token = localStorage.getItem('token');
+    console.log('📤 createQuestion - Token present:', !!token);
+    console.log('📤 createQuestion - Payload:', question);
+    
+    return this.http.post(`${this.apiUrl}/questions/entretien/${question.entretienId}`, question, { headers }).pipe(
+      tap(response => {
+        console.log('✅ Question created successfully:', response);
+      }),
+      catchError(error => {
+        console.error('❌ Question creation failed:', error);
+        console.error('🔻 response body:', error.error);
+        console.error('🔻 status:', error.status, error.statusText);
+
+        if (error.status === 403) {
+          console.error('🚫 AUTHORIZATION DENIED (403)');
+          console.error('Possible causes:');
+          console.error('1. No valid JWT token in Authorization header');
+          console.error('2. Token missing ROLE_RECRUTEUR authority');
+          console.error('3. Backend SecurityConfig not recompiled');
+          console.error('Error response:', error.error);
+        } else if (error.status === 401) {
+          console.error('🔐 AUTHENTICATION REQUIRED (401) - Invalid or expired token');
+          console.error('Error response:', error.error);
+        }
+
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Resultats
+  getResultat(entretienId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/resultats/entretien/${entretienId}`);
+  }
+
+  // Domaines
+  getDomaines(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/domaines`);
+  }
+
+  // Candidat methods
+  getCandidats(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/candidats`, { headers });
+  }
+
+  getCandidat(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/candidats/${id}`, { headers });
+  }
+
+  getCandidateByEmail(email: string): Observable<any> {
+    const encodedEmail = encodeURIComponent(email);
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/candidats/email/${encodedEmail}`, { headers });
+  }
+
+  createCandidate(candidateData: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/candidats`, candidateData, { headers });
+  }
+
+  updateCandidate(id: number, candidateData: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.put(`${this.apiUrl}/candidats/${id}`, candidateData, { headers });
+  }
+
+  deleteCandidate(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.delete(`${this.apiUrl}/candidats/${id}`, { headers });
+  }
+
+  // Localisation methods
+  getLocalisation(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/localisations/${id}`, { headers });
+  }
+
+  createLocalisation(localisationData: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/localisations`, localisationData, { headers });
+  }
+
+  updateLocalisation(id: number, localisationData: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.put(`${this.apiUrl}/localisations/${id}`, localisationData, { headers });
+  }
+
+  deleteLocalisation(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.delete(`${this.apiUrl}/localisations/${id}`, { headers });
+  }
+
+  // Test d'authentification
+  testAuth(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/auth/test-auth`);
+  }
+
+}

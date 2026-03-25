@@ -1,0 +1,375 @@
+﻿<div
+    class="navbar-area"
+    [ngClass]="{'white-navbar': router.url === '/index-2', 'sticky': isSticky}"
+>
+    <div class="container-fluid">
+        <nav
+            class="navbar navbar-expand-lg"
+            [class.active]="classApplied"
+        >
+            <a
+                class="navbar-brand"
+                routerLink="/"
+                [ngClass]="{'d-none': router.url === '/index-2'}"
+            >
+                <img src="images/logo.png" alt="logo">
+            </a>
+            @if (router.url === '/index-2') {
+                <a
+                    class="navbar-brand"
+                    routerLink="/"
+                >
+                    <img src="images/white-logo2.png" alt="white-logo">
+                </a>
+            }
+            <button
+                class="navbar-toggler"
+                type="button"
+                (click)="toggleClass()"
+            >
+                <span class="burger-menu">
+                    <span class="top-bar"></span>
+                    <span class="middle-bar"></span>
+                    <span class="bottom-bar"></span>
+                </span>
+            </button>
+            <div
+                class="collapse navbar-collapse"
+                [ngClass]="{'style-two': router.url === '/index-3'}"
+            >
+                @if (router.url === '/index-3') {
+                    <div class="navbar-categories d-none d-xl-block">
+                        <button type="button" class="d-inline-block bg-transparent position-relative border-0">
+                            <i class="ri-grid-fill"></i>
+                            Browse Category
+                        </button>
+                        <ul class="categories-menu mb-0 list-unstyled">
+                            <li>
+                                <a routerLink="/">Engineering</a>
+                            </li>
+                            <li>
+                                <a routerLink="/">Banking</a>
+                            </li>
+                            <li>
+                                <a routerLink="/">Beauty Care</a>
+                            </li>
+                            <li>
+                                <a routerLink="/">Cleaning</a>
+                            </li>
+                            <li>
+                                <a routerLink="/">Construction</a>
+                            </li>
+                            <li>
+                                <a routerLink="/">Finance</a>
+                            </li>
+                            <li>
+                                <a routerLink="/">Technology</a>
+                            </li>
+                            <li>
+                                <a routerLink="/">Healthcare</a>
+                            </li>
+                            <li>
+                                <a routerLink="/">IT Consultant</a>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="javascript:void(0)" class="dropdown-toggle nav-link">
+                            Home
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-item">
+                                <a routerLink="/" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Home Demo - 1
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a routerLink="/index-2" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Home Demo - 2
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a routerLink="/index-3" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Home Demo - 3
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="javascript:void(0)" class="dropdown-toggle nav-link">
+                            Jobs
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-item">
+                                <a routerLink="/jobs-grid" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Jobs Grid
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a routerLink="/jobs-listing" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Jobs Listing
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a routerLink="/job-details" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Job Details
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a routerLink="/categories" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Categories
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="javascript:void(0)" class="dropdown-toggle nav-link">
+                            Candidates
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-item">
+                                <a routerLink="/candidates" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Candidates
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a routerLink="/candidate-details" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Candidate Details
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a routerLink="/candidates-dashboard" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Candidates Dashboard
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+                <div class="others-option d-md-flex align-items-center">
+                    <div class="option-item">
+                        <div *ngIf="!isLoggedIn">
+                            <span
+                                class="d-block login-register"
+                                (click)="openPopup()"
+                            >
+                                <i class="ri-user-line"></i>
+                                Login/Register
+                            </span>
+                        </div>
+                    </div>
+                    <div class="option-item">
+                        <a routerLink="/dashboard/post-a-new-job" class="default-btn" style="display: none;">
+                            Post A Job
+                        </a>
+                    </div>
+                    <div class="option-item" *ngIf="isLoggedIn && userRole === 'CANDIDAT'">
+                        <div class="dropdown position-relative candidate-dropdown">
+                            <button
+                                class="candidate-badge"
+                                type="button"
+                                (click)="toggleUserDropdown()"
+                                [title]="userName"
+                            >
+                                <i class="ri-user-search-line"></i>
+                            </button>
+                            <ul class="dropdown-menu" [ngClass]="{'show': userDropdownOpen}">
+                                <li class="user-info-item">
+                                    <i class="ri-mail-line"></i>
+                                    <div class="user-name">{{ userName }}</div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" routerLink="/candidates-dashboard" (click)="closeUserDropdown()"><i class="ri-user-line"></i> My Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" (click)="deleteAccount()" style="color: #dc3545;"><i class="ri-delete-bin-line"></i> Delete Account</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" (click)="logout()"><i class="ri-logout-box-line"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div
+                        class="option-item"
+                        [ngClass]="{'d-none': router.url === '/index-2' || router.url === '/index-3'}"
+                    >
+                        <a href="tel:+1 (514) 312-5678" class="d-inline-block hotline fw-medium">
+                            <i class="ri-phone-line"></i>
+                            <span class="d-block fw-normal">
+                                Call Us
+                            </span>
+                            +1 (514) 312-5678
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<!-- Modal -->
+@if (isOpen) {
+    <div class="modal fade loginRegisterModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <ul class="nav nav-tabs d-block border-0">
+                        <li class="nav-item d-inline-block" [ngClass]="{'active': currentTab === 'tab1'}">
+                            <button type="button" class="nav-link fw-semibold position-relative shadow-none mb-0 rounded-0" (click)="switchTab($event, 'tab1')">
+                                Login
+                            </button>
+                        </li>
+                        <li class="nav-item d-inline-block" [ngClass]="{'active': currentTab === 'tab2'}">
+                            <button type="button" class="nav-link fw-semibold position-relative shadow-none mb-0 rounded-0" (click)="switchTab($event, 'tab2')">
+                                Register
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        @if (currentTab === 'tab1') {
+                            <div class="tab-pane fade d-block opacity-100">
+                                <form #loginForm="ngForm" class="authentication-form" (ngSubmit)="loginForm.valid && login()">
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input type="text" class="form-control shadow-none" [(ngModel)]="loginData.email" name="email" placeholder="Enter email" required>
+                                        <div *ngIf="loginForm.submitted && loginForm.controls['email']?.invalid" class="text-danger">Email requis</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mot de passe</label>
+                                        <input type="password" class="form-control shadow-none" [(ngModel)]="loginData.motDePasse" name="motDePasse" placeholder="Enter password" required>
+                                        <div *ngIf="loginForm.submitted && loginForm.controls['motDePasse']?.invalid" class="text-danger">Mot de passe requis</div>
+                                    </div>
+                                    <div class="form-group forgot-password">
+                                        Forgot your password? <a routerLink="/">Reset password.</a>
+                                    </div>
+                                    <button type="submit" class="default-btn d-block w-100" [disabled]="!loginForm.valid">
+                                        Login Now
+                                    </button>
+                                    <div class="login-with-socials text-center">
+                                        <span class="d-block fw-medium">
+                                            Or Continue with
+                                        </span>
+                                        <a href="#" target="_blank" class="facebook d-inline-block">
+                                            <i class="ri-facebook-fill"></i>
+                                        </a>
+                                        <a href="#" target="_blank" class="google d-inline-block">
+                                            <i class="ri-google-fill"></i>
+                                        </a>
+                                        <a href="#" target="_blank" class="linkedin d-inline-block">
+                                            <i class="ri-linkedin-fill"></i>
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                        @if (currentTab === 'tab2') {
+                            <div class="tab-pane fade d-block opacity-100">
+                                <ul class="nav nav-tabs d-block border-0">
+                                    <li class="nav-item d-inline-block" [ngClass]="{'active': currentInnerTab === 'candidat'}">
+                                        <button type="button" class="nav-link fw-semibold shadow-none mb-0" (click)="switchInnerTab($event, 'candidat')">
+                                            Candidat
+                                        </button>
+                                    </li>
+                                    <li class="nav-item d-inline-block" [ngClass]="{'active': currentInnerTab === 'recruteur'}">
+                                        <button type="button" class="nav-link fw-semibold shadow-none mb-0" (click)="switchInnerTab($event, 'recruteur')">
+                                            Recruteur
+                                        </button>
+                                    </li>
+                                    <li class="nav-item d-inline-block" [ngClass]="{'active': currentInnerTab === 'clientFreelance'}">
+                                        <button type="button" class="nav-link fw-semibold shadow-none mb-0" (click)="switchInnerTab($event, 'clientFreelance')">
+                                            Client Freelance
+                                        </button>
+                                    </li>
+                                    <li class="nav-item d-inline-block" [ngClass]="{'active': currentInnerTab === 'organisateur'}">
+                                        <button type="button" class="nav-link fw-semibold shadow-none mb-0" (click)="switchInnerTab($event, 'organisateur')">
+                                            Organisateur
+                                        </button>
+                                    </li>
+                                    <li class="nav-item d-inline-block" [ngClass]="{'active': currentInnerTab === 'admin'}">
+                                        <button type="button" class="nav-link fw-semibold shadow-none mb-0" (click)="switchInnerTab($event, 'admin')">
+                                            Admin
+                                        </button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content">
+                                    <div class="tab-pane fade d-block opacity-100">
+                                        <form #registerForm="ngForm" class="authentication-form" (ngSubmit)="registerForm.valid && register()">
+                                            <div class="form-group">
+                                                <label>Nom</label>
+                                                <input type="text" class="form-control shadow-none" [(ngModel)]="registerData.nom" name="nom" placeholder="Enter name" required>
+                                                <div *ngIf="registerForm.submitted && registerForm.controls['nom']?.invalid" class="text-danger">Nom requis</div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Email</label>
+                                                <input type="text" class="form-control shadow-none" [(ngModel)]="registerData.email" name="email" placeholder="Enter email" required>
+                                                <div *ngIf="registerForm.submitted && registerForm.controls['email']?.invalid" class="text-danger">Email requis</div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Mot de passe</label>
+                                                <input type="password" class="form-control shadow-none" [(ngModel)]="registerData.motDePasse" name="motDePasse" placeholder="Enter password" required>
+                                                <div *ngIf="registerForm.submitted && registerForm.controls['motDePasse']?.invalid" class="text-danger">Mot de passe requis</div>
+                                            </div>
+                                            <div class="form-group" *ngIf="registerRole === 'ROLE_RECRUTEUR'">
+                                                <label>Entreprise</label>
+                                                <input type="text" class="form-control shadow-none" [(ngModel)]="registerData.entreprise" name="entreprise" placeholder="Enter entreprise">
+                                            </div>
+                                            <div class="form-group" *ngIf="registerRole === 'ROLE_RECRUTEUR'">
+                                                <label>Poste</label>
+                                                <input type="text" class="form-control shadow-none" [(ngModel)]="registerData.poste" name="poste" placeholder="Enter poste">
+                                            </div>
+                                            <div class="form-group" *ngIf="registerRole === 'ROLE_RECRUTEUR'">
+                                                <label>Secteur</label>
+                                                <input type="text" class="form-control shadow-none" [(ngModel)]="registerData.secteur" name="secteur" placeholder="Enter secteur">
+                                            </div>
+                                            <div class="form-group" *ngIf="registerRole === 'ROLE_CLIENT_FREELANCE'">
+                                                <label>Entreprise</label>
+                                                <input type="text" class="form-control shadow-none" [(ngModel)]="registerData.entreprise" name="entreprise" placeholder="Enter entreprise">
+                                            </div>
+                                            <div class="form-group" *ngIf="registerRole === 'ROLE_CLIENT_FREELANCE'">
+                                                <label>Budget</label>
+                                                <input type="number" step="0.01" class="form-control shadow-none" [(ngModel)]="registerData.budget" name="budget" placeholder="Enter budget">
+                                            </div>
+                                            <div class="form-group" *ngIf="registerRole === 'ROLE_ORGANISATEUR'">
+                                                <label>Organisation</label>
+                                                <input type="text" class="form-control shadow-none" [(ngModel)]="registerData.organisation" name="organisation" placeholder="Enter organisation">
+                                            </div>
+                                            <div class="form-group" *ngIf="registerRole === 'ROLE_ORGANISATEUR'">
+                                                <label>Adresse</label>
+                                                <input type="text" class="form-control shadow-none" [(ngModel)]="registerData.adresse" name="adresse" placeholder="Enter adresse">
+                                            </div>
+                                            <div class="form-group" *ngIf="registerRole === 'ROLE_ORGANISATEUR'">
+                                                <label>Description du projet</label>
+                                                <textarea class="form-control shadow-none" [(ngModel)]="registerData.descriptionProjet" name="descriptionProjet" placeholder="Enter description du projet"></textarea>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input shadow-none" type="checkbox" id="terms" required>
+                                                <label class="form-check-label" for="terms">
+                                                    Accept the <a routerLink="/">Terms</a> and <a routerLink="/">Privacy Policy</a>
+                                                </label>
+                                            </div>
+                                            <button type="submit" class="default-btn d-block w-100" [disabled]="!registerForm.valid">
+                                                Register as {{ registerRoleLabel }}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <button
+                        (click)="closePopup()"
+                        type="button"
+                        class="close-btn"
+                    >
+                        <i class="ri-close-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    </div>
+}
+
+
+

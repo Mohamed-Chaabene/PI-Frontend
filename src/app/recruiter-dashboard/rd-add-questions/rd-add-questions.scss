@@ -1,0 +1,71 @@
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 10px 10px 0 0 !important;
+  padding: 1.5rem;
+}
+
+.card-header h4 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  border: none;
+  border-radius: 25px;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+}
+
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  border: none;
+  border-radius: 25px;
+  padding: 0.5rem 1.5rem;
+}
+
+.btn-outline-primary {
+  border-radius: 20px;
+}
+
+.btn-outline-danger {
+  border-radius: 20px;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  border-top: none;
+  font-weight: 600;
+  color: #495057;
+}
+
+.input-group .btn {
+  border-radius: 0 8px 8px 0 !important;
+}
+
+.text-danger {
+  color: #dc3545;
+}

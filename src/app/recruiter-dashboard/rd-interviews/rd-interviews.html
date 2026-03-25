@@ -1,0 +1,123 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4>Gestion des Entretiens</h4>
+          <button class="btn btn-primary" (click)="showCreateForm = !showCreateForm">
+            {{ showCreateForm ? 'Annuler' : 'Créer un Entretien' }}
+          </button>
+        </div>
+        <div class="card-body">
+          <!-- Create Form -->
+          <div *ngIf="showCreateForm" class="mb-4 p-3 border rounded bg-light">
+            <h5><i class="ri-add-circle-line"></i> Créer un Nouvel Entretien</h5>
+            <form (ngSubmit)="createEntretien()">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="titre" class="form-label">Titre (optionnel)</label>
+                    <input type="text" class="form-control" id="titre" [(ngModel)]="newEntretien.titre" name="titre" placeholder="Ex: Entretien Développeur">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="type" class="form-label">Type d'entretien <span class="text-danger">*</span></label>
+                    <select class="form-control" id="type" [(ngModel)]="newEntretien.type" name="type" required>
+                      <option value="">-- Sélectionner --</option>
+                      <option *ngFor="let type of typesEntretien" [value]="type">{{ type }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row" *ngIf="newEntretien.type && newEntretien.type !== 'TEST'">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="candidat" class="form-label">Candidat <span class="text-danger">*</span></label>
+                    <select id="candidat" class="form-control" [(ngModel)]="newEntretien.candidatId" name="candidatId" [required]="newEntretien.type !== 'TEST'">
+                      <option [ngValue]="null">-- Sélectionner un candidat --</option>
+                      <option *ngFor="let c of candidats" [ngValue]="c.id">{{ c.nom }} {{ c.prenom }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="dateEntretien" class="form-label">Date et Heure <span class="text-danger">*</span></label>
+                    <input type="datetime-local" class="form-control" id="dateEntretien" [(ngModel)]="newEntretien.dateEntretien" name="dateEntretien" required>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="description" [(ngModel)]="newEntretien.description" name="description" rows="3" required placeholder="Description de l'entretien..."></textarea>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                  <i class="ri-check-line"></i> Créer Entretien
+                </button>
+                <button type="button" class="btn btn-secondary" (click)="showCreateForm = false">
+                  <i class="ri-close-line"></i> Annuler
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- List of Entretiens -->
+          <div class="table-responsive">
+            <h5 class="mb-3">
+              <i class="ri-list-check-2"></i> Liste des Entretiens
+              <span class="badge bg-secondary ms-2">{{ entretiens.length }}</span>
+            </h5>
+            <table class="table table-striped table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>ID</th>
+                  <th>Titre</th>
+                  <th>Description</th>
+                  <th>Type</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let entretien of entretiens">
+                  <td>{{ entretien.id }}</td>
+                  <td><strong>{{ entretien.titre || 'Sans titre' }}</strong></td>
+                  <td>{{ entretien.description }}</td>
+                  <td><span class="badge bg-info">{{ entretien.type || '-' }}</span></td>
+                  <td>
+                    <span class="badge" [ngClass]="entretien.completed ? 'bg-success' : 'bg-warning'">
+                      {{ entretien.completed ? 'Terminé' : 'En cours' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn btn-sm btn-primary me-2" (click)="goToAddQuestions(entretien.id)" title="Ajouter ou gérer les questions de cet entretien">
+                      <i class="ri-question-line"></i> Questions
+                    </button>
+                    <button *ngIf="!entretien.completed" class="btn btn-sm btn-success me-2" (click)="completeEntretien(entretien.id)">
+                      <i class="ri-check-double-line"></i>
+                    </button>
+                    <button class="btn btn-sm btn-info" (click)="viewResult(entretien.id)">
+                      <i class="ri-eye-line"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div *ngIf="entretiens.length === 0" class="text-center text-muted mt-4 p-5">
+              <p><i class="ri-inbox-line" style="font-size: 2rem;"></i></p>
+              <p class="mt-2">Aucun entretien n'existe encore.<br/>Créez-en un pour commencer.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
