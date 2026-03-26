@@ -8,7 +8,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CarouselModule } from 'ngx-owl-carousel-o';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { NgxScrollTopModule } from 'ngx-scrolltop';
-import { GoogleMapsModule } from '@angular/google-maps';
 import { AuthInterceptor } from './auth.interceptor';
 
 import { routes } from './app.routes';
@@ -204,7 +203,6 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         CarouselModule,
         NgApexchartsModule,
         NgxScrollTopModule,
-        GoogleMapsModule,
         FileUploadComponent
     ],
     providers: [

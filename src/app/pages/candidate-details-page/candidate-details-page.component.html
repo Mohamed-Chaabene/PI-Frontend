@@ -380,26 +380,9 @@
                             </div>
                         </div>
 
-                        <div style="margin-top: 20px;">
-                            <label>Sélectionnez votre localisation sur la carte</label>
-                            <google-map 
-                                #map
-                                [height]="'400px'" 
-                                [width]="'100%'"
-                                [zoom]="mapZoom"
-                                [center]="mapCenter"
-                                (mapClick)="onMapClick($event)">
-                                <map-marker 
-                                    *ngIf="markerPosition"
-                                    [position]="markerPosition"
-                                    [title]="'Ma Localisation'">
-                                </map-marker>
-                            </google-map>
-                        </div>
+                    
 
-                        <button (click)="saveLocalisationInfo()" class="default-btn" style="width: 100%; margin-top: 15px; background-color: #667eea; color: white; font-weight: bold;" [disabled]="isSaving">
-                            Save Localisation
-                        </button>
+                
 
                         <div *ngIf="successMessage" style="margin-top: 10px; padding: 10px; background-color: #d4edda; color: #155724; border-radius: 4px;">
                             {{ successMessage }}

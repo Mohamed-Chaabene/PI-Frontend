@@ -1,390 +1,422 @@
-// Breadcrumb Title
-.breadcrumb-title {
-    margin-bottom: 25px;
-    
+.applied-jobs-wrapper {
+    padding-top: 80px;
+    min-height: 100vh;
+    background: #f5f7fa;
+}
+
+@media (max-width: 768px) {
+    .applied-jobs-wrapper {
+        padding-top: 60px;
+    }
+}
+
+.page-header {
     h1 {
         font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    p {
+        color: #6c757d;
+        margin: 0;
     }
 }
 
-// Card
-.jove-card {
-    background-color: var(--whiteColor);
-    margin-bottom: 25px;
-    border-radius: 15px;
-    padding: 30px;
-
-    .title {
-        font-size: 18px;
-        margin-bottom: 25px;
-        border-bottom: 1px solid var(--borderColor);
-        padding: {
-            left: 30px;
-            right: 30px;
-            bottom: 12px;
-        };
-        margin: {
-            left: -30px;
-            right: -30px;
-        };
-    }
-    .jobs-applied-recently {
-        margin-bottom: -25px;
-    }
-    .single-job-box {
-        margin-bottom: 25px;
-        border-radius: 15px;
-        padding: 30px 30px 0;
-        background-color: var(--whiteColor);
-        border: 1px solid var(--borderColor);
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     
-        .image {
-            width: 100px;
-            height: 100px;
-            position: relative;
-            border-radius: 50%;
-            text-align: center;
-            background-color: #f4f7fb;
-    
-            img {
-                left: 0;
-                right: 0;
-                top: 50%;
-                max-width: 80px;
-                position: absolute;
-                transform: translateY(-50%);
-                margin: {
-                    left: auto;
-                    right: auto;
-                };
-            }
-        }
-        .content {
-            margin-left: 20px;
-    
-            h3 {
-                font-size: 18px;
-                margin-bottom: 6px;
-            }
-            .location {
-                font-size: 17px;
-                margin-bottom: 8px;
-            }
-            .job-type {
-                color: var(--primaryColor);
-            }
-        }
-        .custom-info {
-            .active {
-                color: #34a853;
-                margin-right: 25px;
-
-                &.closed {
-                    color: red;
-                }
-            }
-            ul {
-                li {
-                    margin: {
-                        left: 5px;
-                        right: 5px;
-                    };
-                    button {
-                        padding: 0;
-                        width: 32px;
-                        height: 32px;
-                        border: none;
-                        cursor: pointer;
-                        font-size: 16px;
-                        position: relative;
-                        color: var(--primaryColor);
-                        background-color: #f5f9fc;
-                        transition: var(--transition);
-
-                        i {
-                            left: 0;
-                            right: 0;
-                            top: 50%;
-                            position: absolute;
-                            transform: translateY(-50%);
-                        }
-                        &:hover {
-                            color: var(--whiteColor);
-                            background-color: var(--primaryColor);
-                        }
-                    }
-                    &:first-child {
-                        margin-left: 0;
-                    }
-                    &:last-child {
-                        margin-right: 0;
-                    }
-                }
-            }
-        }
-        .info {
-            margin-top: 30px;
-            padding: 15px 30px;
-            border-top: 1px solid var(--borderColor);
-            margin: {
-                left: -30px;
-                right: -30px;
-            };
-            .salary {
-                span {
-                    color: var(--headingColor);
-
-                    &:nth-child(1) {
-                        margin-right: 2px;
-                    }
-                    &:nth-child(2) {
-                        color: var(--primaryColor);
-                    }
-                }
-            }
-            .created {
-                span {
-                    color: var(--primaryColor);
-                }
-            }
-            .deadline {
-                span {
-                    color: #d8342b;
-                }
-            }
-        }
+    .stat-number {
+        font-size: 28px;
+        font-weight: bold;
     }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 14px;
+        margin-top: 8px;
+    }
+    
+    &.pending .stat-number { color: #f39c12; }
+    &.accepted .stat-number { color: #27ae60; }
+    &.rejected .stat-number { color: #e74c3c; }
 }
 
-/* Max width 767px */
-@media only screen and (max-width : 767px) {
+.btn-primary {
+    background: #3498db;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    &:hover { background: #2980b9; }
+}
 
-    // Breadcrumb Title
-    .breadcrumb-title {
-        h1 {
-            font-size: 20px;
-        }
-    }
-
-    // Card
-    .jove-card {
-        border-radius: 5px;
-        padding: 20px 15px;
+.candidatures-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     
-        .title {
-            font-size: 16px;
-            margin-bottom: 15px;
-            padding: {
-                left: 15px;
-                right: 15px;
-                bottom: 10px;
-            };
-            margin: {
-                left: -15px;
-                right: -15px;
-            };
-        }
-        .single-job-box {
-            border-radius: 5px;
-            text-align: center;
-            margin-bottom: 15px;
-            padding: 15px 15px 0;
+    .candidature-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         
-            .image {
-                width: 90px;
-                height: 90px;
-                margin: {
-                    left: auto;
-                    right: auto;
-                };
-            }
-            .content {
-                margin: {
-                    left: 0;
-                    top: 12px;
-                    bottom: 6px;
-                };
-                h3 {
-                    font-size: 16px;
-                }
-                .location {
-                    font-size: 15px;
-                }
-            }
-            .custom-info {
-                .active {
-                    margin: {
-                        right: 0;
-                        bottom: 15px;
-                    };
-                }
-                ul {
-                    li {
-                        margin: {
-                            left: 3px;
-                            right: 3px;
-                        };
-                    }
-                }
-            }
-            .info {
-                margin-top: 15px;
-                padding: 12px 15px;
-                margin: {
-                    left: -15px;
-                    right: -15px;
-                };
-                .salary {
-                    margin-bottom: 5px;
-                }
-                .created {
-                    margin-bottom: 5px;
-                }
-            }
-        }
-    }
-
-}
-
-/* Min width 576px to Max width 767px */
-@media only screen and (min-width : 576px) and (max-width : 767px) {
-
-    // Card
-    .jove-card {
-        .single-job-box {
-            text-align: start;
+        .card-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
             
-            .content {
-                margin: {
-                    top: 0;
-                    bottom: 0;
-                    left: 15px;
-                };
+            @media (max-width: 768px) {
+                flex-wrap: wrap;
+                gap: 12px;
             }
-            .custom-info {
-                .active {
-                    margin: {
-                        bottom: 0;
-                        right: 15px;
-                    };
-                }
+        }
+        
+        .card-info {
+            flex: 1;
+            
+            .card-title {
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 4px 0;
             }
-            .info {
-                .salary {
-                    margin-bottom: 0;
-                }
-                .created {
-                    margin-bottom: 0;
-                }
+            
+            .card-poste {
+                color: #6c757d;
+                margin: 0 0 8px 0;
+                font-size: 14px;
+            }
+            
+            .card-date {
+                font-size: 12px;
+                color: #999;
+                
+                i { margin-right: 4px; }
+            }
+            
+            .card-offre, .card-entretien {
+                font-size: 12px;
+                margin-top: 4px;
+                
+                i { margin-right: 4px; }
+            }
+            
+            .card-offre { color: #3498db; }
+            .card-entretien { color: #9b59b6; }
+        }
+        
+        .card-status {
+            margin: 0 16px;
+            
+            .status-badge {
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 500;
+                
+                &.pending { background: #fff3e0; color: #f39c12; }
+                &.accepted { background: #e8f8f0; color: #27ae60; }
+                &.rejected { background: #fee9e7; color: #e74c3c; }
+            }
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            
+            .btn-edit, .btn-delete {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: transparent;
+                border: 1px solid #e0e0e0;
+                cursor: pointer;
+                transition: all 0.2s;
+                
+                i { font-size: 14px; }
+            }
+            
+            .btn-edit {
+                color: #3498db;
+                &:hover { background: #e3f2fd; border-color: #3498db; }
+            }
+            
+            .btn-delete {
+                color: #e74c3c;
+                &:hover { background: #fee9e7; border-color: #e74c3c; }
             }
         }
     }
-
 }
 
-/* Min width 768px to Max width 991px */
-@media only screen and (min-width : 768px) and (max-width : 991px) {
-
-    // Breadcrumb Title
-    .breadcrumb-title {
-        h1 {
-            font-size: 22px;
-        }
-    }
-
-    // Card
-    .jove-card {
-        border-radius: 10px;
-        padding: 25px;
+// Modal
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
     
-        .title {
-            font-size: 18px;
-            padding: {
-                left: 25px;
-                right: 25px;
-                bottom: 12px;
-            };
-            margin: {
-                left: -25px;
-                right: -25px;
-            };
-        }
-        .single-job-box {
-            border-radius: 10px;
-            padding: 25px 25px 0;
+    .modal-container {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
         
-            .content {
-                h3 {
-                    font-size: 18px;
+        &.modal-lg {
+            max-width: 700px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #eee;
+            
+            h3 {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 600;
+            }
+            
+            .modal-close {
+                background: none;
+                border: none;
+                font-size: 28px;
+                cursor: pointer;
+                color: #999;
+                &:hover { color: #333; }
+            }
+        }
+        
+        .modal-body {
+            padding: 24px;
+            
+            .info-section {
+                background: #f8f9fa;
+                padding: 12px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                
+                p {
+                    margin: 0 0 8px 0;
+                    &:last-child { margin-bottom: 0; }
                 }
-                .location {
+            }
+            
+            .form-section {
+                margin-bottom: 24px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #eef2f6;
+                
+                h4 {
                     font-size: 16px;
+                    font-weight: 600;
+                    margin-bottom: 16px;
+                    color: #1a1a2e;
                 }
             }
-            .custom-info {
-                li {
-                    margin: {
-                        left: 3px;
-                        right: 3px;
-                    };
+            
+            .form-row {
+                display: flex;
+                gap: 16px;
+                
+                .flex-1 { flex: 1; }
+                .flex-05 { flex: 0.5; }
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+                
+                label {
+                    display: block;
+                    margin-bottom: 8px;
+                    font-weight: 500;
+                    
+                    .required { color: #e74c3c; }
+                    .optional { font-weight: normal; color: #999; font-size: 12px; }
+                }
+                
+                .form-control {
+                    width: 100%;
+                    padding: 10px 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    
+                    &:focus {
+                        outline: none;
+                        border-color: #3498db;
+                    }
+                    
+                    &.is-invalid {
+                        border-color: #e74c3c;
+                    }
+                }
+                
+                .invalid-feedback {
+                    color: #e74c3c;
+                    font-size: 12px;
+                    margin-top: 5px;
+                }
+                
+                .form-text {
+                    font-size: 12px;
+                    color: #999;
+                    margin-top: 5px;
+                    display: block;
+                }
+                
+                textarea { resize: vertical; }
+            }
+            
+            .contract-buttons {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                
+                .contract-btn {
+                    padding: 8px 16px;
+                    border: 1px solid #e2e8f0;
+                    background: white;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    
+                    &:hover { border-color: #3498db; }
+                    &.active {
+                        background: #3498db;
+                        color: white;
+                        border-color: #3498db;
+                    }
                 }
             }
-            .info {
-                margin-top: 25px;
-                padding: 15px 25px;
-                margin: {
-                    left: -25px;
-                    right: -25px;
-                };
+            
+            .skills-input {
+                display: flex;
+                gap: 8px;
+                
+                .form-control { flex: 1; }
+                .btn-add {
+                    padding: 10px 16px;
+                    background: #3498db;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    
+                    &:hover { background: #2980b9; }
+                }
+            }
+            
+            .skills-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 12px;
+                
+                .skill-tag {
+                    background: #e3f2fd;
+                    color: #3498db;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    
+                    i {
+                        cursor: pointer;
+                        font-size: 14px;
+                        
+                        &:hover { color: #e74c3c; }
+                    }
+                }
+            }
+            
+            .file-upload {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+                
+                .btn-upload {
+                    padding: 8px 16px;
+                    background: #f1f5f9;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    
+                    &:hover { background: #e2e8f0; }
+                }
+                
+                .file-name {
+                    font-size: 13px;
+                    color: #10b981;
+                }
+            }
+            
+            .checkbox-label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 12px;
+                cursor: pointer;
+                
+                input {
+                    width: 16px;
+                    height: 16px;
+                    cursor: pointer;
+                }
+            }
+            
+            .form-note, .info-note {
+                background: #f8f9fa;
+                padding: 12px;
+                border-radius: 8px;
+                font-size: 13px;
+                color: #6c757d;
+                margin-top: 16px;
+                
+                i { margin-right: 8px; color: #3498db; }
             }
         }
-    }
-
-}
-
-/* Min width 992px to Max width 1199px */
-@media only screen and (min-width : 992px) and (max-width : 1199px) {
-
-    // Card
-    .jove-card {
-        padding: 25px;
-    
-        .title {
-            padding: {
-                left: 25px;
-                right: 25px;
-            };
-            margin: {
-                left: -25px;
-                right: -25px;
-            };
-        }
-        .single-job-box {
-            padding: 25px 25px 0;
         
-            .info {
-                margin-top: 25px;
-                padding: 15px 25px;
-                margin: {
-                    left: -25px;
-                    right: -25px;
-                };
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 24px;
+            border-top: 1px solid #eee;
+            
+            .btn-cancel {
+                background: transparent;
+                border: 1px solid #ddd;
+                padding: 8px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                &:hover { background: #f5f5f5; }
+            }
+            
+            .btn-submit {
+                background: #3498db;
+                border: none;
+                color: white;
+                padding: 8px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                &:hover { background: #2980b9; }
+                &:disabled { opacity: 0.6; cursor: not-allowed; }
             }
         }
     }
-
-}
-
-/* Min width 1200px to Max width 1399px */
-@media only screen and (min-width: 1200px) and (max-width: 1399px) {}
-
-/* Min width 1600px */
-@media only screen and (min-width: 1600px) {
-
-    .row {
-        .col-xxl-12 {
-            width: 50%;
-        }
-    }
-
 }

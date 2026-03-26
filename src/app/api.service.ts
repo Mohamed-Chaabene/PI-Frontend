@@ -8,7 +8,7 @@ import { tap, catchError } from 'rxjs/operators';
 })
 export class ApiService {
 
-  private apiUrl = 'http://localhost:8080/api'; // URL de votre backend Spring Boot
+  private apiUrl = 'http://localhost:8081/api'; // URL de votre backend Spring Boot
 
   constructor(private http: HttpClient) { }
 
@@ -242,4 +242,116 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/auth/test-auth`);
   }
 
+
+
+ // ==================== CANDIDATURES ====================
+
+  // Candidatures
+getMesCandidatures(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/candidatures/mes-candidatures`, { headers });
 }
+
+getStatsCandidatures(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/candidatures/stats`, { headers });
+}
+
+  // Récupérer une candidature par ID
+  getCandidatureById(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/candidatures/${id}`, { headers });
+  }
+
+  // Créer une candidature (postuler)
+creerCandidature(data: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    console.log('📡 Envoi des données:', data);
+    return this.http.post(`${this.apiUrl}/candidatures`, data, { headers });
+}
+// Modifier une candidature (entreprise, poste, lettre)
+modifierCandidature(id: number, data: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.put(`${this.apiUrl}/candidatures/${id}`, data, { headers });
+}
+
+modifierStatutCandidature(id: number, statut: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    return this.http.put(`${this.apiUrl}/candidatures/${id}/statut?statut=${statut}`, {}, { headers });
+}
+
+supprimerCandidature(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    return this.http.delete(`${this.apiUrl}/candidatures/${id}`, { headers });
+}
+  // Rechercher des candidatures par entreprise
+  rechercherCandidaturesParEntreprise(entreprise: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/candidatures/recherche?entreprise=${entreprise}`, { headers });
+  }
+
+  // Filtrer les candidatures par statut
+  filtrerCandidaturesParStatut(statut: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/candidatures/filtre/statut/${statut}`, { headers });
+  }
+
+  // Trier les candidatures par date
+  trierCandidaturesParDate(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/candidatures/tri/date`, { headers });
+  }
+
+
+
+getOffresEmploi(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/offres-emploi`, { headers });
+}
+
+
+
+}
+
+
+
