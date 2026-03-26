@@ -80,9 +80,14 @@
                         <p *ngIf="!candidateData.description" style="font-style: italic; color: #999;">
                             Aucune description fournie. Cliquez sur "Edit" pour ajouter votre description.
                         </p>
-                        <button *ngIf="!isEditingAbout" (click)="isEditingAbout = true" class="default-btn" style="margin-top: 20px; padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
-                            Edit Description
-                        </button>
+                        <div *ngIf="!isEditingAbout" style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button (click)="isEditingAbout = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
+                                Edit Description
+                            </button>
+                            <button *ngIf="isDescriptionSaved" (click)="deleteDescription()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
+                                Delete Description
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Edit Mode -->
@@ -90,22 +95,17 @@
                         <textarea 
                             class="form-control shadow-none" 
                             [(ngModel)]="candidateData.description" 
+                            (input)="onDescriptionChange()"
+                            maxlength="60"
                             rows="5"
-                            placeholder="Parlez un peu de vous, vos passions, vos objectifs..."></textarea>
+                            placeholder="Parlez un peu de vous, vos passions, vos objectifs..." [style.border-color]="isDescriptionFormSubmitted && (!candidateData.description || candidateData.description.length === 0 || candidateData.description.length > 60) ? '#dc3545' : ''" [style.border-width]="isDescriptionFormSubmitted && (!candidateData.description || candidateData.description.length === 0 || candidateData.description.length > 60) ? '2px' : ''"></textarea>
                         <div style="margin-top: 15px; display: flex; gap: 10px;">
-                            <button (click)="saveDescriptionOnly()" class="default-btn" [disabled]="isSaving" style="background-color: #667eea; color: white; font-weight: bold;">
+                            <button (click)="isDescriptionFormSubmitted = true; saveDescriptionOnly()" class="default-btn" [disabled]="isSaving || !isDescriptionValid()" style="background-color: #667eea; color: white; font-weight: bold;">
                                 {{ isSaving ? 'Sauvegarde...' : 'Save' }}
                             </button>
                             <button (click)="isEditingAbout = false" class="default-btn" style="background-color: #999;" [disabled]="isSaving">
                                 Cancel
                             </button>
-                        </div>
-                        <!-- Success/Error Messages -->
-                        <div *ngIf="successMessage" style="margin-top: 10px; padding: 10px; background-color: #d4edda; color: #155724; border-radius: 4px;">
-                            {{ successMessage }}
-                        </div>
-                        <div *ngIf="errorMessage" style="margin-top: 10px; padding: 10px; background-color: #f8d7da; color: #721c24; border-radius: 4px;">
-                            {{ errorMessage }}
                         </div>
                     </div>
 
@@ -128,9 +128,14 @@
                                 </p>
                             </li>
                         </ul>
-                        <button (click)="isEditingEducation = true" class="default-btn" style="margin-top: 20px; padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
-                            Edit Education
-                        </button>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button (click)="isEditingEducation = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
+                                Edit Education
+                            </button>
+                            <button *ngIf="educationList.length > 0" (click)="deleteAllEducation()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
+                                Delete All Education
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Education Edit Mode -->
@@ -142,13 +147,13 @@
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label>Niveau d'Étude</label>
-                                        <input type="text" class="form-control shadow-none" [(ngModel)]="edu.niveauEtude" placeholder="Ex: Master, Licence, Bac">
+                                        <input type="text" class="form-control shadow-none" [(ngModel)]="edu.niveauEtude" (input)="onEducationFieldChange(edu, 'niveauEtude')" maxlength="20" placeholder="Ex: Master, Licence, Bac" [style.border-color]="isEducationFormSubmitted && (!edu.niveauEtude || edu.niveauEtude.length === 0 || edu.niveauEtude.length > 20) ? '#dc3545' : ''" [style.border-width]="isEducationFormSubmitted && (!edu.niveauEtude || edu.niveauEtude.length === 0 || edu.niveauEtude.length > 20) ? '2px' : ''">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label>Domaine d'Étude</label>
-                                        <input type="text" class="form-control shadow-none" [(ngModel)]="edu.domain" placeholder="Ex: Informatique, Fine Arts">
+                                        <input type="text" class="form-control shadow-none" [(ngModel)]="edu.domain" (input)="onEducationFieldChange(edu, 'domain')" maxlength="20" placeholder="Ex: Informatique, Fine Arts" [style.border-color]="isEducationFormSubmitted && (!edu.domain || edu.domain.length === 0 || edu.domain.length > 20) ? '#dc3545' : ''" [style.border-width]="isEducationFormSubmitted && (!edu.domain || edu.domain.length === 0 || edu.domain.length > 20) ? '2px' : ''">
                                     </div>
                                 </div>
                             </div>
@@ -157,7 +162,7 @@
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label>Institution / Université</label>
-                                        <input type="text" class="form-control shadow-none" [(ngModel)]="edu.institution" placeholder="Ex: Université de Paris">
+                                        <input type="text" class="form-control shadow-none" [(ngModel)]="edu.institution" (input)="onEducationFieldChange(edu, 'institution')" maxlength="20" placeholder="Ex: Université de Paris" [style.border-color]="isEducationFormSubmitted && (!edu.institution || edu.institution.length === 0 || edu.institution.length > 20) ? '#dc3545' : ''" [style.border-width]="isEducationFormSubmitted && (!edu.institution || edu.institution.length === 0 || edu.institution.length > 20) ? '2px' : ''">
                                     </div>
                                 </div>
                             </div>
@@ -166,13 +171,16 @@
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label>Année de Début</label>
-                                        <input type="text" class="form-control shadow-none" [(ngModel)]="edu.startDate" placeholder="Ex: 2020">
+                                        <input type="number" class="form-control shadow-none" [(ngModel)]="edu.startDate" (input)="onEducationYearChange(edu)" placeholder="Ex: 2020" [style.border-color]="isEducationYearsValid(edu) ? '' : '#dc3545'">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label>Année de Fin</label>
-                                        <input type="text" class="form-control shadow-none" [(ngModel)]="edu.endDate" placeholder="Ex: 2023">
+                                        <input type="number" class="form-control shadow-none" [(ngModel)]="edu.endDate" (input)="onEducationYearChange(edu)" placeholder="Ex: 2023" [style.border-color]="isEducationYearsValid(edu) ? '' : '#dc3545'">
+                                        <div *ngIf="edu.startDate && edu.endDate && !isEducationYearsValid(edu)" style="margin-top: 3px; font-size: 11px; color: #dc3545;">
+                                            L'année de fin doit être supérieure ou égale à l'année de début
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -183,15 +191,22 @@
                         </div>
 
                         <div style="margin-top: 20px; display: flex; gap: 10px;">
-                            <button (click)="addEducation()" class="default-btn" style="background-color: #667eea; color: white; font-weight: bold;">
-                                Add Education
-                            </button>
-                            <button (click)="saveCandidateProfile(); isEditingEducation = false;" class="default-btn" style="background-color: #667eea; color: white; font-weight: bold;">
-                                Save Education
-                            </button>
-                            <button (click)="isEditingEducation = false" class="default-btn" style="background-color: #999;">
-                                Cancel
-                            </button>
+                            <div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+                                <div *ngIf="isEducationFormSubmitted && !isEducationListValid()" style="padding: 10px 15px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24; font-size: 14px;">
+                                    ⚠️ {{ getEducationValidationError() }}
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button (click)="addEducation()" class="default-btn" style="background-color: #667eea; color: white; font-weight: bold;" [disabled]="!isEducationListValid()">
+                                        Add Education
+                                    </button>
+                                    <button (click)="isEducationFormSubmitted = true; saveCandidateProfile(); isEditingEducation = false;" class="default-btn" style="background-color: #667eea; color: white; font-weight: bold;" [disabled]="!isEducationListValid()">
+                                        Save Education
+                                    </button>
+                                    <button (click)="isEditingEducation = false" class="default-btn" style="background-color: #999;">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <h3>
@@ -210,9 +225,14 @@
                                 </span>
                             </li>
                         </ul>
-                        <button (click)="isEditingBackground = true" class="default-btn" style="margin-top: 20px; padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
-                            Edit Background
-                        </button>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button (click)="isEditingBackground = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
+                                Edit Background
+                            </button>
+                            <button *ngIf="backgroundList.length > 0" (click)="deleteAllBackground()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
+                                Delete All Background
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Background Edit Mode -->
@@ -224,13 +244,13 @@
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label>Titre du Poste</label>
-                                        <input type="text" class="form-control shadow-none" [(ngModel)]="bg.titre" placeholder="Ex: Senior Developer">
+                                        <input type="text" class="form-control shadow-none" [(ngModel)]="bg.titre" (input)="onBackgroundFieldChange(bg, 'titre')" maxlength="20" placeholder="Ex: Senior Developer" [style.border-color]="isBackgroundFormSubmitted && (!bg.titre || bg.titre.length === 0 || bg.titre.length > 20) ? '#dc3545' : ''" [style.border-width]="isBackgroundFormSubmitted && (!bg.titre || bg.titre.length === 0 || bg.titre.length > 20) ? '2px' : ''">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label>Entreprise</label>
-                                        <input type="text" class="form-control shadow-none" [(ngModel)]="bg.company" placeholder="Ex: Google, Jove">
+                                        <input type="text" class="form-control shadow-none" [(ngModel)]="bg.company" (input)="onBackgroundFieldChange(bg, 'company')" maxlength="20" placeholder="Ex: Google, Jove" [style.border-color]="isBackgroundFormSubmitted && (!bg.company || bg.company.length === 0 || bg.company.length > 20) ? '#dc3545' : ''" [style.border-width]="isBackgroundFormSubmitted && (!bg.company || bg.company.length === 0 || bg.company.length > 20) ? '2px' : ''">
                                     </div>
                                 </div>
                             </div>
@@ -239,13 +259,16 @@
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label>Année de Début</label>
-                                        <input type="text" class="form-control shadow-none" [(ngModel)]="bg.startDate" placeholder="Ex: 2020">
+                                        <input type="number" class="form-control shadow-none" [(ngModel)]="bg.startDate" (input)="onBackgroundYearChange(bg)" placeholder="Ex: 2020" [style.border-color]="isBackgroundFormSubmitted && bg.startDate && bg.endDate && !isBackgroundYearsValid(bg) ? '#dc3545' : ''" [style.border-width]="isBackgroundFormSubmitted && bg.startDate && bg.endDate && !isBackgroundYearsValid(bg) ? '2px' : ''">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label>Année de Fin</label>
-                                        <input type="text" class="form-control shadow-none" [(ngModel)]="bg.endDate" placeholder="Ex: 2023">
+                                        <input type="number" class="form-control shadow-none" [(ngModel)]="bg.endDate" (input)="onBackgroundYearChange(bg)" placeholder="Ex: 2023" [style.border-color]="isBackgroundFormSubmitted && bg.startDate && bg.endDate && !isBackgroundYearsValid(bg) ? '#dc3545' : ''" [style.border-width]="isBackgroundFormSubmitted && bg.startDate && bg.endDate && !isBackgroundYearsValid(bg) ? '2px' : ''">
+                                        <div *ngIf="bg.startDate && bg.endDate && !isBackgroundYearsValid(bg)" style="margin-top: 3px; font-size: 11px; color: #dc3545;">
+                                            L'année de fin doit être supérieure ou égale à l'année de début
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -256,15 +279,22 @@
                         </div>
 
                         <div style="margin-top: 20px; display: flex; gap: 10px;">
-                            <button (click)="addBackground()" class="default-btn" style="background-color: #667eea; color: white; font-weight: bold;">
-                                Add Experience
-                            </button>
-                            <button (click)="saveCandidateProfile(); isEditingBackground = false;" class="default-btn" style="background-color: #667eea; color: white; font-weight: bold;">
-                                Save Background
-                            </button>
-                            <button (click)="isEditingBackground = false" class="default-btn" style="background-color: #999;">
-                                Cancel
-                            </button>
+                            <div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+                                <div *ngIf="isBackgroundFormSubmitted && !isBackgroundListValid()" style="padding: 10px 15px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24; font-size: 14px;">
+                                    ⚠️ {{ getBackgroundValidationError() }}
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button (click)="addBackground()" class="default-btn" style="background-color: #667eea; color: white; font-weight: bold;" [disabled]="!isBackgroundListValid()">
+                                        Add Experience
+                                    </button>
+                                    <button (click)="isBackgroundFormSubmitted = true; saveCandidateProfile(); isEditingBackground = false;" class="default-btn" style="background-color: #667eea; color: white; font-weight: bold;" [disabled]="!isBackgroundListValid()">
+                                        Save Background
+                                    </button>
+                                    <button (click)="isEditingBackground = false" class="default-btn" style="background-color: #999;">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <h3>
@@ -277,9 +307,14 @@
                         <p *ngIf="!passionAndGoals" style="font-style: italic; color: #999;">
                             Aucune information fournie. Cliquez sur "Edit" pour ajouter vos passions et objectifs futurs.
                         </p>
-                        <button (click)="isEditingPassion = true" class="default-btn" style="margin-top: 20px; padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
-                            Edit Passion & Goals
-                        </button>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button (click)="isEditingPassion = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
+                                Edit Passion & Goals
+                            </button>
+                            <button *ngIf="isPassionSaved" (click)="deletePassionAndGoals()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
+                                Delete Passion & Goals
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Passion Edit Mode -->
@@ -289,22 +324,18 @@
                             <textarea 
                                 class="form-control shadow-none" 
                                 [(ngModel)]="passionAndGoals" 
+                                (input)="onPassionChange()"
+                                maxlength="200"
                                 rows="6"
-                                placeholder="Parlez de vos passions, vos rêves professionnels et vos objectifs futurs..."></textarea>
+                                placeholder="Parlez de vos passions, vos rêves professionnels et vos objectifs futurs..." [style.border-color]="isPassionFormSubmitted && (!passionAndGoals || passionAndGoals.length === 0 || passionAndGoals.length > 200) ? '#dc3545' : ''" [style.border-width]="isPassionFormSubmitted && (!passionAndGoals || passionAndGoals.length === 0 || passionAndGoals.length > 200) ? '2px' : ''"></textarea>
                         </div>
                         <div style="margin-top: 15px; display: flex; gap: 10px;">
-                            <button (click)="savePassionAndGoals()" class="default-btn" [disabled]="isSaving" style="background-color: #667eea; color: white; font-weight: bold;">
+                            <button (click)="isPassionFormSubmitted = true; savePassionAndGoals()" class="default-btn" [disabled]="isSaving || !isPassionValid()" style="background-color: #667eea; color: white; font-weight: bold;">
                                 Save
                             </button>
                             <button (click)="isEditingPassion = false" class="default-btn" style="background-color: #999;" [disabled]="isSaving">
                                 Cancel
                             </button>
-                        </div>
-                        <div *ngIf="successMessage" style="margin-top: 10px; padding: 10px; background-color: #d4edda; color: #155724; border-radius: 4px;">
-                            {{ successMessage }}
-                        </div>
-                        <div *ngIf="errorMessage" style="margin-top: 10px; padding: 10px; background-color: #f8d7da; color: #721c24; border-radius: 4px;">
-                            {{ errorMessage }}
                         </div>
                     </div>
                     
@@ -327,26 +358,28 @@
 
                         <div class="form-group">
                             <label>Prénom</label>
-                            <input type="text" class="form-control shadow-none" [(ngModel)]="contactData.prenom" placeholder="Entrez votre prénom">
+                            <input type="text" class="form-control shadow-none" [(ngModel)]="contactData.prenom" (input)="onPrenomChange()" maxlength="20" placeholder="Entrez votre prénom" [style.border-color]="isContactFormSubmitted && (!contactData.prenom || contactData.prenom.length === 0 || contactData.prenom.length > 20) ? '#dc3545' : ''" [style.border-width]="isContactFormSubmitted && (!contactData.prenom || contactData.prenom.length === 0 || contactData.prenom.length > 20) ? '2px' : ''">
                         </div>
 
                         <div class="form-group">
                             <label>Téléphone</label>
-                            <input type="tel" class="form-control shadow-none" [(ngModel)]="candidateData.telephone" placeholder="Ex: +212 6 00 000 000">
+                            <input type="tel" class="form-control shadow-none" [(ngModel)]="candidateData.telephone" (input)="onTelephoneChange()" placeholder="Ex: +212 6 00 000 000" [style.border-color]="isContactFormSubmitted && !isTelephoneValid() ? '#dc3545' : ''" [style.border-width]="isContactFormSubmitted && !isTelephoneValid() ? '2px' : ''">
+                            <div *ngIf="isContactFormSubmitted && candidateData.telephone && !isTelephoneValid()" style="margin-top: 5px; font-size: 12px; color: #dc3545;">
+                                Le téléphone doit contenir uniquement des chiffres et caractères spéciaux (+, -, espaces)
+                            </div>
+                            <div *ngIf="isContactFormSubmitted && !candidateData.telephone" style="margin-top: 5px; font-size: 12px; color: #dc3545;">
+                                Le téléphone est requis
+                            </div>
                         </div>
 
-                        <button (click)="saveContactInfo()" class="default-btn" style="width: 100%; margin-top: 10px; background-color: #667eea; color: white; font-weight: bold;" [disabled]="isSaving">
-                            Save Contact Info
-                        </button>
-
-                        <div *ngIf="successMessage" style="margin-top: 10px; padding: 10px; background-color: #d4edda; color: #155724; border-radius: 4px;">
-                            {{ successMessage }}
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button (click)="isContactFormSubmitted = true; saveContactInfo()" class="default-btn" style="flex: 1; background-color: #667eea; color: white; font-weight: bold;" [disabled]="isSaving || !isPrenomValid() || !isTelephoneValid()">
+                                Save Contact Info
+                            </button>
+                            <button *ngIf="isContactInfoSaved" (click)="deleteContactInfo()" class="default-btn" style="flex: 1; background-color: #dc3545; color: white; font-weight: bold;" [disabled]="isSaving">
+                                Delete Contact Info
+                            </button>
                         </div>
-                        <div *ngIf="errorMessage" style="margin-top: 10px; padding: 10px; background-color: #f8d7da; color: #721c24; border-radius: 4px;">
-                            {{ errorMessage }}
-                        </div>
-
-
 
                         <h3 style="margin-top: 30px;">Localisation</h3>
 
@@ -397,47 +430,12 @@
                             </google-map>
                         </div>
 
-                        <button (click)="saveLocalisationInfo()" class="default-btn" style="width: 100%; margin-top: 15px; background-color: #667eea; color: white; font-weight: bold;" [disabled]="isSaving">
+                        <button (click)="saveLocalisationInfo()" class="default-btn" style="width: 48%; margin-top: 15px; background-color: #667eea; color: white; font-weight: bold; margin-right: 2%; display: inline-block;" [disabled]="isSaving">
                             Save Localisation
                         </button>
-
-                        <div *ngIf="successMessage" style="margin-top: 10px; padding: 10px; background-color: #d4edda; color: #155724; border-radius: 4px;">
-                            {{ successMessage }}
-                        </div>
-                        <div *ngIf="errorMessage" style="margin-top: 10px; padding: 10px; background-color: #f8d7da; color: #721c24; border-radius: 4px;">
-                            {{ errorMessage }}
-                        </div>
-                    </div>
-                    <div class="box">
-                        <h3>
-                            Social profiles
-                        </h3>
-                        <ul class="socials-link mb-0 ps-0 list-unstyled">
-                            <li>
-                                <a href="#" target="_blank" class="facebook d-flex align-items-center">
-                                    <span class="d-block">
-                                        <i class="ri-facebook-fill"></i>
-                                    </span>
-                                    Facebook
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" target="_blank" class="twitter d-flex align-items-center">
-                                    <span class="d-block">
-                                        <i class="ri-twitter-x-line"></i>
-                                    </span>
-                                    Twitter
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" target="_blank" class="linkedin d-flex align-items-center">
-                                    <span class="d-block">
-                                        <i class="ri-linkedin-fill"></i>
-                                    </span>
-                                    Linkedin
-                                </a>
-                            </li>
-                        </ul>
+                        <button *ngIf="candidateData.localisation_id" (click)="deleteLocalisationInfo()" class="default-btn" style="width: 48%; margin-top: 15px; background-color: #dc3545; color: white; font-weight: bold; display: inline-block;" [disabled]="isSaving">
+                            Delete Localisation
+                        </button>
                     </div>
                     <div class="box">
                         <h3>
@@ -467,40 +465,12 @@
                                 (fileUploaded)="onCVUploaded($event)">
                             </app-file-upload>
                             <div *ngIf="cvUrl" style="margin-top: 10px;">
-                                <a [href]="cvUrl" target="_blank" rel="noopener noreferrer" download="cv.pdf" class="default-btn" style="background-color:#20c997; color:white; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                                <button (click)="downloadCV()" class="default-btn" style="background-color:#20c997; color:white; text-decoration:none; display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer; padding:10px 20px; border-radius:5px;">
                                     <i class="ri-file-download-line"></i>
                                     Download Uploaded CV
-                                </a>
+                                </button>
                             </div>
                         </div>
-                    </div>
-                    <div class="box">
-                        <h3>
-                            Contact with me
-                        </h3>
-                        <form>
-                            <div class="form-group">
-                                <label>
-                                    Your name
-                                </label>
-                                <input type="text" class="form-control shadow-none">
-                            </div>
-                            <div class="form-group">
-                                <label>
-                                    Your Email
-                                </label>
-                                <input type="email" class="form-control shadow-none">
-                            </div>
-                            <div class="form-group">
-                                <label>
-                                    Your Message
-                                </label>
-                                <textarea cols="30" rows="5" class="form-control shadow-none"></textarea>
-                            </div>
-                            <button type="submit" class="default-btn" style="background-color: #667eea; color: white; font-weight: bold;">
-                                Send Message
-                            </button>
-                        </form>
                     </div>
                 </aside>
             </div>
