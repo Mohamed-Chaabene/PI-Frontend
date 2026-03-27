@@ -38,6 +38,7 @@
     "express": "^5.1.0",
     "jwt-decode": "^4.0.0",
     "ng-apexcharts": "^2.0.0",
+    "ngx-extended-pdf-viewer": "^25.6.4",
     "ngx-owl-carousel-o": "^20.0.1",
     "ngx-scrolltop": "^20.1.0",
     "remixicon": "^4.6.0",

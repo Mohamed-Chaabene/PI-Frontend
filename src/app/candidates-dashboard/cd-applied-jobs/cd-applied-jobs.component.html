@@ -14,6 +14,221 @@
                         <i class="ri-add-line"></i> Postuler
                     </button>
                 </div>
+                <!-- Message temporaire -->
+<div *ngIf="message" class="alert-message" [ngClass]="'alert-' + messageType">
+    <i class="ri-information-line"></i>
+    <span>{{ message }}</span>
+    <button class="close-btn" (click)="message = ''">×</button>
+</div>
+
+<div class="quick-actions-candidat">
+   <button class="action-btn" (click)="openCVModal()">
+    <i class="ri-file-download-line"></i> Mon CV
+</button>
+    <button class="action-btn" (click)="openLettreModal()">
+        <i class="ri-mail-send-line"></i> Générer lettre
+    </button>
+    <button class="action-btn" (click)="openAnalyseModal()">
+        <i class="ri-bar-chart-line"></i> Analyser mon profil
+    </button>
+</div>
+
+
+
+
+<!-- MODAL CV -->
+<!-- MODAL CV - DESIGN PROFESSIONNEL -->
+<div class="modal-overlay" *ngIf="showCVModal" (click)="closeCVModal()">
+    <div class="modal-container modal-cv" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <div class="header-icon">
+                <i class="ri-file-user-line"></i>
+            </div>
+            <div class="header-title">
+                <h3>Mon CV</h3>
+                <p>Gérez votre curriculum vitae</p>
+            </div>
+            <button class="modal-close" (click)="closeCVModal()">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+            <!-- État avec CV existant -->
+            <div class="cv-card" *ngIf="cvUrl">
+                <div class="cv-file-icon">
+                    <i class="ri-file-pdf-line"></i>
+                </div>
+                <div class="cv-file-info">
+                    <h4>{{ cvName || 'CV.pdf' }}</h4>
+                    <div class="file-meta">
+                        <span class="file-date">
+                            <i class="ri-calendar-line"></i> {{ cvDate }}
+                        </span>
+                        <span class="file-size">
+                            <i class="ri-database-line"></i> {{ getFileSize() }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Actions principales -->
+                <div class="cv-actions">
+                    <button class="action-btn primary" (click)="openInNewTab()">
+                        <i class="ri-eye-line"></i>
+                        <span>Visualiser</span>
+                    </button>
+                    <button class="action-btn secondary" (click)="telechargerCV()">
+                        <i class="ri-download-line"></i>
+                        <span>Télécharger</span>
+                    </button>
+                    <button class="action-btn danger" (click)="supprimerCV()">
+                        <i class="ri-delete-bin-line"></i>
+                        <span>Supprimer</span>
+                    </button>
+                </div>
+                
+                <!-- Bouton remplacer -->
+                <button class="replace-btn" (click)="uploadNewCV()">
+                    <i class="ri-upload-line"></i>
+                    <span>Remplacer mon CV</span>
+                </button>
+            </div>
+            
+            <!-- État sans CV -->
+            <div class="empty-cv" *ngIf="!cvUrl">
+                <div class="empty-icon">
+                    <i class="ri-file-pdf-line"></i>
+                </div>
+                <h4>Aucun CV téléchargé</h4>
+                <p>Ajoutez votre CV pour augmenter vos chances d'être contacté</p>
+                <button class="upload-btn" (click)="openFileSelector()">
+                    <i class="ri-upload-cloud-2-line"></i>
+                    <span>Importer mon CV</span>
+                </button>
+                <p class="upload-hint">PDF, DOC, DOCX (Max 5 Mo)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL GÉNÉRER LETTRE ==================== -->
+<div class="modal-overlay" *ngIf="showLettreModal" (click)="closeLettreModal()">
+    <div class="modal-container modal-lettre" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>
+                <i class="ri-mail-send-line"></i>
+                Générateur de lettre de motivation
+            </h3>
+            <button class="modal-close" (click)="closeLettreModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Entreprise</label>
+                <input type="text" class="form-control" [(ngModel)]="lettreData.entreprise" placeholder="Nom de l'entreprise">
+            </div>
+            <div class="form-group">
+                <label>Poste</label>
+                <input type="text" class="form-control" [(ngModel)]="lettreData.poste" placeholder="Intitulé du poste">
+            </div>
+            <div class="form-group">
+                <label>Votre message personnalisé</label>
+                <textarea class="form-control" rows="5" [(ngModel)]="lettreData.message" 
+                          placeholder="Décrivez votre motivation et vos compétences..."></textarea>
+            </div>
+            
+            <div class="lettre-preview" *ngIf="lettreGeneree">
+                <h4>Aperçu de votre lettre</h4>
+                <div class="preview-content">
+                    {{ lettreGeneree }}
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeLettreModal()">Annuler</button>
+            <button class="btn-submit" (click)="genererLettreFinal()">
+                <i class="ri-file-copy-line"></i> Générer
+            </button>
+            <button class="btn-download" (click)="telechargerLettreGeneree()" *ngIf="lettreGeneree">
+                <i class="ri-download-line"></i> Télécharger
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL ANALYSER PROFIL ==================== -->
+<div class="modal-overlay" *ngIf="showAnalyseModal" (click)="closeAnalyseModal()">
+    <div class="modal-container modal-analyse" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>
+                <i class="ri-bar-chart-line"></i>
+                Analyse de votre profil
+            </h3>
+            <button class="modal-close" (click)="closeAnalyseModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="score-circle">
+                <div class="score-value">{{ scoreProfil }}</div>
+                <div class="score-label">Score global</div>
+                <div class="score-progress">
+                    <div class="progress-bar" [style.width.%]="scoreProfil"></div>
+                </div>
+            </div>
+            
+            <div class="analyse-details">
+                <div class="analyse-item">
+                    <div class="analyse-icon completed" *ngIf="profil.competences">
+                        <i class="ri-check-line"></i>
+                    </div>
+                    <div class="analyse-icon warning" *ngIf="!profil.competences">
+                        <i class="ri-alert-line"></i>
+                    </div>
+                    <div class="analyse-content">
+                        <h4>Compétences</h4>
+                        <p>{{ profil.competences ? 'Compétences renseignées' : 'Aucune compétence renseignée' }}</p>
+                    </div>
+                </div>
+                
+                <div class="analyse-item">
+                    <div class="analyse-icon completed" *ngIf="profil.experience">
+                        <i class="ri-check-line"></i>
+                    </div>
+                    <div class="analyse-icon warning" *ngIf="!profil.experience">
+                        <i class="ri-alert-line"></i>
+                    </div>
+                    <div class="analyse-content">
+                        <h4>Expérience</h4>
+                        <p>{{ profil.experience || 'Non renseignée' }}</p>
+                    </div>
+                </div>
+                
+                <div class="analyse-item">
+                    <div class="analyse-icon completed" *ngIf="profil.cv">
+                        <i class="ri-check-line"></i>
+                    </div>
+                    <div class="analyse-icon warning" *ngIf="!profil.cv">
+                        <i class="ri-alert-line"></i>
+                    </div>
+                    <div class="analyse-content">
+                        <h4>CV</h4>
+                        <p>{{ profil.cv ? 'CV téléchargé' : 'CV manquant' }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="conseils-section" *ngIf="conseils.length > 0">
+                <h4>💡 Conseils pour améliorer votre profil</h4>
+                <ul>
+                    <li *ngFor="let conseil of conseils">{{ conseil }}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeAnalyseModal()">Fermer</button>
+            <button class="btn-submit" (click)="allerCompleterProfil()" *ngIf="scoreProfil < 80">
+                <i class="ri-edit-line"></i> Compléter mon profil
+            </button>
+        </div>
+    </div>
+</div>
+
 
                 <!-- Statistiques -->
                 <div class="row stats-row mb-4">
@@ -42,6 +257,34 @@
                         </div>
                     </div>
                 </div>
+           
+
+                
+<!-- Statistiques personnalisées -->
+<div class="stats-personnelles">
+    <div class="stat-card-personal">
+        <div class="stat-icon"><i class="ri-calendar-check-line"></i></div>
+        <div class="stat-info">
+            <h4>Candidatures ce mois</h4>
+            <p>{{ candidaturesCeMois }}</p>
+        </div>
+    </div>
+    <div class="stat-card-personal">
+        <div class="stat-icon"><i class="ri-chat-voice-line"></i></div>
+        <div class="stat-info">
+            <h4>Entretiens obtenus</h4>
+            <p>{{ entretiensObtenus }}</p>
+        </div>
+    </div>
+    <div class="stat-card-personal">
+        <div class="stat-icon"><i class="ri-eye-line"></i></div>
+        <div class="stat-info">
+            <h4>Vues par recruteurs</h4>
+            <p>{{ vuesRecruteurs }}</p>
+        </div>
+    </div>
+</div>
+
 
                 <!-- Loading -->
                 <div *ngIf="isLoading" class="text-center py-5">
@@ -66,6 +309,38 @@
                     </button>
                 </div>
 
+
+
+<!-- ==================== ALERTES ET CONSEILS PERSONNALISÉS ==================== -->
+<div class="alerts-container" *ngIf="alertes.length > 0">
+    <div class="alert-card" *ngFor="let alerte of alertes">
+        <div class="alert-icon" [ngClass]="alerte.type">
+            <i [class]="alerte.icon"></i>
+        </div>
+        <div class="alert-content">
+            <h4>{{ alerte.titre }}</h4>
+            <p>{{ alerte.message }}</p>
+        </div>
+        <button class="alert-btn" (click)="actionAlerte(alerte)">
+            {{ alerte.bouton }}
+            <i class="ri-arrow-right-line"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Message de bienvenue si nouveau candidat -->
+<div *ngIf="isNewCandidate" class="welcome-card">
+    <div class="welcome-icon">
+        <i class="ri-emotion-happy-line"></i>
+    </div>
+    <div class="welcome-content">
+        <h3>Bienvenue sur votre espace candidatures ! 👋</h3>
+        <p>Commencez à postuler aux offres qui correspondent à vos compétences. Nous sommes là pour vous accompagner dans votre recherche d'emploi.</p>
+        <button class="btn-welcome" (click)="openCreateModal()">Postuler maintenant</button>
+    </div>
+</div>
+                
+                
                 <!-- Liste des candidatures -->
                 <div *ngIf="!isLoading && !errorMessage && candidatures.length > 0" class="candidatures-list">
                     <div class="candidature-card" *ngFor="let c of candidatures">
@@ -262,7 +537,6 @@
     </div>
 </div>
 
-<!-- ==================== MODAL DE MODIFICATION ==================== -->
 <!-- ==================== MODAL DE MODIFICATION COMPLET ==================== -->
 <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
     <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
@@ -437,6 +711,48 @@
                 <i class="ri-save-line me-1"></i>
                 {{ isUpdating ? 'Enregistrement...' : 'Enregistrer' }}
             </button>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Section Inspiration / Engagement -->
+<div class="inspiration-section">
+    <div class="inspiration-card">
+        <div class="inspiration-content">
+            <div class="inspiration-text">
+                <h2>Boostez vos candidatures ! 🚀</h2>
+                <p>Recevez des alertes personnalisées et ne ratez aucune opportunité</p>
+                <div class="stats-badge">
+                    <span class="badge">
+                        <i class="ri-user-line"></i> {{ nombreCandidatsActifs }}+ candidats actifs
+                    </span>
+                    <span class="badge">
+                        <i class="ri-mail-line"></i> {{ offresNouvelles }} nouvelles offres
+                    </span>
+                </div>
+                <div class="input-group">
+                    <input type="email" 
+                           placeholder="Entrez votre email" 
+                           [(ngModel)]="newsletterEmail"
+                           (keyup.enter)="subscribeNewsletter()">
+                    <button class="subscribe-btn" (click)="subscribeNewsletter()" [disabled]="isSubscribing">
+                        {{ isSubscribing ? 'Inscription...' : 'S\'abonner' }}
+                        <i class="ri-arrow-right-line"></i>
+                    </button>
+                </div>
+                <p class="small-text">10 000+ candidats déjà informés</p>
+            </div>
+            <div class="inspiration-illustration">
+                <div class="illustration-icon">
+                    <i class="ri-rocket-line"></i>
+                </div>
+                <div class="floating-badge">
+                    <i class="ri-check-line"></i>
+                    <span>+47% de réponses</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>

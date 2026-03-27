@@ -295,11 +295,19 @@ modifierCandidature(id: number, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/candidatures/${id}`, data, { headers });
 }
 
+// Modifier le statut d'une candidature
 modifierStatutCandidature(id: number, statut: string): Observable<any> {
-    const token = localStorage.getItem('token');
-    let headers = new HttpHeaders();
-    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
-    return this.http.put(`${this.apiUrl}/candidatures/${id}/statut?statut=${statut}`, {}, { headers });
+    return this.http.put(`${this.apiUrl}/candidatures/${id}/statut?statut=${statut}`, {});
+}
+
+// Récupérer toutes les candidatures (pour recruteur)
+getAllCandidaturesForRecruteur(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/candidatures/recruteur/toutes`);
+}
+
+// Récupérer les statistiques pour recruteur
+getStatsForRecruteur(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/recruteur/stats`);
 }
 
 supprimerCandidature(id: number): Observable<any> {
@@ -349,7 +357,14 @@ getOffresEmploi(): Observable<any> {
     return this.http.get(`${this.apiUrl}/offres-emploi`, { headers });
 }
 
-
+subscribeNewsletter(email: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/newsletter/subscribe`, { email }, { headers });
+}
 
 }
 
