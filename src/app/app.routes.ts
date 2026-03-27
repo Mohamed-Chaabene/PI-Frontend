@@ -60,6 +60,7 @@ export const routes: Routes = [
     {path: 'categories', component: CategoriesPageComponent},
     {path: 'candidates', component: CandidatesPageComponent},
     {path: 'candidate-details', component: CandidateDetailsPageComponent},
+    {path: 'candidate-details/:id', component: CandidateDetailsPageComponent},
     {path: 'employers', component: EmployersPageComponent},
     {path: 'employer-details', component: EmployerDetailsPageComponent},
     {path: 'faq', component: FaqPageComponent},

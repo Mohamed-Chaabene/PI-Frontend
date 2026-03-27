@@ -47,12 +47,13 @@
                         
                         <!-- Clickable profile picture -->
                         <div class="image profile-pic-wrapper" 
-                             (click)="profilePictureInput.click()" 
-                             title="Click to upload profile picture">
+                             (click)="!isViewingOtherCandidate && profilePictureInput.click()" 
+                             [style.cursor]="isViewingOtherCandidate ? 'default' : 'pointer'"
+                             [title]="isViewingOtherCandidate ? 'Viewing another candidate profile' : 'Click to upload profile picture'">
                             <img [src]="profilePictureUrl || 'images/candidates/candidate1.jpg'" 
                                  class="rounded-circle profile-pic-img" 
                                  alt="candidate-image">
-                            <div class="profile-pic-overlay">
+                            <div *ngIf="!isViewingOtherCandidate" class="profile-pic-overlay">
                                 <span style="color: #667eea; font-weight: bold; text-align: center;">📁 Upload<br>Picture</span>
                             </div>
                         </div>
@@ -81,10 +82,10 @@
                             Aucune description fournie. Cliquez sur "Edit" pour ajouter votre description.
                         </p>
                         <div *ngIf="!isEditingAbout" style="display: flex; gap: 10px; margin-top: 20px;">
-                            <button (click)="isEditingAbout = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
+                            <button *ngIf="!isViewingOtherCandidate" (click)="isEditingAbout = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
                                 Edit Description
                             </button>
-                            <button *ngIf="isDescriptionSaved" (click)="deleteDescription()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
+                            <button *ngIf="!isViewingOtherCandidate && isDescriptionSaved" (click)="deleteDescription()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
                                 Delete Description
                             </button>
                         </div>
@@ -129,10 +130,10 @@
                             </li>
                         </ul>
                         <div style="display: flex; gap: 10px; margin-top: 20px;">
-                            <button (click)="isEditingEducation = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
+                            <button *ngIf="!isViewingOtherCandidate" (click)="isEditingEducation = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
                                 Edit Education
                             </button>
-                            <button *ngIf="educationList.length > 0" (click)="deleteAllEducation()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
+                            <button *ngIf="!isViewingOtherCandidate && educationList.length > 0" (click)="deleteAllEducation()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
                                 Delete All Education
                             </button>
                         </div>
@@ -226,10 +227,10 @@
                             </li>
                         </ul>
                         <div style="display: flex; gap: 10px; margin-top: 20px;">
-                            <button (click)="isEditingBackground = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
+                            <button *ngIf="!isViewingOtherCandidate" (click)="isEditingBackground = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
                                 Edit Background
                             </button>
-                            <button *ngIf="backgroundList.length > 0" (click)="deleteAllBackground()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
+                            <button *ngIf="!isViewingOtherCandidate && backgroundList.length > 0" (click)="deleteAllBackground()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
                                 Delete All Background
                             </button>
                         </div>
@@ -308,10 +309,10 @@
                             Aucune information fournie. Cliquez sur "Edit" pour ajouter vos passions et objectifs futurs.
                         </p>
                         <div style="display: flex; gap: 10px; margin-top: 20px;">
-                            <button (click)="isEditingPassion = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
+                            <button *ngIf="!isViewingOtherCandidate" (click)="isEditingPassion = true" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #667eea; color: white; font-weight: bold;">
                                 Edit Passion & Goals
                             </button>
-                            <button *ngIf="isPassionSaved" (click)="deletePassionAndGoals()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
+                            <button *ngIf="!isViewingOtherCandidate && isPassionSaved" (click)="deletePassionAndGoals()" class="default-btn" style="padding: 8px 20px; font-size: 14px; background-color: #dc3545; color: white; font-weight: bold;">
                                 Delete Passion & Goals
                             </button>
                         </div>
@@ -358,12 +359,12 @@
 
                         <div class="form-group">
                             <label>Prénom</label>
-                            <input type="text" class="form-control shadow-none" [(ngModel)]="contactData.prenom" (input)="onPrenomChange()" maxlength="20" placeholder="Entrez votre prénom" [style.border-color]="isContactFormSubmitted && (!contactData.prenom || contactData.prenom.length === 0 || contactData.prenom.length > 20) ? '#dc3545' : ''" [style.border-width]="isContactFormSubmitted && (!contactData.prenom || contactData.prenom.length === 0 || contactData.prenom.length > 20) ? '2px' : ''">
+                            <input type="text" class="form-control shadow-none" [(ngModel)]="contactData.prenom" (input)="onPrenomChange()" maxlength="20" placeholder="Entrez votre prénom" [disabled]="isViewingOtherCandidate" [style.border-color]="isContactFormSubmitted && (!contactData.prenom || contactData.prenom.length === 0 || contactData.prenom.length > 20) ? '#dc3545' : ''" [style.border-width]="isContactFormSubmitted && (!contactData.prenom || contactData.prenom.length === 0 || contactData.prenom.length > 20) ? '2px' : ''">
                         </div>
 
                         <div class="form-group">
                             <label>Téléphone</label>
-                            <input type="tel" class="form-control shadow-none" [(ngModel)]="candidateData.telephone" (input)="onTelephoneChange()" placeholder="Ex: +212 6 00 000 000" [style.border-color]="isContactFormSubmitted && !isTelephoneValid() ? '#dc3545' : ''" [style.border-width]="isContactFormSubmitted && !isTelephoneValid() ? '2px' : ''">
+                            <input type="tel" class="form-control shadow-none" [(ngModel)]="candidateData.telephone" (input)="onTelephoneChange()" placeholder="Ex: +212 6 00 000 000" [disabled]="isViewingOtherCandidate" [style.border-color]="isContactFormSubmitted && !isTelephoneValid() ? '#dc3545' : ''" [style.border-width]="isContactFormSubmitted && !isTelephoneValid() ? '2px' : ''">
                             <div *ngIf="isContactFormSubmitted && candidateData.telephone && !isTelephoneValid()" style="margin-top: 5px; font-size: 12px; color: #dc3545;">
                                 Le téléphone doit contenir uniquement des chiffres et caractères spéciaux (+, -, espaces)
                             </div>
@@ -373,10 +374,10 @@
                         </div>
 
                         <div style="display: flex; gap: 10px; margin-top: 10px;">
-                            <button (click)="isContactFormSubmitted = true; saveContactInfo()" class="default-btn" style="flex: 1; background-color: #667eea; color: white; font-weight: bold;" [disabled]="isSaving || !isPrenomValid() || !isTelephoneValid()">
+                            <button *ngIf="!isViewingOtherCandidate" (click)="isContactFormSubmitted = true; saveContactInfo()" class="default-btn" style="flex: 1; background-color: #667eea; color: white; font-weight: bold;" [disabled]="isSaving || !isPrenomValid() || !isTelephoneValid()">
                                 Save Contact Info
                             </button>
-                            <button *ngIf="isContactInfoSaved" (click)="deleteContactInfo()" class="default-btn" style="flex: 1; background-color: #dc3545; color: white; font-weight: bold;" [disabled]="isSaving">
+                            <button *ngIf="!isViewingOtherCandidate && isContactInfoSaved" (click)="deleteContactInfo()" class="default-btn" style="flex: 1; background-color: #dc3545; color: white; font-weight: bold;" [disabled]="isSaving">
                                 Delete Contact Info
                             </button>
                         </div>
@@ -387,13 +388,13 @@
                             <div class="col-lg-6">
                                 <div class="form-group">
                                     <label>Pays *</label>
-                                    <input type="text" class="form-control shadow-none" [(ngModel)]="localisationData.pays" (ngModelChange)="onPaysCityChange()" placeholder="Ex: Tunisie" required>
+                                    <input type="text" class="form-control shadow-none" [(ngModel)]="localisationData.pays" (ngModelChange)="onPaysCityChange()" placeholder="Ex: Tunisie" [disabled]="isViewingOtherCandidate" required>
                                 </div>
                             </div>
                             <div class="col-lg-6">
                                 <div class="form-group">
                                     <label>Ville *</label>
-                                    <input type="text" class="form-control shadow-none" [(ngModel)]="localisationData.ville" (ngModelChange)="onPaysCityChange()" placeholder="Ex: Tunis" required>
+                                    <input type="text" class="form-control shadow-none" [(ngModel)]="localisationData.ville" (ngModelChange)="onPaysCityChange()" placeholder="Ex: Tunis" [disabled]="isViewingOtherCandidate" required>
                                 </div>
                             </div>
                         </div>
@@ -402,19 +403,19 @@
                             <div class="col-lg-6">
                                 <div class="form-group">
                                     <label>Latitude</label>
-                                    <input type="number" class="form-control shadow-none" [(ngModel)]="localisationData.latitude" placeholder="Ex: 36.8065" step="0.0001">
+                                    <input type="number" class="form-control shadow-none" [(ngModel)]="localisationData.latitude" placeholder="Ex: 36.8065" [disabled]="isViewingOtherCandidate" step="0.0001">
                                 </div>
                             </div>
                             <div class="col-lg-6">
                                 <div class="form-group">
                                     <label>Longitude</label>
-                                    <input type="number" class="form-control shadow-none" [(ngModel)]="localisationData.longitude" placeholder="Ex: 10.1615" step="0.0001">
+                                    <input type="number" class="form-control shadow-none" [(ngModel)]="localisationData.longitude" placeholder="Ex: 10.1615" [disabled]="isViewingOtherCandidate" step="0.0001">
                                 </div>
                             </div>
                         </div>
 
-                        <div style="margin-top: 20px;">
-                            <label>Sélectionnez votre localisation sur la carte</label>
+                        <div style="margin-top: 20px; position: relative; width: 100%; height: 400px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+                            <label style="position: absolute; top: -25px; left: 0;">Sélectionnez votre localisation sur la carte</label>
                             <google-map 
                                 #map
                                 [height]="'400px'" 
@@ -430,10 +431,10 @@
                             </google-map>
                         </div>
 
-                        <button (click)="saveLocalisationInfo()" class="default-btn" style="width: 48%; margin-top: 15px; background-color: #667eea; color: white; font-weight: bold; margin-right: 2%; display: inline-block;" [disabled]="isSaving">
+                        <button *ngIf="!isViewingOtherCandidate" (click)="saveLocalisationInfo()" class="default-btn" style="width: 48%; margin-top: 15px; background-color: #667eea; color: white; font-weight: bold; margin-right: 2%; display: inline-block;" [disabled]="isSaving">
                             Save Localisation
                         </button>
-                        <button *ngIf="candidateData.localisation_id" (click)="deleteLocalisationInfo()" class="default-btn" style="width: 48%; margin-top: 15px; background-color: #dc3545; color: white; font-weight: bold; display: inline-block;" [disabled]="isSaving">
+                        <button *ngIf="!isViewingOtherCandidate && candidateData.localisation_id" (click)="deleteLocalisationInfo()" class="default-btn" style="width: 48%; margin-top: 15px; background-color: #dc3545; color: white; font-weight: bold; display: inline-block;" [disabled]="isSaving">
                             Delete Localisation
                         </button>
                     </div>
@@ -460,6 +461,7 @@
                         <div style="margin-top: 18px;">
                             <h4>Upload CV (bottom action)</h4>
                             <app-file-upload
+                                *ngIf="!isViewingOtherCandidate"
                                 label="Upload CV (PDF)"
                                 accept=".pdf"
                                 (fileUploaded)="onCVUploaded($event)">
