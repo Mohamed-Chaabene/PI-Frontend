@@ -5,7 +5,7 @@ import { NavbarComponent } from '../../common/navbar/navbar.component';
 import { SubscribeComponent } from '../../common/subscribe/subscribe.component';
 import { FooterComponent } from '../../common/footer/footer.component';
 import { NgxScrollTopComponent } from 'ngx-scrolltop';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -95,13 +95,18 @@ export class CandidateDetailsPageComponent implements OnInit {
     isDescriptionSaved = false;
     isContactInfoSaved = false;
     isPassionSaved = false;
+    
+    // For viewing other candidates' profiles
+    viewingCandidateId: number | null = null;
+    isViewingOtherCandidate: boolean = false;
  
     constructor(
         private titleService: Title,
         private apiService: ApiService,
         private cloudinaryService: CloudinaryService,
         private cloudinaryDebugService: CloudinaryDebugService,
-        private http: HttpClient
+        private http: HttpClient,
+        private activatedRoute: ActivatedRoute
     ) {}
     
     ngOnInit() {
@@ -122,7 +127,20 @@ export class CandidateDetailsPageComponent implements OnInit {
         this.currentUserName = userName || 'Candidat';
         this.userEmail = userName || '';
         this.userRole = localStorage.getItem('userRole') || 'CANDIDAT';
-        this.loadCandidateData();
+        
+        // Check if viewing another candidate's profile
+        this.activatedRoute.params.subscribe(params => {
+            if (params['id']) {
+                this.viewingCandidateId = params['id'];
+                this.isViewingOtherCandidate = true;
+                console.log('👤 Viewing candidate with ID:', this.viewingCandidateId);
+                this.loadOtherCandidateData(this.viewingCandidateId!);
+            } else {
+                // Load current user's data
+                this.isViewingOtherCandidate = false;
+                this.loadCandidateData();
+            }
+        });
     }
 
     loadCandidateData() {
@@ -361,6 +379,190 @@ export class CandidateDetailsPageComponent implements OnInit {
                     this.isLoading = false;
                     console.error('Error loading candidate data:', err);
                 }
+            }
+        );
+    }
+
+    loadOtherCandidateData(candidateId: number) {
+        if (!candidateId) {
+            this.errorMessage = 'Candidate ID is required';
+            this.isLoading = false;
+            return;
+        }
+
+        this.isLoading = true;
+        console.log('Loading other candidate data for ID:', candidateId);
+
+        // Load candidate data by ID from API
+        this.apiService.getCandidat(candidateId).subscribe(
+            (data: any) => {
+                if (data) {
+                    // Merge response data with form
+                    this.candidateData = {
+                        ...this.candidateData,
+                        ...data
+                    };
+                    
+                    // Explicitly ensure critical fields are set from response
+                    if (data.id) {
+                        this.candidateData.id = data.id;
+                    }
+                    if (data.email) {
+                        this.candidateData.email = data.email;
+                    }
+                    if (data.description) {
+                        this.candidateData.description = data.description;
+                        this.isDescriptionSaved = true;
+                    }
+                    
+                    // Load profile picture URL from database
+                    if (data.profile_picture_url) {
+                        this.profilePictureUrl = data.profile_picture_url;
+                    }
+                    
+                    // Load CV URL from database
+                    if (data.cv_url) {
+                        this.cvUrl = data.cv_url;
+                    }
+                    
+                    console.log('Loaded other candidate ID:', this.candidateData.id, 'Full data:', data);
+                    
+                    // Update displayed name with candidate's nom
+                    if (data.nom) {
+                        this.currentUserName = data.nom;
+                    }
+                    
+                    // Load contact data (prenom and telephone)
+                    if (data.prenom) {
+                        this.contactData.prenom = data.prenom;
+                    }
+                    if (data.telephone) {
+                        this.candidateData.telephone = data.telephone;
+                    }
+                    if (data.prenom || data.telephone) {
+                        this.isContactInfoSaved = true;
+                    }
+                    
+                    // Parse education data from concatenated string with labels
+                    if (data.niveauEtude && data.niveauEtude.includes('niveau:')) {
+                        // Split by " ;; " to get individual education entries
+                        const educationEntries = data.niveauEtude.split(' ;; ');
+                        this.educationList = educationEntries.map((edu: string) => {
+                            // Extract values using regex for labeled format
+                            const niveauMatch = edu.match(/niveau:\s*([^,]*)/);
+                            const domaineMatch = edu.match(/domaine:\s*([^,]*)/);
+                            const institutionMatch = edu.match(/institution:\s*([^,]*)/);
+                            const debutMatch = edu.match(/debut:\s*([^,]*)/);
+                            const finMatch = edu.match(/fin:\s*([^,;]*)/);
+                            
+                            return {
+                                niveauEtude: (niveauMatch?.[1] || '').trim(),
+                                domain: (domaineMatch?.[1] || '').trim(),
+                                institution: (institutionMatch?.[1] || '').trim(),
+                                startDate: (debutMatch?.[1] || '').trim(),
+                                endDate: (finMatch?.[1] || '').trim()
+                            };
+                        });
+                    } else if (data.niveauEtude && data.niveauEtude.includes(' / ')) {
+                        // OLD FORMAT: Split by " / " for backward compatibility with old data
+                        const educationEntries = data.niveauEtude.split(' ;; ');
+                        this.educationList = educationEntries.map((edu: string) => {
+                            const parts = edu.split(' / ');
+                            return {
+                                niveauEtude: (parts[0] || '').trim(),
+                                domain: (parts[1] || '').trim(),
+                                institution: (parts[2] || '').trim(),
+                                startDate: (parts[3] || '').trim().split('-')[0],
+                                endDate: (parts[3] || '').trim().split('-')[1]
+                            };
+                        });
+                    } else if (data.niveauEtude) {
+                        // Single education entry without separators
+                        this.educationList = [{ 
+                            niveauEtude: data.niveauEtude, 
+                            domain: '', 
+                            institution: '', 
+                            startDate: '', 
+                            endDate: '' 
+                        }];
+                    } else {
+                        this.educationList = [{ niveauEtude: '', domain: '', institution: '', startDate: '', endDate: '' }];
+                    }
+
+                    // Parse background data from concatenated string
+                    if (data.backgroundExpertise && data.backgroundExpertise.includes('titre:')) {
+                        // New labeled format
+                        const backgroundEntries = data.backgroundExpertise.split(' ;; ');
+                        this.backgroundList = backgroundEntries.map((bg: string) => {
+                            const titreMatch = bg.match(/titre:\s*([^,]*)/);
+                            const entrepriseMatch = bg.match(/entreprise:\s*([^,]*)/);
+                            const debutMatch = bg.match(/debut:\s*([^,]*)/);
+                            const finMatch = bg.match(/fin:\s*(.*)$/);
+                            
+                            return {
+                                titre: (titreMatch?.[1] || '').trim(),
+                                company: (entrepriseMatch?.[1] || '').trim(),
+                                startDate: (debutMatch?.[1] || '').trim(),
+                                endDate: (finMatch?.[1] || '').trim()
+                            };
+                        });
+                    } else if (data.backgroundExpertise && data.backgroundExpertise.includes(' / ')) {
+                        // Old format - backward compatibility
+                        const backgroundEntries = data.backgroundExpertise.split(' ;; ');
+                        this.backgroundList = backgroundEntries.map((bg: string) => {
+                            const parts = bg.split(' / ');
+                            return {
+                                titre: (parts[0] || '').trim(),
+                                company: (parts[1] || '').trim(),
+                                startDate: (parts[2] || '').trim().split('-')[0],
+                                endDate: (parts[2] || '').trim().split('-')[1]
+                            };
+                        });
+                    } else if (data.backgroundExpertise) {
+                        // Single background entry
+                        this.backgroundList = [{ 
+                            titre: data.backgroundExpertise, 
+                            company: '', 
+                            startDate: '', 
+                            endDate: '' 
+                        }];
+                    } else {
+                        this.backgroundList = [{ titre: '', company: '', startDate: '', endDate: '' }];
+                    }
+
+                    // Load passion and goals
+                    if (data.passionAndGoals) {
+                        this.passionAndGoals = data.passionAndGoals;
+                        this.isPassionSaved = true;
+                    }
+                    
+                    // Load localisation data if available
+                    if (data.localisation_id) {
+                        this.apiService.getLocalisation(data.localisation_id).subscribe({
+                            next: (locData: any) => {
+                                this.localisationData = locData;
+                                
+                                // Update map center if coordinates are available
+                                if (locData.latitude && locData.longitude) {
+                                    this.mapCenter = { lat: locData.latitude, lng: locData.longitude };
+                                    this.markerPosition = { lat: locData.latitude, lng: locData.longitude };
+                                }
+                                
+                                this.isLoading = false;
+                            },
+                            error: () => {
+                                this.isLoading = false;
+                            }
+                        });
+                    } else {
+                        this.isLoading = false;
+                    }
+                }
+            },
+            (err) => {
+                this.errorMessage = 'Erreur lors du chargement du profil candidat.';
+                this.isLoading = false;
+                console.error('Error loading other candidate data:', err);
             }
         );
     }
