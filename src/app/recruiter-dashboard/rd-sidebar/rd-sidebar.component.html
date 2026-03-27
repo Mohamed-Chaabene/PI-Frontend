@@ -1,0 +1,65 @@
+<div
+    class="sidebar-area"
+    [class.active]="classApplied"
+>
+    <ul class="ps-0 mb-0 list-unstyled">
+        <li>
+            <a routerLink="/recruiter-dashboard" class="d-block position-relative" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                <i class="ri-dashboard-line"></i>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <a routerLink="/recruiter-dashboard/post-job" class="d-block position-relative" routerLinkActive="active">
+                <i class="ri-add-circle-line"></i>
+                Post a Job
+            </a>
+        </li>
+        <li>
+            <a routerLink="/recruiter-dashboard/manage-jobs" class="d-block position-relative" routerLinkActive="active">
+                <i class="ri-file-list-line"></i>
+                Manage Jobs
+            </a>
+        </li>
+        <li>
+            <a routerLink="/recruiter-dashboard/applicants" class="d-block position-relative" routerLinkActive="active">
+                <i class="ri-user-line"></i>
+                Applicants
+            </a>
+        </li>
+        <li>
+            <a routerLink="/recruiter-dashboard/interviews" class="d-block position-relative" routerLinkActive="active">
+                <i class="ri-questionnaire-line"></i>
+                Interviews
+            </a>
+        </li>
+        <li>
+            <a routerLink="/recruiter-dashboard/messages" class="d-block position-relative" routerLinkActive="active">
+                <i class="ri-chat-1-line"></i>
+                Messages
+            </a>
+        </li>
+        <li>
+            <a routerLink="/recruiter-dashboard/profile" class="d-block position-relative" routerLinkActive="active">
+                <i class="ri-building-line"></i>
+                Company Profile
+            </a>
+        </li>
+        <li>
+            <a routerLink="/recruiter-dashboard/change-password" class="d-block position-relative" routerLinkActive="active">
+                <i class="ri-lock-line"></i>
+                Change Password
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Sidebar Button -->
+<div
+    class="sidebar-btn d-xl-none"
+    [class.active]="classApplied"
+>
+    <button (click)="toggleClass()">
+        <span>Menus</span>
+    </button>
+</div>
