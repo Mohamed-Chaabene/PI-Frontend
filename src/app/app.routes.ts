@@ -110,7 +110,12 @@ export const routes: Routes = [
             {path: 'interviews', component: RdInterviews},
             {path: 'interviews/add-questions/:id', component: RdAddQuestions},
         ]
-    },
+    },{
+  path: 'formations',
+  loadChildren: () =>
+    import('./formations/formations.module').then(m => m.FormationsModule)
+},
 
-    {path: '**', component: NotFoundComponent} // This line will remain down from the whole pages component list
+    {path: '**', component: NotFoundComponent}, // This line will remain down from the whole pages component list
+
 ];

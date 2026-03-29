@@ -1,0 +1,129 @@
+<app-navbar />
+
+<div class="page-banner-area">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8 col-md-12"><h1>Administration · Formations</h1></div>
+      <div class="col-lg-4 col-md-12">
+        <ul class="ps-0 mb-0 list-unstyled">
+          <li class="d-inline-block position-relative"><a routerLink="/">Home</a></li>
+          <li class="d-inline-block position-relative"><a routerLink="/formations">Formations</a></li>
+          <li class="d-inline-block position-relative">Admin</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="admin-formations-area">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="admin-header">
+      <h2 class="page-title">
+        Liste des formations
+        <span *ngIf="!loading">({{ formations.length }})</span>
+      </h2>
+      <a routerLink="/formations/admin/create" class="add-btn">
+        <i class="ri-add-line"></i> Ajouter une formation
+      </a>
+    </div>
+
+    <!-- Stats (Style B) -->
+    <div class="stats-row" *ngIf="!loading && formations.length">
+      <div class="stat-card">
+        <div class="stat-icon green">📚</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ formations.length }}</span>
+          <span class="stat-label">Total formations</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">✅</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ getCount('Disponible') }}</span>
+          <span class="stat-label">Disponibles</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">🕐</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ getCount('Bientôt') }}</span>
+          <span class="stat-label">Bientôt</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple">🗄️</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ getCount('Archivée') }}</span>
+          <span class="stat-label">Archivées</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tableau (Style B) -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <h3>Toutes les formations</h3>
+        <button type="button" class="refresh-btn" (click)="refresh()" [disabled]="loading">
+          <i class="ri-refresh-line me-1"></i> Actualiser
+        </button>
+      </div>
+
+      <div class="empty-state" *ngIf="loading">Chargement...</div>
+
+      <div class="empty-state" *ngIf="!loading && formations.length === 0">
+        Aucune formation. Commencez par en ajouter une.
+      </div>
+
+      <div class="table-responsive" *ngIf="!loading && formations.length">
+        <table>
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th>Catégorie</th>
+              <th>Niveau</th>
+              <th>Statut</th>
+              <th>Durée</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of formations">
+              <td class="td-title">{{ f.titre }}</td>
+              <td>{{ f.categorie }}</td>
+              <td>
+                <span class="tag" [ngClass]="getNiveauTag(f.niveau)">{{ f.niveau }}</span>
+              </td>
+              <td>
+                <span class="tag" [ngClass]="getStatutTag(f.statut)">{{ f.statut }}</span>
+              </td>
+              <td>{{ f.duree }}</td>
+              <td class="td-actions">
+                <a [routerLink]="['/formations/admin', f.id, 'participants']" class="action-btn btn-view">
+                  <i class="ri-group-line"></i> Participants
+                </a>
+                <a [routerLink]="['/formations/admin/edit', f.id]" class="action-btn btn-edit">
+                  <i class="ri-edit-line"></i> Modifier
+                </a>
+                <button
+                  type="button"
+                  class="action-btn btn-delete"
+                  (click)="delete(f.id)"
+                  [disabled]="deletingId === f.id"
+                >
+                  <i class="ri-delete-bin-line"></i>
+                  {{ deletingId === f.id ? '...' : 'Supprimer' }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-footer />
+<ngx-scrolltop />

@@ -1,0 +1,170 @@
+<app-navbar />
+
+<div class="page-banner-area">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8"><h1>{{ formation?.titre || 'Formation' }}</h1></div>
+      <div class="col-lg-4">
+        <ul class="ps-0 mb-0 list-unstyled">
+          <li class="d-inline-block position-relative"><a routerLink="/">Home</a></li>
+          <li class="d-inline-block position-relative"><a routerLink="/formations">Formations</a></li>
+          <li class="d-inline-block position-relative">Détails</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="formation-detail-area">
+  <div class="container">
+
+    <!-- Chargement -->
+    <div class="text-center py-5" *ngIf="loading">
+      <span class="text-muted">Chargement...</span>
+    </div>
+
+    <div class="row" *ngIf="!loading && formation">
+
+      <!-- ── Colonne principale ── -->
+      <div class="col-lg-8 col-md-12">
+
+        <!-- Card principale avec bandeau coloré -->
+        <div class="detail-main-card">
+
+          <!-- Bandeau coloré -->
+          <div class="detail-banner" [ngClass]="getCatClass(formation.categorie)">
+            <span class="banner-emoji">{{ getIconEmoji(formation.categorie) }}</span>
+          </div>
+
+          <!-- Corps -->
+          <div class="detail-card-body">
+            <h1 class="detail-title">{{ formation.titre }}</h1>
+
+            <div class="detail-meta">
+              <span><i class="ri-folder-line"></i> {{ formation.categorie }}</span>
+              <span><i class="ri-global-line"></i> {{ formation.plateforme }}</span>
+              <span><i class="ri-time-line"></i> {{ formation.duree }}</span>
+            </div>
+
+            <!-- Badges : même style bleu/blanc pour niveau, statut et plateforme -->
+            <div class="badges-row">
+              <span class="detail-badge badge-blue">{{ formation.niveau }}</span>
+              <span class="detail-badge badge-blue">{{ formation.statut }}</span>
+              <span class="detail-badge badge-blue">{{ formation.plateforme }}</span>
+            </div>
+
+            <!-- Zone action -->
+            <div class="action-zone">
+
+              <!-- Candidat : S'inscrire -->
+              <ng-container *ngIf="!isAdmin">
+                <button
+                  *ngIf="!inscrit"
+                  type="button"
+                  class="btn-inscrire"
+                  (click)="sInscrire()"
+                  [disabled]="inscribing"
+                >
+                  {{ inscribing ? 'Inscription en cours...' : "S'inscrire à cette formation" }}
+                </button>
+
+                <button *ngIf="inscrit" type="button" class="btn-inscrire inscrit" disabled>
+                  ✓ Inscrit
+                </button>
+
+                <div class="alert-success-inline" *ngIf="inscrit">
+                  <i class="ri-checkbox-circle-line"></i>
+                  Inscription réussie ! Retrouvez-la dans vos formations.
+                </div>
+              </ng-container>
+
+              <!-- Admin : Modifier -->
+              <a *ngIf="isAdmin" [routerLink]="['/formations/admin/edit', formation.id]" class="btn-modifier">
+                <i class="ri-edit-line"></i> Modifier cette formation
+              </a>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Compétences acquises -->
+        <div class="competences-card" *ngIf="formation.competences?.length">
+          <h3>Compétences acquises</h3>
+          <ul class="competences-list">
+            <li *ngFor="let c of formation.competences">{{ c.nom }}</li>
+          </ul>
+        </div>
+
+        <!-- Alerte lien participants pour admin -->
+        <div class="admin-alert" *ngIf="isAdmin">
+          <i class="ri-group-line"></i>
+          <span>
+            Voir les participants inscrits →
+            <a [routerLink]="['/formations/admin', formation.id, 'participants']">
+              Accéder à la liste
+            </a>
+          </span>
+        </div>
+
+      </div>
+
+      <!-- ── Sidebar ── -->
+      <div class="col-lg-4 col-md-12">
+        <div class="sidebar-area">
+
+          <!-- Fiche infos -->
+          <div class="sidebar-info-card">
+            <div class="sidebar-card-header">
+              <h4>Informations</h4>
+            </div>
+            <div class="sidebar-card-body">
+              <div class="info-row">
+                <span class="info-label"><i class="ri-time-line"></i> Durée</span>
+                <span class="info-value">{{ formation.duree }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label"><i class="ri-bar-chart-line"></i> Niveau</span>
+                <span class="info-value">{{ formation.niveau }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label"><i class="ri-folder-line"></i> Catégorie</span>
+                <span class="info-value">{{ formation.categorie }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label"><i class="ri-global-line"></i> Plateforme</span>
+                <span class="info-value">{{ formation.plateforme }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label"><i class="ri-checkbox-circle-line"></i> Statut</span>
+                <span class="info-value">{{ formation.statut }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions admin -->
+          <div class="sidebar-actions-card" *ngIf="isAdmin">
+            <a routerLink="/formations/admin" class="sidebar-action-btn btn-secondary-action">
+              <i class="ri-arrow-left-line"></i> Retour
+            </a>
+          </div>
+
+          <!-- Retour liste pour non-admin -->
+          <div class="sidebar-actions-card" *ngIf="!isAdmin">
+            <a routerLink="/formations" class="sidebar-action-btn btn-secondary-action">
+              <i class="ri-arrow-left-line"></i> Retour à la liste
+            </a>
+            <a *ngIf="!inscrit" routerLink="/formations/mes-formations" class="sidebar-action-btn btn-outline-action">
+              <i class="ri-book-open-line"></i> Mes formations
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<app-subscribe />
+<app-footer />
+<ngx-scrolltop />
