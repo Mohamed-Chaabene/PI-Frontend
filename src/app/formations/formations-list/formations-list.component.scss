@@ -1,0 +1,414 @@
+// ─── Variables ────────────────────────────────────────────────────────────────
+$primary:       #0965A4;
+$primary-light: #E1F5EE;
+$primary-dark:  #0965A4;
+$accent:        #85B7EB;
+$text-main:     #1a1a2e;
+$text-muted:    #6b7280;
+$text-light:    #9ca3af;
+$border:        #e5e7eb;
+$bg-page:       #f8fafc;
+$bg-card:       #ffffff;
+$radius-card:   16px;
+$radius-pill:   50px;
+$shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+$shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+
+// ─── Page background ──────────────────────────────────────────────────────────
+.formations-area {
+  background: $bg-page;
+  padding-top: 0 !important;
+
+  // ─── Hero banner (Style C) ─────────────────────────────────────────────────
+  .formations-hero {
+    background: linear-gradient(135deg, $primary 0%, $accent 60%, #85B7EB 100%);
+    border-radius: 0 0 32px 32px;
+    padding: 48px 0 56px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -40px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .hero-content {
+      position: relative; z-index: 1;
+    }
+
+    .hero-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.82);
+      margin-bottom: 0;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 32px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .hero-stat {
+      text-align: center;
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fff;
+        display: block;
+        line-height: 1;
+      }
+
+      .stat-label {
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.75);
+        margin-top: 4px;
+        display: block;
+      }
+    }
+
+    // Barre de recherche intégrée dans le hero
+    .hero-search {
+      margin-top: 28px;
+      display: flex;
+      gap: 10px;
+
+      .search-input-wrap {
+        flex: 1;
+        position: relative;
+
+        i {
+          position: absolute;
+          left: 16px; top: 50%;
+          transform: translateY(-50%);
+          color: $text-muted;
+          font-size: 16px;
+        }
+
+        input {
+          width: 100%;
+          padding: 14px 16px 14px 44px;
+          border: none;
+          border-radius: 12px;
+          font-size: 0.95rem;
+          background: rgba(255,255,255,0.95);
+          color: $text-main;
+          outline: none;
+          transition: box-shadow 0.2s;
+
+          &:focus {
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.4);
+          }
+
+          &::placeholder { color: $text-light; }
+        }
+      }
+
+      .search-btn {
+        padding: 14px 28px;
+        background: $primary-dark;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.15s;
+        white-space: nowrap;
+
+        &:hover { background: #0965A4; transform: translateY(-1px); }
+        &:active { transform: translateY(0); }
+      }
+    }
+  }
+
+  // ─── Filtres chips (Style C) ───────────────────────────────────────────────
+  .formations-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+
+    .filter-chip {
+      padding: 7px 18px;
+      border-radius: $radius-pill;
+      border: 1.5px solid $border;
+      background: $bg-card;
+      color: $text-muted;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        border-color: $primary;
+        color: $primary;
+        background: $primary-light;
+      }
+
+      &.active {
+        background: $primary;
+        border-color: $primary;
+        color: #fff;
+        font-weight: 600;
+      }
+    }
+  }
+
+  // ─── Cards formations (Style A) ────────────────────────────────────────────
+  .formation-card {
+    background: $bg-card;
+    border: 1px solid $border;
+    border-radius: $radius-card;
+    box-shadow: $shadow-card;
+    overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    cursor: pointer;
+    height: 100%;
+    text-align: left !important;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: $shadow-hover;
+      border-color: rgba($primary, 0.25);
+    }
+
+    // Bandeau coloré en haut de la card
+    .card-top-banner {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+
+      &.cat-dev     { background: linear-gradient(135deg, #EAF3DE, #85B7EB); }
+      &.cat-frontend { background: linear-gradient(135deg, #E6F1FB, #B5D4F4); }
+      &.cat-backend  { background: linear-gradient(135deg, #FAEEDA, #FAC775); }
+      &.cat-ia       { background: linear-gradient(135deg, #EEEDFE, #CECBF6); }
+      &.cat-data     { background: linear-gradient(135deg, #E6F1FB, #85B7EB); }
+      &.cat-design   { background: linear-gradient(135deg, #FBEAF0, #F4C0D1); }
+      &.cat-devops   { background: linear-gradient(135deg, #F1EFE8, #D3D1C7); }
+      &.cat-default  { background: linear-gradient(135deg, #EAF3DE, #85B7EB); }
+
+      .cat-emoji {
+        font-size: 36px;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+      }
+
+      // Badge statut en haut à droite
+      .statut-badge {
+        position: absolute;
+        top: 10px; right: 10px;
+        padding: 3px 10px;
+        border-radius: $radius-pill;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+
+        &.disponible { background: #EAF3DE; color: #0965A4; }
+        &.bientot    { background: #FAEEDA; color: #633806; }
+        &.archivee   { background: #F1EFE8; color: #5F5E5A; }
+      }
+    }
+
+    .card-body {
+      padding: 16px;
+
+      .card-plateforme {
+        font-size: 0.72rem;
+        color: $text-light;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+
+      .card-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: $text-main;
+        margin-bottom: 6px;
+        line-height: 1.35;
+
+        a {
+          color: inherit;
+          text-decoration: none;
+          &:hover { color: $primary; }
+        }
+      }
+
+      .card-meta {
+        font-size: 0.82rem;
+        color: $text-muted;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        i { font-size: 14px; color: $text-light; }
+      }
+    }
+
+    .card-footer {
+      padding: 12px 16px;
+      border-top: 1px solid $border;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .niveau-badge {
+        padding: 4px 10px;
+        border-radius: $radius-pill;
+        font-size: 0.75rem;
+        font-weight: 600;
+
+        &.debutant      { background: #EAF3DE; color: #0965A4; }
+        &.intermediaire { background: #E6F1FB; color: #0C447C; }
+        &.avance        { background: #FAEEDA; color: #633806; }
+        &.expert        { background: #EEEDFE; color: #0965A4; }
+      }
+
+      .voir-btn {
+        font-size: 0.82rem;
+        color: $primary;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: gap 0.2s;
+
+        &:hover { gap: 8px; }
+        i { font-size: 14px; }
+      }
+    }
+  }
+
+  // ─── Sidebar (Style B + A) ─────────────────────────────────────────────────
+  .sidebar-area {
+
+    .sidebar-card {
+      background: $bg-card;
+      border: 1px solid $border;
+      border-radius: $radius-card;
+      box-shadow: $shadow-card;
+      padding: 24px;
+      margin-bottom: 20px;
+
+      h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: $text-main;
+        margin-bottom: 8px;
+      }
+
+      p {
+        font-size: 0.875rem;
+        color: $text-muted;
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+
+      .sidebar-btn {
+        display: block;
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 10px;
+
+        &.btn-primary {
+          background: $primary;
+          color: #fff;
+          border: none;
+          &:hover { background: $primary-dark; transform: translateY(-1px); }
+        }
+
+        &.btn-outline {
+          background: transparent;
+          color: $primary;
+          border: 1.5px solid $primary;
+          &:hover { background: $primary-light; }
+        }
+
+        &:last-child { margin-bottom: 0; }
+      }
+    }
+
+    // Stats pour admin (Style B)
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+
+      .stat-card {
+        background: $bg-card;
+        border: 1px solid $border;
+        border-radius: 12px;
+        padding: 14px;
+        text-align: center;
+
+        .stat-value {
+          font-size: 1.6rem;
+          font-weight: 700;
+          color: $primary;
+          display: block;
+          line-height: 1;
+        }
+
+        .stat-label {
+          font-size: 0.72rem;
+          color: $text-muted;
+          margin-top: 4px;
+          display: block;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  // ─── Chargement / vide ─────────────────────────────────────────────────────
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+
+    p {
+      color: $text-muted;
+      font-size: 0.95rem;
+    }
+  }
+}
