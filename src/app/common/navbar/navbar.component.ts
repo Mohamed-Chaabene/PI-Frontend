@@ -339,9 +339,9 @@ export class NavbarComponent implements OnInit {
         }
 
         if (normalizedRole === 'ADMIN') {
-            console.log('Redirecting to home (ADMIN)');
-            this.router.navigate(['/']);
-            return;
+           console.log('Redirecting ADMIN to admin-dashboard');
+           this.router.navigate(['/admin-dashboard']);
+           return;
         }
 
         console.log('No matching role case. Default redirect to home. Role was:', normalizedRole);

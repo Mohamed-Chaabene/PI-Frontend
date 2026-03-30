@@ -108,6 +108,15 @@ import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-passw
 import { HometwoBannerComponent } from './pages/home-demo-two/hometwo-banner/hometwo-banner.component';
 import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-banner/homethree-banner.component';
 
+// ADMIN
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { AdHeaderComponent } from './admin-dashboard/ad-header/ad-header.component';
+import { AdSidebarComponent } from './admin-dashboard/ad-sidebar/ad-sidebar.component';
+import { AdFooterComponent } from './admin-dashboard/ad-footer/ad-footer.component';
+import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboard.component';
+import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
+import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
+
 @NgModule({
     declarations: [
         App,
@@ -191,7 +200,14 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         RdProfileComponent,
         RdChangePasswordComponent,
         HometwoBannerComponent,
-        HomethreeBannerComponent
+        HomethreeBannerComponent,
+        AdminDashboardComponent,
+        AdHeaderComponent,
+        AdSidebarComponent,
+        AdFooterComponent,
+        AdDashboardComponent,
+        PartenaireListComponent,
+        OffreListComponent
     ],
     imports: [
         BrowserModule,
