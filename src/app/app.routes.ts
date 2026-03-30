@@ -47,6 +47,12 @@ import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 import { RdInterviews } from './recruiter-dashboard/rd-interviews/rd-interviews';
 import { RdAddQuestions } from './recruiter-dashboard/rd-add-questions/rd-add-questions';
+import { EvenementDashboardComponent } from './evenement-dashboard/evenement-dashboard.component';
+import { EvenementTemplateComponent } from './evenement-dashboard/evenement-template/evenement-template.component';
+import { EvenementFormComponent } from './evenement-dashboard/evenement-form/evenement-form';
+import { EvenementListComponent } from './evenement-dashboard/evenement-list/evenement-list.component';
+import { EvenementEditComponent } from './evenement-dashboard/evenement-edit/evenement-edit.component';
+import { EvenementDetailComponent } from './evenement-dashboard/evenement-detail/evenement-detail.component';
 
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
@@ -111,6 +117,20 @@ export const routes: Routes = [
             {path: 'interviews/add-questions/:id', component: RdAddQuestions},
         ]
     },
+
+    {path: 'evenement-dashboard', component: EvenementDashboardComponent,
+        children: [
+      { path: '', component: EvenementTemplateComponent},
+      {path: 'ajouter', component: EvenementFormComponent}, 
+      {path: 'liste', component: EvenementListComponent},
+      {path: 'modifier/:id', component: EvenementEditComponent},
+      {path: 'detail/:id', component: EvenementDetailComponent},
+      
+    ]
+    }, 
+
+
+
 
     {path: '**', component: NotFoundComponent} // This line will remain down from the whole pages component list
 ];

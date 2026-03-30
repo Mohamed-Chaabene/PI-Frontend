@@ -332,7 +332,7 @@ export class NavbarComponent implements OnInit {
             return;
         }
 
-        if (normalizedRole === 'RECRUTEUR' || normalizedRole === 'CLIENT_FREELANCE' || normalizedRole === 'ORGANISATEUR') {
+        if (normalizedRole === 'RECRUTEUR' || normalizedRole === 'CLIENT_FREELANCE' ) {
             console.log('Redirecting to recruiter-dashboard');
             this.router.navigate(['/recruiter-dashboard']);
             return;
@@ -343,6 +343,12 @@ export class NavbarComponent implements OnInit {
             this.router.navigate(['/']);
             return;
         }
+
+        if (normalizedRole === 'ORGANISATEUR') {
+    console.log('Redirecting to evenement-dashboard');
+    this.router.navigate(['/evenement-dashboard']); // ✅
+    return;
+}
 
         console.log('No matching role case. Default redirect to home. Role was:', normalizedRole);
         this.router.navigate(['/']);
@@ -557,6 +563,8 @@ export class NavbarComponent implements OnInit {
     closeUserDropdown(): void {
         this.userDropdownOpen = false;
     }
+
+    
 
 }
 

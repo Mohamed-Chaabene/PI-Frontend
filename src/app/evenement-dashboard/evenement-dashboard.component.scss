@@ -1,0 +1,25 @@
+.evenement-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+        font-size: 35px;
+        color: var(--primaryColor);
+    }
+}
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    margin-left: 270px;
+    padding: 30px;
+    flex: 1;
+    background-color: #f4f7fb;
+
+    @media only screen and (max-width: 1199px) {
+        margin-left: 0;
+    }
+}

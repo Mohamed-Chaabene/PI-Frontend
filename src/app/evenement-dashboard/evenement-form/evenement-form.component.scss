@@ -1,0 +1,133 @@
+.form-control, .form-select {
+    height: 55px;
+    border-radius: 8px;
+    border: 1px solid var(--borderColor);
+    color: var(--bodyColor);
+    font-size: var(--fontSize);
+    padding: 10px 20px;
+
+    &:focus {
+        border-color: var(--primaryColor);
+        box-shadow: none;
+    }
+}
+
+.form-label {
+    margin-bottom: 8px;
+    color: var(--headingColor);
+}
+
+.btn-submit {
+    height: 50px;
+    border: none;
+    cursor: pointer;
+    padding: 0 30px;
+    border-radius: 8px;
+    font-size: var(--fontSize);
+    color: var(--whiteColor);
+    background-color: var(--primaryColor);
+    transition: var(--transition);
+
+    i { margin-right: 5px; }
+
+    &:hover {
+        background-color: var(--secondaryColor);
+    }
+}
+
+.btn-cancel {
+    height: 50px;
+    border: none;
+    cursor: pointer;
+    padding: 0 30px;
+    border-radius: 8px;
+    font-size: var(--fontSize);
+    color: var(--headingColor);
+    background-color: #f4f7fb;
+    transition: var(--transition);
+
+    i { margin-right: 5px; }
+
+    &:hover {
+        color: var(--whiteColor);
+        background-color: var(--secondaryColor);
+    }
+}
+
+.error-msg {
+    color: #d8342b;
+    font-size: 13px;
+    margin-top: 5px;
+
+    span {
+        display: block;
+
+        i {
+            margin-right: 3px;
+        }
+    }
+}
+
+.form-control, .form-select {
+    height: 55px;
+    border-radius: 8px;
+    border: 1px solid var(--borderColor);
+    color: var(--bodyColor);
+    font-size: var(--fontSize);
+    padding: 10px 20px;
+
+    &:focus {
+        box-shadow: none;
+    }
+
+    // ✅ Valide
+    &.is-valid {
+        border-color: var(--primaryColor);
+    }
+
+    // ❌ Invalide
+    &.is-invalid {
+        border-color: #d8342b;
+    }
+}
+
+.btn-submit {
+    height: 50px;
+    border: none;
+    cursor: pointer;
+    padding: 0 30px;
+    border-radius: 8px;
+    font-size: var(--fontSize);
+    color: var(--whiteColor);
+    background-color: var(--primaryColor);
+    transition: var(--transition);
+
+    i { margin-right: 5px; }
+
+    &:hover { background-color: var(--secondaryColor); }
+
+    // ✅ Désactivé si formulaire invalide
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.btn-cancel {
+    height: 50px;
+    border: none;
+    cursor: pointer;
+    padding: 0 30px;
+    border-radius: 8px;
+    font-size: var(--fontSize);
+    color: var(--headingColor);
+    background-color: #f4f7fb;
+    transition: var(--transition);
+
+    i { margin-right: 5px; }
+
+    &:hover {
+        color: var(--whiteColor);
+        background-color: var(--secondaryColor);
+    }
+}

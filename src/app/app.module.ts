@@ -108,6 +108,20 @@ import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-passw
 import { HometwoBannerComponent } from './pages/home-demo-two/hometwo-banner/hometwo-banner.component';
 import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-banner/homethree-banner.component';
 
+// evenement components
+import { EvenementSidebarComponent } from './evenement-dashboard/evenement-sidebar/evenement-sidebar.component';
+import { EvenementDashboardComponent } from './evenement-dashboard/evenement-dashboard.component';
+import { EvenementFormComponent } from './evenement-dashboard/evenement-form/evenement-form';
+import { EvenementListComponent } from './evenement-dashboard/evenement-list/evenement-list.component';
+import { EvenementEditComponent } from './evenement-dashboard/evenement-edit/evenement-edit.component';
+import { EvenementDetailComponent } from './evenement-dashboard/evenement-detail/evenement-detail.component';
+import { DatePipe } from '@angular/common';
+import { LOCALE_ID } from '@angular/core';
+import localeFr from '@angular/common/locales/fr';
+import { registerLocaleData } from '@angular/common';
+
+
+
 @NgModule({
     declarations: [
         App,
@@ -191,7 +205,17 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         RdProfileComponent,
         RdChangePasswordComponent,
         HometwoBannerComponent,
-        HomethreeBannerComponent
+        HomethreeBannerComponent,
+        EvenementDashboardComponent,
+        EvenementSidebarComponent,
+        EvenementFormComponent,
+        EvenementListComponent, 
+        EvenementEditComponent,
+        EvenementDetailComponent,
+        
+        
+        
+        
     ],
     imports: [
         BrowserModule,
@@ -205,10 +229,16 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         NgApexchartsModule,
         NgxScrollTopModule,
         GoogleMapsModule,
-        FileUploadComponent
+        FileUploadComponent,
+        FormsModule,
+        
+        
     ],
     providers: [
-        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+        DatePipe,
+        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+        { provide: LOCALE_ID, useValue: 'fr' }, 
+        
     ],
     bootstrap: [App]
 })

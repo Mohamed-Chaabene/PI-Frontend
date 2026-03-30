@@ -1,0 +1,73 @@
+<!-- Title -->
+<div class="breadcrumb-title">
+    <h1 class="mb-0 fw-semibold">Liste des Événements</h1>
+</div>
+
+<!-- Loading -->
+<div *ngIf="loading" class="text-center py-4">
+    <p>Chargement...</p>
+</div>
+
+<!-- Erreur -->
+<div class="alert alert-danger" *ngIf="error">
+    Erreur lors du chargement des événements !
+</div>
+
+<!-- Liste -->
+<div class="row" *ngIf="!loading && !error">
+
+    <div class="col-lg-6 col-md-6" *ngFor="let evenement of evenements">
+        <div class="job-item text-center overflow-hidden position-relative">
+            <div class="content">
+
+                <!-- Icône événement -->
+                <div class="company-logo">
+                    <i class="ri-calendar-event-line" style="font-size: 40px; color: var(--primaryColor); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
+                </div>
+
+                <h3 class="fw-semibold">{{ evenement.titre }}</h3>
+
+                <span class="location d-block">
+                    <i class="ri-map-pin-line"></i> {{ evenement.lieu }}
+                </span>
+
+                <div class="d-flex justify-content-center align-items-center">
+                    <span class="job-type d-block">{{ evenement.type }}</span>
+                    <span class="deadline d-block">
+                        <span class="fw-medium">Date:</span>
+                        {{ evenement.date }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="info d-flex align-items-center justify-content-between">
+                <span class="salary d-block">
+                    <span class="fw-semibold">Organisateur:</span>
+                    <span>{{ evenement.nomOrganisateur }}</span>
+                </span>
+                <span class="deadline d-block">
+                    <a class="link-btn d-inline-block position-relative" (click)="voir(evenement.id)" style="cursor: pointer;">
+                        Voir détails <i class="ri-arrow-right-line"></i>
+                    </a>
+                </span>
+            </div>
+
+            <!-- Boutons actions -->
+            <div class="actions-btns">
+                <button type="button" class="fav" (click)="modifier(evenement.id)" title="Modifier">
+                    <i class="ri-edit-line"></i>
+                </button>
+                <button type="button" class="fav delete" (click)="supprimer(evenement.id)" title="Supprimer">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Liste vide -->
+    <div class="col-12" *ngIf="evenements.length === 0">
+        <p class="text-center py-4">Aucun événement trouvé.</p>
+    </div>
+
+</div>
