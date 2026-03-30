@@ -18,7 +18,6 @@
 <div class="formation-detail-area">
   <div class="container">
 
-    <!-- Chargement -->
     <div class="text-center py-5" *ngIf="loading">
       <span class="text-muted">Chargement...</span>
     </div>
@@ -28,15 +27,11 @@
       <!-- ── Colonne principale ── -->
       <div class="col-lg-8 col-md-12">
 
-        <!-- Card principale avec bandeau coloré -->
         <div class="detail-main-card">
-
-          <!-- Bandeau coloré -->
           <div class="detail-banner" [ngClass]="getCatClass(formation.categorie)">
             <span class="banner-emoji">{{ getIconEmoji(formation.categorie) }}</span>
           </div>
 
-          <!-- Corps -->
           <div class="detail-card-body">
             <h1 class="detail-title">{{ formation.titre }}</h1>
 
@@ -46,39 +41,40 @@
               <span><i class="ri-time-line"></i> {{ formation.duree }}</span>
             </div>
 
-            <!-- Badges : même style bleu/blanc pour niveau, statut et plateforme -->
             <div class="badges-row">
-              <span class="detail-badge badge-blue">{{ formation.niveau }}</span>
-              <span class="detail-badge badge-blue">{{ formation.statut }}</span>
+              <span class="detail-badge" [ngClass]="getNiveauBadge(formation.niveau)">{{ formation.niveau }}</span>
+              <span class="detail-badge" [ngClass]="formation.statut === 'Disponible' ? 'badge-green' : 'badge-amber'">{{ formation.statut }}</span>
               <span class="detail-badge badge-blue">{{ formation.plateforme }}</span>
             </div>
 
-            <!-- Zone action -->
+            <!-- ══ Zone action selon rôle et état d'inscription ══ -->
             <div class="action-zone">
 
-              <!-- Candidat : S'inscrire -->
-              <ng-container *ngIf="!isAdmin">
+              <!-- Candidat non inscrit → bouton S'inscrire -->
+              <ng-container *ngIf="!isAdmin && !inscrit">
                 <button
-                  *ngIf="!inscrit"
                   type="button"
                   class="btn-inscrire"
                   (click)="sInscrire()"
                   [disabled]="inscribing"
                 >
+                  <i class="ri-bookmark-line me-2"></i>
                   {{ inscribing ? 'Inscription en cours...' : "S'inscrire à cette formation" }}
                 </button>
-
-                <button *ngIf="inscrit" type="button" class="btn-inscrire inscrit" disabled>
-                  ✓ Inscrit
-                </button>
-
-                <div class="alert-success-inline" *ngIf="inscrit">
-                  <i class="ri-checkbox-circle-line"></i>
-                  Inscription réussie ! Retrouvez-la dans vos formations.
-                </div>
               </ng-container>
 
-              <!-- Admin : Modifier -->
+              <!-- ✅ Candidat déjà inscrit → badge "Inscrit" sans bouton -->
+              <ng-container *ngIf="!isAdmin && inscrit">
+                <div class="inscrit-badge">
+                  <i class="ri-checkbox-circle-fill"></i>
+                  Vous êtes inscrit à cette formation
+                </div>
+                <a routerLink="/formations/mes-formations" class="btn-mes-formations">
+                  <i class="ri-book-open-line me-1"></i> Voir ma progression
+                </a>
+              </ng-container>
+
+              <!-- Admin → bouton Modifier -->
               <a *ngIf="isAdmin" [routerLink]="['/formations/admin/edit', formation.id]" class="btn-modifier">
                 <i class="ri-edit-line"></i> Modifier cette formation
               </a>
@@ -87,7 +83,7 @@
           </div>
         </div>
 
-        <!-- Compétences acquises -->
+        <!-- Compétences -->
         <div class="competences-card" *ngIf="formation.competences?.length">
           <h3>Compétences acquises</h3>
           <ul class="competences-list">
@@ -95,15 +91,9 @@
           </ul>
         </div>
 
-        <!-- Alerte lien participants pour admin -->
-        <div class="admin-alert" *ngIf="isAdmin">
-          <i class="ri-group-line"></i>
-          <span>
-            Voir les participants inscrits →
-            <a [routerLink]="['/formations/admin', formation.id, 'participants']">
-              Accéder à la liste
-            </a>
-          </span>
+        <!-- ✅ Feedbacks (composant intégré) -->
+        <div class="feedback-wrapper">
+          <app-feedback-candidat [formationId]="formation.id"></app-feedback-candidat>
         </div>
 
       </div>
@@ -114,9 +104,7 @@
 
           <!-- Fiche infos -->
           <div class="sidebar-info-card">
-            <div class="sidebar-card-header">
-              <h4>Informations</h4>
-            </div>
+            <div class="sidebar-card-header"><h4>Informations</h4></div>
             <div class="sidebar-card-body">
               <div class="info-row">
                 <span class="info-label"><i class="ri-time-line"></i> Durée</span>
@@ -143,18 +131,22 @@
 
           <!-- Actions admin -->
           <div class="sidebar-actions-card" *ngIf="isAdmin">
+            <h4>Actions admin</h4>
+            <a [routerLink]="['/formations/admin', formation.id, 'participants']" class="sidebar-action-btn btn-outline-action">
+              <i class="ri-group-line"></i> Participants
+            </a>
+            <a [routerLink]="['/formations/admin', formation.id, 'feedbacks']" class="sidebar-action-btn btn-outline-action">
+              <i class="ri-chat-3-line"></i> Feedbacks
+            </a>
             <a routerLink="/formations/admin" class="sidebar-action-btn btn-secondary-action">
-              <i class="ri-arrow-left-line"></i> Retour
+              <i class="ri-arrow-left-line"></i> Retour admin
             </a>
           </div>
 
-          <!-- Retour liste pour non-admin -->
+          <!-- Retour liste -->
           <div class="sidebar-actions-card" *ngIf="!isAdmin">
             <a routerLink="/formations" class="sidebar-action-btn btn-secondary-action">
               <i class="ri-arrow-left-line"></i> Retour à la liste
-            </a>
-            <a *ngIf="!inscrit" routerLink="/formations/mes-formations" class="sidebar-action-btn btn-outline-action">
-              <i class="ri-book-open-line"></i> Mes formations
             </a>
           </div>
 

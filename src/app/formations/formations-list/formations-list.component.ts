@@ -22,12 +22,18 @@ export class FormationsListComponent implements OnInit {
   ngOnInit(): void {
     const role = (localStorage.getItem('userRole') || '').toUpperCase().replace('ROLE_', '');
     this.isAdmin = role === 'ADMIN';
+    this.load();
+  }
+
+  private load(): void {
     this.loading = true;
+    // ✅ L'API publique ne retourne déjà plus les archivées
     this.formationService.getAllFormations().subscribe({
       next: (data: Formation[]) => {
-        this.formations = data;
-        this.filtered = data;
-        this.loading = false;
+        // Double sécurité : filtre côté client aussi
+        this.formations = data.filter(f => f.statut !== 'Archivée');
+        this.filtered   = [...this.formations];
+        this.loading    = false;
       },
       error: () => this.loading = false
     });
@@ -57,47 +63,35 @@ export class FormationsListComponent implements OnInit {
     return this.formations.filter(f => f.statut === 'Disponible').length;
   }
 
-  // ── Emoji par catégorie ──────────────────────────────────────────────────
   getIconEmoji(categorie: string): string {
     const map: Record<string, string> = {
-      'Data': '🐍', 'Frontend': '⚡', 'Backend': '☕',
-      'IA': '🤖', 'Design': '🎨', 'DevOps': '⚙️',
+      'Data': '📊', 'Frontend': '⚡', 'Backend': '🔧',
+      'IA': '🤖', 'Design': '🎨', 'DevOps': '🚀',
       'Développement': '💻', 'Mobile': '📱', 'Cloud': '☁️'
     };
     return map[categorie] || '📚';
   }
 
-  // ── Classe CSS du bandeau de card selon catégorie ────────────────────────
   getCatClass(categorie: string): string {
     const map: Record<string, string> = {
-      'Développement': 'cat-dev',
-      'Frontend':      'cat-frontend',
-      'Backend':       'cat-backend',
-      'IA':            'cat-ia',
-      'Data':          'cat-data',
-      'Design':        'cat-design',
-      'DevOps':        'cat-devops'
+      'Développement': 'cat-dev', 'Frontend': 'cat-frontend',
+      'Backend': 'cat-backend',   'IA': 'cat-ia',
+      'Data': 'cat-data',         'Design': 'cat-design', 'DevOps': 'cat-devops'
     };
     return map[categorie] || 'cat-default';
   }
 
-  // ── Classe CSS du badge statut ───────────────────────────────────────────
   getStatutClass(statut: string): string {
     const map: Record<string, string> = {
-      'Disponible': 'disponible',
-      'Bientôt':    'bientot',
-      'Archivée':   'archivee'
+      'Disponible': 'disponible', 'Bientôt': 'bientot', 'Archivée': 'archivee'
     };
     return map[statut] || 'disponible';
   }
 
-  // ── Classe CSS du badge niveau ───────────────────────────────────────────
   getNiveauClass(niveau: string): string {
     const map: Record<string, string> = {
-      'Débutant':      'debutant',
-      'Intermédiaire': 'intermediaire',
-      'Avancé':        'avance',
-      'Expert':        'expert'
+      'Débutant': 'debutant', 'Intermédiaire': 'intermediaire',
+      'Avancé': 'avance',     'Expert': 'expert'
     };
     return map[niveau] || 'debutant';
   }
