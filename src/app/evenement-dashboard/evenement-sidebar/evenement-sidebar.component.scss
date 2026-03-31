@@ -185,3 +185,38 @@
     }
 
 }
+
+.sidebar-area {
+    background-color: #1a6b3c; 
+
+    ul {
+        li {
+            a {
+                color: var(--whiteColor); 
+
+                i {
+                    color: var(--whiteColor); 
+                }
+
+                &:hover, &.active {
+                    background-color: var(--whiteColor); 
+                    color: #1a6b3c; 
+
+                    i {
+                        color: #1a6b3c; 
+                    }
+                }
+            }
+        }
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+    }
+}
+
+.sidebar-btn {
+    button {
+        background-color: #1a6b3c;
+    }
+}

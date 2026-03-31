@@ -119,6 +119,8 @@ import { DatePipe } from '@angular/common';
 import { LOCALE_ID } from '@angular/core';
 import localeFr from '@angular/common/locales/fr';
 import { registerLocaleData } from '@angular/common';
+import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header/evenement-header.component';
+
 
 
 
@@ -212,7 +214,7 @@ import { registerLocaleData } from '@angular/common';
         EvenementListComponent, 
         EvenementEditComponent,
         EvenementDetailComponent,
-        
+        EvenementHeaderComponent,
         
         
         
@@ -231,6 +233,7 @@ import { registerLocaleData } from '@angular/common';
         GoogleMapsModule,
         FileUploadComponent,
         FormsModule,
+        
         
         
     ],

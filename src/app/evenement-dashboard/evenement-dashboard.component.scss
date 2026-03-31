@@ -23,3 +23,20 @@
         margin-left: 0;
     }
 }
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    margin-top: 80px; // ✅ pour ne pas être caché par le header
+}
+
+.main-content {
+    margin-left: 270px;
+    padding: 30px;
+    flex: 1;
+    background-color: #f4f7fb;
+
+    @media only screen and (max-width: 1199px) {
+        margin-left: 0;
+    }
+}
