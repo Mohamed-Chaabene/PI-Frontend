@@ -799,11 +799,95 @@
                         </span>
                     </div>
                 </div>
-                <div class="interview-footer">
+                <div class="interview-footer d-flex gap-2">
                     <button type="button" class="btn btn-sm btn-outline-primary" (click)="startInterview(entretien)">
                         <i class="ri-play-circle-line"></i> Passer l'entretien
                     </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="viewQuestions(entretien)">
+                        <i class="ri-question-line"></i> Questions
+                    </button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="selectedInterview" class="jove-card mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="ri-interview-line"></i> {{ selectedInterview.titre || 'Entretien' }}
+            </h5>
+            <button type="button" class="btn btn-sm btn-light" (click)="closeInterview()">
+                <i class="ri-close-line"></i> Fermer
+            </button>
+        </div>
+        <div class="card-body">
+            <p><strong>Type:</strong> {{ selectedInterview.type || '-' }}</p>
+            <p><strong>Date:</strong> {{ selectedInterview.dateEntretien | date:'dd/MM/yyyy HH:mm' }}</p>
+            <p><strong>Description:</strong> {{ selectedInterview.description || 'Aucune description' }}</p>
+
+            <div *ngIf="latestResult && latestResult.entretienId === selectedInterview.id" class="alert alert-success">
+                <strong>Résultat final :</strong> Score {{ latestResult.score?.toFixed(2) || 0}}% / Décision : {{ latestResult.decision || 'N/A' }}
+            </div>
+
+            <hr>
+            <h6>Questions de l'entretien</h6>
+
+            <div *ngIf="interviewQuestions.length === 0" class="alert alert-info">
+                <i class="ri-inbox-line"></i> Pas encore de questions pour cet entretien.
+            </div>
+
+            <div *ngFor="let question of interviewQuestions; let i = index" class="mb-3 p-3 border rounded">
+                <p><strong>Q{{ i + 1 }}.</strong> {{ question.contenu || question.question }}</p>
+                <div [ngSwitch]="question.type">
+                    <div *ngSwitchCase="'QCU'">
+                        <div class="form-check" *ngFor="let choix of question.choix || question.options || []">
+                            <input class="form-check-input" type="radio" [name]="'question_' + question.id" [value]="choix.id"
+                                [(ngModel)]="answers[question.id]" [id]="'q_' + question.id + '_' + choix.id">
+                            <label class="form-check-label" [for]="'q_' + question.id + '_' + choix.id">
+                                {{ choix.texte || choix }}
+                            </label>
+                        </div>
+                    </div>
+
+                    <div *ngSwitchCase="'QCM'">
+                        <div class="form-check" *ngFor="let choix of question.choix || question.options || []">
+                            <input class="form-check-input" type="checkbox" [id]="'qcm_' + question.id + '_' + (choix.id || choix)"
+                                [(ngModel)]="selectedChoices[choix.id || choix]" [name]="'choice_' + question.id + '_' + (choix.id || choix)">
+                            <label class="form-check-label" [for]="'qcm_' + question.id + '_' + (choix.id || choix)">
+                                {{ choix.texte || choix }}
+                            </label>
+                        </div>
+                    </div>
+
+                    <div *ngSwitchCase="'VRAI_FAUX'">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" [name]="'vrai_faux_' + question.id" value="true"
+                                [(ngModel)]="answers[question.id]" [id]="'true_' + question.id">
+                            <label class="form-check-label" [for]="'true_' + question.id">Vrai</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" [name]="'vrai_faux_' + question.id" value="false"
+                                [(ngModel)]="answers[question.id]" [id]="'false_' + question.id">
+                            <label class="form-check-label" [for]="'false_' + question.id">Faux</label>
+                        </div>
+                    </div>
+
+                    <div *ngSwitchDefault>
+                        <textarea class="form-control" rows="3" [(ngModel)]="answers[question.id]" [name]="'free_' + question.id"
+                            placeholder="Réponse libre"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="button" class="btn btn-success" (click)="submitAnswers()" [disabled]="interviewQuestions.length === 0">
+                    <i class="ri-send-plane-line"></i> Soumettre les réponses
+                </button>
+                <button type="button" class="btn btn-secondary" (click)="closeInterview()">
+                    <i class="ri-close-line"></i> Annuler
+                </button>
             </div>
         </div>
     </div>
@@ -818,90 +902,3 @@
     </div>
 </div>
 
-<!-- Interview Detail Section -->
-<div *ngIf="selectedInterview" class="jove-card mt-4">
-    <div class="card">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="ri-interview-line"></i> {{ selectedInterview.titre || 'Entretien' }}
-            </h5>
-            <button type="button" class="btn btn-sm btn-light" (click)="closeInterview()">
-                <i class="ri-close-line"></i>
-            </button>
-        </div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <p><strong>Type:</strong> <span class="badge" [ngClass]="'bg-' + (selectedInterview.type === 'TECHNIQUE' ? 'primary' : selectedInterview.type === 'RH' ? 'success' : 'info')">{{ selectedInterview.type }}</span></p>
-                </div>
-                <div class="col-md-6">
-                    <p><strong>Date:</strong> {{ selectedInterview.dateEntretien | date:'dd/MM/yyyy HH:mm' }}</p>
-                </div>
-            </div>
-            <p><strong>Description:</strong></p>
-            <p class="text-muted">{{ selectedInterview.description }}</p>
-
-            <!-- Questions Section -->
-            <hr>
-            <h6 class="mt-4 mb-3"><i class="ri-question-line"></i> Questions</h6>
-            <div *ngIf="!interviewQuestions || interviewQuestions.length === 0" class="text-center py-4">
-                <p class="text-muted">Chargement des questions...</p>
-            </div>
-            <div *ngFor="let question of interviewQuestions; let i = index" class="mb-4 p-3 border rounded">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h6 class="mb-0">Question {{ i + 1 }}/{{ interviewQuestions.length }}</h6>
-                    <span class="badge bg-secondary">{{ question.niveau }}</span>
-                </div>
-                <p class="mb-3">{{ question.contenu }}</p>
-
-                <!-- Answers based on question type -->
-                <div *ngIf="question.type === 'QCU'" class="ms-3">
-                    <div class="form-check" *ngFor="let choice of question.choix">
-                        <input class="form-check-input" type="radio" [name]="'question' + question.id" [value]="choice.id" 
-                               [(ngModel)]="answers[question.id]" [id]="'choice' + choice.id">
-                        <label class="form-check-label" [for]="'choice' + choice.id">
-                            {{ choice.texte }}
-                        </label>
-                    </div>
-                </div>
-
-                <div *ngIf="question.type === 'QCM'" class="ms-3">
-                    <div class="form-check" *ngFor="let choice of question.choix">
-                        <input class="form-check-input" type="checkbox" [name]="'choice_' + choice.id" 
-                               [(ngModel)]="selectedChoices[choice.id]" [id]="'choice' + choice.id">
-                        <label class="form-check-label" [for]="'choice' + choice.id">
-                            {{ choice.texte }}
-                        </label>
-                    </div>
-                </div>
-
-                <div *ngIf="question.type === 'VRAI_FAUX'" class="ms-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="vrai_faux" value="true" 
-                               [(ngModel)]="answers[question.id]" [id]="'true_' + question.id">
-                        <label class="form-check-label" [for]="'true_' + question.id">
-                            Vrai
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="vrai_faux" value="false" 
-                               [(ngModel)]="answers[question.id]" [id]="'false_' + question.id">
-                        <label class="form-check-label" [for]="'false_' + question.id">
-                            Faux
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <hr>
-            <div class="d-flex gap-2">
-                <button type="button" class="btn btn-success" (click)="submitAnswers()">
-                    <i class="ri-check-line"></i> Soumettre les réponses
-                </button>
-                <button type="button" class="btn btn-secondary" (click)="closeInterview()">
-                    <i class="ri-close-line"></i> Annuler
-                </button>
-            </div>
-        </div>
-    </div>
-</div>

@@ -12,6 +12,16 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
+  // Helper method to get headers with authorization token
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return headers;
+  }
+
   // Exemple de méthode GET
   getData(): Observable<any> {
     return this.http.get(`${this.apiUrl}/data`);
@@ -30,7 +40,8 @@ export class ApiService {
 
   // Candidats (pour lier un entretien à un candidat)
   getCandidats(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/candidats`);
+    const headers = this.getAuthHeaders();
+    return this.http.get(`${this.apiUrl}/candidats`, { headers });
   }
 
   getUser(id: number): Observable<any> {
@@ -39,8 +50,9 @@ export class ApiService {
 
   // Recruteur courant (permets d'obtenir l'id du recruteur connecté)
   getCurrentRecruteur(): Observable<any> {
-    // endpoint probable du backend, peut être adapté si le chemin diffère
-    return this.http.get(`${this.apiUrl}/recruteurs/me`);
+    // endpoint correct du backend avec headers d'autorisation
+    const headers = this.getAuthHeaders();
+    return this.http.get(`${this.apiUrl}/recruteur/me`, { headers });
   }
 
   createUser(user: any): Observable<any> {
@@ -74,6 +86,11 @@ export class ApiService {
   // Entretiens (Interviews)
   getEntretiens(): Observable<any> {
     return this.http.get(`${this.apiUrl}/entretiens`);
+  }
+
+  /** Tests généraux (type TEST, non terminés) — public, sans authentification */
+  getPublicTestEntretiens(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/entretiens/public/tests`);
   }
 
   getEntretiensByCandidat(candidatId: number): Observable<any> {

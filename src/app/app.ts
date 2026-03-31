@@ -14,6 +14,11 @@ export class App {
 
     private previousUrl: string | null = null;
 
+    private urlWithoutFragment(url: string): string {
+        const i = url.indexOf('#');
+        return i >= 0 ? url.slice(0, i) : url;
+    }
+
     constructor(
         public router: Router,
         private viewportScroller: ViewportScroller
@@ -21,8 +26,11 @@ export class App {
         this.router.events.subscribe((event: Event) => {
             if (event instanceof NavigationEnd) {
                 const currentUrl = event.urlAfterRedirects;
-                // Scroll to top ONLY if navigating to a different route (not on refresh)
-                if (this.previousUrl && this.previousUrl !== currentUrl) {
+                // Ne pas forcer le scroll en haut si seul le fragment change (ex. / → /#entretiens),
+                // sinon l’ancre du routeur ne fonctionne pas et la section Entretiens semble « absente ».
+                const prevBase = this.urlWithoutFragment(this.previousUrl ?? '');
+                const currBase = this.urlWithoutFragment(currentUrl);
+                if (this.previousUrl && prevBase !== currBase) {
                     this.viewportScroller.scrollToPosition([0, 0]);
                 }
                 this.previousUrl = currentUrl;

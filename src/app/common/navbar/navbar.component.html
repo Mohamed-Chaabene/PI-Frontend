@@ -1,4 +1,4 @@
-﻿<div
+<div
     class="navbar-area"
     [ngClass]="{'white-navbar': router.url === '/index-2', 'sticky': isSticky}"
 >
@@ -171,6 +171,16 @@
                     <li class="nav-item">
                         <a routerLink="/admin" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
                             Admin Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a
+                            routerLink="/"
+                            fragment="entretiens"
+                            class="nav-link"
+                            title="Voir les entretiens de type test"
+                        >
+                            Entretiens
                         </a>
                     </li>
                     <li class="nav-item">

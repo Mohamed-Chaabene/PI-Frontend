@@ -15,8 +15,9 @@
             <h5 *ngIf="!editingQuestion">Ajouter une Nouvelle Question</h5>
             <h5 *ngIf="editingQuestion" class="text-warning">Modifier la Question</h5>
             <form (ngSubmit)="saveQuestion()">
+              <!-- Row 1: Contenu (Full Width) -->
               <div class="row">
-                <div class="col-md-6 mb-3" data-validation-field="contenu">
+                <div class="col-md-12 mb-3" data-validation-field="contenu">
                   <label for="contenu" class="form-label">Contenu de la Question <span class="text-danger">*</span></label>
                   <textarea class="form-control" [class.is-invalid]="hasFieldError('contenu')" id="contenu" [(ngModel)]="newQuestion.contenu" name="contenu" rows="3" required placeholder="Minimum 10 caractères, maximum 1000"></textarea>
                   <div class="invalid-feedback d-block" *ngFor="let error of getFieldErrors('contenu')">
@@ -24,7 +25,11 @@
                   </div>
                   <small class="form-text text-muted">Caractères: {{ newQuestion.contenu.length }} / 1000</small>
                 </div>
-                <div class="col-md-3 mb-3" data-validation-field="type">
+              </div>
+
+              <!-- Row 2: Type, Niveau, Points (3 colonnes égales) -->
+              <div class="row">
+                <div class="col-md-4 mb-3" data-validation-field="type">
                   <label for="type" class="form-label">Type de Question <span class="text-danger">*</span></label>
                   <select class="form-control" [class.is-invalid]="hasFieldError('type')" id="type" [(ngModel)]="newQuestion.type" name="type" required (change)="onQuestionTypeChange()">
                     <option value="">-- Sélectionner --</option>
@@ -34,7 +39,7 @@
                     <i class="ri-error-warning-line"></i> {{ error }}
                   </div>
                 </div>
-                <div class="col-md-3 mb-3" data-validation-field="niveau">
+                <div class="col-md-4 mb-3" data-validation-field="niveau">
                   <label for="niveau" class="form-label">Niveau <span class="text-danger">*</span></label>
                   <select class="form-control" [class.is-invalid]="hasFieldError('niveau')" id="niveau" [(ngModel)]="newQuestion.niveau" name="niveau" required>
                     <option value="">-- Sélectionner --</option>
@@ -44,26 +49,19 @@
                     <i class="ri-error-warning-line"></i> {{ error }}
                   </div>
                 </div>
-                <div class="col-md-3 mb-3" data-validation-field="domaine">
-                  <label for="domaineId" class="form-label">Domaine <span class="text-danger">*</span></label>
-                  <select class="form-control" [class.is-invalid]="hasFieldError('domaine')" id="domaineId" [(ngModel)]="newQuestion.domaineId" name="domaineId" required>
-                    <option [ngValue]="null">-- Sélectionner --</option>
-                    <option *ngIf="domaines.length === 0" disabled="">Aucun domaine disponible</option>
-                    <option *ngFor="let domaine of domaines; let i = index; trackBy: trackByDomaine" 
-                            [ngValue]="domaine.id"
-                            [attr.data-id]="domaine.id">
-                      {{ domaine.nom }}
-                    </option>
-                    <option [ngValue]="-1">Autre domaine d'emploi</option>
-                  </select>
-                  <small class="form-text text-muted" *ngIf="domaines.length > 0">
-                    {{ domaines.length }} domaine(s) disponible(s)
-                  </small>
-                  <input *ngIf="newQuestion.domaineId === -1" type="text" class="form-control mt-2" placeholder="Précisez le domaine" [(ngModel)]="newQuestion.domaineTexte" name="domaineTexte" />
-                  <div class="invalid-feedback d-block" *ngFor="let error of getFieldErrors('domaine')">
+                <div class="col-md-4 mb-3" data-validation-field="points">
+                  <label for="points" class="form-label">Points <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" [class.is-invalid]="hasFieldError('points')" id="points" [(ngModel)]="newQuestion.points" name="points" min="1" max="100" required>
+                  <div class="invalid-feedback d-block" *ngFor="let error of getFieldErrors('points')">
                     <i class="ri-error-warning-line"></i> {{ error }}
                   </div>
+                  <small class="form-text text-muted d-block">Points: 1-100</small>
                 </div>
+              </div>
+
+              <!-- Row 3: Domaine (Full Width) -->
+              <div class="row">
+
               </div>
 
               <!-- Choices for QCM/QCU -->
@@ -128,6 +126,7 @@
                   <th>Type</th>
                   <th>Domaine</th>
                   <th>Niveau</th>
+                  <th>Points</th>
                   <th>Bonne réponse</th>
                   <th>Réponses</th>
                   <th>Actions</th>
@@ -139,6 +138,7 @@
                   <td>{{ question.type }}</td>
                   <td>{{ question.domaine?.nom || question.domaine || '-' }}</td>
                   <td>{{ question.niveau || '-' }}</td>
+                  <td>{{ question.points || 1 }}</td>
                   <td>{{ getCorrectAnswers(question) }}</td>
                   <td>
                     <ul class="list-unstyled mb-0">

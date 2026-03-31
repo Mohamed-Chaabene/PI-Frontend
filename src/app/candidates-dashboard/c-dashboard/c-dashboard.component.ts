@@ -1,5 +1,5 @@
 import { Component, ViewChild, OnInit } from "@angular/core";
-import { RouterLink } from "@angular/router";
+import { ActivatedRoute, RouterLink } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { ApiService } from "../../api.service";
 import {
@@ -47,7 +47,10 @@ export class CDashboardComponent implements OnInit {
     selectedChoices: { [choiceId: number]: boolean } = {};
     latestResult: any = null;
 
-    constructor(private apiService: ApiService) {
+    constructor(
+        private apiService: ApiService,
+        private route: ActivatedRoute,
+    ) {
         this.chartOptions = {
             series: [
                 {
@@ -156,6 +159,7 @@ export class CDashboardComponent implements OnInit {
                     // Si pas de candidat, afficher uniquement les TEST
                     this.entretiens = testEntretiens;
                     console.log('📋 Entretiens TEST chargés (pas de candidat):', this.entretiens);
+                    this.tryOpenTestFromQuery();
                 } else {
                     // Charger aussi les entretiens spécifiques au candidat
                     this.apiService.getEntretiensByCandidat(this.currentCandidatId).subscribe({
@@ -171,11 +175,13 @@ export class CDashboardComponent implements OnInit {
                             });
                             this.entretiens = Array.from(uniqueMap.values());
                             console.log('📋 Entretiens candidat + TEST chargés:', this.entretiens);
+                            this.tryOpenTestFromQuery();
                         },
                         error: (error) => {
                             console.error('Erreur chargement entretiens candidat', error);
                             // Afficher au moins les TEST
                             this.entretiens = testEntretiens;
+                            this.tryOpenTestFromQuery();
                         }
                     });
                 }
@@ -187,13 +193,33 @@ export class CDashboardComponent implements OnInit {
         });
     }
 
+    private tryOpenTestFromQuery(): void {
+        const raw = this.route.snapshot.queryParamMap.get('testId');
+        if (!raw) {
+            return;
+        }
+        const id = Number(raw);
+        if (isNaN(id) || id <= 0) {
+            return;
+        }
+        const ent = this.entretiens.find((e) => e.id === id);
+        if (ent) {
+            this.startInterview(ent);
+        }
+    }
+
     startInterview(entretien: any): void {
+        // Commence l'entretien et affiche les questions.
+        this.viewQuestions(entretien);
+    }
+
+    viewQuestions(entretien: any): void {
         this.selectedInterview = entretien;
         this.interviewQuestions = [];
         this.answers = {};
         this.selectedChoices = {};
 
-        // Charger les questions
+        // Charger les questions liées à l'entretien
         this.apiService.getQuestionsByEntretien(entretien.id).subscribe({
             next: (questions: any[]) => {
                 this.interviewQuestions = Array.isArray(questions) ? questions : [];

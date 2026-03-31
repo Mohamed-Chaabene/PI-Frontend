@@ -7,9 +7,6 @@ import { FormsModule } from '@angular/forms';
 interface QuestionForm {
   contenu: string;
   type: string;
-  domaineId: number | null;
-  domaineTexte: string;
-  domaine: string;
   choix: string[];
   bonneReponse: string;
   bonneReponses: number[]; // pour QCM, plusieurs réponses correctes
@@ -25,6 +22,7 @@ interface ValidationErrors {
   domaine?: string[];
   choix?: string[];
   bonneReponse?: string[];
+  points?: string[];
   general?: string[];
 }
 
@@ -53,9 +51,6 @@ export class RdAddQuestions implements OnInit {
   newQuestion: QuestionForm = {
     contenu: '',
     type: '',
-    domaineId: null,
-    domaineTexte: '',
-    domaine: '',
     choix: ['', '', '', ''],
     bonneReponse: '',
     bonneReponses: [],
@@ -198,19 +193,6 @@ export class RdAddQuestions implements OnInit {
     this.newQuestion.points = question.points || 1;
     this.newQuestion.ordre = question.ordre || 1;
 
-    // Domaine pour le mapping au backend
-    const domaineFromQuestion = question.domaine || question.domaineTexte || '';
-    this.newQuestion.domaine = domaineFromQuestion;
-
-    const selectedDomaine = this.domaines.find((d) => d.nom === domaineFromQuestion || d.id === question.domaineId);
-    if (selectedDomaine) {
-      this.newQuestion.domaineId = selectedDomaine.id;
-      this.newQuestion.domaineTexte = '';
-    } else {
-      this.newQuestion.domaineId = question.domaineId || null;
-      this.newQuestion.domaineTexte = domaineFromQuestion;
-    }
-
     this.newQuestion.bonneReponses = (Array.isArray(question.choix)
       ? question.choix.map((c: any, i: number) => c.correcte || c.correct === true || c.isCorrecte === true ? i : -1).filter((i: number) => i >= 0)
       : []);
@@ -237,46 +219,8 @@ export class RdAddQuestions implements OnInit {
     let domaine = '';
     
     console.log('🏗️ buildQuestionDto() - Building payload');
-    console.log('   Input - domaineId:', this.newQuestion.domaineId);
-    console.log('   Input - domaineTexte:', this.newQuestion.domaineTexte);
-    console.log('   Input - domaine:', this.newQuestion.domaine);
-    console.log('   Available domaines array:', this.domaines);
     
-    // Option 1: Si l'utilisateur a saisi un domaine personnalisé
-    if (this.newQuestion.domaineId === -1 && this.newQuestion.domaineTexte?.trim()) {
-      domaine = this.newQuestion.domaineTexte.trim();
-      console.log('✅ Domaine personnalisé sélectionné:', domaine);
-    }
-    // Option 2: Si un domaine de la liste a été sélectionné
-    else if (this.newQuestion.domaineId && this.newQuestion.domaineId !== -1) {
-      console.log('   Searching for domain with ID:', this.newQuestion.domaineId);
-      console.log('   Domaines array length:', this.domaines.length);
-      const selectedDomaine = this.domaines.find(d => {
-        console.log('     Comparing: d.id=', d.id, 'vs', this.newQuestion.domaineId, '- match:', d.id === this.newQuestion.domaineId);
-        return d.id === this.newQuestion.domaineId;
-      });
-      if (selectedDomaine) {
-        domaine = selectedDomaine.nom;
-        console.log('✅ Domaine trouvé dans la liste:', domaine, 'ID:', this.newQuestion.domaineId);
-      } else {
-        console.error('❌ Domaine avec ID', this.newQuestion.domaineId, 'non trouvé dans la liste');
-        console.error('📍 Domaines disponibles:', this.domaines);
-      }
-    }
-    // Option 3: Fallback (ne devrait pas arriver ici si la validation passe)
-    else if (this.newQuestion.domaine?.trim()) {
-      domaine = this.newQuestion.domaine.trim();
-      console.log('✅ Domaine du champ texte:', domaine);
-    }
-
-    if (!domaine) {
-      console.error('❌ ERREUR: Le domaine est vide!');
-      console.error('📍 domaineId:', this.newQuestion.domaineId);
-      console.error('📍 domaineTexte:', this.newQuestion.domaineTexte);
-      console.error('📍 domaine:', this.newQuestion.domaine);
-      console.error('📍 Domaines array:', this.domaines);
-      throw new Error('Le domaine doit être rempli');
-    }
+    // Domaine est défini par l'entretien parent. ne pas envoyer domaine dans question.
 
     let choixDTO: any[] = [];
 
@@ -301,9 +245,9 @@ export class RdAddQuestions implements OnInit {
       contenu: this.newQuestion.contenu.trim(),
       type: this.newQuestion.type,
       niveau: this.newQuestion.niveau,
-      domaine: domaine,
       ordre: this.newQuestion.ordre || 1,
       actif: true,
+      points: this.newQuestion.points,
       choix: choixDTO
     };
 
@@ -367,45 +311,13 @@ export class RdAddQuestions implements OnInit {
       isValid = false;
     }
 
-    // Validation du domaine
-    const domaineId = this.newQuestion.domaineId;
-    const domaineTexte = this.newQuestion.domaineTexte?.trim();
-    
-    // Vérifier si un domaine valide a été sélectionné
-    let isDomainValid = false;
-    let selectedDomain = '';
-    
-    // Cas 1: Un domaine de la liste a été sélectionné (ID positif)
-    if (domaineId && domaineId !== -1 && typeof domaineId === 'number') {
-      const found = this.domaines.find(d => d.id === domaineId);
-      if (found && found.nom) {
-        isDomainValid = true;
-        selectedDomain = found.nom;
-        console.log('✅ Domaine valide trouvé:', selectedDomain);
-      } else {
-        console.error('❌ Domaine non trouvé pour ID:', domaineId);
-      }
-    }
-    // Cas 2: "Autre' a été sélectionné ET du texte a été saisi
-    else if (domaineId === -1 && domaineTexte) {
-      isDomainValid = true;
-      selectedDomain = domaineTexte;
-      console.log('✅ Domaine personnalisé valide:', selectedDomain);
-    }
-    // Cas 3: Fallback sur le champ domaine direct
-    else if (this.newQuestion.domaine?.trim()) {
-      isDomainValid = true;
-      selectedDomain = this.newQuestion.domaine.trim();
-      console.log('✅ Fallback domaine valide:', selectedDomain);
-    }
-    
-    if (!isDomainValid) {
-      console.error('❌ Domaine invalide. domaineId:', domaineId, 'domaineTexte:', domaineTexte, 'domaine:', this.newQuestion.domaine);
-      this.validationErrors.domaine = ['Le domaine est obligatoire. Sélectionnez un domaine ou précisez un domaine personnalisé'];
+    // Validation des points
+    if (!this.newQuestion.points || this.newQuestion.points < 1 || this.newQuestion.points > 100) {
+      this.validationErrors.points = ['Les points doivent être entre 1 et 100'];
       isValid = false;
-    } else {
-      console.log('✅ Domaine validé:', selectedDomain);
     }
+
+    // Domaine géré par l'entretien parent, on ignore la validation sur la question.
 
     // Validation des réponses
     if (this.newQuestion.type === 'QCM') {
@@ -473,16 +385,6 @@ export class RdAddQuestions implements OnInit {
   saveQuestion(): void {
     // STEP 1: Log form state before validation
     console.log('🔍 STEP 1 - Form validation started');
-    console.log('  domaineId:', this.newQuestion.domaineId, '(type:', typeof this.newQuestion.domaineId + ')');
-    console.log('  domaineTexte:', this.newQuestion.domaineTexte);
-    console.log('  domaine:', this.newQuestion.domaine);
-    console.log('  Available domains:', this.domaines);
-    
-    // Debug: Show matching domain if domaineId exists
-    if (this.newQuestion.domaineId && this.newQuestion.domaineId !== -1) {
-      const matchedDomain = this.domaines.find(d => d.id === this.newQuestion.domaineId);
-      console.log('  Matched domain for ID', this.newQuestion.domaineId, ':', matchedDomain);
-    }
 
     // Valider le formulaire en premier
     if (!this.validateForm()) {
@@ -585,9 +487,6 @@ export class RdAddQuestions implements OnInit {
     this.newQuestion = {
       contenu: '',
       type: '',
-      domaineId: null,
-      domaineTexte: '',
-      domaine: '',
       choix: ['', '', '', ''],
       bonneReponse: '',
       bonneReponses: [],

@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ExtraOptions } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CarouselModule } from 'ngx-owl-carousel-o';
 import { NgApexchartsModule } from 'ng-apexcharts';
@@ -12,6 +12,11 @@ import { AuthInterceptor } from './auth.interceptor';
 
 import { routes } from './app.routes';
 import { App } from './app';
+
+const routerOptions: ExtraOptions = {
+    anchorScrolling: 'enabled',
+    scrollPositionRestoration: 'enabled',
+};
 
 // Import all components
 import { HomeDemoOneComponent } from './pages/home-demo-one/home-demo-one.component';
@@ -56,6 +61,7 @@ import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-pass
 // Common components
 import { NavbarComponent } from './common/navbar/navbar.component';
 import { HomeoneBannerComponent } from './pages/home-demo-one/homeone-banner/homeone-banner.component';
+import { HomeTestEntretiensComponent } from './pages/home-demo-one/home-test-entretiens/home-test-entretiens.component';
 import { CompaniesComponent } from './common/companies/companies.component';
 import { CategoriesComponent } from './common/categories/categories.component';
 import { FeaturesComponent } from './common/features/features.component';
@@ -197,7 +203,8 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         FormsModule,
         ReactiveFormsModule,
         HttpClientModule,
-        RouterModule.forRoot(routes),
+        HomeTestEntretiensComponent,
+        RouterModule.forRoot(routes, routerOptions),
         BrowserAnimationsModule,
         CarouselModule,
         NgApexchartsModule,

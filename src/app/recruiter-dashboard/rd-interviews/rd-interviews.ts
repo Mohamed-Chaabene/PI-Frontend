@@ -9,9 +9,11 @@ interface EntretienForm {
   titre: string;
   description: string;
   type: string;
+  domaine: string;
   dateEntretien: string;
   candidatId: number | null;
   photo: string;
+  seuilReussite: number | null;
 }
 
 @Component({
@@ -27,9 +29,11 @@ export class RdInterviews implements OnInit {
     titre: '',
     description: '',
     type: '',
+    domaine: '',
     dateEntretien: '',
     candidatId: null,
-    photo: ''
+    photo: '',
+    seuilReussite: 70
   };
   showCreateForm = false;
   editingEntretien: any = null;
@@ -110,10 +114,26 @@ export class RdInterviews implements OnInit {
   loadCandidats(): void {
     this.apiService.getCandidats().subscribe({
       next: (data) => {
+        console.log('✅ Candidats reçus:', data);
+        console.log('Type:', typeof data);
+        console.log('Est un tableau:', Array.isArray(data));
+        
+        // Si c'est un object avec un tableau à l'intérieur, l'extraire
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+          // Chercher un tableau dans l'objet
+          const arrayValue = Object.values(data).find((v: any) => Array.isArray(v));
+          if (arrayValue) {
+            this.candidats = arrayValue as any[];
+            console.log('✅ Tableau extrait:', this.candidats);
+            return;
+          }
+        }
+        
         this.candidats = Array.isArray(data) ? data : [];
+        console.log('Candidats finalisés:', this.candidats);
       },
       error: (error: any) => {
-        console.error('Erreur chargement candidats', error);
+        console.error('❌ Erreur chargement candidats:', error);
         if (error.status === 401) {
           localStorage.removeItem('token');
           localStorage.removeItem('recruteurId');
@@ -175,16 +195,21 @@ export class RdInterviews implements OnInit {
     }
 
     const isTest = this.newEntretien.type === 'TEST';
-    const candidateRequired = !isTest;
 
     const payload: any = {
       titre: this.newEntretien.titre,
       description: this.newEntretien.description,
+      domaine: this.newEntretien.domaine,
       categorie: this.newEntretien.type,
       type: this.newEntretien.type,
       dateEntretien: this.newEntretien.dateEntretien,
-      photo: this.newEntretien.photo || null
+      photo: this.newEntretien.photo || null,
     };
+    if (isTest) {
+      payload.seuilReussite = null;
+    } else {
+      payload.seuilReussite = this.newEntretien.seuilReussite ?? 70;
+    }
 
     if (this.newEntretien.candidatId !== null && this.newEntretien.candidatId !== undefined) {
       payload.candidatId = this.newEntretien.candidatId;
@@ -225,9 +250,11 @@ export class RdInterviews implements OnInit {
       titre: '',
       description: '',
       type: '',
+      domaine: '',
       dateEntretien: '',
       candidatId: null,
-      photo: ''
+      photo: '',
+      seuilReussite: 70
     };
   }
 
@@ -258,6 +285,7 @@ ID: ${entretien.id}
 Titre: ${entretien.titre || 'Sans titre'}
 Description: ${entretien.description}
 Type: ${entretien.type || 'Non spécifié'}
+Domaine: ${entretien.domaine || 'Non spécifié'}
 Date: ${entretien.dateEntretien ? new Date(entretien.dateEntretien).toLocaleString() : 'Non planifiée'}
 Statut: ${entretien.completed ? 'Terminé' : 'En cours'}
 Candidat: ${this.getCandidateName(entretien.candidatId) || 'Non assigné'}
@@ -289,14 +317,17 @@ Candidat: ${this.getCandidateName(entretien.candidatId) || 'Non assigné'}
       return;
     }
 
+    const isTestUpdate = (entretien.type || '').toUpperCase() === 'TEST';
     const updatedData: any = {
       titre: entretien.titre,
       description: entretien.description,
+      domaine: entretien.domaine,
       type: entretien.type?.toUpperCase(),
       categorie: entretien.type?.toUpperCase(),
       dateEntretien: entretien.dateEntretien,
-      photo: entretien.photo || null
+      photo: entretien.photo || null,
     };
+    updatedData.seuilReussite = isTestUpdate ? null : (entretien.seuilReussite ?? 70);
 
     if (entretien.candidatId) {
       updatedData.candidatId = entretien.candidatId;
@@ -351,6 +382,19 @@ Candidat: ${this.getCandidateName(entretien.candidatId) || 'Non assigné'}
       return false;
     }
 
+    if (this.newEntretien.domaine == null || this.newEntretien.domaine.trim() === '') {
+      alert('Le domaine est obligatoire.');
+      return false;
+    }
+
+    if (this.newEntretien.type !== 'TEST') {
+      const s = this.newEntretien.seuilReussite;
+      if (s == null || s < 0 || s > 100) {
+        alert('Le seuil de réussite doit être entre 0 et 100.');
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -382,9 +426,22 @@ Candidat: ${this.getCandidateName(entretien.candidatId) || 'Non assigné'}
       return false;
     }
 
+    if (!entretien.domaine || entretien.domaine.trim() === '') {
+      alert('Le domaine est obligatoire.');
+      return false;
+    }
+
     if (entretien.type !== 'TEST' && !entretien.candidatId) {
       alert('Un candidat doit être sélectionné pour ce type d\'entretien.');
       return false;
+    }
+
+    if (entretien.type !== 'TEST') {
+      const s = entretien.seuilReussite;
+      if (s == null || s < 0 || s > 100) {
+        alert('Le seuil de réussite doit être entre 0 et 100.');
+        return false;
+      }
     }
 
     return true;
