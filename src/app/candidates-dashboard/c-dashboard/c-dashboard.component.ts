@@ -1,5 +1,4 @@
 import { Component, ViewChild } from "@angular/core";
-import { RouterLink } from "@angular/router";
 import {
     ChartComponent,
     ApexAxisChartSeries,
@@ -9,8 +8,7 @@ import {
     ApexDataLabels,
     ApexTitleSubtitle,
     ApexStroke,
-    ApexGrid,
-    NgApexchartsModule
+    ApexGrid
 } from "ng-apexcharts";
 
 export type ChartOptions = {

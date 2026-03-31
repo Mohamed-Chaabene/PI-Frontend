@@ -183,6 +183,7 @@ export class NavbarComponent implements OnInit {
         this.apiService.register(userData).subscribe(
             response => {
                 localStorage.setItem('userName', userData.nom);
+                localStorage.setItem('userEmail', userData.email);
                 localStorage.setItem('userRole', userData.role);
                 this.isLoggedIn = true;
                 this.userName = userData.nom;
@@ -233,6 +234,7 @@ export class NavbarComponent implements OnInit {
                 const roleFinal = role || this.inferRoleFromEmail(this.loginData.email) || 'CANDIDAT';
 
                 let userName = '';
+                let userEmail = this.loginData.email;
                 if (typeof response === 'object' && response.userName) {
                     userName = response.userName;
                 } else if (typeof response === 'object' && response.user?.nom) {
@@ -245,7 +247,16 @@ export class NavbarComponent implements OnInit {
                     userName = this.loginData.email;
                 }
 
+                if (typeof response === 'object' && response.user?.email) {
+                    userEmail = response.user.email;
+                } else if (decoded.email) {
+                    userEmail = decoded.email;
+                } else if (typeof decoded.sub === 'string' && decoded.sub.includes('@')) {
+                    userEmail = decoded.sub;
+                }
+
                 localStorage.setItem('userName', userName);
+                localStorage.setItem('userEmail', userEmail || this.loginData.email);
                 localStorage.setItem('userRole', roleFinal);
                 this.isLoggedIn = true;
                 this.userName = userName;

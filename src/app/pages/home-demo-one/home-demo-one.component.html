@@ -2,6 +2,49 @@
 
 <app-homeone-banner />
 
+<section class="public-tests-area ptb-100">
+	<div class="container">
+		<div class="section-title">
+			<span class="sub-title">Entretiens Test</span>
+			<h2>Passez nos entretiens tests en ligne</h2>
+			<p>Selectionnez un entretien, testez vos competences et comparez votre niveau en quelques minutes.</p>
+		</div>
+
+		<div class="public-tests-state" *ngIf="isLoadingPublicTests">
+			Chargement des entretiens tests...
+		</div>
+
+		<div class="public-tests-state error" *ngIf="!isLoadingPublicTests && publicTestsError">
+			{{ publicTestsError }}
+		</div>
+
+		<div class="public-tests-grid" *ngIf="!isLoadingPublicTests && !publicTestsError && publicTestEntretiens.length > 0">
+			<article class="public-test-card" *ngFor="let item of publicTestEntretiens; trackBy: trackByEntretienId">
+				<div class="test-cover">
+					<img [src]="getEntretienPhoto(item)" [alt]="getEntretienTitle(item)">
+					<span class="test-domaine">{{ getEntretienDomaine(item) }}</span>
+				</div>
+
+				<div class="test-body">
+					<div class="test-date">
+						<i class="ri-calendar-event-line"></i>
+						{{ formatEntretienDate(item.dateEntretien) }}
+					</div>
+
+					<h3>{{ getEntretienTitle(item) }}</h3>
+					<p>{{ getEntretienDescription(item) }}</p>
+
+					<a class="test-action" [routerLink]="['/entretiens/test', item.id]">Commencer le test</a>
+				</div>
+			</article>
+		</div>
+
+		<div class="public-tests-state" *ngIf="!isLoadingPublicTests && !publicTestsError && publicTestEntretiens.length === 0">
+			Aucun entretien test disponible pour le moment.
+		</div>
+	</div>
+</section>
+
 <app-companies />
 
 <app-categories />

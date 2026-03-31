@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -17,20 +17,16 @@ import { App } from './app';
 
 // Import all components
 import { HomeDemoOneComponent } from './pages/home-demo-one/home-demo-one.component';
-import { HomeDemoTwoComponent } from './pages/home-demo-two/home-demo-two.component';
-import { HomeDemoThreeComponent } from './pages/home-demo-three/home-demo-three.component';
 import { NotFoundComponent } from './common/not-found/not-found.component';
 import { JobsGridPageComponent } from './pages/jobs-grid-page/jobs-grid-page.component';
 import { JobsListingPageComponent } from './pages/jobs-listing-page/jobs-listing-page.component';
 import { JobDetailsPageComponent } from './pages/job-details-page/job-details-page.component';
 import { CandidatesPageComponent } from './pages/candidates-page/candidates-page.component';
-import { CandidateDetailsPageComponent } from './pages/candidate-details-page/candidate-details-page.component';
 import { FileUploadComponent } from './pages/candidate-details-page/file-upload/file-upload.component';
 import { EmployersPageComponent } from './pages/employers-page/employers-page.component';
 import { EmployerDetailsPageComponent } from './pages/employer-details-page/employer-details-page.component';
 import { AboutPageComponent } from './pages/about-page/about-page.component';
 import { PricingPageComponent } from './pages/pricing-page/pricing-page.component';
-import { FaqPageComponent } from './pages/faq-page/faq-page.component';
 import { PrivacyPolicyPageComponent } from './pages/privacy-policy-page/privacy-policy-page.component';
 import { TermsConditionsPageComponent } from './pages/terms-conditions-page/terms-conditions-page.component';
 import { ContactPageComponent } from './pages/contact-page/contact-page.component';
@@ -56,23 +52,10 @@ import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-al
 import { CdMessageComponent } from './candidates-dashboard/cd-message/cd-message.component';
 import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-password/cd-change-password.component';
 
-import { HomeoneBannerComponent } from './pages/home-demo-one/homeone-banner/homeone-banner.component';
-import { CompaniesComponent } from './common/companies/companies.component';
-import { CategoriesComponent } from './common/categories/categories.component';
-import { FeaturesComponent } from './common/features/features.component';
-import { FunfactsComponent } from './common/funfacts/funfacts.component';
-import { PopularJobsComponent } from './common/popular-jobs/popular-jobs.component';
-import { HowJoveWorksComponent } from './common/how-jove-works/how-jove-works.component';
-import { JobsByLocationComponent } from './common/jobs-by-location/jobs-by-location.component';
-import { TestimonialsComponent } from './common/testimonials/testimonials.component';
-import { GetHiredByTopCompaniesComponent } from './common/get-hired-by-top-companies/get-hired-by-top-companies.component';
-import { FaqComponent } from './common/faq/faq.component';
-import { DownloadAppComponent } from './common/download-app/download-app.component';
-import { BlogComponent } from './common/blog/blog.component';
+// Shared components are in SharedModule now
 
 // More common
 import { BlogSidebarComponent } from './common/blog-sidebar/blog-sidebar.component';
-import { WhyChooseUsComponent } from './common/why-choose-us/why-choose-us.component';
 import { TalentedExpertsComponent } from './common/talented-experts/talented-experts.component';
 import { PartnersComponent } from './common/partners/partners.component';
 import { PricingComponent } from './common/pricing/pricing.component';
@@ -88,12 +71,7 @@ import { EdSidebarComponent } from './employers-dashboard/ed-sidebar/ed-sidebar.
 import { EdHeaderComponent } from './employers-dashboard/ed-header/ed-header.component';
 import { EdFooterComponent } from './employers-dashboard/ed-footer/ed-footer.component';
 
-// Recruiter Dashboard components
-import { RecruiterDashboardComponent } from './recruiter-dashboard/recruiter-dashboard.component';
-import { RdDashboardComponent } from './recruiter-dashboard/rd-dashboard/rd-dashboard.component';
-import { RdHeaderComponent } from './recruiter-dashboard/rd-header/rd-header.component';
-import { RdFooterComponent } from './recruiter-dashboard/rd-footer/rd-footer.component';
-import { RdSidebarComponent } from './recruiter-dashboard/rd-sidebar/rd-sidebar.component';
+// Recruiter Dashboard components are now in SharedModule
 import { RdPostJobComponent } from './recruiter-dashboard/rd-post-job/rd-post-job.component';
 import { RdManageJobsComponent } from './recruiter-dashboard/rd-manage-jobs/rd-manage-jobs.component';
 import { RdApplicantsComponent } from './recruiter-dashboard/rd-applicants/rd-applicants.component';
@@ -101,27 +79,20 @@ import { RdMessagesComponent } from './recruiter-dashboard/rd-messages/rd-messag
 import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.component';
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 
-// Banner components
-import { HometwoBannerComponent } from './pages/home-demo-two/hometwo-banner/hometwo-banner.component';
-import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-banner/homethree-banner.component';
+// Banner components are now in SharedModule
 
 @NgModule({
     declarations: [
         App,
-        HomeDemoOneComponent,
-        HomeDemoTwoComponent,
-        HomeDemoThreeComponent,
         NotFoundComponent,
         JobsGridPageComponent,
         JobsListingPageComponent,
         JobDetailsPageComponent,
         CandidatesPageComponent,
-        CandidateDetailsPageComponent,
         EmployersPageComponent,
         EmployerDetailsPageComponent,
         AboutPageComponent,
         PricingPageComponent,
-        FaqPageComponent,
         PrivacyPolicyPageComponent,
         TermsConditionsPageComponent,
         ContactPageComponent,
@@ -146,46 +117,21 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         CdAlertJobsComponent,
         CdMessageComponent,
         CdChangePasswordComponent,
-        HomeoneBannerComponent,
-        CompaniesComponent,
-        CategoriesComponent,
-        FeaturesComponent,
-        FunfactsComponent,
-        PopularJobsComponent,
-        HowJoveWorksComponent,
-        JobsByLocationComponent,
-        TestimonialsComponent,
-        GetHiredByTopCompaniesComponent,
-        FaqComponent,
-        DownloadAppComponent,
-        BlogComponent,
         BlogSidebarComponent,
-        WhyChooseUsComponent,
-        TalentedExpertsComponent,
-        PartnersComponent,
         PricingComponent,
-        LeadingCompanyComponent,
         JobsSidebarComponent,
-        AboutUsComponent,
         CdSidebarComponent,
         CdHeaderComponent,
         CdFooterComponent,
         EdSidebarComponent,
         EdHeaderComponent,
         EdFooterComponent,
-        RecruiterDashboardComponent,
-        RdDashboardComponent,
-        RdHeaderComponent,
-        RdFooterComponent,
-        RdSidebarComponent,
         RdPostJobComponent,
         RdManageJobsComponent,
         RdApplicantsComponent,
         RdMessagesComponent,
         RdProfileComponent,
-        RdChangePasswordComponent,
-        HometwoBannerComponent,
-        HomethreeBannerComponent
+        RdChangePasswordComponent
 
     ],
     imports: [
@@ -199,13 +145,12 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         CarouselModule,
         NgApexchartsModule,
         NgxScrollTopModule,
-        GoogleMapsModule,
-        FileUploadComponent,
-        SharedModule
+        GoogleMapsModule
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
     ],
-    bootstrap: [App]
+    bootstrap: [App],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AppModule { }

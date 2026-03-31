@@ -1,21 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { NavbarComponent } from '../../common/navbar/navbar.component';
-import { SubscribeComponent } from '../../common/subscribe/subscribe.component';
-import { FooterComponent } from '../../common/footer/footer.component';
-import { NgxScrollTopComponent } from 'ngx-scrolltop';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { jwtDecode } from 'jwt-decode';
 import { FileUploadComponent } from './file-upload/file-upload.component';
 import { CloudinaryService } from '../../services/cloudinary.service';
 import { CloudinaryDebugService } from '../../services/cloudinary-debug.service';
+import { SharedModule } from '../../shared/shared.module';
+import { GoogleMapsModule } from '@angular/google-maps';
 
 @Component({
     selector: 'app-candidate-details-page',
-    standalone: false,
+    standalone: true,
+    imports: [SharedModule, FormsModule, CommonModule, RouterLink, FileUploadComponent, GoogleMapsModule],
     templateUrl: './candidate-details-page.component.html',
     styleUrls: ['./candidate-details-page.component.scss']
 })
@@ -125,7 +125,7 @@ export class CandidateDetailsPageComponent implements OnInit {
         // Get current user info from localStorage
         const userName = localStorage.getItem('userName');
         this.currentUserName = userName || 'Candidat';
-        this.userEmail = userName || '';
+        this.userEmail = this.resolveCurrentUserEmail();
         this.userRole = localStorage.getItem('userRole') || 'CANDIDAT';
         
         // Check if viewing another candidate's profile
@@ -146,15 +146,17 @@ export class CandidateDetailsPageComponent implements OnInit {
     loadCandidateData() {
         this.isLoading = true;
         const userName = localStorage.getItem('userName');
+        const userEmail = this.resolveCurrentUserEmail();
         
-        // If no userName, stop loading
-        if (!userName) {
+        // If no usable email, stop loading
+        if (!userEmail) {
+            this.errorMessage = 'Email utilisateur introuvable. Reconnectez-vous puis réessayez.';
             this.isLoading = false;
             return;
         }
         
         // Try to load candidate data from API
-        this.apiService.getCandidateByEmail(userName).subscribe(
+        this.apiService.getCandidateByEmail(userEmail).subscribe(
             (data: any) => {
                 if (data) {
                     // Merge response data with form
@@ -325,12 +327,12 @@ export class CandidateDetailsPageComponent implements OnInit {
                 // If 404, candidate doesn't exist - create an empty one first
                 if (err.status === 404) {
                     this.successMessage = 'Profil candidat non trouvé. Création d\'un nouveau profil...';
-                    this.candidateData.email = userName; // Set email for new candidate
+                    this.candidateData.email = userEmail; // Set email for new candidate
                     
                     // Create a minimal candidate profile with just email and name
                     const minimalCandidate = {
-                        email: userName,
-                        nom: this.currentUserName || userName.split('@')[0],
+                        email: userEmail,
+                        nom: this.currentUserName || userName || userEmail.split('@')[0],
                         prenom: '',
                         description: '',
                         telephone: '',
@@ -381,6 +383,105 @@ export class CandidateDetailsPageComponent implements OnInit {
                 }
             }
         );
+    }
+
+    private resolveCurrentUserEmail(): string {
+        const candidateEmail = String(this.candidateData?.email || '').trim();
+        if (candidateEmail.includes('@')) {
+            return candidateEmail;
+        }
+
+        const storedEmail = String(localStorage.getItem('userEmail') || '').trim();
+        if (storedEmail.includes('@')) {
+            return storedEmail;
+        }
+
+        const userName = String(localStorage.getItem('userName') || '').trim();
+        if (userName.includes('@')) {
+            return userName;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const decoded: any = jwtDecode(token);
+                const tokenEmail = String(decoded?.email || decoded?.sub || '').trim();
+                if (tokenEmail.includes('@')) {
+                    return tokenEmail;
+                }
+            }
+        } catch {
+            // Ignore decode errors and fallback to empty email
+        }
+
+        return '';
+    }
+
+    private ensureCandidateId(onReady: () => void): void {
+        if (this.candidateData?.id) {
+            onReady();
+            return;
+        }
+
+        const userEmail = this.resolveCurrentUserEmail();
+        if (!userEmail) {
+            this.errorMessage = 'Impossible de sauvegarder: email utilisateur introuvable. Reconnectez-vous.';
+            return;
+        }
+
+        this.isSaving = true;
+        this.errorMessage = '';
+
+        this.apiService.getCandidateByEmail(userEmail).subscribe({
+            next: (data: any) => {
+                if (data?.id) {
+                    this.candidateData = { ...this.candidateData, ...data, id: data.id, email: data.email || userEmail };
+                    this.isSaving = false;
+                    onReady();
+                    return;
+                }
+
+                this.isSaving = false;
+                this.errorMessage = 'Profil trouvé mais ID invalide. Rechargez la page.';
+            },
+            error: (err) => {
+                if (err?.status !== 404) {
+                    this.isSaving = false;
+                    this.errorMessage = 'Erreur lors de la récupération du profil candidat.';
+                    return;
+                }
+
+                const minimalCandidate = {
+                    email: userEmail,
+                    nom: this.currentUserName || userEmail.split('@')[0],
+                    prenom: '',
+                    description: this.candidateData.description || '',
+                    telephone: this.candidateData.telephone || '',
+                    cv: '',
+                    lienPortfolio: '',
+                    niveauEtude: '',
+                    competences: []
+                };
+
+                this.apiService.createCandidate(minimalCandidate).subscribe({
+                    next: (created: any) => {
+                        if (created?.id) {
+                            this.candidateData = { ...this.candidateData, ...created, id: created.id, email: created.email || userEmail };
+                            this.isSaving = false;
+                            onReady();
+                            return;
+                        }
+
+                        this.isSaving = false;
+                        this.errorMessage = 'Création du profil échouée: ID manquant dans la réponse.';
+                    },
+                    error: () => {
+                        this.isSaving = false;
+                        this.errorMessage = 'Erreur lors de la création automatique du profil candidat.';
+                    }
+                });
+            }
+        });
     }
 
     loadOtherCandidateData(candidateId: number) {
@@ -772,41 +873,31 @@ export class CandidateDetailsPageComponent implements OnInit {
 
     // Save description only (for quick saves when editing description)
     saveDescriptionOnly() {
-        console.log('saveDescriptionOnly called - candidateData.id:', this.candidateData.id);
-        console.log('Full candidateData:', this.candidateData);
-        
-        if (!this.candidateData.id) {
-            this.errorMessage = 'Erreur: Candidat ID non trouvé. Veuillez d\'abord créer votre profil complet.';
-            console.error('Cannot save - no ID:', this.candidateData);
-            return;
-        }
+        this.ensureCandidateId(() => {
+            this.isSaving = true;
+            this.errorMessage = '';
+            this.successMessage = '';
 
-        this.isSaving = true;
-        this.errorMessage = '';
-        this.successMessage = '';
+            const descriptionPayload = {
+                description: this.candidateData.description || ''
+            };
 
-        const descriptionPayload = {
-            description: this.candidateData.description || ''
-        };
-
-        console.log('Saving description only:', descriptionPayload, 'for ID:', this.candidateData.id);
-
-        this.apiService.updateCandidate(this.candidateData.id, descriptionPayload).subscribe({
-            next: (response: any) => {
-                this.isSaving = false;
-                this.isDescriptionSaved = true;
-                this.successMessage = 'Description sauvegardée avec succès!';
-                this.isEditingAbout = false;
-                // Clear success message after 3 seconds
-                setTimeout(() => {
-                    this.successMessage = '';
-                }, 3000);
-            },
-            error: (error) => {
-                this.isSaving = false;
-                this.errorMessage = `Erreur lors de la sauvegarde de la description: ${error.message || error.statusText}`;
-                console.error('Description save error:', error);
-            }
+            this.apiService.updateCandidate(this.candidateData.id, descriptionPayload).subscribe({
+                next: () => {
+                    this.isSaving = false;
+                    this.isDescriptionSaved = true;
+                    this.successMessage = 'Description sauvegardée avec succès!';
+                    this.isEditingAbout = false;
+                    setTimeout(() => {
+                        this.successMessage = '';
+                    }, 3000);
+                },
+                error: (error) => {
+                    this.isSaving = false;
+                    this.errorMessage = `Erreur lors de la sauvegarde de la description: ${error.message || error.statusText}`;
+                    console.error('Description save error:', error);
+                }
+            });
         });
     }
 

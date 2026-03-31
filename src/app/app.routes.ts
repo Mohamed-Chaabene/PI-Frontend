@@ -47,9 +47,12 @@ import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 import { RdInterviews } from './recruiter-dashboard/rd-interviews/rd-interviews';
 import { RdAddQuestions } from './recruiter-dashboard/rd-add-questions/rd-add-questions';
+import { PublicTestPassPageComponent } from './pages/public-test-pass-page/public-test-pass-page.component';
+import { CandidateEntretiensPageComponent } from './pages/candidate-entretiens-page/candidate-entretiens-page.component';
 
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
+    {path: 'login', component: HomeDemoOneComponent},
     {path: 'index-2', component: HomeDemoTwoComponent},
     {path: 'index-3', component: HomeDemoThreeComponent},
     {path: 'about', component: AboutPageComponent},
@@ -61,6 +64,7 @@ export const routes: Routes = [
     {path: 'candidates', component: CandidatesPageComponent},
     {path: 'candidate-details/:id', component: CandidateDetailsPageComponent},
     {path: 'candidate-details', component: CandidateDetailsPageComponent, pathMatch: 'full'},
+    {path: 'candidate-entretiens', component: CandidateEntretiensPageComponent},
     {path: 'employers', component: EmployersPageComponent},
     {path: 'employer-details', component: EmployerDetailsPageComponent},
     {path: 'faq', component: FaqPageComponent},
@@ -69,6 +73,7 @@ export const routes: Routes = [
     {path: 'blog', component: BlogPageComponent},
     {path: 'blog-details', component: BlogDetailsPageComponent},
     {path: 'contact', component: ContactPageComponent},
+    {path: 'entretiens/test/:id', component: PublicTestPassPageComponent},
     {
         path: 'dashboard',
         component: EmployersDashboardComponent,

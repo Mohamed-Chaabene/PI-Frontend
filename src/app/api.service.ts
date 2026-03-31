@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -37,8 +37,10 @@ export class ApiService {
 
   // Recruteur courant (permets d'obtenir l'id du recruteur connecté)
   getCurrentRecruteur(): Observable<any> {
-    // endpoint probable du backend, peut être adapté si le chemin diffère
-    return this.http.get(`${this.apiUrl}/recruteurs/me`);
+    // Backend actuel: /api/recruteur/me (singulier). On garde un fallback compatibilite.
+    return this.http.get(`${this.apiUrl}/recruteur/me`).pipe(
+      catchError(() => this.http.get(`${this.apiUrl}/recruteurs/me`))
+    );
   }
 
   createUser(user: any): Observable<any> {
@@ -82,15 +84,41 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/entretiens/${id}`);
   }
 
+  getPublicTestEntretiens(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/entretiens/public/tests`);
+  }
+
   createEntretien(entretien: any, recruteurId?: number): Observable<any> {
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const genericUrl = `${this.apiUrl}/entretiens`;
+
     if (recruteurId != null && !isNaN(recruteurId) && recruteurId > 0) {
       headers = headers.set('Recruteur-ID', String(recruteurId));
-      console.log('📤 Header Recruteur-ID ajouté:', recruteurId);
-    } else {
-      console.warn('⚠️ Header Recruteur-ID non ajouté (valeur invalide):', recruteurId);
     }
-    return this.http.post(`${this.apiUrl}/entretiens`, entretien, { headers });
+
+    // 1) Tentative la plus probable : endpoint lié au recruteur
+    if (recruteurId != null && !isNaN(recruteurId) && recruteurId > 0) {
+      const recruteurScopedUrl = `${this.apiUrl}/recruteurs/${recruteurId}/entretiens`;
+
+      return this.http.post(recruteurScopedUrl, entretien, { headers }).pipe(
+        catchError((error) => {
+          const errorMessage = String(error?.error?.message || error?.message || '');
+          const shouldFallbackToGeneric =
+            error?.status === 403 ||
+            error?.status === 404 ||
+            (error?.status === 500 && /No static resource|NoResourceFoundException/i.test(errorMessage));
+
+          if (shouldFallbackToGeneric) {
+            return this.http.post(genericUrl, entretien, { headers });
+          }
+
+          return throwError(() => error);
+        })
+      );
+    }
+
+    // 2) Fallback générique
+    return this.http.post(genericUrl, entretien, { headers });
   }
 
   completeEntretien(id: number): Observable<any> {
@@ -105,13 +133,15 @@ export class ApiService {
   createQuestion(question: any): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const token = localStorage.getItem('token');
-    console.log('📤 createQuestion - Token present:', !!token);
-    console.log('📤 createQuestion - Payload:', question);
+    const entretienId = Number(question?.entretienId);
+
+    if (!entretienId || isNaN(entretienId) || entretienId <= 0) {
+      const invalidIdError = new Error('ID entretien manquant ou invalide pour la création de question');
+      console.error('❌ createQuestion - entretienId invalide:', question?.entretienId);
+      return throwError(() => invalidIdError);
+    }
     
-    return this.http.post(`${this.apiUrl}/questions/entretien/${question.entretienId}`, question, { headers }).pipe(
-      tap(response => {
-        console.log('✅ Question created successfully:', response);
-      }),
+    return this.http.post(`${this.apiUrl}/questions/entretien/${entretienId}`, question, { headers }).pipe(
       catchError(error => {
         console.error('❌ Question creation failed:', error);
         console.error('🔻 response body:', error.error);
@@ -134,9 +164,40 @@ export class ApiService {
     );
   }
 
+  updateQuestion(id: number, question: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.put(`${this.apiUrl}/questions/${id}`, question, { headers });
+  }
+
+  deleteQuestion(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/questions/${id}`);
+  }
+
+  updateEntretien(id: number, entretien: any): Observable<any> {
+    const recruteurId = Number(localStorage.getItem('recruteurId'));
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (!isNaN(recruteurId) && recruteurId > 0) {
+      headers = headers.set('Recruteur-ID', String(recruteurId));
+    }
+    return this.http.put(`${this.apiUrl}/entretiens/${id}`, entretien, { headers });
+  }
+
+  deleteEntretien(id: number): Observable<any> {
+    const recruteurId = Number(localStorage.getItem('recruteurId'));
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (!isNaN(recruteurId) && recruteurId > 0) {
+      headers = headers.set('Recruteur-ID', String(recruteurId));
+    }
+    return this.http.delete(`${this.apiUrl}/entretiens/${id}`, { headers });
+  }
+
   // Resultats
   getResultat(entretienId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/resultats/entretien/${entretienId}`);
+  }
+
+  submitEntretienResponses(entretienId: number, score: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/entretiens/${entretienId}/submit-responses`, { score });
   }
 
   // Domaines
