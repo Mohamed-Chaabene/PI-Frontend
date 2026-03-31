@@ -1,0 +1,369 @@
+$primary:       #0965A4;
+$primary-light: #E1F5EE;
+$primary-dark:  #0965A4;
+$text-main:     #1a1a2e;
+$text-muted:    #6b7280;
+$text-light:    #9ca3af;
+$border:        #e5e7eb;
+$bg-page:       #f8fafc;
+$bg-card:       #ffffff;
+$radius-card:   16px;
+$shadow-card:   0 2px 12px rgba(0,0,0,0.06);
+
+
+.formation-detail-area {
+  background: $bg-page;
+  padding: 40px 0 80px;
+
+  // ── Card principale ────────────────────────────────────────────────────
+  .detail-main-card {
+    background: $bg-card;
+    border: 1px solid $border;
+    border-radius: $radius-card;
+    box-shadow: $shadow-card;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .detail-banner {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+      &.cat-dev     { background: linear-gradient(135deg, #5388c1, #85B7EB); }
+      &.cat-frontend { background: linear-gradient(135deg, #5388c1, #85B7EB); }
+      &.cat-backend  { background: linear-gradient(135deg, #5388c1, #85B7EB); }
+      &.cat-ia       { background: linear-gradient(135deg, #5388c1, #85B7EB); }
+      &.cat-data     { background: linear-gradient(135deg, #5388c1, #85B7EB); }
+      &.cat-design   { background: linear-gradient(135deg, #5388c1, #85B7EB); }
+      &.cat-devops   { background: linear-gradient(135deg, #5388c1, #85B7EB); }
+      &.cat-default  { background: linear-gradient(135deg, #5388c1, #85B7EB); }
+
+    .banner-emoji { font-size: 52px; }
+  }
+
+  .detail-card-body {
+    padding: 28px 32px;
+
+    .detail-title {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: $text-main;
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+
+    .detail-meta {
+      font-size: 0.9rem;
+      color: $text-muted;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      span { display: flex; align-items: center; gap: 4px; }
+      i { font-size: 14px; color: $text-light; }
+    }
+
+    .badges-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .detail-badge {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      &.badge-green  { background: #EAF3DE; color: #0965A4; }
+      &.badge-amber  { background: #FAEEDA; color: #633806; }
+      &.badge-blue   { background: #E6F1FB; color: #0C447C; }
+      &.badge-purple { background: #EEEDFE; color: #3C3489; }
+      &.badge-gray   { background: #F1EFE8; color: #5F5E5A; }
+    }
+  }
+
+  // ── Zone action (boutons S'inscrire / Inscrit / Modifier) ──────────────
+  .action-zone {
+    padding-top: 20px;
+    border-top: 1px solid $border;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  // Bouton S'inscrire
+  .btn-inscrire {
+    display: inline-flex;
+    align-items: center;
+    padding: 13px 32px;
+    background: $primary;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+
+    &:hover:not(:disabled) { background: $primary-dark; transform: translateY(-1px); }
+    &:disabled { opacity: 0.65; cursor: not-allowed; }
+  }
+
+  // ✅ Badge "Vous êtes inscrit" — remplace le bouton S'inscrire
+  .inscrit-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: $primary-light;
+    border: 1.5px solid rgba($primary, 0.35);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $primary-dark;
+
+    i {
+      font-size: 20px;
+      color: $primary;
+    }
+  }
+
+  // Bouton "Voir ma progression" affiché à côté du badge inscrit
+  .btn-mes-formations {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    background: transparent;
+    color: $primary;
+    border: 1.5px solid rgba($primary, 0.4);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+
+    &:hover { background: $primary-light; color: $primary-dark; }
+    i { font-size: 15px; }
+  }
+
+  // Bouton Modifier (admin)
+  .btn-modifier {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 13px 24px;
+    background: $primary;
+    color: #fff;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+
+    &:hover { background: $primary-dark; transform: translateY(-1px); color: #fff; }
+    i { font-size: 15px; }
+  }
+
+  // ── Compétences ────────────────────────────────────────────────────────
+  .competences-card {
+    background: $bg-card;
+    border: 1px solid $border;
+    border-radius: $radius-card;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+
+    h3 { font-size: 1rem; font-weight: 700; color: $text-main; margin-bottom: 16px; }
+
+    .competences-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      list-style: none;
+      padding: 0; margin: 0;
+
+      li {
+        padding: 6px 14px;
+        background: $primary-light;
+        border: 1px solid rgba($primary, 0.2);
+        border-radius: 20px;
+        font-size: 0.82rem;
+        color: $primary-dark;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // Wrapper feedback
+  .feedback-wrapper {
+    margin-bottom: 24px;
+  }
+
+  // Alerte admin
+  .admin-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    background: $primary-light;
+    border: 1px solid rgba($primary, 0.25);
+    border-radius: 10px;
+    margin-top: 20px;
+    font-size: 0.875rem;
+    color: $primary-dark;
+    flex-wrap: wrap;
+
+    i { font-size: 16px; color: $primary; margin-right: 4px; }
+    a { color: $primary; font-weight: 700; text-decoration: none; &:hover { text-decoration: underline; } }
+  }
+
+  // ── Sidebar ────────────────────────────────────────────────────────────
+  .sidebar-area {
+
+    .sidebar-info-card {
+      background: $bg-card;
+      border: 1px solid $border;
+      border-radius: $radius-card;
+      box-shadow: $shadow-card;
+      overflow: hidden;
+      margin-bottom: 16px;
+
+      .sidebar-card-header {
+        padding: 16px 20px;
+        background: $bg-page;
+        border-bottom: 1px solid $border;
+        h4 { font-size: 0.9rem; font-weight: 700; color: $text-main; margin: 0; }
+      }
+
+      .sidebar-card-body {
+        padding: 4px 0;
+
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 11px 20px;
+          border-bottom: 1px solid $border;
+          font-size: 0.875rem;
+          &:last-child { border-bottom: none; }
+
+          .info-label {
+            color: $text-muted;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            i { font-size: 14px; color: $text-light; }
+          }
+
+          .info-value { color: $text-main; font-weight: 600; text-align: right; }
+        }
+      }
+    }
+
+    // ✅ Card statut inscription dans la sidebar
+    .sidebar-inscription-card {
+      background: $bg-card;
+      border: 1px solid $border;
+      border-radius: $radius-card;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: $shadow-card;
+
+      .sidebar-inscription-hint {
+        font-size: 0.82rem;
+        color: $text-muted;
+        margin-bottom: 14px;
+        line-height: 1.5;
+        display: flex;
+        gap: 6px;
+        i { color: $primary; font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+      }
+
+      .sidebar-btn-inscrire {
+        width: 100%;
+        padding: 12px;
+        background: $primary;
+        color: #fff;
+        border: none;
+        border-radius: 9px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        &:hover:not(:disabled) { background: $primary-dark; }
+        &:disabled { opacity: 0.6; cursor: not-allowed; }
+      }
+
+      // ✅ État inscrit dans la sidebar
+      .sidebar-inscrit-info {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .inscrit-check {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 14px;
+          background: $primary-light;
+          border: 1.5px solid rgba($primary, 0.3);
+          border-radius: 9px;
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: $primary-dark;
+
+          i { font-size: 18px; color: $primary; }
+        }
+      }
+    }
+
+    // Actions
+    .sidebar-actions-card {
+      background: $bg-card;
+      border: 1px solid $border;
+      border-radius: $radius-card;
+      padding: 20px;
+      margin-bottom: 16px;
+
+      h4 { font-size: 0.9rem; font-weight: 700; color: $text-main; margin-bottom: 14px; }
+
+      .sidebar-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 11px 14px;
+        border-radius: 9px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.18s;
+        margin-bottom: 8px;
+        border: 1.5px solid transparent;
+        i { font-size: 15px; }
+        &:last-child { margin-bottom: 0; }
+
+        &.btn-primary-action {
+          background: $primary; color: #fff;
+          &:hover { background: $primary-dark; color: #fff; }
+        }
+        &.btn-outline-action {
+          background: transparent; color: $primary;
+          border-color: rgba($primary, 0.35);
+          &:hover { background: $primary-light; }
+        }
+        &.btn-secondary-action {
+          background: transparent; color: $text-muted;
+          border-color: $border;
+          &:hover { background: $bg-page; color: $text-main; }
+        }
+      }
+    }
+  }
+}

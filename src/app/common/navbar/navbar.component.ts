@@ -24,11 +24,7 @@ export class NavbarComponent implements OnInit {
     @HostListener('window:scroll')
     checkScroll() {
         const scrollPosition = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-        if (scrollPosition >= 50) {
-            this.isSticky = true;
-        } else {
-            this.isSticky = false;
-        }
+        this.isSticky = scrollPosition >= 50;
     }
 
     // Register data
@@ -46,18 +42,14 @@ export class NavbarComponent implements OnInit {
         nom: '',
         email: '',
         motDePasse: '',
-        // Candidat fields
         cv: '',
         niveauEtude: '',
         competences: '',
         experience: null,
-        // Recruteur fields
         entreprise: '',
         poste: '',
         secteur: '',
-        // ClientFreelance fields
         budget: null,
-        // Organisateur fields
         organisation: '',
         adresse: '',
         descriptionProjet: ''
@@ -85,10 +77,7 @@ export class NavbarComponent implements OnInit {
             adresse: '',
             descriptionProjet: ''
         };
-        this.loginData = {
-            email: '',
-            motDePasse: ''
-        };
+        this.loginData = { email: '', motDePasse: '' };
         this.registerRole = 'ROLE_CANDIDAT';
         this.currentInnerTab = 'candidat';
     }
@@ -96,12 +85,26 @@ export class NavbarComponent implements OnInit {
     constructor(
         public router: Router,
         private apiService: ApiService
-    ) { }
+    ) {}
 
     ngOnInit(): void {
         this.checkUserLoginStatus();
     }
 
+    // ─── Rôle normalisé ────────────────────────────────────────────────────────
+    get normalizedRole(): string {
+        return (this.userRole || '').toString().trim().toUpperCase().replace(/^ROLE_/, '');
+    }
+
+    get isCandidat(): boolean {
+        return this.normalizedRole === 'CANDIDAT';
+    }
+
+    get isAdmin(): boolean {
+        return this.normalizedRole === 'ADMIN';
+    }
+
+    // ─── Auth status ───────────────────────────────────────────────────────────
     private checkUserLoginStatus(): void {
         const token = localStorage.getItem('token');
         const savedUserName = localStorage.getItem('userName');
@@ -113,24 +116,23 @@ export class NavbarComponent implements OnInit {
         }
     }
 
+    // ─── Navbar toggle ─────────────────────────────────────────────────────────
     classApplied = false;
     toggleClass() {
         this.classApplied = !this.classApplied;
     }
 
-	// Tabs 1
+    // ─── Tabs ──────────────────────────────────────────────────────────────────
     currentTab = 'tab1';
     switchTab(event: MouseEvent, tab: string) {
         event.preventDefault();
         this.currentTab = tab;
     }
 
-	// Tabs 2
     currentInnerTab = 'candidat';
     switchInnerTab(event: MouseEvent, tab: string) {
         event.preventDefault();
         this.currentInnerTab = tab;
-
         const roleMapping: any = {
             candidat: 'ROLE_CANDIDAT',
             recruteur: 'ROLE_RECRUTEUR',
@@ -138,11 +140,10 @@ export class NavbarComponent implements OnInit {
             organisateur: 'ROLE_ORGANISATEUR',
             admin: 'ROLE_ADMIN'
         };
-
         this.registerRole = roleMapping[tab] || 'ROLE_CANDIDAT';
     }
 
-    // Modal Popup
+    // ─── Modal ─────────────────────────────────────────────────────────────────
     isOpen = false;
     openPopup(): void {
         this.resetAuthForms();
@@ -163,7 +164,7 @@ export class NavbarComponent implements OnInit {
         return map[this.registerRole] || 'Candidat';
     }
 
-    // Register method
+    // ─── Register ──────────────────────────────────────────────────────────────
     register() {
         const roleValue = this.registerRole.replace('ROLE_', '');
         const userData = {
@@ -177,93 +178,64 @@ export class NavbarComponent implements OnInit {
             return;
         }
 
-        // Force role non préfixé pour le backend (CANDIDAT, RECRUTEUR, ...)
         userData.role = userData.role?.toString().replace(/^ROLE_/, '');
 
-        console.log('Tentative d’enregistrement', userData);
         this.apiService.register(userData).subscribe(
             response => {
-                console.log('Registration successful', response);
-                
-                // Store user information
                 localStorage.setItem('userName', userData.nom);
                 localStorage.setItem('userRole', userData.role);
-                
-                // Update component state
                 this.isLoggedIn = true;
                 this.userName = userData.nom;
                 this.userRole = userData.role;
-                
                 alert('Inscription réussie !');
                 this.closePopup();
                 this.resetAuthForms();
-                
-                // Redirect to home-demo-2 after a short delay
-                setTimeout(() => {
-                    this.router.navigate(['/index-2']);
-                }, 500);
+                setTimeout(() => { this.router.navigate(['/index-2']); }, 500);
             },
             error => {
-                console.error('Registration failed', error);
                 const serverMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
-                alert(`Erreur lors de l\'inscription (${error.status || '?'}): ${serverMessage}`);
+                alert(`Erreur lors de l'inscription (${error.status || '?'}): ${serverMessage}`);
             }
         );
     }
 
-    // Login method
+    // ─── Login ─────────────────────────────────────────────────────────────────
     login() {
         if (!this.loginData.email || !this.loginData.motDePasse) {
             alert('Email et mot de passe sont requis pour la connexion.');
             return;
         }
 
-        console.log('Tentative de connexion', this.loginData);
         this.apiService.login(this.loginData).subscribe(
             response => {
-                console.log('Login successful', response);
-                // Extraire le token (peut être une string directe ou un objet {token: "..."})
                 const token = typeof response === 'string' ? response : response.token;
-                // Stocker le token JWT
                 localStorage.setItem('token', token);
 
-                // Essayer de récupérer l'ID du recruteur depuis différents endroits
                 let recruteurId: number | undefined;
-
-                // 1. Depuis la réponse directe
                 if (typeof response === 'object') {
                     recruteurId = response.userId || response.id || response.recruteurId;
                 }
-
-                // 2. Depuis le token décodé si pas trouvé dans la réponse
                 if (!recruteurId) {
                     try {
                         const decoded: any = jwtDecode(token);
                         recruteurId = decoded?.id || decoded?.sub || decoded?.userId || decoded?.recruteurId;
-                        console.log('🔍 ID trouvé dans token décodé:', recruteurId);
-                    } catch (decodeError) {
-                        console.error('Erreur décodage token:', decodeError);
-                    }
+                    } catch {}
                 }
-
-                // 3. Stocker l'ID si valide
                 if (recruteurId && !isNaN(Number(recruteurId)) && Number(recruteurId) > 0) {
                     localStorage.setItem('recruteurId', String(recruteurId));
-                    console.log('✅ ID Recruteur stocké:', recruteurId);
-                } else {
-                    console.warn('⚠️ Aucun ID Recruteur valide trouvé dans la réponse ou le token');
                 }
-                // Décoder le token pour obtenir le rôle
+
                 const decoded: any = jwtDecode(token);
-                const roleFromResponse = typeof response === 'object' ? (response.role || response.roles || response.user?.role || response.user?.roles) : undefined;
+                const roleFromResponse = typeof response === 'object'
+                    ? (response.role || response.roles || response.user?.role || response.user?.roles)
+                    : undefined;
                 const role = this.getRoleFromDecodedToken(decoded, roleFromResponse);
                 const roleFinal = role || this.inferRoleFromEmail(this.loginData.email) || 'CANDIDAT';
-                
-                // Extract and store user name from token or response
+
                 let userName = '';
                 if (typeof response === 'object' && response.userName) {
                     userName = response.userName;
-                } else if (typeof response === 'object' && response.user && response.user.nom) {
+                } else if (typeof response === 'object' && response.user?.nom) {
                     userName = response.user.nom;
                 } else if (decoded.name) {
                     userName = decoded.name;
@@ -272,202 +244,103 @@ export class NavbarComponent implements OnInit {
                 } else {
                     userName = this.loginData.email;
                 }
-                
+
                 localStorage.setItem('userName', userName);
                 localStorage.setItem('userRole', roleFinal);
                 this.isLoggedIn = true;
                 this.userName = userName;
                 this.userRole = roleFinal;
-                
-                console.log('Token decoded:', decoded);
-                console.log('Role from response:', roleFromResponse);
-                console.log('Extracted role:', role || '<aucun rôle trouvé>');
-                console.log('Final role used for redirect:', roleFinal);
-                console.log('User name stored:', userName);
-                // Fermer le modal et réinitialiser AVANT la redirection
+
                 this.closePopup();
                 this.resetAuthForms();
-                // Afficher l'alerte et PUIS rediriger
                 alert('Connexion réussie !');
-                // Rediriger vers le dashboard (cela ne sera pas bloqué par l'alerte)
-                setTimeout(() => {
-                    this.redirectAfterLogin(roleFinal);
-                }, 100);
+                setTimeout(() => { this.redirectAfterLogin(roleFinal); }, 100);
             },
             error => {
-                console.error('Login failed', error);
                 const serverMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
                 alert(`Erreur lors de la connexion (${error.status || '?'}): ${serverMessage}`);
             }
         );
     }
 
+    // ─── Redirection post-login ────────────────────────────────────────────────
     private redirectAfterLogin(role: string) {
-        console.log('=== REDIRECTION DEBUG ===');
-        console.log('Raw role received:', role);
-        console.log('Role type:', typeof role);
-
-        let normalizedRole = role?.toString().trim().toUpperCase().replace(/^ROLE_/, '');
-
-        if (!normalizedRole) {
-            const roleLower = role?.toString().trim().toLowerCase();
-            if (roleLower?.includes('recruteur')) {
-                normalizedRole = 'RECRUTEUR';
-            } else if (roleLower?.includes('candidat')) {
-                normalizedRole = 'CANDIDAT';
-            } else if (roleLower?.includes('admin')) {
-                normalizedRole = 'ADMIN';
-            } else if (roleLower?.includes('freelance')) {
-                normalizedRole = 'CLIENT_FREELANCE';
-            } else if (roleLower?.includes('organisateur')) {
-                normalizedRole = 'ORGANISATEUR';
-            }
-        }
-
-        console.log('Normalized role:', normalizedRole);
+        const normalizedRole = role?.toString().trim().toUpperCase().replace(/^ROLE_/, '');
 
         if (normalizedRole === 'CANDIDAT') {
-            console.log('Redirecting CANDIDAT to candidate-details');
             this.router.navigate(['/candidate-details']);
             return;
         }
-
-        if (normalizedRole === 'RECRUTEUR' || normalizedRole === 'CLIENT_FREELANCE' || normalizedRole === 'ORGANISATEUR') {
-            console.log('Redirecting to recruiter-dashboard');
+        if (['RECRUTEUR', 'CLIENT_FREELANCE', 'ORGANISATEUR'].includes(normalizedRole)) {
             this.router.navigate(['/recruiter-dashboard']);
             return;
         }
-
         if (normalizedRole === 'ADMIN') {
-            console.log('Redirecting to home (ADMIN)');
             this.router.navigate(['/']);
             return;
         }
-
-        console.log('No matching role case. Default redirect to home. Role was:', normalizedRole);
         this.router.navigate(['/']);
     }
 
+    // ─── Helpers rôle ──────────────────────────────────────────────────────────
     private getRoleFromDecodedToken(decoded: any, roleFromResponse?: any): string {
         if (roleFromResponse) {
             const role = this.extractRoleValue(roleFromResponse);
-            if (role) {
-                return role;
-            }
+            if (role) return role;
         }
+        if (!decoded || typeof decoded !== 'object') return '';
 
-        if (!decoded || typeof decoded !== 'object') {
-            return '';
-        }
-
-        const roleSources: Array<any> = [
-            decoded.role,
-            decoded.roles,
-            decoded.authorities,
-            decoded.roleName,
-            decoded.roleType,
-            decoded.user?.role,
-            decoded.user?.roles,
-            decoded.user?.authorities,
-            decoded.scope,
-            decoded.scopes,
-            decoded.realm_access?.roles,
-            decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
-            decoded['roles'],
-        ];
-
-        // Glas theo: rechercher tout champ contenant 'role' ou 'authority'
         for (const key in decoded) {
             if (decoded.hasOwnProperty(key)) {
                 const lowerKey = key.toLowerCase();
                 if (lowerKey.includes('role') || lowerKey.includes('authority')) {
                     const role = this.extractRoleValue(decoded[key]);
-                    if (role) {
-                        return role;
-                    }
+                    if (role) return role;
                 }
             }
         }
-
-        for (const source of roleSources) {
-            const role = this.extractRoleValue(source);
-            if (role) {
-                return role;
-            }
-        }
-
         return '';
     }
 
     private inferRoleFromEmail(email?: string): string {
-        if (!email) {
-            return '';
-        }
-
-        const normalizedEmail = email.toLowerCase();
-        if (normalizedEmail.includes('recruteur')) {
-            return 'RECRUTEUR';
-        }
-        if (normalizedEmail.includes('candidat') || normalizedEmail.includes('candidate')) {
-            return 'CANDIDAT';
-        }
-        if (normalizedEmail.includes('freelance')) {
-            return 'CLIENT_FREELANCE';
-        }
-        if (normalizedEmail.includes('organisateur')) {
-            return 'ORGANISATEUR';
-        }
-        if (normalizedEmail.includes('admin')) {
-            return 'ADMIN';
-        }
-
+        if (!email) return '';
+        const e = email.toLowerCase();
+        if (e.includes('recruteur')) return 'RECRUTEUR';
+        if (e.includes('candidat') || e.includes('candidate')) return 'CANDIDAT';
+        if (e.includes('freelance')) return 'CLIENT_FREELANCE';
+        if (e.includes('organisateur')) return 'ORGANISATEUR';
+        if (e.includes('admin')) return 'ADMIN';
         return '';
     }
 
     private extractRoleValue(source: any): string {
-        if (!source) {
-            return '';
-        }
-
-        if (typeof source === 'string') {
-            const normalized = source.trim();
-            if (normalized.length > 0) {
-                return normalized;
-            }
-            return '';
-        }
-
+        if (!source) return '';
+        if (typeof source === 'string' && source.trim().length > 0) return source.trim();
         if (Array.isArray(source)) {
             for (const item of source) {
                 const role = this.extractRoleValue(item);
-                if (role) {
-                    return role;
-                }
+                if (role) return role;
             }
             return '';
         }
-
         if (typeof source === 'object') {
-            const possibleFields = ['role', 'authority', 'name', 'type', 'value'];
-            for (const field of possibleFields) {
+            for (const field of ['role', 'authority', 'name', 'type', 'value']) {
                 if (source[field]) {
                     const role = this.extractRoleValue(source[field]);
-                    if (role) {
-                        return role;
-                    }
+                    if (role) return role;
                 }
             }
-            return '';
         }
-
         return '';
     }
 
+    // ─── Logout / Delete ───────────────────────────────────────────────────────
     logout(): void {
         localStorage.removeItem('token');
         localStorage.removeItem('userName');
         localStorage.removeItem('userRole');
         localStorage.removeItem('recruteurId');
+        localStorage.removeItem('candidatId');
         this.isLoggedIn = false;
         this.userName = '';
         this.userRole = '';
@@ -476,87 +349,43 @@ export class NavbarComponent implements OnInit {
     }
 
     deleteAccount(): void {
-        const confirmDelete = confirm('⚠️ ATTENTION: Êtes-vous sûr de vouloir supprimer votre compte?\n\nCette action est IRRÉVERSIBLE et supprimera:\n✗ Votre compte utilisateur\n✗ Vos informations candidat\n✗ Votre localisation\n✗ Toutes vos données\n\nCliquez sur "OK" pour confirmer la suppression.');
-        
-        if (!confirmDelete) {
-            return; // User cancelled
-        }
+        const confirmDelete = confirm('⚠️ Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.');
+        if (!confirmDelete) return;
 
         const userName = localStorage.getItem('userName');
-        if (!userName) {
-            alert('Erreur: Impossible de récupérer les informations du compte.');
-            return;
-        }
+        if (!userName) { alert('Erreur: Impossible de récupérer les informations du compte.'); return; }
 
-        // First get the candidate by email to get the ID and localisation_id
         this.apiService.getCandidateByEmail(userName).subscribe({
             next: (candidateData: any) => {
-                if (!candidateData || !candidateData.id) {
-                    alert('Erreur: Impossible de trouver le compte utilisateur.');
-                    return;
-                }
-
+                if (!candidateData?.id) { alert('Erreur: Impossible de trouver le compte utilisateur.'); return; }
                 const candidateId = candidateData.id;
                 const localisationId = candidateData.localisation_id;
 
-                // Step 1: Delete the candidate first (this unlinks localisation)
                 this.apiService.deleteCandidate(candidateId).subscribe({
                     next: () => {
-                        console.log('Candidate deleted, now deleting localisation if exists...');
-                        
-                        // Step 2: Delete localisation if it exists
                         if (localisationId) {
                             this.apiService.deleteLocalisation(localisationId).subscribe({
-                                next: () => {
-                                    console.log('Localisation deleted');
-                                    // Step 3: Delete user account and logout
-                                    this.deleteUserAndLogout(candidateId);
-                                },
-                                error: (error) => {
-                                    console.error('Error deleting localisation:', error);
-                                    // Continue to delete user anyway
-                                    this.deleteUserAndLogout(candidateId);
-                                }
+                                next: () => this.deleteUserAndLogout(candidateId),
+                                error: () => this.deleteUserAndLogout(candidateId)
                             });
                         } else {
-                            // No localisation to delete, go straight to user deletion
                             this.deleteUserAndLogout(candidateId);
                         }
                     },
-                    error: (error) => {
-                        console.error('Error deleting candidate:', error);
-                        alert('Erreur lors de la suppression du compte. Veuillez réessayer.')
-                    }
+                    error: () => alert('Erreur lors de la suppression du compte.')
                 });
             },
-            error: (error) => {
-                console.error('Error fetching candidate:', error);
-                alert('Erreur lors de la suppression du compte. Veuillez réessayer.')
-            }
+            error: () => alert('Erreur lors de la suppression du compte.')
         });
     }
 
     private deleteUserAndLogout(candidateId: number): void {
         this.apiService.deleteUser(candidateId).subscribe({
-            next: () => {
-                alert('✓ Votre compte a été supprimé avec succès.\n\nRedirection vers la page d\'accueil...');
-                this.logout();
-            },
-            error: (error) => {
-                console.error('Error deleting user:', error);
-                alert('✓ Votre profil a été supprimé. Déconnexion...');
-                this.logout();
-            }
+            next: () => { alert('Votre compte a été supprimé avec succès.'); this.logout(); },
+            error: () => { alert('Votre profil a été supprimé. Déconnexion...'); this.logout(); }
         });
     }
 
-    toggleUserDropdown(): void {
-        this.userDropdownOpen = !this.userDropdownOpen;
-    }
-
-    closeUserDropdown(): void {
-        this.userDropdownOpen = false;
-    }
-
+    toggleUserDropdown(): void { this.userDropdownOpen = !this.userDropdownOpen; }
+    closeUserDropdown(): void { this.userDropdownOpen = false; }
 }
-

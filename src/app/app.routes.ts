@@ -59,8 +59,8 @@ export const routes: Routes = [
     {path: 'job-details', component: JobDetailsPageComponent},
     {path: 'categories', component: CategoriesPageComponent},
     {path: 'candidates', component: CandidatesPageComponent},
-    {path: 'candidate-details', component: CandidateDetailsPageComponent},
     {path: 'candidate-details/:id', component: CandidateDetailsPageComponent},
+    {path: 'candidate-details', component: CandidateDetailsPageComponent, pathMatch: 'full'},
     {path: 'employers', component: EmployersPageComponent},
     {path: 'employer-details', component: EmployerDetailsPageComponent},
     {path: 'faq', component: FaqPageComponent},
@@ -111,7 +111,12 @@ export const routes: Routes = [
             {path: 'interviews', component: RdInterviews},
             {path: 'interviews/add-questions/:id', component: RdAddQuestions},
         ]
-    },
+    },{
+  path: 'formations',
+  loadChildren: () =>
+    import('./formations/formations.module').then(m => m.FormationsModule)
+},
 
-    {path: '**', component: NotFoundComponent} // This line will remain down from the whole pages component list
+    {path: '**', component: NotFoundComponent}, // This line will remain down from the whole pages component list
+
 ];

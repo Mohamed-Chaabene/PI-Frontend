@@ -10,6 +10,7 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import { NgxScrollTopModule } from 'ngx-scrolltop';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { AuthInterceptor } from './auth.interceptor';
+import { SharedModule } from './shared/shared.module';
 
 import { routes } from './app.routes';
 import { App } from './app';
@@ -55,8 +56,6 @@ import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-al
 import { CdMessageComponent } from './candidates-dashboard/cd-message/cd-message.component';
 import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-password/cd-change-password.component';
 
-// Common components
-import { NavbarComponent } from './common/navbar/navbar.component';
 import { HomeoneBannerComponent } from './pages/home-demo-one/homeone-banner/homeone-banner.component';
 import { CompaniesComponent } from './common/companies/companies.component';
 import { CategoriesComponent } from './common/categories/categories.component';
@@ -70,8 +69,6 @@ import { GetHiredByTopCompaniesComponent } from './common/get-hired-by-top-compa
 import { FaqComponent } from './common/faq/faq.component';
 import { DownloadAppComponent } from './common/download-app/download-app.component';
 import { BlogComponent } from './common/blog/blog.component';
-import { SubscribeComponent } from './common/subscribe/subscribe.component';
-import { FooterComponent } from './common/footer/footer.component';
 
 // More common
 import { BlogSidebarComponent } from './common/blog-sidebar/blog-sidebar.component';
@@ -149,7 +146,6 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         CdAlertJobsComponent,
         CdMessageComponent,
         CdChangePasswordComponent,
-        NavbarComponent,
         HomeoneBannerComponent,
         CompaniesComponent,
         CategoriesComponent,
@@ -163,8 +159,6 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         FaqComponent,
         DownloadAppComponent,
         BlogComponent,
-        SubscribeComponent,
-        FooterComponent,
         BlogSidebarComponent,
         WhyChooseUsComponent,
         TalentedExpertsComponent,
@@ -192,6 +186,7 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         RdChangePasswordComponent,
         HometwoBannerComponent,
         HomethreeBannerComponent
+
     ],
     imports: [
         BrowserModule,
@@ -205,7 +200,8 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         NgApexchartsModule,
         NgxScrollTopModule,
         GoogleMapsModule,
-        FileUploadComponent
+        FileUploadComponent,
+        SharedModule
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
