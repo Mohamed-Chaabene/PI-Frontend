@@ -144,20 +144,23 @@
 // ===== BADGES TYPE =====
 .type-badge {
     padding: 5px 12px;
-    border-radius: 5px;
+    border-radius: 20px;           // ← pill arrondi
     font-size: 12px;
     font-weight: 600;
-    color: white;
+    border: 1px solid;             // ← bordure
 
     &.entreprise {
-        background-color: #3b82f6;
+        background-color: #eff6ff;
+        color: #1d4ed8;
+        border-color: #bfdbfe;
     }
 
     &.universite {
-        background-color: #06b6d4;
+    background-color: #fffbeb;
+    color: #b45309;
+    border-color: #fde68a;
     }
 }
-
 // ===== BOUTONS =====
 .action-group {
     display: flex;
@@ -181,10 +184,11 @@
 }
 
 .btn-voir {
-    background-color: transparent;
-    color: #16a34a;
-    border: 1px solid #16a34a;
-    transition: all 0.2s ease;
+    background-color: #f0fdf4;   // ← fond vert clair
+    color: #16a34a;              // ← texte vert
+    border: 1px solid #bbf7d0;  // ← bordure vert clair
+    padding: 7px 14px;
+    border-radius: 8px;
 
     &:hover {
         background-color: #16a34a;
@@ -194,12 +198,13 @@
 }
 
 .btn-ajouter {
-    background-color: #16a34a;
+    background-color: #16a34a;  // ← fond vert foncé
     color: white;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: none;
 
-    &:hover {
-        background-color: #15803d;
-    }
+    &:hover { background-color: #15803d; }
 }
 
 .btn-modifier {
@@ -378,7 +383,7 @@
         &:hover { background: #e5e7eb; }
     }
 
-    .btn-modifier { // ← ajoutez ce bloc
+    .btn-modifier { 
         padding: 10px 24px;
         border-radius: 10px;
         font-size: 14px;

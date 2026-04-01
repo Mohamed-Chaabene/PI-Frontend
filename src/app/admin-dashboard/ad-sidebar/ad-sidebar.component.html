@@ -66,18 +66,15 @@
     </nav>
 
     <!-- USER CARD -->
-    <div class="sidebar-footer">
-        <div class="user-card">
-            <div class="user-avatar">AD</div>
-            <div class="user-info">
-                <div class="user-name">Admin</div>
-                <div class="user-role">Administrateur</div>
-            </div>
-            <div class="logout-icon" (click)="logout()">
-                <i class="ri-power-line"></i>
-            </div>
+<div class="sidebar-footer">
+    <div class="user-card">
+        <div class="user-avatar">{{ adminName ? adminName.substring(0, 2).toUpperCase() : 'AD' }}</div>
+        <div class="user-info">
+            <div class="user-name">{{ adminName }}</div>
+            <div class="user-role">Administrateur</div>
         </div>
     </div>
+</div>
 
 </div>
 

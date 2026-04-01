@@ -15,6 +15,7 @@ export class AdSidebarComponent {
     partenaires: any[] = [];
     nomExiste = false;
     telephoneExiste = false;
+    adminName: string = '';
 
     newPartenaire: any = {
         nom: '',
@@ -25,10 +26,12 @@ export class AdSidebarComponent {
     };
 
     constructor(
-        private router: Router,
-        private partenaireService: PartenaireService
-    ) {}
-
+    private router: Router,
+    private partenaireService: PartenaireService
+    ) {
+    const stored = localStorage.getItem('userName') || 'Admin';
+    this.adminName = stored.includes('@') ? stored.split('@')[0] : stored;
+    }
     toggleClass() {
         this.classApplied = !this.classApplied;
     }

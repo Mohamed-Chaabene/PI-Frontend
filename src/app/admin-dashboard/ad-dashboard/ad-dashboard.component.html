@@ -130,7 +130,7 @@
                     </div>
                     <div class="progress-track">
                         <div class="progress-fill blue"
-                             [style.width.%]="totalPartenaires > 0 ? 100 : 0">
+                             [style.width.%]="getPourcentage(totalPartenaires, totalPartenaires + totalOffres)">
                         </div>
                     </div>
                 </div>
@@ -144,7 +144,7 @@
                     </div>
                     <div class="progress-track">
                         <div class="progress-fill green"
-                             [style.width.%]="100">
+                             [style.width.%]="getPourcentage(totalOffres, totalPartenaires + totalOffres)">
                         </div>
                     </div>
                 </div>
