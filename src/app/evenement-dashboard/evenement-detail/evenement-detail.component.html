@@ -1,0 +1,77 @@
+<!-- Title -->
+<div class="breadcrumb-title">
+    <h1 class="mb-0 fw-semibold">Détails de l'Événement</h1>
+</div>
+
+<!-- Loading -->
+<div class="jove-card" *ngIf="loading">
+    <p>Chargement...</p>
+</div>
+
+<!-- Erreur -->
+<div class="alert alert-danger" *ngIf="error">
+    Erreur lors du chargement !
+</div>
+
+<!-- Détails -->
+<div class="jove-card" *ngIf="!loading && !error">
+    <h3 class="title">{{ evenement.titre }}</h3>
+
+    <div class="row">
+
+        <!-- Icône + infos principales -->
+        <div class="col-md-12 mb-4">
+            <div class="d-sm-flex align-items-center">
+                <div class="detail-icon">
+                    <i class="ri-calendar-event-line"></i>
+                </div>
+                <div class="ms-4">
+                    <h2 class="fw-semibold mb-1">{{ evenement.titre }}</h2>
+                    <span class="type-badge">{{ evenement.type }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations -->
+        <div class="col-md-6">
+            <div class="detail-box">
+                <div class="detail-item">
+                    <i class="ri-map-pin-line"></i>
+                    <div>
+                        <span class="label">Lieu</span>
+                        <span class="value">{{ evenement.lieu }}</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="ri-calendar-line"></i>
+                    <div>
+                        <span class="label">Date</span>
+                        <span class="value">{{ evenement.date | date:'dd MMMM yyyy' }}</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="ri-bookmark-line"></i>
+                    <div>
+                        <span class="label">Type</span>
+                        <span class="value">{{ evenement.type }}</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="ri-user-line"></i>
+                    <div>
+                        <span class="label">Organisateur</span>
+                        <span class="value">{{ evenement.nomOrganisateur }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Boutons -->
+    <div class="d-flex gap-3 mt-4">
+        <button class="btn-submit" (click)="retour()">
+            <i class="ri-arrow-left-line"></i> Retour
+        </button>
+    </div>
+</div>

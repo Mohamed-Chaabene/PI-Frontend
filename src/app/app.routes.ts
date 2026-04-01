@@ -31,7 +31,6 @@ import { EdChangePasswordComponent } from './employers-dashboard/ed-change-passw
 import { CandidatesDashboardComponent } from './candidates-dashboard/candidates-dashboard.component';
 import { CDashboardComponent } from './candidates-dashboard/c-dashboard/c-dashboard.component';
 import { CdProfileComponent } from './candidates-dashboard/cd-profile/cd-profile.component';
-import { CdResumeComponent } from './candidates-dashboard/cd-resume/cd-resume.component';
 import { CdBookmarksComponent } from './candidates-dashboard/cd-bookmarks/cd-bookmarks.component';
 import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component';
 import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
@@ -49,7 +48,13 @@ import { RdInterviews } from './recruiter-dashboard/rd-interviews/rd-interviews'
 import { RdAddQuestions } from './recruiter-dashboard/rd-add-questions/rd-add-questions';
 import { PublicTestPassPageComponent } from './pages/public-test-pass-page/public-test-pass-page.component';
 import { CandidateEntretiensPageComponent } from './pages/candidate-entretiens-page/candidate-entretiens-page.component';
-
+import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
+import { EvenementDashboardComponent } from './evenement-dashboard/evenement-dashboard.component';
+import { EvenementTemplateComponent } from './evenement-dashboard/evenement-template/evenement-template.component';
+import { EvenementFormComponent } from './evenement-dashboard/evenement-form/evenement-form';
+import { EvenementListComponent } from './evenement-dashboard/evenement-list/evenement-list.component';
+import { EvenementEditComponent } from './evenement-dashboard/evenement-edit/evenement-edit.component';
+import { EvenementDetailComponent } from './evenement-dashboard/evenement-detail/evenement-detail.component';
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
     {path: 'login', component: HomeDemoOneComponent},
@@ -94,7 +99,7 @@ export const routes: Routes = [
         children: [
             {path: '', component: CDashboardComponent},
             {path: 'my-profile', component: CdProfileComponent},
-            {path: 'resume', component: CdResumeComponent},
+             { path: 'documents', component: CdDocumentsComponent },   //************************************** */
             {path: 'bookmarks', component: CdBookmarksComponent},
             {path: 'applied-jobs', component: CdAppliedJobsComponent},
             {path: 'alert-jobs', component: CdAlertJobsComponent},
@@ -116,11 +121,24 @@ export const routes: Routes = [
             {path: 'interviews', component: RdInterviews},
             {path: 'interviews/add-questions/:id', component: RdAddQuestions},
         ]
+
     },{
   path: 'formations',
   loadChildren: () =>
     import('./formations/formations.module').then(m => m.FormationsModule)
 },
+{path: 'evenement-dashboard', component: EvenementDashboardComponent,
+        children: [
+      { path: '', component: EvenementTemplateComponent},
+      {path: 'ajouter', component: EvenementFormComponent}, 
+      {path: 'liste', component: EvenementListComponent},
+      {path: 'modifier/:id', component: EvenementEditComponent},
+      {path: 'detail/:id', component: EvenementDetailComponent},
+      
+    ]
+    }, 
+
+
 
     {path: '**', component: NotFoundComponent}, // This line will remain down from the whole pages component list
 

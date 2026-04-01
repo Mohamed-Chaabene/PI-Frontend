@@ -1,622 +1,638 @@
-<!-- Title -->
-<div class="breadcrumb-title">
-    <h1 class="mb-0 fw-semibold">
-        Applied Jobs
-    </h1>
+<div class="applied-jobs-wrapper">
+    <div class="container-fluid px-4">
+        <!-- Header avec effet glassmorphisme -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <span class="hero-badge">Espace Candidat</span>
+                    <h1>My Applications</h1>
+                </div>
+                
+                
+            </div>
+            <div class="hero-actions">
+                <button class="btn-primary-gradient" (click)="openCreateModal()">
+                    <i class="ri-add-line"></i>
+                    <span>New application</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Message de notification -->
+        <div *ngIf="message" class="notification-toast" [ngClass]="'toast-' + messageType">
+            <div class="toast-icon">
+                <i class="ri-information-line"></i>
+            </div>
+            <div class="toast-content">
+                <span>{{ message }}</span>
+            </div>
+            <button class="toast-close" (click)="message = ''">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="action-card" (click)="openCVModal()">
+                <div class="action-icon">
+                    <i class="ri-file-user-line"></i>
+                </div>
+                <div class="action-info">
+                    <h4>Mon CV</h4>
+                    <p>Gérer mon curriculum vitae</p>
+                </div>
+                <i class="ri-arrow-right-s-line action-arrow"></i>
+            </div>
+            <div class="action-card" (click)="openLettreModal()">
+                <div class="action-icon">
+                    <i class="ri-mail-send-line"></i>
+                </div>
+                <div class="action-info">
+                    <h4>Lettre de motivation</h4>
+                    <p>Générer avec l'IA</p>
+                </div>
+                <i class="ri-arrow-right-s-line action-arrow"></i>
+            </div>
+            <div class="action-card" (click)="openAnalyseModal()">
+                <div class="action-icon">
+                    <i class="ri-bar-chart-line"></i>
+                </div>
+                <div class="action-info">
+                    <h4>Analyser mon profil</h4>
+                    <p>Optimiser vos chances</p>
+                </div>
+                <i class="ri-arrow-right-s-line action-arrow"></i>
+            </div>
+        </div>
+
+        <!-- Stats avancées -->
+        <div class="stats-advanced-grid">
+            <div class="stat-advanced-card">
+                <div class="stat-icon-wrapper">
+                    <i class="ri-calendar-check-line"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="stat-number">{{ candidaturesCeMois || 0 }}</span>
+                    <span class="stat-title">Candidatures ce mois</span>
+                    <div class="stat-trend positive">
+                        <i class="ri-arrow-up-line"></i> +12%
+                    </div>
+                </div>
+            </div>
+            <div class="stat-advanced-card">
+                <div class="stat-icon-wrapper">
+                    <i class="ri-chat-voice-line"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="stat-number">{{ entretiensObtenus || 0 }}</span>
+                    <span class="stat-title">Entretiens obtenus</span>
+                    <div class="stat-trend positive">
+                        <i class="ri-arrow-up-line"></i> +8%
+                    </div>
+                </div>
+            </div>
+            <div class="stat-advanced-card">
+                <div class="stat-icon-wrapper">
+                    <i class="ri-eye-line"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="stat-number">{{ vuesRecruteurs || 0 }}</span>
+                    <span class="stat-title">Vues recruteurs</span>
+                    <div class="stat-trend neutral">
+                        <i class="ri-subtract-line"></i> Stable
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-container">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <p>Chargement de vos candidatures...</p>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && !errorMessage && candidatures.length === 0" class="empty-state-modern">
+            <div class="empty-illustration">
+                <i class="ri-file-list-line"></i>
+            </div>
+            <h3>Aucune candidature pour le moment</h3>
+            <p>Commencez votre recherche d'emploi en postulant à des offres qui vous correspondent.</p>
+            <button class="btn-outline-primary" (click)="openCreateModal()">
+                <i class="ri-add-line"></i> Postuler maintenant
+            </button>
+        </div>
+
+        <!-- Liste des candidatures -->
+        <div *ngIf="!isLoading && !errorMessage && candidatures.length > 0" class="candidatures-grid">
+            <div class="candidature-card" *ngFor="let c of candidatures">
+                <div class="card-header">
+                    <div class="company-icon">
+                        <i class="ri-building-line"></i>
+                    </div>
+                    <div class="company-info">
+                        <h3>{{ c.nomComplet || 'Candidat' }}</h3>
+                        <p>{{ c.offreTitre || c.poste || 'Candidature spontanée' }}</p>
+                    </div>
+                    <div class="status-indicator" [ngClass]="getStatusClass(c.statut)">
+                        <span class="status-dot"></span>
+                        <span class="status-text">{{ getStatusLabel(c.statut) }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <i class="ri-calendar-line"></i>
+                        <span>Postulé le {{ formatDate(c.dateEnvoi) }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="c.email">
+                        <i class="ri-mail-line"></i>
+                        <span>{{ c.email }}</span>
+                    </div>
+                    <div class="skills-preview" *ngIf="c.competences">
+                        <i class="ri-flashlight-line"></i>
+                        <span>{{ c.competences | slice:0:60 }}{{ c.competences.length > 60 ? '...' : '' }}</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn-icon" (click)="viewCandidature(c)" title="Voir détails">
+                        <i class="ri-eye-line"></i>
+                    </button>
+                    <button class="btn-icon" (click)="openEditModal(c)" title="Modifier">
+                        <i class="ri-edit-line"></i>
+                    </button>
+                    <button class="btn-icon danger" (click)="deleteCandidature(c.id)" title="Supprimer">
+                        <i class="ri-delete-bin-line"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Newsletter -->
+        <div class="newsletter-section">
+            <div class="newsletter-card">
+                <div class="newsletter-content">
+                    <div class="newsletter-text">
+                        <h3>Boostez vos candidatures </h3>
+                        <p>Recevez des offres personnalisées et des conseils exclusifs</p>
+                        <div class="newsletter-form">
+                            <input type="email" placeholder="votre@email.com" [(ngModel)]="newsletterEmail">
+                            <button (click)="subscribeNewsletter()" [disabled]="isSubscribing">
+                                {{ isSubscribing ? 'Inscription...' : "S'abonner" }}
+                                <i class="ri-arrow-right-line"></i>
+                            </button>
+                        </div>
+                        <span class="newsletter-note">+{{ nombreCandidatsActifs || 1000 }} candidats déjà inscrits</span>
+                    </div>
+                    <div class="newsletter-illustration">
+                        <i class="ri-rocket-line"></i>
+                        <div class="floating-badge">+47% de réponses</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Jobs Applied Recently -->
-<div class="jove-card">
-    <div class="row jobs-applied-recently">
-        <div class="col-xxl-12">
-            <div class="single-job-box">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <div class="d-sm-flex align-items-center">
-                        <div class="image">
-                            <img src="images/companies/company16.png" alt="company-image">
-                        </div>
-                        <div class="content">
-                            <h3 class="fw-semibold">
-                                <a routerLink="/job-details">
-                                    Digital Marketing Manager
-                                </a>
-                            </h3>
-                            <span class="location d-block">
-                                Oxygen in New York
-                            </span>
-                            <span class="job-type d-block">
-                                Full Time
-                            </span>
-                        </div>
-                    </div>
-                    <div class="custom-info d-sm-flex align-items-center">
-                        <span class="active fw-medium d-block">
-                            Active
-                        </span>
-                        <ul class="ps-0 mb-0 list-unstyled">
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-check-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-close-line"></i>
-                                </button>
-                            </li>
-                        </ul>
+<!-- ==================== MODAL CV ==================== -->
+<div class="modal-overlay" *ngIf="showCVModal" (click)="closeCVModal()">
+    <div class="modal-container modal-cv" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <div class="header-icon"><i class="ri-file-user-line"></i></div>
+            <div class="header-title">
+                <h3>Mon CV</h3>
+                <p>Gérez votre curriculum vitae</p>
+            </div>
+            <button class="modal-close" (click)="closeCVModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="cv-card" *ngIf="cvUrl">
+                <div class="cv-preview-icon">
+                    <i class="ri-file-pdf-line"></i>
+                </div>
+                <div class="cv-info-detail">
+                    <h4>{{ cvName || 'CV.pdf' }}</h4>
+                    <div class="cv-meta">
+                        <span><i class="ri-calendar-line"></i> {{ cvDate }}</span>
+                        <span><i class="ri-database-line"></i> {{ getFileSize() }}</span>
                     </div>
                 </div>
-                <div class="info d-sm-flex align-items-center justify-content-between">
-                    <span class="salary d-block">
-                        <span class="fw-semibold">Salary:</span>
-                        <span>$2K - $2.5K</span>
-                        /monthly
-                    </span>
-                    <span class="created d-block">
-                        <span class="fw-semibold">Created:</span>
-                        Oct 21, 2025
-                    </span>
-                    <span class="deadline d-block">
-                        <span class="fw-semibold">Deadline:</span>
-                        Nov 17, 2025
-                    </span>
+                <div class="cv-actions-group">
+                    <button class="btn-outline" (click)="openInNewTab()"><i class="ri-eye-line"></i> Visualiser</button>
+                    <button class="btn-outline" (click)="telechargerCV()"><i class="ri-download-line"></i> Télécharger</button>
+                    <button class="btn-outline danger" (click)="supprimerCV()"><i class="ri-delete-bin-line"></i> Supprimer</button>
                 </div>
+                <button class="btn-replace" (click)="uploadNewCV()"><i class="ri-upload-line"></i> Remplacer mon CV</button>
+            </div>
+            <div class="empty-cv-state" *ngIf="!cvUrl">
+                <div class="empty-icon"><i class="ri-file-pdf-line"></i></div>
+                <h4>Aucun CV téléchargé</h4>
+                <p>Ajoutez votre CV pour augmenter vos chances d'être contacté</p>
+                <button class="btn-primary" (click)="openFileSelector()"><i class="ri-upload-cloud-2-line"></i> Importer mon CV</button>
+                <small class="upload-hint">PDF, DOC, DOCX (Max 5 Mo)</small>
             </div>
         </div>
-        <div class="col-xxl-12">
-            <div class="single-job-box">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <div class="d-sm-flex align-items-center">
-                        <div class="image">
-                            <img src="images/companies/company17.png" alt="company-image">
-                        </div>
-                        <div class="content">
-                            <h3 class="fw-semibold">
-                                <a routerLink="/job-details">
-                                    Technical SEO Manager
-                                </a>
-                            </h3>
-                            <span class="location d-block">
-                                Affort in Tokyo
-                            </span>
-                            <span class="job-type d-block">
-                                Full Time
-                            </span>
-                        </div>
-                    </div>
-                    <div class="custom-info d-sm-flex align-items-center">
-                        <span class="active fw-medium d-block">
-                            Active
-                        </span>
-                        <ul class="ps-0 mb-0 list-unstyled">
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-check-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-close-line"></i>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="info d-sm-flex align-items-center justify-content-between">
-                    <span class="salary d-block">
-                        <span class="fw-semibold">Salary:</span>
-                        <span>$15 - $25</span>
-                        /hourly
-                    </span>
-                    <span class="created d-block">
-                        <span class="fw-semibold">Created:</span>
-                        Oct 21, 2025
-                    </span>
-                    <span class="deadline d-block">
-                        <span class="fw-semibold">Deadline:</span>
-                        Nov 18, 2025
-                    </span>
-                </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL LETTRE ==================== -->
+<div class="modal-overlay" *ngIf="showLettreModal" (click)="closeLettreModal()">
+    <div class="modal-container modal-lettre" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3><i class="ri-mail-send-line"></i> Générateur de lettre de motivation</h3>
+            <button class="modal-close" (click)="closeLettreModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Entreprise</label>
+                <input type="text" class="form-control" [(ngModel)]="lettreData.entreprise" placeholder="Nom de l'entreprise">
+            </div>
+            <div class="form-group">
+                <label>Poste</label>
+                <input type="text" class="form-control" [(ngModel)]="lettreData.poste" placeholder="Intitulé du poste">
+            </div>
+            <div class="form-group">
+                <label>Votre message personnalisé</label>
+                <textarea class="form-control" rows="5" [(ngModel)]="lettreData.message" placeholder="Décrivez votre motivation..."></textarea>
+            </div>
+            <div class="lettre-preview" *ngIf="lettreGeneree">
+                <h4>Aperçu</h4>
+                <div class="preview-content">{{ lettreGeneree }}</div>
             </div>
         </div>
-        <div class="col-xxl-12">
-            <div class="single-job-box">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <div class="d-sm-flex align-items-center">
-                        <div class="image">
-                            <img src="images/companies/company8.png" alt="company-image">
-                        </div>
-                        <div class="content">
-                            <h3 class="fw-semibold">
-                                <a routerLink="/job-details">
-                                    Mechanical Engineer
-                                </a>
-                            </h3>
-                            <span class="location d-block">
-                                Topoint in London
-                            </span>
-                            <span class="job-type d-block">
-                                Full Time
-                            </span>
-                        </div>
-                    </div>
-                    <div class="custom-info d-sm-flex align-items-center">
-                        <span class="active fw-medium d-block">
-                            Active
-                        </span>
-                        <ul class="ps-0 mb-0 list-unstyled">
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-check-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-close-line"></i>
-                                </button>
-                            </li>
-                        </ul>
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeLettreModal()">Annuler</button>
+            <button class="btn-primary" (click)="genererLettreFinal()"><i class="ri-file-copy-line"></i> Générer</button>
+            <button class="btn-primary-outline" (click)="telechargerLettreGeneree()" *ngIf="lettreGeneree"><i class="ri-download-line"></i> Télécharger</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL ANALYSE ==================== -->
+<div class="modal-overlay" *ngIf="showAnalyseModal" (click)="closeAnalyseModal()">
+    <div class="modal-container modal-analyse" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3><i class="ri-bar-chart-line"></i> Analyse de votre profil</h3>
+            <button class="modal-close" (click)="closeAnalyseModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="score-container">
+                <div class="score-circle">
+                    <svg viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" class="circle-bg"/>
+                        <circle cx="50" cy="50" r="45" class="circle-progress" [style.stroke-dasharray]="scoreProfil * 2.83 + ', 283'"/>
+                    </svg>
+                    <div class="score-value">{{ scoreProfil }}<span>%</span></div>
+                </div>
+                <div class="score-label">Score de complétude</div>
+            </div>
+            <div class="analyse-items">
+                <div class="analyse-item" [ngClass]="{'completed': profil.competences, 'warning': !profil.competences}">
+                    <div class="item-icon"><i [class]="profil.competences ? 'ri-check-line' : 'ri-alert-line'"></i></div>
+                    <div class="item-content">
+                        <h4>Compétences</h4>
+                        <p>{{ profil.competences ? 'Compétences renseignées' : 'Aucune compétence renseignée' }}</p>
                     </div>
                 </div>
-                <div class="info d-sm-flex align-items-center justify-content-between">
-                    <span class="salary d-block">
-                        <span class="fw-semibold">Salary:</span>
-                        <span>$1K - $3K</span>
-                        /monthly
-                    </span>
-                    <span class="created d-block">
-                        <span class="fw-semibold">Created:</span>
-                        Oct 21, 2025
-                    </span>
-                    <span class="deadline d-block">
-                        <span class="fw-semibold">Deadline:</span>
-                        Oct 30, 2025
-                    </span>
+                <div class="analyse-item" [ngClass]="{'completed': profil.experience, 'warning': !profil.experience}">
+                    <div class="item-icon"><i [class]="profil.experience ? 'ri-check-line' : 'ri-alert-line'"></i></div>
+                    <div class="item-content">
+                        <h4>Expérience</h4>
+                        <p>{{ profil.experience || 'Non renseignée' }}</p>
+                    </div>
                 </div>
+                <div class="analyse-item" [ngClass]="{'completed': profil.cv, 'warning': !profil.cv}">
+                    <div class="item-icon"><i [class]="profil.cv ? 'ri-check-line' : 'ri-alert-line'"></i></div>
+                    <div class="item-content">
+                        <h4>CV</h4>
+                        <p>{{ profil.cv ? 'CV téléchargé' : 'CV manquant' }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="conseils-box" *ngIf="conseils.length > 0">
+                <h4><i class="ri-lightbulb-line"></i> Conseils personnalisés</h4>
+                <ul>
+                    <li *ngFor="let conseil of conseils">{{ conseil }}</li>
+                </ul>
             </div>
         </div>
-        <div class="col-xxl-12">
-            <div class="single-job-box">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <div class="d-sm-flex align-items-center">
-                        <div class="image">
-                            <img src="images/companies/company9.png" alt="company-image">
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeAnalyseModal()">Fermer</button>
+            <button class="btn-primary" (click)="allerCompleterProfil()" *ngIf="scoreProfil < 80">
+                <i class="ri-edit-line"></i> Compléter mon profil
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL CREATION ==================== -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <div class="header-left">
+                <div class="header-icon"><i class="ri-user-add-line"></i></div>
+                <div class="header-text">
+                    <h3>Nouvelle candidature</h3>
+                    <p>Remplissez le formulaire ci-dessous pour postuler</p>
+                </div>
+            </div>
+            <button class="modal-close" (click)="closeCreateModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form class="create-form">
+                <div class="form-section">
+                    <h4>👤 Informations personnelles</h4>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Nom complet <span class="required">*</span></label>
+                            <input type="text" class="form-control" [class.is-invalid]="showError('nomComplet')" [(ngModel)]="newCandidature.nomComplet" name="nomComplet" placeholder="Votre nom et prénom">
+                            <div class="invalid-feedback" *ngIf="showError('nomComplet')">{{ createErrors.nomComplet }}</div>
                         </div>
-                        <div class="content">
-                            <h3 class="fw-semibold">
-                                <a routerLink="/job-details">
-                                    Senior Support Engineer
-                                </a>
-                            </h3>
-                            <span class="location d-block">
-                                Zayper in Barcelona
-                            </span>
-                            <span class="job-type d-block">
-                                Part Time
-                            </span>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-control" [class.is-invalid]="showError('email')" [(ngModel)]="newCandidature.email" name="email" placeholder="exemple@email.com">
+                            <div class="invalid-feedback" *ngIf="showError('email')">{{ createErrors.email }}</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Téléphone</label>
+                            <input type="tel" class="form-control" [class.is-invalid]="showError('telephone')" [(ngModel)]="newCandidature.telephone" name="telephone" placeholder="+215 55 555 555">
+                            <div class="invalid-feedback" *ngIf="showError('telephone')">{{ createErrors.telephone }}</div>
                         </div>
                     </div>
-                    <div class="custom-info d-sm-flex align-items-center">
-                        <span class="active fw-medium closed d-block">
-                            Closed
+                </div>
+
+                <div class="form-section">
+                    <h4>🎓 Formation</h4>
+                    <div class="formations-list" *ngIf="newCandidature.formations?.length">
+                        <div class="formation-item" *ngFor="let f of newCandidature.formations; let i=index">
+                            <span><strong>{{ f.diplome }}</strong> - {{ f.institution }} ({{ f.annee }})</span>
+                            <button type="button" class="remove-item" (click)="removeFormation(i)">×</button>
+                        </div>
+                    </div>
+                    <div class="add-section">
+                        <div class="form-row">
+                            <input type="text" class="form-control" [(ngModel)]="newCandidature.newFormation.diplome" name="newDiplome" placeholder="Diplôme">
+                            <input type="text" class="form-control" [(ngModel)]="newCandidature.newFormation.institution" name="newInstitution" placeholder="Établissement">
+                            <input type="text" class="form-control" [(ngModel)]="newCandidature.newFormation.annee" name="newAnnee" placeholder="Année">
+                        </div>
+                        <button type="button" class="btn-add" (click)="addFormation()">+ Ajouter</button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>💼 Expérience professionnelle</h4>
+                    <div class="experiences-list" *ngIf="newCandidature.experiences?.length">
+                        <div class="experience-item" *ngFor="let exp of newCandidature.experiences; let i=index">
+                            <div class="exp-header">
+                                <span><strong>{{ exp.poste }}</strong> - {{ exp.entreprise }}</span>
+                                <button type="button" class="remove-item" (click)="removeExperience(i)">×</button>
+                            </div>
+                            <p class="exp-period">{{ exp.periode }}</p>
+                            <p class="exp-desc">{{ exp.description }}</p>
+                        </div>
+                    </div>
+                    <div class="add-section">
+                        <div class="form-grid">
+                            <input type="text" class="form-control" [(ngModel)]="newCandidature.newExperience.poste" name="newPoste" placeholder="Poste occupé">
+                            <input type="text" class="form-control" [(ngModel)]="newCandidature.newExperience.entreprise" name="newEntreprise" placeholder="Entreprise">
+                            <input type="text" class="form-control" [(ngModel)]="newCandidature.newExperience.periode" name="newPeriode" placeholder="Période (ex: 2022-2024)">
+                        </div>
+                        <textarea class="form-control" rows="2" [(ngModel)]="newCandidature.newExperience.description" name="newDescription" placeholder="Description"></textarea>
+                        <button type="button" class="btn-add" (click)="addExperience()">+ Ajouter</button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>⚡ Compétences <span class="required">*</span></h4>
+                    <div class="skills-tags">
+                        <span class="skill-tag" *ngFor="let skill of newCandidature.competences; let i=index">
+                            {{ skill }}
+                            <i class="ri-close-line" (click)="removeSkill(i)"></i>
                         </span>
-                        <ul class="ps-0 mb-0 list-unstyled">
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-check-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-close-line"></i>
-                                </button>
-                            </li>
-                        </ul>
+                    </div>
+                    <div class="add-skill">
+                        <input type="text" class="form-control" [class.is-invalid]="showError('competences')" [(ngModel)]="newCandidature.skillInput" name="skillInput" placeholder="Ajouter une compétence" (keyup.enter)="addSkill()">
+                        <button type="button" class="btn-add-small" (click)="addSkill()">+</button>
+                    </div>
+                    <div class="invalid-feedback" *ngIf="showError('competences')">{{ createErrors.competences }}</div>
+                </div>
+
+                <div class="form-section">
+                    <h4>📄 CV <span class="required">*</span></h4>
+                    <div class="file-upload-area" [class.has-file]="newCandidature.cvName">
+                        <input type="file" #cvInput (change)="onCVFileSelected($event)" accept=".pdf,.doc,.docx" style="display: none">
+                        <button type="button" class="btn-upload" (click)="cvInput.click()">
+                            <i class="ri-upload-line"></i>
+                            {{ newCandidature.cvName ? 'Changer de fichier' : 'Choisir un fichier' }}
+                        </button>
+                        <span class="file-name" *ngIf="newCandidature.cvName">{{ newCandidature.cvName }}</span>
+                        <span class="file-hint" *ngIf="!newCandidature.cvName">PDF, DOC, DOCX (Max 5 Mo)</span>
+                    </div>
+                    <div class="invalid-feedback" *ngIf="showError('cv')">{{ createErrors.cv }}</div>
+                </div>
+
+                <div class="form-section">
+                    <h4>📝 Lettre de motivation</h4>
+                    <textarea class="form-control" rows="4" [(ngModel)]="newCandidature.lettreMotivation" name="lettreMotivation" placeholder="Décrivez votre motivation..."></textarea>
+                </div>
+
+                <div class="form-section">
+                    <h4>📅 Disponibilité</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Date de disponibilité</label>
+                            <input type="date" class="form-control" [(ngModel)]="newCandidature.dateDisponibilite" name="dateDisponibilite">
+                        </div>
+                        <div class="form-group">
+                            <label>Préavis</label>
+                            <select class="form-control" [(ngModel)]="newCandidature.preavis" name="preavis">
+                                <option value="">Sélectionnez</option>
+                                <option value="IMMEDIAT">Immédiat</option>
+                                <option value="1_MOIS">1 mois</option>
+                                <option value="2_MOIS">2 mois</option>
+                                <option value="3_MOIS">3 mois</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="info d-sm-flex align-items-center justify-content-between">
-                    <span class="salary d-block">
-                        <span class="fw-semibold">Salary:</span>
-                        <span>$10 - $50</span>
-                        /hourly
-                    </span>
-                    <span class="created d-block">
-                        <span class="fw-semibold">Created:</span>
-                        Oct 21, 2025
-                    </span>
-                    <span class="deadline d-block">
-                        <span class="fw-semibold">Deadline:</span>
-                        Nov 10, 2025
+
+                <div class="form-section">
+                    <label class="checkbox-label">
+                        <input type="checkbox" [(ngModel)]="newCandidature.acceptRGPD" name="acceptRGPD">
+                        <span>J'accepte que mes données soient traitées conformément au RGPD <span class="required">*</span></span>
+                    </label>
+                    <div class="invalid-feedback" *ngIf="showError('acceptRGPD')">{{ createErrors.acceptRGPD }}</div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeCreateModal()">Annuler</button>
+            <button class="btn-primary" (click)="createCandidature()" [disabled]="isCreating">
+                {{ isCreating ? 'Envoi en cours...' : 'Postuler' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL VISUALISATION ==================== -->
+<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <div class="header-left">
+                <div class="header-icon"><i class="ri-file-eye-line"></i></div>
+                <div class="header-text">
+                    <h3>Détails de la candidature</h3>
+                    <p>Informations complètes</p>
+                </div>
+            </div>
+            <button class="modal-close" (click)="closeViewModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="view-header">
+                <div class="status-badge-large" [ngClass]="getStatusClass(viewingCandidature?.statut)">
+                    {{ getStatusLabel(viewingCandidature?.statut) }}
+                </div>
+                <div class="view-date">
+                    <i class="ri-calendar-line"></i> Postulé le {{ formatDate(viewingCandidature?.dateEnvoi) }}
+                </div>
+            </div>
+
+            <div class="view-section">
+                <h4><i class="ri-user-line"></i> Informations personnelles</h4>
+                <div class="info-row">
+                    <span class="info-label">Nom complet</span>
+                    <span class="info-value">{{ viewingCandidature?.nomComplet || 'Non spécifié' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ viewingCandidature?.email || 'Non spécifié' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Téléphone</span>
+                    <span class="info-value">{{ viewingCandidature?.telephone || 'Non spécifié' }}</span>
+                </div>
+            </div>
+
+            <div class="view-section" *ngIf="viewingCandidature?.offreTitre">
+                <h4><i class="ri-briefcase-line"></i> Offre ciblée</h4>
+                <div class="info-row">
+                    <span class="info-label">Titre</span>
+                    <span class="info-value">{{ viewingCandidature?.offreTitre }}</span>
+                </div>
+            </div>
+
+            <div class="view-section" *ngIf="viewingCandidature?.competences">
+                <h4><i class="ri-flashlight-line"></i> Compétences</h4>
+                <div class="skills-list">
+                    <span class="skill-tag" *ngFor="let skill of viewingCandidature?.competences?.split(',')">
+                        {{ skill.trim() }}
                     </span>
                 </div>
+            </div>
+
+            <div class="view-section" *ngIf="viewingCandidature?.formation">
+                <h4><i class="ri-graduation-cap-line"></i> Formation</h4>
+                <div class="view-text">{{ viewingCandidature?.formation }}</div>
+            </div>
+
+            <div class="view-section" *ngIf="viewingCandidature?.experience">
+                <h4><i class="ri-briefcase-line"></i> Expérience</h4>
+                <div class="view-text">{{ viewingCandidature?.experience }}</div>
+            </div>
+
+            <div class="view-section" *ngIf="viewingCandidature?.lettreMotivation">
+                <h4><i class="ri-mail-line"></i> Lettre de motivation</h4>
+                <div class="view-text">{{ viewingCandidature?.lettreMotivation }}</div>
             </div>
         </div>
-        <div class="col-xxl-12">
-            <div class="single-job-box">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <div class="d-sm-flex align-items-center">
-                        <div class="image">
-                            <img src="images/companies/company10.png" alt="company-image">
-                        </div>
-                        <div class="content">
-                            <h3 class="fw-semibold">
-                                <a routerLink="/job-details">
-                                    Senior C# / .NET Developer
-                                </a>
-                            </h3>
-                            <span class="location d-block">
-                                Doca in São Paulo
-                            </span>
-                            <span class="job-type d-block">
-                                Full Time
-                            </span>
-                        </div>
-                    </div>
-                    <div class="custom-info d-sm-flex align-items-center">
-                        <span class="active fw-medium d-block">
-                            Active
-                        </span>
-                        <ul class="ps-0 mb-0 list-unstyled">
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-check-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-close-line"></i>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="info d-sm-flex align-items-center justify-content-between">
-                    <span class="salary d-block">
-                        <span class="fw-semibold">Salary:</span>
-                        <span>$6K - $7K</span>
-                        /monthly
-                    </span>
-                    <span class="created d-block">
-                        <span class="fw-semibold">Created:</span>
-                        Oct 21, 2025
-                    </span>
-                    <span class="deadline d-block">
-                        <span class="fw-semibold">Deadline:</span>
-                        Nov 11, 2025
-                    </span>
-                </div>
-            </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeViewModal()">Fermer</button>
+            <button class="btn-primary" (click)="openEditModal(viewingCandidature); closeViewModal()">
+                <i class="ri-edit-line"></i> Modifier
+            </button>
         </div>
-        <div class="col-xxl-12">
-            <div class="single-job-box">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <div class="d-sm-flex align-items-center">
-                        <div class="image">
-                            <img src="images/companies/company11.png" alt="company-image">
-                        </div>
-                        <div class="content">
-                            <h3 class="fw-semibold">
-                                <a routerLink="/job-details">
-                                    Senior Project Manager
-                                </a>
-                            </h3>
-                            <span class="location d-block">
-                                Techstar in Chicago
-                            </span>
-                            <span class="job-type d-block">
-                                Full Time
-                            </span>
-                        </div>
-                    </div>
-                    <div class="custom-info d-sm-flex align-items-center">
-                        <span class="active fw-medium d-block">
-                            Active
-                        </span>
-                        <ul class="ps-0 mb-0 list-unstyled">
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-check-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-close-line"></i>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="info d-sm-flex align-items-center justify-content-between">
-                    <span class="salary d-block">
-                        <span class="fw-semibold">Salary:</span>
-                        <span>$2K - $3K</span>
-                        /monthly
-                    </span>
-                    <span class="created d-block">
-                        <span class="fw-semibold">Created:</span>
-                        Oct 21, 2025
-                    </span>
-                    <span class="deadline d-block">
-                        <span class="fw-semibold">Deadline:</span>
-                        Nov 12, 2025
-                    </span>
+    </div>
+</div>
+
+<!-- ==================== MODAL MODIFICATION ==================== -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-container modal-edit" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <div class="header-left">
+                <div class="header-icon"><i class="ri-edit-box-line"></i></div>
+                <div class="header-text">
+                    <h3>Modifier ma candidature</h3>
+                    <p>Mettez à jour vos informations</p>
                 </div>
             </div>
+            <button class="modal-close" (click)="closeEditModal()">&times;</button>
         </div>
-        <div class="col-xxl-12">
-            <div class="single-job-box">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <div class="d-sm-flex align-items-center">
-                        <div class="image">
-                            <img src="images/companies/company12.png" alt="company-image">
-                        </div>
-                        <div class="content">
-                            <h3 class="fw-semibold">
-                                <a routerLink="/job-details">
-                                    Assistant Manager
-                                </a>
-                            </h3>
-                            <span class="location d-block">
-                                Mund in Seoul
-                            </span>
-                            <span class="job-type d-block">
-                                Full Time
-                            </span>
-                        </div>
-                    </div>
-                    <div class="custom-info d-sm-flex align-items-center">
-                        <span class="active fw-medium closed d-block">
-                            Closed
-                        </span>
-                        <ul class="ps-0 mb-0 list-unstyled">
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-check-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-close-line"></i>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
+        <div class="modal-body">
+            <div class="info-card">
+                <div class="status-badge-large" [ngClass]="getStatusClass(editingCandidature?.statut)">
+                    {{ getStatusLabel(editingCandidature?.statut) }}
                 </div>
-                <div class="info d-sm-flex align-items-center justify-content-between">
-                    <span class="salary d-block">
-                        <span class="fw-semibold">Salary:</span>
-                        <span>$11K - $23K</span>
-                        /monthly
-                    </span>
-                    <span class="created d-block">
-                        <span class="fw-semibold">Created:</span>
-                        Oct 21, 2025
-                    </span>
-                    <span class="deadline d-block">
-                        <span class="fw-semibold">Deadline:</span>
-                        Nov 13, 2025
-                    </span>
+                <div class="info-details">
+                    <span><i class="ri-hashtag"></i> #{{ editingCandidature?.id }}</span>
+                    <span><i class="ri-calendar-line"></i> {{ formatDate(editingCandidature?.dateEnvoi) }}</span>
                 </div>
             </div>
+
+            <form class="edit-form">
+                <div class="form-section">
+                    <h4><i class="ri-user-settings-line"></i> Informations personnelles</h4>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Nom complet</label>
+                            <input type="text" class="form-control" [(ngModel)]="editingCandidature.nomComplet" name="editNomComplet">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-control" [(ngModel)]="editingCandidature.email" name="editEmail">
+                        </div>
+                        <div class="form-group">
+                            <label>Téléphone</label>
+                            <input type="tel" class="form-control" [(ngModel)]="editingCandidature.telephone" name="editTelephone">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4><i class="ri-graduation-cap-line"></i> Formation</h4>
+                    <textarea class="form-control" rows="3" [(ngModel)]="editingCandidature.formation" name="editFormation" placeholder="Détaillez votre parcours académique..."></textarea>
+                </div>
+
+                <div class="form-section">
+                    <h4><i class="ri-briefcase-line"></i> Expérience</h4>
+                    <textarea class="form-control" rows="4" [(ngModel)]="editingCandidature.experience" name="editExperience" placeholder="Décrivez vos expériences professionnelles..."></textarea>
+                </div>
+
+                <div class="form-section">
+                    <h4><i class="ri-flashlight-line"></i> Compétences</h4>
+                    <div class="skills-tags">
+                        <span class="skill-tag" *ngFor="let skill of getSkillsArray(editingCandidature?.competences); let i=index">
+                            {{ skill }}
+                            <i class="ri-close-line" (click)="removeSkillFromEdit(i)"></i>
+                        </span>
+                    </div>
+                    <div class="add-skill">
+                        <input type="text" class="form-control" [(ngModel)]="editSkillInput" name="editSkillInput" placeholder="Ajouter une compétence" (keyup.enter)="addSkillToEdit()">
+                        <button type="button" class="btn-add-small" (click)="addSkillToEdit()">+</button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4><i class="ri-mail-send-line"></i> Lettre de motivation</h4>
+                    <textarea class="form-control" rows="5" [(ngModel)]="editingCandidature.lettreMotivation" name="editLettreMotivation" placeholder="Votre lettre de motivation..."></textarea>
+                </div>
+            </form>
         </div>
-        <div class="col-xxl-12">
-            <div class="single-job-box">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <div class="d-sm-flex align-items-center">
-                        <div class="image">
-                            <img src="images/companies/company13.png" alt="company-image">
-                        </div>
-                        <div class="content">
-                            <h3 class="fw-semibold">
-                                <a routerLink="/job-details">
-                                    Junior Banker
-                                </a>
-                            </h3>
-                            <span class="location d-block">
-                                Finix in Hong Kong
-                            </span>
-                            <span class="job-type d-block">
-                                Full Time
-                            </span>
-                        </div>
-                    </div>
-                    <div class="custom-info d-sm-flex align-items-center">
-                        <span class="active fw-medium d-block">
-                            Active
-                        </span>
-                        <ul class="ps-0 mb-0 list-unstyled">
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-check-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-close-line"></i>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="info d-sm-flex align-items-center justify-content-between">
-                    <span class="salary d-block">
-                        <span class="fw-semibold">Salary:</span>
-                        <span>$50 - $100</span>
-                        /hourly
-                    </span>
-                    <span class="created d-block">
-                        <span class="fw-semibold">Created:</span>
-                        Oct 21, 2025
-                    </span>
-                    <span class="deadline d-block">
-                        <span class="fw-semibold">Deadline:</span>
-                        Nov 14, 2025
-                    </span>
-                </div>
-            </div>
-        </div>
-        <div class="col-xxl-12">
-            <div class="single-job-box">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <div class="d-sm-flex align-items-center">
-                        <div class="image">
-                            <img src="images/companies/company14.png" alt="company-image">
-                        </div>
-                        <div class="content">
-                            <h3 class="fw-semibold">
-                                <a routerLink="/job-details">
-                                    Founder Associate
-                                </a>
-                            </h3>
-                            <span class="location d-block">
-                                Aoriv in Toronto
-                            </span>
-                            <span class="job-type d-block">
-                                Full Time
-                            </span>
-                        </div>
-                    </div>
-                    <div class="custom-info d-sm-flex align-items-center">
-                        <span class="active fw-medium d-block">
-                            Active
-                        </span>
-                        <ul class="ps-0 mb-0 list-unstyled">
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-check-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-close-line"></i>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="info d-sm-flex align-items-center justify-content-between">
-                    <span class="salary d-block">
-                        <span class="fw-semibold">Salary:</span>
-                        <span>$10K - $33K</span>
-                        /monthly
-                    </span>
-                    <span class="created d-block">
-                        <span class="fw-semibold">Created:</span>
-                        Oct 21, 2025
-                    </span>
-                    <span class="deadline d-block">
-                        <span class="fw-semibold">Deadline:</span>
-                        Nov 15, 2025
-                    </span>
-                </div>
-            </div>
-        </div>
-        <div class="col-xxl-12">
-            <div class="single-job-box">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <div class="d-sm-flex align-items-center">
-                        <div class="image">
-                            <img src="images/companies/company15.png" alt="company-image">
-                        </div>
-                        <div class="content">
-                            <h3 class="fw-semibold">
-                                <a routerLink="/job-details">
-                                    Marketing Executive
-                                </a>
-                            </h3>
-                            <span class="location d-block">
-                                Dking in Beijing
-                            </span>
-                            <span class="job-type d-block">
-                                Full Time
-                            </span>
-                        </div>
-                    </div>
-                    <div class="custom-info d-sm-flex align-items-center">
-                        <span class="active fw-medium d-block">
-                            Active
-                        </span>
-                        <ul class="ps-0 mb-0 list-unstyled">
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-check-line"></i>
-                                </button>
-                            </li>
-                            <li class="d-inline-block">
-                                <button type="button" class="d-inline-block rounded-circle">
-                                    <i class="ri-close-line"></i>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="info d-sm-flex align-items-center justify-content-between">
-                    <span class="salary d-block">
-                        <span class="fw-semibold">Salary:</span>
-                        <span>$3K - $5K</span>
-                        /monthly
-                    </span>
-                    <span class="created d-block">
-                        <span class="fw-semibold">Created:</span>
-                        Oct 21, 2025
-                    </span>
-                    <span class="deadline d-block">
-                        <span class="fw-semibold">Deadline:</span>
-                        Nov 16, 2025
-                    </span>
-                </div>
-            </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeEditModal()">Annuler</button>
+            <button class="btn-primary" (click)="updateCandidature()" [disabled]="isUpdating">
+                {{ isUpdating ? 'Enregistrement...' : 'Enregistrer' }}
+            </button>
         </div>
     </div>
 </div>

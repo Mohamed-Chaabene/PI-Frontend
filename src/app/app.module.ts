@@ -11,6 +11,7 @@ import { NgxScrollTopModule } from 'ngx-scrolltop';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { AuthInterceptor } from './auth.interceptor';
 import { SharedModule } from './shared/shared.module';
+import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
 
 import { routes } from './app.routes';
 import { App } from './app';
@@ -45,7 +46,6 @@ import { EdChangePasswordComponent } from './employers-dashboard/ed-change-passw
 import { CandidatesDashboardComponent } from './candidates-dashboard/candidates-dashboard.component';
 import { CDashboardComponent } from './candidates-dashboard/c-dashboard/c-dashboard.component';
 import { CdProfileComponent } from './candidates-dashboard/cd-profile/cd-profile.component';
-import { CdResumeComponent } from './candidates-dashboard/cd-resume/cd-resume.component';
 import { CdBookmarksComponent } from './candidates-dashboard/cd-bookmarks/cd-bookmarks.component';
 import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component';
 import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
@@ -79,6 +79,18 @@ import { RdMessagesComponent } from './recruiter-dashboard/rd-messages/rd-messag
 import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.component';
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 
+// evenement components
+import { EvenementSidebarComponent } from './evenement-dashboard/evenement-sidebar/evenement-sidebar.component';
+import { EvenementDashboardComponent } from './evenement-dashboard/evenement-dashboard.component';
+import { EvenementFormComponent } from './evenement-dashboard/evenement-form/evenement-form';
+import { EvenementListComponent } from './evenement-dashboard/evenement-list/evenement-list.component';
+import { EvenementEditComponent } from './evenement-dashboard/evenement-edit/evenement-edit.component';
+import { EvenementDetailComponent } from './evenement-dashboard/evenement-detail/evenement-detail.component';
+import { DatePipe } from '@angular/common';
+import { LOCALE_ID } from '@angular/core';
+import localeFr from '@angular/common/locales/fr';
+import { registerLocaleData } from '@angular/common';
+import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header/evenement-header.component';
 // Banner components are now in SharedModule
 
 @NgModule({
@@ -111,7 +123,6 @@ import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-passw
         CandidatesDashboardComponent,
         CDashboardComponent,
         CdProfileComponent,
-        CdResumeComponent,
         CdBookmarksComponent,
         CdAppliedJobsComponent,
         CdAlertJobsComponent,
@@ -131,8 +142,15 @@ import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-passw
         RdApplicantsComponent,
         RdMessagesComponent,
         RdProfileComponent,
-        RdChangePasswordComponent
-
+        RdChangePasswordComponent,
+        CdDocumentsComponent, 
+        EvenementDashboardComponent,
+        EvenementSidebarComponent,
+        EvenementFormComponent,
+        EvenementListComponent, 
+        EvenementEditComponent,
+        EvenementDetailComponent,
+        EvenementHeaderComponent,
     ],
     imports: [
         BrowserModule,

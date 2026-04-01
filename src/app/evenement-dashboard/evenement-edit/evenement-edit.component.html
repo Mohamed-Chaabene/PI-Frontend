@@ -1,0 +1,85 @@
+<!-- Title -->
+<div class="breadcrumb-title">
+    <h1 class="mb-0 fw-semibold">Modifier l'Événement</h1>
+</div>
+
+<!-- Messages -->
+<div class="alert alert-success" *ngIf="success">
+    <i class="ri-check-line"></i> Événement modifié avec succès !
+</div>
+<div class="alert alert-danger" *ngIf="error">
+    <i class="ri-close-line"></i> Erreur lors de la modification !
+</div>
+
+<!-- Formulaire -->
+<div class="jove-card">
+    <h3 class="title">Informations de l'événement</h3>
+
+    <form #f="ngForm" (ngSubmit)="modifier(f)">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Titre</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        name="titre"
+                        [(ngModel)]="evenement.titre"
+                        required
+                    >
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Date</label>
+                    <input
+                        type="date"
+                        class="form-control"
+                        name="date"
+                        [(ngModel)]="evenement.date"
+                        required
+                    >
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Lieu</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        name="lieu"
+                        [(ngModel)]="evenement.lieu"
+                        required
+                    >
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Type</label>
+                    <select
+                        class="form-select"
+                        name="type"
+                        [(ngModel)]="evenement.type"
+                        required
+                    >
+                        <option value="">Choisir un type</option>
+                        <option value="JOB_FAIR">Job Fair</option>
+                        <option value="WORKSHOP">Workshop</option>
+                        <option value="CONFERENCE">Conférence</option>
+                        <option value="NETWORKING">Networking</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn-submit">
+                        <i class="ri-check-line"></i> Modifier
+                    </button>
+                    <button type="button" class="btn-cancel" (click)="annuler()">
+                        <i class="ri-close-line"></i> Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

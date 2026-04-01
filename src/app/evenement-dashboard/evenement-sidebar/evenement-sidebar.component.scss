@@ -5,7 +5,7 @@
     width: 270px;
     height: 100%;
     position: fixed;
-    background: linear-gradient(180deg, #0965A4 0%, #85B7EB 100%);
+    background-color: var(--whiteColor);
     overflow: {
         y: scroll;
         x: hidden;
@@ -19,64 +19,25 @@
     ul {
         li {
             a {
-                border-radius: 10px;
-                color: rgba(255, 255, 255, 0.92);
+                border-radius: 5px;
+                color: var(--bodyColor);
                 padding: 11px 15px 11px 42px;
-                font-weight: 600;
-                transition: all 0.2s ease;
                 
                 i {
                     top: 50%;
                     left: 15px;
                     font-size: 18px;
                     position: absolute;
-                    color: rgba(255, 255, 255, 0.88);
+                    color: var(--primaryColor);
                     transform: translateY(-50%);
                     transition: var(--transition);
                 }
                 &:hover, &.active {
-                    background-color: #E6F1FB;
-                    color: #074d82;
-                    box-shadow: 0 6px 16px rgba(7, 77, 130, 0.25);
+                    background-color: var(--primaryColor);
+                    color: var(--whiteColor);
 
                     i {
-                        color: #074d82;
-                    }
-                }
-            }
-
-            &.logout-item {
-                margin-top: 18px;
-                padding-top: 16px;
-                border-top: 1px solid rgba(255, 255, 255, 0.3);
-            }
-
-            .logout-btn {
-                border: 0;
-                width: 100%;
-                text-align: left;
-                border-radius: 10px;
-                color: #fff;
-                background: rgba(7, 77, 130, 0.48);
-                padding: 11px 15px 11px 42px;
-                font-weight: 700;
-                transition: all 0.2s ease;
-
-                i {
-                    top: 50%;
-                    left: 15px;
-                    font-size: 18px;
-                    position: absolute;
-                    transform: translateY(-50%);
-                    color: #fff;
-                }
-
-                &:hover {
-                    background: #E6F1FB;
-                    color: #074d82;
-
-                    i {
-                        color: #074d82;
+                        color: var(--whiteColor);
                     }
                 }
             }
@@ -85,17 +46,17 @@
     /* width */
     &::-webkit-scrollbar {
         width: 5px;
-        height: 5px;
-        border-radius: 15px;
+		height: 5px;
+		border-radius: 15px;
     }
     /* Track */
     &::-webkit-scrollbar-track {
-        border-radius: 15px;
+		border-radius: 15px;
     }
     /* Handle */
     &::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.45);
-        border-radius: 15px;
+        background: #f2f2f2;
+		border-radius: 15px;
     }
 }
 
@@ -223,4 +184,54 @@
         width: 330px;
     }
 
+}
+
+.sidebar-area {
+    background-color: #1a6b3c; 
+
+    ul {
+        li {
+            a {
+                color: var(--whiteColor); 
+
+                i {
+                    color: var(--whiteColor); 
+                }
+
+                &:hover, &.active {
+                    background-color: var(--whiteColor); 
+                    color: #1a6b3c; 
+
+                    i {
+                        color: #1a6b3c; 
+                    }
+                }
+            }
+        }
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+    }
+}
+
+.sidebar-btn {
+    button {
+        background-color: #1a6b3c;
+    }
+}
+
+/* ===== Event dashboard sidebar layout fix ===== */
+.sidebar-area {
+    top: 104px;
+    height: calc(100vh - 104px);
+    padding-top: 24px;
+}
+
+@media only screen and (max-width : 1199px) {
+    .sidebar-area {
+        top: 90px;
+        height: calc(100vh - 90px);
+        padding-top: 16px;
+    }
 }
