@@ -1,11 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from '../../api.service';
 import { Router } from '@angular/router';
-import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
-import { SafeUrlPipe } from './safe-url.pipe';
-
-
-declare const require: any;
+import { ApiService } from '../../api.service';
 
 @Component({
     selector: 'app-cd-applied-jobs',
@@ -19,55 +14,62 @@ export class CdAppliedJobsComponent implements OnInit {
     isLoading = true;
     errorMessage = '';
     
-    // États des modals
     showCreateModal = false;
     showEditModal = false;
+    showViewModal = false;
     isCreating = false;
     isUpdating = false;
     
-    // Fichiers création
-    selectedCVName: string = '';
-    selectedLMName: string = '';
-    skillInput: string = '';
-    
-    // Fichiers édition
     editSelectedCVName: string = '';
     editSelectedLMName: string = '';
     editSkillInput: string = '';
     
     tauxReussite: number = 0;
     tempsReponse: number = 0;
-scoreEmployabilite: number = 0;
-
-
-candidaturesCeMois: number = 0;
-entretiensObtenus: number = 0;
-vuesRecruteurs: number = 0;
-
-
-    // Données pour création
+    scoreEmployabilite: number = 0;
+    
+    candidaturesCeMois: number = 0;
+    entretiensObtenus: number = 0;
+    vuesRecruteurs: number = 0;
+    
     newCandidature = {
-        entreprise: '',
-        poste: '',
-        lettreGeneree: '',
-        contrat: 'CDI',
-        salaireMin: null,
-        salaireMax: null,
-        devise: '€',
+        nomComplet: '',
+        email: '',
+        telephone: '',
+        formations: [] as { diplome: string; institution: string; annee: string }[],
+        newFormation: { diplome: '', institution: '', annee: '' },
+        experiences: [] as { poste: string; entreprise: string; periode: string; description: string }[],
+        newExperience: { poste: '', entreprise: '', periode: '', description: '' },
+        competences: [] as string[],
+        skillInput: '',
+        cv: null as File | null,
+        cvName: '',
+        lettreMotivation: '',
         dateDisponibilite: '',
         preavis: '',
         acceptContact: false,
-        acceptRGPD: false,
-        competences: [] as string[]
+        acceptRGPD: false
     };
     
-    // Données pour édition
     editingCandidature: any = null;
+    viewingCandidature: any = null;
     
-    // Erreurs de validation
-    createErrors = {
-        entreprise: '',
-        poste: ''
+    createErrors: any = {
+        nomComplet: '',
+        email: '',
+        telephone: '',
+        competences: '',
+        cv: '',
+        acceptRGPD: ''
+    };
+    
+    touchedFields: any = {
+        nomComplet: false,
+        email: false,
+        telephone: false,
+        competences: false,
+        cv: false,
+        acceptRGPD: false
     };
     
     editErrors = {
@@ -75,160 +77,489 @@ vuesRecruteurs: number = 0;
         poste: ''
     };
     
-    // Statistiques
     stats = {
         total: 0,
         enAttente: 0,
         acceptees: 0,
         refusees: 0
     };
-
+    
     alertes: any[] = [];
     isNewCandidate: boolean = false;
+    
+    message: string = '';
+    messageType: string = '';
+    
+    showCVModal: boolean = false;
+    showLettreModal: boolean = false;
+    showAnalyseModal: boolean = false;
+    
+    cvUrl: string = '';
+    cvName: string = '';
+    cvDate: string = '';
+    
+    lettreData = {
+        entreprise: '',
+        poste: '',
+        message: ''
+    };
+    lettreGeneree: string = '';
+    
+    scoreProfil: number = 0;
+    profil = {
+        competences: false,
+        experience: false,
+        cv: false
+    };
+    
+    showViewer: boolean = false;
+    conseils: string[] = [];
+    
+    newsletterEmail: string = '';
+    isSubscribing: boolean = false;
+    nombreCandidatsActifs: number = 12453;
+    offresNouvelles: number = 347;
+    
+    searchEntreprise: string = '';
 
-      message: string = '';
-    messageType: string = ''; 
-
-
-showCVModal: boolean = false;
-showLettreModal: boolean = false;
-showAnalyseModal: boolean = false;
-
-cvUrl: string = '';
-cvName: string = '';
-cvDate: string = '';
-
-// Données lettre
-lettreData = {
-    entreprise: '',
-    poste: '',
-    message: ''
-};
-lettreGeneree: string = '';
-
-// Données analyse
-scoreProfil: number = 0;
-profil = {
-    competences: false,
-    experience: false,
-    cv: false
-};
-
-showViewer: boolean = false;
-
-conseils: string[] = [];
-fileSize: string = '';
-
-
-newsletterEmail: string = '';
-isSubscribing: boolean = false;
-nombreCandidatsActifs: number = 12453;
-offresNouvelles: number = 347;
-    constructor(private apiService: ApiService,    private router: Router) {}
+    constructor(private apiService: ApiService, private router: Router) {}
 
     ngOnInit(): void {
         this.loadData();
     }
 
-    // ==================== VALIDATION ====================
     
-    validateCreateForm(): boolean {
-        let isValid = true;
-        
-        this.createErrors = { entreprise: '', poste: '' };
-        
-        if (!this.newCandidature.entreprise.trim()) {
-            this.createErrors.entreprise = 'L\'entreprise est requise';
-            isValid = false;
-        } else if (this.newCandidature.entreprise.length < 2) {
-            this.createErrors.entreprise = 'L\'entreprise doit contenir au moins 2 caractères';
-            isValid = false;
-        } else if (this.newCandidature.entreprise.length > 100) {
-            this.createErrors.entreprise = 'L\'entreprise ne peut pas dépasser 100 caractères';
-            isValid = false;
+    validateEmail(email: string): boolean {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailRegex.test(email);
+    }
+
+    validateTelephone(telephone: string): boolean {
+    const telRegex = /^(\+215)?[\s]?[0-9]{8}$|^[0-9]{8}$/;
+        return telRegex.test(telephone);
+    }
+
+    validateField(field: string, value: any): void {
+        switch(field) {
+            case 'nomComplet':
+                if (!value || value.trim() === '') {
+                    this.createErrors.nomComplet = 'Le nom complet est obligatoire';
+                } else if (value.length < 2) {
+                    this.createErrors.nomComplet = 'Le nom doit contenir au moins 2 caractères';
+                } else if (value.length > 100) {
+                    this.createErrors.nomComplet = 'Le nom ne peut pas dépasser 100 caractères';
+                } else if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(value)) {
+                    this.createErrors.nomComplet = 'Le nom ne doit contenir que des lettres, espaces, tirets ou apostrophes';
+                } else {
+                    this.createErrors.nomComplet = '';
+                }
+                break;
+                
+            case 'email':
+                if (value && !this.validateEmail(value)) {
+                    this.createErrors.email = 'Veuillez entrer une adresse email valide (ex: nom@domaine.com)';
+                } else {
+                    this.createErrors.email = '';
+                }
+                break;
+                
+            case 'telephone':
+    if (value && !this.validateTelephone(value)) {
+        this.createErrors.telephone = 'Format invalide. Exemples: +215 55 555 555, +21555555555, 55555555';
+    } else {
+        this.createErrors.telephone = '';
+    }
+    break;
+                
+            case 'competences':
+                if (this.newCandidature.competences.length === 0) {
+                    this.createErrors.competences = 'Ajoutez au moins une compétence';
+                } else {
+                    this.createErrors.competences = '';
+                }
+                break;
+                
+            case 'cv':
+                if (!this.newCandidature.cv && !this.cvUrl) {
+                    this.createErrors.cv = 'Le CV est obligatoire';
+                } else {
+                    this.createErrors.cv = '';
+                }
+                break;
+                
+            case 'acceptRGPD':
+                if (!value) {
+                    this.createErrors.acceptRGPD = 'Vous devez accepter les conditions RGPD';
+                } else {
+                    this.createErrors.acceptRGPD = '';
+                }
+                break;
         }
-        
-        if (!this.newCandidature.poste.trim()) {
-            this.createErrors.poste = 'Le poste est requis';
-            isValid = false;
-        } else if (this.newCandidature.poste.length < 2) {
-            this.createErrors.poste = 'Le poste doit contenir au moins 2 caractères';
-            isValid = false;
-        } else if (this.newCandidature.poste.length > 100) {
-            this.createErrors.poste = 'Le poste ne peut pas dépasser 100 caractères';
-            isValid = false;
-        }
-        
-        // Validation RGPD
-        if (!this.newCandidature.acceptRGPD) {
-            alert('Vous devez accepter les conditions RGPD');
-            isValid = false;
-        }
-        
-        return isValid;
+    }
+
+  validateAllFields(): boolean {
+    let isValid = true;
+    let errorMessages: string[] = [];
+    
+    // Validation du nom complet
+    if (!this.newCandidature.nomComplet || this.newCandidature.nomComplet.trim() === '') {
+        this.createErrors.nomComplet = 'Le nom complet est obligatoire';
+        this.touchedFields.nomComplet = true;
+        isValid = false;
+        errorMessages.push('• Nom complet est obligatoire');
+    } else if (this.newCandidature.nomComplet.length < 2) {
+        this.createErrors.nomComplet = 'Le nom doit contenir au moins 2 caractères';
+        this.touchedFields.nomComplet = true;
+        isValid = false;
+        errorMessages.push('• Le nom doit contenir au moins 2 caractères');
+    } else if (this.newCandidature.nomComplet.length > 100) {
+        this.createErrors.nomComplet = 'Le nom ne peut pas dépasser 100 caractères';
+        this.touchedFields.nomComplet = true;
+        isValid = false;
+        errorMessages.push('• Le nom ne peut pas dépasser 100 caractères');
+    } else if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(this.newCandidature.nomComplet)) {
+        this.createErrors.nomComplet = 'Le nom ne doit contenir que des lettres, espaces, tirets ou apostrophes';
+        this.touchedFields.nomComplet = true;
+        isValid = false;
+        errorMessages.push('• Le nom ne doit contenir que des lettres');
+    } else {
+        this.createErrors.nomComplet = '';
     }
     
-    validateEditForm(): boolean {
-        let isValid = true;
-        this.editErrors = { entreprise: '', poste: '' };
-        
-        if (!this.editingCandidature) return false;
-        
-        if (!this.editingCandidature.entreprise?.trim()) {
-            this.editErrors.entreprise = 'L\'entreprise est requise';
+    // Validation de l'email (obligatoire)
+    if (!this.newCandidature.email || this.newCandidature.email.trim() === '') {
+        this.createErrors.email = 'L\'email est obligatoire';
+        this.touchedFields.email = true;
+        isValid = false;
+        errorMessages.push('• L\'email est obligatoire');
+    } else if (!this.validateEmail(this.newCandidature.email)) {
+        this.createErrors.email = 'Format d\'email invalide. Exemple: nom@domaine.com';
+        this.touchedFields.email = true;
+        isValid = false;
+        errorMessages.push('• Format d\'email invalide. Exemple: nom@domaine.com');
+    } else {
+        this.createErrors.email = '';
+    }
+    
+    // Validation du téléphone (optionnel mais format doit être valide)
+    if (this.newCandidature.telephone && this.newCandidature.telephone.trim() !== '') {
+        if (!this.validateTelephone(this.newCandidature.telephone)) {
+            this.createErrors.telephone = 'Format de téléphone invalide. Exemples: +215 55 555 555, 55555555';
+            this.touchedFields.telephone = true;
             isValid = false;
-        } else if (this.editingCandidature.entreprise.length < 2) {
-            this.editErrors.entreprise = 'L\'entreprise doit contenir au moins 2 caractères';
-            isValid = false;
-        } else if (this.editingCandidature.entreprise.length > 100) {
-            this.editErrors.entreprise = 'L\'entreprise ne peut pas dépasser 100 caractères';
+            errorMessages.push('• Format de téléphone invalide. Exemple: +215 55 555 555');
+        } else {
+            this.createErrors.telephone = '';
+        }
+    } else {
+        this.createErrors.telephone = '';
+    }
+    
+    // Validation des compétences
+    if (this.newCandidature.competences.length === 0) {
+        this.createErrors.competences = 'Ajoutez au moins une compétence';
+        this.touchedFields.competences = true;
+        isValid = false;
+        errorMessages.push('• Ajoutez au moins une compétence');
+    } else {
+        this.createErrors.competences = '';
+    }
+    
+    // Validation du CV
+    if (!this.newCandidature.cv && !this.cvUrl) {
+        this.createErrors.cv = 'Le CV est obligatoire';
+        this.touchedFields.cv = true;
+        isValid = false;
+        errorMessages.push('• Le CV est obligatoire');
+    } else {
+        this.createErrors.cv = '';
+    }
+    
+    // Validation du RGPD
+    if (!this.newCandidature.acceptRGPD) {
+        this.createErrors.acceptRGPD = 'Vous devez accepter les conditions RGPD';
+        this.touchedFields.acceptRGPD = true;
+        isValid = false;
+        errorMessages.push('• Vous devez accepter les conditions RGPD');
+    } else {
+        this.createErrors.acceptRGPD = '';
+    }
+    
+    // Validation de la date de disponibilité 
+    if (this.newCandidature.dateDisponibilite) {
+        const selectedDate = new Date(this.newCandidature.dateDisponibilite);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < today) {
+            this.createErrors.dateDisponibilite = 'La date de disponibilité doit être dans le futur';
+            errorMessages.push('• La date de disponibilité doit être dans le futur');
             isValid = false;
         }
-        
-        if (!this.editingCandidature.poste?.trim()) {
-            this.editErrors.poste = 'Le poste est requis';
-            isValid = false;
-        } else if (this.editingCandidature.poste.length < 2) {
-            this.editErrors.poste = 'Le poste doit contenir au moins 2 caractères';
-            isValid = false;
-        } else if (this.editingCandidature.poste.length > 100) {
-            this.editErrors.poste = 'Le poste ne peut pas dépasser 100 caractères';
-            isValid = false;
+    }
+    
+    if (!isValid) {
+        this.showProfessionalAlert(errorMessages);
+    }
+    
+    return isValid;
+}
+
+showProfessionalAlert(errors: string[]): void {
+    // Créer un modal d'alerte personnalisé
+    const modalHtml = `
+        <div class="custom-alert-overlay" id="customAlertOverlay">
+            <div class="custom-alert-modal">
+                <div class="alert-header">
+                    <div class="alert-icon">
+                        <i class="ri-error-warning-line"></i>
+                    </div>
+                    <h3>Formulaire incomplet</h3>
+                </div>
+                <div class="alert-body">
+                    <p>Veuillez corriger les erreurs suivantes :</p>
+                    <ul class="error-list">
+                        ${errors.map(error => `<li><i class="ri-close-circle-line"></i> ${error}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="alert-footer">
+                    <button class="btn-primary" onclick="document.getElementById('customAlertOverlay').remove()">
+                        <i class="ri-check-line"></i> Compris
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Supprimer l'ancienne alerte si elle existe
+    const existingAlert = document.getElementById('customAlertOverlay');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+    
+    // Ajouter la nouvelle alerte
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Ajouter les styles si pas déjà présents
+    this.addAlertStyles();
+    
+    // Fermer au clic sur l'overlay
+    setTimeout(() => {
+        const overlay = document.getElementById('customAlertOverlay');
+        if (overlay) {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.remove();
+                }
+            });
         }
-        
-        return isValid;
+    }, 100);
+}
+
+// Ajouter les styles CSS pour l'alerte
+addAlertStyles(): void {
+    if (document.getElementById('customAlertStyles')) return;
+    
+    const styles = `
+        <style id="customAlertStyles">
+            .custom-alert-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(4px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: fadeIn 0.3s ease;
+            }
+            
+            .custom-alert-modal {
+                background: white;
+                border-radius: 24px;
+                width: 90%;
+                max-width: 500px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                animation: slideUp 0.3s ease;
+                overflow: hidden;
+            }
+            
+            .alert-header {
+                background: linear-gradient(135deg, #FF6B6B 0%, #EE5A5A 100%);
+                padding: 24px;
+                text-align: center;
+                color: white;
+            }
+            
+            .alert-icon {
+                width: 64px;
+                height: 64px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 16px;
+            }
+            
+            .alert-icon i {
+                font-size: 32px;
+            }
+            
+            .alert-header h3 {
+                margin: 0;
+                font-size: 24px;
+                font-weight: 600;
+            }
+            
+            .alert-body {
+                padding: 24px;
+            }
+            
+            .alert-body p {
+                color: #374151;
+                margin-bottom: 16px;
+                font-weight: 500;
+            }
+            
+            .error-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .error-list li {
+                padding: 10px 12px;
+                margin-bottom: 8px;
+                background: #FEF2F2;
+                border-left: 3px solid #EF4444;
+                border-radius: 8px;
+                color: #DC2626;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 14px;
+            }
+            
+            .error-list li i {
+                font-size: 18px;
+            }
+            
+            .alert-footer {
+                padding: 16px 24px 24px;
+                border-top: 1px solid #E5E7EB;
+            }
+            
+            .btn-primary {
+                width: 100%;
+                padding: 12px;
+                background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            }
+            
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            @keyframes slideUp {
+                from {
+                    transform: translateY(30px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+        </style>
+    `;
+    
+    document.head.insertAdjacentHTML('beforeend', styles);
+}
+
+    markFieldTouched(field: string): void {
+        this.touchedFields[field] = true;
+    }
+
+    showError(field: string): boolean {
+        return this.touchedFields[field] && !!this.createErrors[field];
+    }
+
+    // ==================== GESTION FORMATION ====================
+    addFormation(): void {
+        if (this.newCandidature.newFormation.diplome && this.newCandidature.newFormation.institution) {
+            this.newCandidature.formations.push({ ...this.newCandidature.newFormation });
+            this.newCandidature.newFormation = { diplome: '', institution: '', annee: '' };
+        }
+    }
+
+    removeFormation(index: number): void {
+        this.newCandidature.formations.splice(index, 1);
+    }
+
+    // ==================== GESTION EXPÉRIENCE ====================
+    addExperience(): void {
+        if (this.newCandidature.newExperience.poste && this.newCandidature.newExperience.entreprise) {
+            this.newCandidature.experiences.push({ ...this.newCandidature.newExperience });
+            this.newCandidature.newExperience = { poste: '', entreprise: '', periode: '', description: '' };
+        }
+    }
+
+    removeExperience(index: number): void {
+        this.newCandidature.experiences.splice(index, 1);
     }
 
     // ==================== GESTION COMPÉTENCES ====================
-    
     addSkill(): void {
-        if (this.skillInput && this.skillInput.trim()) {
-            this.newCandidature.competences.push(this.skillInput.trim());
-            this.skillInput = '';
-        }
-    }
-    
-    removeSkill(skill: string): void {
-        this.newCandidature.competences = this.newCandidature.competences.filter(s => s !== skill);
-    }
-    
-    addEditSkill(): void {
-        if (this.editSkillInput && this.editSkillInput.trim()) {
-            if (!this.editingCandidature.competences) {
-                this.editingCandidature.competences = [];
+        if (this.newCandidature.skillInput && this.newCandidature.skillInput.trim()) {
+            const skill = this.newCandidature.skillInput.trim();
+            if (!this.newCandidature.competences.includes(skill)) {
+                this.newCandidature.competences.push(skill);
+                this.newCandidature.skillInput = '';
+                this.validateField('competences', null);
+            } else {
+                alert('Cette compétence est déjà ajoutée');
             }
-            this.editingCandidature.competences.push(this.editSkillInput.trim());
-            this.editSkillInput = '';
         }
     }
     
-    removeEditSkill(skill: string): void {
-        if (this.editingCandidature) {
-            this.editingCandidature.competences = this.editingCandidature.competences.filter((s: string) => s !== skill);
-        }
+    removeSkill(index: number): void {
+        this.newCandidature.competences.splice(index, 1);
+        this.validateField('competences', null);
     }
     
-    // ==================== GESTION FICHIERS ====================
+    // ==================== GESTION CV ====================
+    onCVFileSelected(event: any): void {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Le fichier ne doit pas dépasser 5 Mo');
+                return;
+            }
+            this.newCandidature.cv = file;
+            this.newCandidature.cvName = file.name;
+            this.validateField('cv', null);
+        }
+    }
     
     onFileSelected(event: any): void {
         const file = event.target.files[0];
@@ -237,7 +568,7 @@ offresNouvelles: number = 347;
                 alert('Le fichier ne doit pas dépasser 5 Mo');
                 return;
             }
-            this.selectedCVName = file.name;
+            this.editSelectedCVName = file.name;
         }
     }
     
@@ -248,7 +579,7 @@ offresNouvelles: number = 347;
                 alert('Le fichier ne doit pas dépasser 5 Mo');
                 return;
             }
-            this.selectedLMName = file.name;
+            this.editSelectedLMName = file.name;
         }
     }
     
@@ -281,10 +612,12 @@ offresNouvelles: number = 347;
         
         this.apiService.getMesCandidatures().subscribe({
             next: (data) => {
+                console.log('📊 Données reçues:', data);
                 this.candidatures = Array.isArray(data) ? data : (data ? [data] : []);
                 this.isLoading = false;
                 this.calculateStats();
                 this.calculerStatsPersonnelles();
+                this.chargerAlertes();
             },
             error: (err) => {
                 console.error('Erreur chargement:', err);
@@ -308,130 +641,238 @@ offresNouvelles: number = 347;
         this.stats.refusees = this.candidatures.filter(c => c.statut === 'REFUSEE').length;
     }
 
-    // ==================== CREATE ====================
     
-    openCreateModal(): void {
-        this.newCandidature = {
-            entreprise: '',
-            poste: '',
-            lettreGeneree: '',
-            contrat: 'CDI',
-            salaireMin: null,
-            salaireMax: null,
-            devise: '€',
-            dateDisponibilite: '',
-            preavis: '',
-            acceptContact: false,
-            acceptRGPD: false,
-            competences: []
-        };
-        this.selectedCVName = '';
-        this.selectedLMName = '';
-        this.skillInput = '';
-        this.createErrors = { entreprise: '', poste: '' };
-        this.showCreateModal = true;
-    }
+    // ==================== CREATE ====================
 
-    closeCreateModal(): void {
-        this.showCreateModal = false;
-        this.createErrors = { entreprise: '', poste: '' };
-    }
+openCreateModal(): void {
+    this.newCandidature = {
+        nomComplet: '',
+        email: '',
+        telephone: '',
+        formations: [],
+        newFormation: { diplome: '', institution: '', annee: '' },
+        experiences: [],
+        newExperience: { poste: '', entreprise: '', periode: '', description: '' },
+        competences: [],
+        skillInput: '',
+        cv: null,
+        cvName: '',
+        lettreMotivation: '',
+        dateDisponibilite: '',
+        preavis: '',
+        acceptContact: false,
+        acceptRGPD: false
+    };
+    
+    this.createErrors = { nomComplet: '', email: '', telephone: '', competences: '', cv: '', acceptRGPD: '' };
+    this.touchedFields = { nomComplet: false, email: false, telephone: false, competences: false, cv: false, acceptRGPD: false };
+    
+    this.showCreateModal = true;
+}
 
-    createCandidature(): void {
-        if (!this.validateCreateForm()) {
-            return;
+closeCreateModal(): void {
+    this.showCreateModal = false;
+}
+
+// createCandidature
+
+createCandidature(): void {
+    // 1. Validation des champs
+    this.markFieldTouched('nomComplet');
+    this.markFieldTouched('competences');
+    this.markFieldTouched('cv');
+    this.markFieldTouched('acceptRGPD');
+    if (this.newCandidature.email) this.markFieldTouched('email');
+    if (this.newCandidature.telephone) this.markFieldTouched('telephone');
+    
+    if (!this.validateAllFields()) {
+        const firstError = document.querySelector('.is-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-        
-        this.isCreating = true;
-        
-        const dataToSend = {
-            entreprise: this.newCandidature.entreprise.trim(),
-            poste: this.newCandidature.poste.trim(),
-            lettreGeneree: this.newCandidature.lettreGeneree?.trim() || '',
-            contrat: this.newCandidature.contrat,
-            salaireMin: this.newCandidature.salaireMin,
-            salaireMax: this.newCandidature.salaireMax,
-            devise: this.newCandidature.devise,
-            dateDisponibilite: this.newCandidature.dateDisponibilite,
-            preavis: this.newCandidature.preavis,
-            acceptContact: this.newCandidature.acceptContact,
-            competences: this.newCandidature.competences
-        };
-        
-        this.apiService.creerCandidature(dataToSend).subscribe({
-            next: () => {
-                this.closeCreateModal();
-                this.loadData();
-                this.isCreating = false;
-                alert('Candidature envoyée avec succès !');
-            },
-            error: (err) => {
-                console.error('Erreur:', err);
-                alert('Erreur lors de la création');
-                this.isCreating = false;
+        return;
+    }
+    
+    this.isCreating = true;
+    
+
+    
+    const dataToSend = {
+        nomComplet: this.newCandidature.nomComplet,
+        email: this.newCandidature.email,
+        telephone: this.newCandidature.telephone,
+        formation: this.newCandidature.formations.map(f => 
+            `${f.diplome} - ${f.institution}${f.annee ? ' (' + f.annee + ')' : ''}`
+        ).join('\n'),
+        experience: this.newCandidature.experiences.map(e => 
+            `${e.poste} chez ${e.entreprise}${e.periode ? ' (' + e.periode + ')' : ''}\n${e.description}`
+        ).join('\n\n'),
+        competences: this.newCandidature.competences.join(', '),
+        lettreMotivation: this.newCandidature.lettreMotivation,
+        dateDisponibilite: this.newCandidature.dateDisponibilite,
+        preavis: this.newCandidature.preavis,
+        acceptContact: this.newCandidature.acceptContact,
+        acceptRGPD: this.newCandidature.acceptRGPD
+    };
+    
+    console.log('📤 Envoi candidature:', dataToSend);
+    
+    this.apiService.creerCandidature(dataToSend).subscribe({
+        next: (response) => {
+            console.log('✅ Succès:', response);
+            this.closeCreateModal();
+            this.loadData();
+            this.isCreating = false;
+            this.showMessage('✅ Candidature envoyée avec succès !', 'success');
+        },
+        error: (err) => {
+            console.error('❌ Erreur:', err);
+            console.error('Status:', err.status);
+            console.error('Response body:', err.error);
+            
+            // Afficher le message d'erreur détaillé
+            let errorMsg = 'Erreur lors de l\'envoi de la candidature';
+            if (err.error && typeof err.error === 'object') {
+                const errors = Object.values(err.error).join('\n');
+                if (errors) errorMsg = errors;
+            } else if (err.error && typeof err.error === 'string') {
+                errorMsg = err.error;
             }
-        });
+            
+            this.showMessage(`❌ ${errorMsg}`, 'error');
+            this.isCreating = false;
+        }
+    });
+}
+
+getPreavisLabel(preavis: string): string {
+    switch(preavis) {
+        case 'IMMEDIAT': return 'Immédiat';
+        case '1_MOIS': return '1 mois';
+        case '2_MOIS': return '2 mois';
+        case '3_MOIS': return '3 mois';
+        default: return preavis || 'Non spécifié';
+    }
+}
+
+    // ==================== VISUALISATION ====================
+    
+    viewCandidature(candidature: any): void {
+        this.viewingCandidature = { ...candidature };
+        this.showViewModal = true;
+    }
+
+    closeViewModal(): void {
+        this.showViewModal = false;
+        this.viewingCandidature = null;
     }
 
     // ==================== UPDATE ====================
-    
+
     openEditModal(candidature: any): void {
-        this.editingCandidature = { ...candidature };
+        console.log('📝 Ouverture modification pour:', candidature);
         
-        // Initialiser les champs supplémentaires s'ils n'existent pas
-        this.editingCandidature.contrat = this.editingCandidature.contrat || 'CDI';
-        this.editingCandidature.salaireMin = this.editingCandidature.salaireMin || null;
-        this.editingCandidature.salaireMax = this.editingCandidature.salaireMax || null;
-        this.editingCandidature.devise = this.editingCandidature.devise || '€';
-        this.editingCandidature.dateDisponibilite = this.editingCandidature.dateDisponibilite || '';
-        this.editingCandidature.preavis = this.editingCandidature.preavis || '';
-        this.editingCandidature.acceptContact = this.editingCandidature.acceptContact || false;
-        this.editingCandidature.competences = this.editingCandidature.competences || [];
+        this.editingCandidature = { 
+            id: candidature.id,
+            nomComplet: candidature.nomComplet || '',
+            email: candidature.email || '',
+            telephone: candidature.telephone || '',
+            formation: candidature.formation || '',
+            experience: candidature.experience || '',
+            competences: candidature.competences || '',
+            lettreMotivation: candidature.lettreMotivation || candidature.lettreGeneree || '',
+            dateDisponibilite: candidature.dateDisponibilite || '',
+            preavis: candidature.preavis || '',
+            statut: candidature.statut || '',
+            dateEnvoi: candidature.dateEnvoi || '',
+            acceptContact: candidature.acceptContact || false,
+            acceptRGPD: candidature.acceptRGPD || false
+        };
         
-        this.editSelectedCVName = '';
-        this.editSelectedLMName = '';
+        console.log('📝 Données chargées dans le modal:', this.editingCandidature);
         this.editSkillInput = '';
-        this.editErrors = { entreprise: '', poste: '' };
         this.showEditModal = true;
     }
 
     closeEditModal(): void {
         this.showEditModal = false;
         this.editingCandidature = null;
-        this.editErrors = { entreprise: '', poste: '' };
+        this.editSkillInput = '';
+    }
+
+    getSkillsArray(competences: string): string[] {
+        if (!competences) return [];
+        return competences.split(',').map(s => s.trim()).filter(s => s);
+    }
+
+    addSkillToEdit(): void {
+        if (this.editSkillInput && this.editSkillInput.trim()) {
+            const currentSkills = this.getSkillsArray(this.editingCandidature.competences);
+            const newSkill = this.editSkillInput.trim();
+            
+            if (!currentSkills.includes(newSkill)) {
+                currentSkills.push(newSkill);
+                this.editingCandidature.competences = currentSkills.join(', ');
+                this.editSkillInput = '';
+            } else {
+                alert('Cette compétence est déjà ajoutée');
+            }
+        }
+    }
+
+    removeSkillFromEdit(index: number): void {
+        const currentSkills = this.getSkillsArray(this.editingCandidature.competences);
+        currentSkills.splice(index, 1);
+        this.editingCandidature.competences = currentSkills.join(', ');
     }
 
     updateCandidature(): void {
-        if (!this.validateEditForm()) {
+        console.log('=== DÉBUT MODIFICATION ===');
+        console.log('Données avant envoi:', JSON.stringify(this.editingCandidature, null, 2));
+        
+        if (!this.editingCandidature) {
+            console.error('❌ editingCandidature est null');
+            this.showMessage('❌ Aucune candidature à modifier', 'error');
+            return;
+        }
+        
+        if (!this.editingCandidature.id) {
+            console.error('❌ ID manquant');
+            this.showMessage('❌ ID de candidature manquant', 'error');
             return;
         }
         
         this.isUpdating = true;
         
         const dataToSend = {
-            entreprise: this.editingCandidature.entreprise.trim(),
-            poste: this.editingCandidature.poste.trim(),
-            lettreGeneree: this.editingCandidature.lettreGeneree?.trim() || '',
-            contrat: this.editingCandidature.contrat,
-            salaireMin: this.editingCandidature.salaireMin,
-            salaireMax: this.editingCandidature.salaireMax,
-            devise: this.editingCandidature.devise,
-            dateDisponibilite: this.editingCandidature.dateDisponibilite,
-            preavis: this.editingCandidature.preavis,
-            acceptContact: this.editingCandidature.acceptContact,
-            competences: this.editingCandidature.competences
+            nomComplet: this.editingCandidature.nomComplet || '',
+            email: this.editingCandidature.email || '',
+            telephone: this.editingCandidature.telephone || '',
+            formation: this.editingCandidature.formation || '',
+            experience: this.editingCandidature.experience || '',
+            competences: this.editingCandidature.competences || '',
+            lettreMotivation: this.editingCandidature.lettreMotivation || '',
+            dateDisponibilite: this.editingCandidature.dateDisponibilite || '',
+            preavis: this.editingCandidature.preavis || '',
+            acceptContact: this.editingCandidature.acceptContact || false,
+            acceptRGPD: this.editingCandidature.acceptRGPD || false
         };
         
+        console.log('📤 Données envoyées:', JSON.stringify(dataToSend, null, 2));
+        
         this.apiService.modifierCandidature(this.editingCandidature.id, dataToSend).subscribe({
-            next: () => {
-                this.closeEditModal();
+            next: (response) => {
+                console.log('✅ Réponse succès:', response);
+                this.showMessage('✅ Candidature modifiée avec succès !', 'success');
                 this.loadData();
+                this.closeEditModal();
                 this.isUpdating = false;
-                alert('Candidature modifiée avec succès !');
             },
             error: (err) => {
-                console.error('Erreur:', err);
-                alert('Erreur lors de la modification');
+                console.error('❌ Erreur détaillée:', err);
+                console.error('Status:', err.status);
+                console.error('Body:', err.error);
+                this.showMessage('❌ Erreur lors de la modification: ' + (err.error?.message || err.message || 'Erreur inconnue'), 'error');
                 this.isUpdating = false;
             }
         });
@@ -444,7 +885,7 @@ offresNouvelles: number = 347;
             this.apiService.supprimerCandidature(id).subscribe({
                 next: () => {
                     this.loadData();
-                    alert('Candidature supprimée');
+                    this.showMessage('✅ Candidature supprimée', 'success');
                 },
                 error: (err) => console.error('Erreur:', err)
             });
@@ -487,415 +928,193 @@ offresNouvelles: number = 347;
         this.loadData();
     }
 
-
-
-// Ajouter cette méthode
-calculerStatsPersonnelles(): void {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    
-    // Candidatures du mois
-    this.candidaturesCeMois = this.candidatures.filter(c => {
-        const date = new Date(c.dateEnvoi);
-        return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-    }).length;
-    
-    // Entretiens obtenus
-    this.entretiensObtenus = this.candidatures.filter(c => c.statut === 'ENTRETIEN').length;
-    
-    // Vues par recruteurs (simulé pour l'instant)
-    this.vuesRecruteurs = Math.floor(Math.random() * 50) + 10;
-}
-
-chargerAlertes(): void {
-    this.alertes = [];
-    
-    // Alerte 1: Si beaucoup de candidatures en attente
-    if (this.stats.enAttente > 5) {
-        this.alertes.push({
-            type: 'warning',
-            icon: 'ri-alert-line',
-            titre: 'Candidatures en attente',
-            message: `Vous avez ${this.stats.enAttente} candidatures en attente de réponse. Pensez à relancer les recruteurs après 2 semaines.`,
-            bouton: 'Voir conseils',
-            action: 'relancer'
-        });
-    }
-    
-    // Alerte 2: Si des candidatures acceptées
-    if (this.stats.acceptees > 0) {
-        this.alertes.push({
-            type: 'success',
-            icon: 'ri-checkbox-circle-line',
-            titre: 'Félicitations !',
-            message: `Vous avez ${this.stats.acceptees} candidature(s) acceptée(s). Préparez-vous pour la prochaine étape.`,
-            bouton: 'Préparer entretien',
-            action: 'entretien'
-        });
-    }
-    
-    // Alerte 3: Si aucune candidature
-    if (this.candidatures.length === 0) {
-        this.isNewCandidate = true;
-        this.alertes.push({
-            type: 'info',
-            icon: 'ri-lightbulb-line',
-            titre: 'Commencez votre recherche',
-            message: 'Votre profil est prêt ! Découvrez les offres qui correspondent à vos compétences.',
-            bouton: 'Voir les offres',
-            action: 'offres'
-        });
-    }
-    
-    // Alerte 4: Si le profil est incomplet
-    if (this.profilIncomplet()) {
-        this.alertes.push({
-            type: 'warning',
-            icon: 'ri-user-settings-line',
-            titre: 'Profil incomplet',
-            message: 'Complétez votre profil pour augmenter vos chances d\'être contacté par les recruteurs.',
-            bouton: 'Compléter profil',
-            action: 'profil'
-        });
-    }
-    
-    // Alerte 5: Conseil personnalisé
-    if (this.stats.refusees > 2) {
-        this.alertes.push({
-            type: 'info',
-            icon: 'ri-question-line',
-            titre: 'Besoin d\'aide ?',
-            message: 'Plusieurs de vos candidatures ont été refusées. Souhaitez-vous des conseils pour améliorer votre CV ?',
-            bouton: 'Améliorer mon CV',
-            action: 'cv'
-        });
-    }
-}
-
-profilIncomplet(): boolean {
-    // Vérifier si le profil est incomplet
-    // À adapter selon votre logique
-    return false;
-}
-
-actionAlerte(alerte: any): void {
-    switch(alerte.action) {
-        case 'relancer':
-            alert('Conseils : Relancez les recruteurs par email ou téléphone après 2 semaines.');
-            break;
-        case 'entretien':
-            alert('Préparez-vous : Renseignez-vous sur l\'entreprise, préparez vos questions.');
-            break;
-        case 'offres':
-            this.router.navigate(['/candidates-dashboard/bookmarks']);
-            break;
-        case 'profil':
-            this.router.navigate(['/candidates-dashboard/my-profile']);
-            break;
-        case 'cv':
-            alert('Conseils : Mettez en avant vos réalisations quantifiables, utilisez des mots-clés du secteur.');
-            break;
-        default:
-            break;
-    }
-}
-
-// ==================== ACTIONS RAPIDES CANDIDAT ====================
-/*
-// Télécharger le CV
-telechargerMonCV(): void {
-    // Vérifier si un CV existe
-    const cvUrl = localStorage.getItem('cvUrl');
-    const cvName = localStorage.getItem('cvName');
-    
-    if (cvUrl) {
-        // Si CV existe, le télécharger
-        const link = document.createElement('a');
-        link.href = cvUrl;
-        link.download = cvName || 'mon-cv.pdf';
-        link.click();
-        this.showMessage('Téléchargement du CV en cours...', 'success');
-    } else {
-        // Si pas de CV, proposer d'en uploader un
-        if (confirm('Vous n\'avez pas encore de CV. Voulez-vous en uploader un maintenant ?')) {
-            this.uploaderCV();
-        }
-    }
-}
-
-// Uploader un CV
-uploaderCV(): void {
-    // Créer un input file invisible
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf,.doc,.docx';
-    
-    input.onchange = (event: any) => {
-        const file = event.target.files[0];
-        if (file) {
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Le fichier ne doit pas dépasser 5 Mo');
-                return;
-            }
-            
-            // Simuler l'upload (à remplacer par appel API)
-            const reader = new FileReader();
-            reader.onload = (e: any) => {
-                localStorage.setItem('cvUrl', e.target.result);
-                localStorage.setItem('cvName', file.name);
-                this.showMessage(`CV "${file.name}" téléchargé avec succès !`, 'success');
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-    
-    input.click();
-}
-
-// Générer une lettre de motivation
-genererLettre(): void {
-    // Ouvrir un modal ou un formulaire pour générer la lettre
-    const entreprise = prompt('Pour quelle entreprise souhaitez-vous générer une lettre ?');
-    const poste = prompt('Pour quel poste ?');
-    
-    if (entreprise && poste) {
-        const lettre = this.genererContenuLettre(entreprise, poste);
+    calculerStatsPersonnelles(): void {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
         
-        // Sauvegarder la lettre
-        localStorage.setItem('lettreGeneree', lettre);
+        this.candidaturesCeMois = this.candidatures.filter(c => {
+            const date = new Date(c.dateEnvoi);
+            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        }).length;
         
-        // Afficher la lettre dans un modal ou télécharger
-        if (confirm('Lettre générée ! Voulez-vous la télécharger ?')) {
-            this.telechargerLettre(lettre, entreprise, poste);
+        this.entretiensObtenus = this.candidatures.filter(c => c.statut === 'ENTRETIEN').length;
+        this.vuesRecruteurs = Math.floor(Math.random() * 50) + 10;
+    }
+
+    chargerAlertes(): void {
+        this.alertes = [];
+        
+        if (this.stats.enAttente > 5) {
+            this.alertes.push({
+                type: 'warning',
+                icon: 'ri-alert-line',
+                titre: 'Candidatures en attente',
+                message: `Vous avez ${this.stats.enAttente} candidatures en attente de réponse.`,
+                bouton: 'Voir conseils',
+                action: 'relancer'
+            });
+        }
+        
+        if (this.stats.acceptees > 0) {
+            this.alertes.push({
+                type: 'success',
+                icon: 'ri-checkbox-circle-line',
+                titre: 'Félicitations !',
+                message: `Vous avez ${this.stats.acceptees} candidature(s) acceptée(s).`,
+                bouton: 'Préparer entretien',
+                action: 'entretien'
+            });
+        }
+        
+        if (this.candidatures.length === 0) {
+            this.isNewCandidate = true;
+            this.alertes.push({
+                type: 'info',
+                icon: 'ri-lightbulb-line',
+                titre: 'Commencez votre recherche',
+                message: 'Découvrez les offres qui correspondent à vos compétences.',
+                bouton: 'Voir les offres',
+                action: 'offres'
+            });
         } else {
-            // Copier dans le presse-papier
-            navigator.clipboard.writeText(lettre);
-            this.showMessage('Lettre copiée dans le presse-papier !', 'success');
+            this.isNewCandidate = false;
+        }
+        
+        if (this.stats.refusees > 2) {
+            this.alertes.push({
+                type: 'info',
+                icon: 'ri-question-line',
+                titre: 'Besoin d\'aide ?',
+                message: 'Plusieurs candidatures refusées. Conseils pour améliorer votre CV.',
+                bouton: 'Améliorer mon CV',
+                action: 'cv'
+            });
         }
     }
-}
 
-// Générer le contenu de la lettre
-genererContenuLettre(entreprise: string, poste: string): string {
-    const date = new Date().toLocaleDateString('fr-FR');
-    const nom = localStorage.getItem('userName') || 'Cher recruteur';
-    
-    return `
-${date}
-
-Objet : Candidature pour le poste de ${poste}
-
-${nom},
-
-Je me permets de vous adresser ma candidature pour le poste de ${poste} au sein de votre entreprise ${entreprise}.
-
-Fort de mon expérience et de mes compétences, je suis convaincu de pouvoir contribuer activement au développement de vos projets. Passionné par ce domaine, je serais ravi de mettre mes compétences au service de votre entreprise.
-
-Je me tiens à votre disposition pour un entretien afin de vous exposer plus en détail ma motivation et mes qualifications.
-
-Dans l'attente de votre retour, je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
-
-${nom}
-    `;
-}
-
-// Télécharger la lettre
-telechargerLettre(contenu: string, entreprise: string, poste: string): void {
-    const blob = new Blob([contenu], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `lettre_motivation_${entreprise}_${poste}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
-    this.showMessage('Lettre téléchargée !', 'success');
-}
-
-// Analyser le profil
-analyserProfil(): void {
-    // Récupérer les données du profil
-    const competences = JSON.parse(localStorage.getItem('competences') || '[]');
-    const experience = localStorage.getItem('experience') || '0';
-    const niveauEtude = localStorage.getItem('niveauEtude') || 'Non renseigné';
-    
-    // Calculer le score
-    let score = 0;
-    let conseils = [];
-    
-    // Score par compétences
-    if (competences.length >= 3) {
-        score += 30;
-    } else {
-        conseils.push(`Ajoutez ${3 - competences.length} compétence(s) à votre profil pour augmenter votre visibilité.`);
+    profilIncomplet(): boolean {
+        return false;
     }
-    
-    // Score par expérience
-    const experienceAnnee = parseInt(experience);
-    if (experienceAnnee >= 3) {
-        score += 40;
-    } else if (experienceAnnee >= 1) {
-        score += 25;
-        conseils.push('Ajoutez des détails sur vos réalisations professionnelles.');
-    } else {
-        conseils.push('Mettez en avant vos stages et projets personnels.');
-    }
-    
-    // Score par niveau d'étude
-    if (niveauEtude !== 'Non renseigné') {
-        score += 30;
-    } else {
-        conseils.push('Complétez votre niveau d\'étude.');
-    }
-    
-    // Afficher les résultats
-    this.afficherAnalyseProfil(score, conseils);
-}
 
-// Afficher l'analyse du profil
-afficherAnalyseProfil(score: number, conseils: string[]): void {
-    let message = `📊 Analyse de votre profil\n\n`;
-    message += `Score global: ${score}/100\n\n`;
-    
-    if (score >= 80) {
-        message += `✅ Excellent profil ! Vous êtes prêt(e) à postuler.`;
-    } else if (score >= 50) {
-        message += `⚠️ Bon profil, voici quelques conseils pour l'améliorer :\n`;
-        conseils.forEach(c => message += `\n• ${c}`);
-    } else {
-        message += `📝 Votre profil mérite d'être enrichi :\n`;
-        conseils.forEach(c => message += `\n• ${c}`);
-        message += `\n\n💡 Complétez votre profil pour augmenter vos chances de 40% !`;
-    }
-    
-    alert(message);
-    
-    // Proposer d'aller compléter le profil
-    if (score < 80) {
-        if (confirm('Voulez-vous compléter votre profil maintenant ?')) {
-            this.router.navigate(['/candidates-dashboard/my-profile']);
+    actionAlerte(alerte: any): void {
+        switch(alerte.action) {
+            case 'relancer':
+                alert('Conseils : Relancez les recruteurs par email après 2 semaines.');
+                break;
+            case 'entretien':
+                alert('Préparez-vous : Renseignez-vous sur l\'entreprise.');
+                break;
+            case 'offres':
+                this.router.navigate(['/candidates-dashboard/bookmarks']);
+                break;
+            case 'profil':
+                this.router.navigate(['/candidates-dashboard/my-profile']);
+                break;
+            case 'cv':
+                alert('Conseils : Mettez en avant vos réalisations quantifiables.');
+                break;
         }
     }
-}            */
 
-// Montrer un message temporaire
-showMessage(msg: string, type: string): void {
-    this.message = msg;
-    this.messageType = type;
-    setTimeout(() => {
-        this.message = '';
-    }, 3000);
-}
-
-
-// Ouvrir le modal
-openCVModal(): void {
-    this.loadCVData();
-    this.showCVModal = true;
-}
-
-// Fermer le modal
-closeCVModal(): void {
-    this.showCVModal = false;
-}
-
-// Charger les données du CV
-loadCVData(): void {
-    this.cvUrl = localStorage.getItem('cvUrl') || '';
-    this.cvName = localStorage.getItem('cvName') || '';
-    this.cvDate = localStorage.getItem('cvDate') || new Date().toLocaleDateString();
-    console.log('CV chargé:', { url: !!this.cvUrl, name: this.cvName });
-}
-
-// Ouvrir le sélecteur de fichier
-openFileSelector(): void {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf,.doc,.docx';
-    input.onchange = (event: any) => this.handleFileSelect(event);
-    input.click();
-}
-
-// Gérer la sélection de fichier
-handleFileSelect(event: any): void {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    console.log('Fichier sélectionné:', file.name, file.size);
-    
-    if (file.size > 5 * 1024 * 1024) {
-        alert('Le fichier ne doit pas dépasser 5 Mo');
-        return;
+    showMessage(msg: string, type: string): void {
+        this.message = msg;
+        this.messageType = type;
+        setTimeout(() => {
+            this.message = '';
+        }, 3000);
     }
-    
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-        localStorage.setItem('cvUrl', e.target.result);
-        localStorage.setItem('cvName', file.name);
-        localStorage.setItem('cvDate', new Date().toLocaleDateString());
+
+    openCVModal(): void {
         this.loadCVData();
-        this.showMessage('CV téléchargé avec succès !', 'success');
-        // Fermer le modal pour forcer le rechargement
-        this.closeCVModal();
-        setTimeout(() => this.openCVModal(), 100);
-    };
-    reader.onerror = () => {
-        alert('Erreur lors du téléchargement du fichier');
-    };
-    reader.readAsDataURL(file);
-}
-
-// Télécharger le CV
-telechargerCV(): void {
-    if (this.cvUrl) {
-        const link = document.createElement('a');
-        link.href = this.cvUrl;
-        link.download = this.cvName || 'mon-cv.pdf';
-        link.click();
-        this.showMessage('Téléchargement du CV...', 'success');
+        this.showCVModal = true;
     }
-}
 
-// Remplacer le CV
-uploadNewCV(): void {
-    this.openFileSelector();
-}
-
-// Supprimer le CV
-supprimerCV(): void {
-    if (confirm('Voulez-vous vraiment supprimer votre CV ?')) {
-        localStorage.removeItem('cvUrl');
-        localStorage.removeItem('cvName');
-        localStorage.removeItem('cvDate');
-        this.loadCVData();
-        this.showMessage('CV supprimé avec succès', 'success');
-        // Fermer le modal pour forcer le rechargement
-        this.closeCVModal();
-        setTimeout(() => this.openCVModal(), 100);
+    closeCVModal(): void {
+        this.showCVModal = false;
     }
-}
 
-// ==================== MÉTHODES LETTRE ====================
-openLettreModal(): void {
-    this.lettreData = { entreprise: '', poste: '', message: '' };
-    this.lettreGeneree = '';
-    this.showLettreModal = true;
-}
-
-closeLettreModal(): void {
-    this.showLettreModal = false;
-}
-
-genererLettreFinal(): void {
-    if (!this.lettreData.entreprise || !this.lettreData.poste) {
-        alert('Veuillez renseigner l\'entreprise et le poste');
-        return;
+    loadCVData(): void {
+        this.cvUrl = localStorage.getItem('cvUrl') || '';
+        this.cvName = localStorage.getItem('cvName') || '';
+        this.cvDate = localStorage.getItem('cvDate') || new Date().toLocaleDateString();
     }
-    
-    const date = new Date().toLocaleDateString('fr-FR');
-    const nom = localStorage.getItem('userName') || 'Cher recruteur';
-    
-    this.lettreGeneree = `
+
+    openFileSelector(): void {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.pdf,.doc,.docx';
+        input.onchange = (event: any) => this.handleFileSelect(event);
+        input.click();
+    }
+
+    handleFileSelect(event: any): void {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Le fichier ne doit pas dépasser 5 Mo');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+            localStorage.setItem('cvUrl', e.target.result);
+            localStorage.setItem('cvName', file.name);
+            localStorage.setItem('cvDate', new Date().toLocaleDateString());
+            this.loadCVData();
+            this.showMessage('CV téléchargé avec succès !', 'success');
+            this.closeCVModal();
+            setTimeout(() => this.openCVModal(), 100);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    telechargerCV(): void {
+        if (this.cvUrl) {
+            const link = document.createElement('a');
+            link.href = this.cvUrl;
+            link.download = this.cvName || 'mon-cv.pdf';
+            link.click();
+        }
+    }
+
+    uploadNewCV(): void {
+        this.openFileSelector();
+    }
+
+    supprimerCV(): void {
+        if (confirm('Voulez-vous vraiment supprimer votre CV ?')) {
+            localStorage.removeItem('cvUrl');
+            localStorage.removeItem('cvName');
+            localStorage.removeItem('cvDate');
+            this.loadCVData();
+            this.showMessage('CV supprimé', 'success');
+            this.closeCVModal();
+            setTimeout(() => this.openCVModal(), 100);
+        }
+    }
+
+    openLettreModal(): void {
+        this.lettreData = { entreprise: '', poste: '', message: '' };
+        this.lettreGeneree = '';
+        this.showLettreModal = true;
+    }
+
+    closeLettreModal(): void {
+        this.showLettreModal = false;
+    }
+
+    genererLettreFinal(): void {
+        if (!this.lettreData.entreprise || !this.lettreData.poste) {
+            alert('Veuillez renseigner l\'entreprise et le poste');
+            return;
+        }
+        
+        const date = new Date().toLocaleDateString('fr-FR');
+        const nom = localStorage.getItem('userName') || 'Cher recruteur';
+        
+        this.lettreGeneree = `
 ${date}
 
 Objet : Candidature pour le poste de ${this.lettreData.poste}
@@ -906,154 +1125,124 @@ Je me permets de vous adresser ma candidature pour le poste de ${this.lettreData
 
 ${this.lettreData.message || 'Fort de mon expérience et de mes compétences, je suis convaincu de pouvoir contribuer activement au développement de vos projets.'}
 
-Je me tiens à votre disposition pour un entretien afin de vous exposer plus en détail ma motivation et mes qualifications.
+Je me tiens à votre disposition pour un entretien.
 
 Dans l'attente de votre retour, je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
 
 ${nom}
-    `;
-}
-
-telechargerLettreGeneree(): void {
-    if (this.lettreGeneree) {
-        const blob = new Blob([this.lettreGeneree], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `lettre_motivation_${this.lettreData.entreprise}.txt`;
-        link.click();
-        URL.revokeObjectURL(url);
-        this.showMessage('Lettre téléchargée !', 'success');
+        `;
     }
-}
 
-// ==================== MÉTHODES ANALYSE ====================
-openAnalyseModal(): void {
-    this.analyserProfil();
-    this.showAnalyseModal = true;
-}
-
-closeAnalyseModal(): void {
-    this.showAnalyseModal = false;
-}
-
-analyserProfil(): void {
-    // Récupérer les données du profil
-    const competences = JSON.parse(localStorage.getItem('competences') || '[]');
-    const experience = localStorage.getItem('experience') || '';
-    const cv = localStorage.getItem('cvUrl') || '';
-    
-    this.profil = {
-        competences: competences.length > 0,
-        experience: experience !== '',
-        cv: cv !== ''
-    };
-    
-    let score = 0;
-    this.conseils = [];
-    
-    if (this.profil.competences) score += 35;
-    else this.conseils.push('Ajoutez vos compétences clés');
-    
-    if (this.profil.experience) score += 35;
-    else this.conseils.push('Renseignez votre expérience professionnelle');
-    
-    if (this.profil.cv) score += 30;
-    else this.conseils.push('Téléchargez votre CV');
-    
-    this.scoreProfil = score;
-}
-
-allerCompleterProfil(): void {
-    this.closeAnalyseModal();
-    this.router.navigate(['/candidates-dashboard/my-profile']);
-}
-
-
-
-toggleViewer(): void {
-    this.showViewer = !this.showViewer;
-    console.log('🔍 showViewer =', this.showViewer);
-    console.log('🔍 cvUrl =', this.cvUrl ? 'Présent' : 'Absent');
-    console.log('🔍 isPdf =', this.isPdf());
-}
-
-isPdf(): boolean {
-    const result = this.cvName?.toLowerCase().endsWith('.pdf');
-    console.log('isPdf() =', result, 'cvName =', this.cvName);
-    return result;
-}
-
-getSafeUrl(url: string): string {
-    return url;
-}
-
-
-
-
-
-
-// Ouvrir le PDF dans un nouvel onglet
-openInNewTab(): void {
-    if (this.cvUrl) {
-        const newWindow = window.open();
-        if (newWindow) {
-            newWindow.document.write(`
-                <html>
-                    <head>
-                        <title>${this.cvName || 'CV'}</title>
-                        <style>
-                            body { margin: 0; padding: 0; }
-                            embed, iframe { width: 100%; height: 100vh; border: none; }
-                        </style>
-                    </head>
-                    <body>
-                        <embed src="${this.cvUrl}" type="application/pdf" width="100%" height="100%">
-                    </body>
-                </html>
-            `);
+    telechargerLettreGeneree(): void {
+        if (this.lettreGeneree) {
+            const blob = new Blob([this.lettreGeneree], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `lettre_motivation_${this.lettreData.entreprise}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            this.showMessage('Lettre téléchargée !', 'success');
         }
     }
-}
 
-// Calculer la taille approximative du fichier
-getFileSize(): string {
-    if (!this.cvUrl) return '0 KB';
-    // Estimer la taille à partir de la longueur de l'URL base64
-    const sizeInBytes = Math.ceil((this.cvUrl.length * 3) / 4);
-    if (sizeInBytes < 1024) return sizeInBytes + ' octets';
-    if (sizeInBytes < 1024 * 1024) return Math.round(sizeInBytes / 1024) + ' KB';
-    return (sizeInBytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-
-subscribeNewsletter(): void {
-    if (!this.newsletterEmail) {
-        alert('Veuillez entrer votre email');
-        return;
+    openAnalyseModal(): void {
+        this.analyserProfil();
+        this.showAnalyseModal = true;
     }
-    
-    if (!this.newsletterEmail.includes('@')) {
-        alert('Email invalide');
-        return;
+
+    closeAnalyseModal(): void {
+        this.showAnalyseModal = false;
     }
-    
-    this.isSubscribing = true;
-    
-    // Appel API (à remplacer par ton endpoint)
-    this.apiService.subscribeNewsletter(this.newsletterEmail).subscribe({
-        next: () => {
-            alert('✅ Inscription réussie ! Vous recevrez nos alertes');
-            this.newsletterEmail = '';
-            this.isSubscribing = false;
-        },
-        error: (err) => {
-            console.error('Erreur inscription:', err);
-            alert('Une erreur est survenue');
-            this.isSubscribing = false;
+
+    analyserProfil(): void {
+        const competences = JSON.parse(localStorage.getItem('competences') || '[]');
+        const experience = localStorage.getItem('experience') || '';
+        const cv = localStorage.getItem('cvUrl') || '';
+        
+        this.profil = {
+            competences: competences.length > 0,
+            experience: experience !== '',
+            cv: cv !== ''
+        };
+        
+        let score = 0;
+        this.conseils = [];
+        
+        if (this.profil.competences) score += 35;
+        else this.conseils.push('Ajoutez vos compétences clés');
+        
+        if (this.profil.experience) score += 35;
+        else this.conseils.push('Renseignez votre expérience professionnelle');
+        
+        if (this.profil.cv) score += 30;
+        else this.conseils.push('Téléchargez votre CV');
+        
+        this.scoreProfil = score;
+    }
+
+    allerCompleterProfil(): void {
+        this.closeAnalyseModal();
+        this.router.navigate(['/candidates-dashboard/my-profile']);
+    }
+
+    toggleViewer(): void {
+        this.showViewer = !this.showViewer;
+    }
+
+    isPdf(): boolean {
+        return this.cvName?.toLowerCase().endsWith('.pdf');
+    }
+
+    getSafeUrl(url: string): string {
+        return url;
+    }
+
+    openInNewTab(): void {
+        if (this.cvUrl) {
+            const newWindow = window.open();
+            if (newWindow) {
+                newWindow.document.write(`
+                    <html>
+                        <head><title>${this.cvName || 'CV'}</title></head>
+                        <body><embed src="${this.cvUrl}" type="application/pdf" width="100%" height="100%"></body>
+                    </html>
+                `);
+            }
         }
-    });
-}
+    }
 
+    getFileSize(): string {
+        if (!this.cvUrl) return '0 KB';
+        const sizeInBytes = Math.ceil((this.cvUrl.length * 3) / 4);
+        if (sizeInBytes < 1024) return sizeInBytes + ' octets';
+        if (sizeInBytes < 1024 * 1024) return Math.round(sizeInBytes / 1024) + ' KB';
+        return (sizeInBytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
 
+    subscribeNewsletter(): void {
+        if (!this.newsletterEmail) {
+            alert('Veuillez entrer votre email');
+            return;
+        }
+        
+        if (!this.newsletterEmail.includes('@')) {
+            alert('Email invalide');
+            return;
+        }
+        
+        this.isSubscribing = true;
+        this.apiService.subscribeNewsletter(this.newsletterEmail).subscribe({
+            next: () => {
+                alert('✅ Inscription réussie !');
+                this.newsletterEmail = '';
+                this.isSubscribing = false;
+            },
+            error: () => {
+                alert('Une erreur est survenue');
+                this.isSubscribing = false;
+            }
+        });
+    }
+    
 }

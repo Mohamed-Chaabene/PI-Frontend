@@ -287,12 +287,8 @@ creerCandidature(data: any): Observable<any> {
 }
 // Modifier une candidature (entreprise, poste, lettre)
 modifierCandidature(id: number, data: any): Observable<any> {
-    const token = localStorage.getItem('token');
-    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-    return this.http.put(`${this.apiUrl}/candidatures/${id}`, data, { headers });
+    console.log('🔧 API - Modification complète:', { id, data });
+    return this.http.put(`${this.apiUrl}/candidatures/${id}`, data);
 }
 
 // Modifier le statut d'une candidature
@@ -357,13 +353,67 @@ getOffresEmploi(): Observable<any> {
     return this.http.get(`${this.apiUrl}/offres-emploi`, { headers });
 }
 
+// Newsletter
 subscribeNewsletter(email: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/newsletter/subscribe`, { email }, { headers });
+}
+
+
+// ==================== DOCUMENTS CRUD ====================
+
+getAllDocuments(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/documents`, { headers });
+}
+
+getDocumentById(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/documents/${id}`, { headers });
+}
+
+creerDocument(data: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     if (token) {
         headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    return this.http.post(`${this.apiUrl}/newsletter/subscribe`, { email }, { headers });
+    return this.http.post(`${this.apiUrl}/documents`, data, { headers });
+}
+modifierDocument(id: number, data: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.put(`${this.apiUrl}/documents/${id}`, data, { headers });
+}
+
+supprimerDocument(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.delete(`${this.apiUrl}/documents/${id}`, { headers });
+}
+
+
+
+quickApply(candidatureData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/candidatures/quick-apply`, candidatureData);
 }
 
 }

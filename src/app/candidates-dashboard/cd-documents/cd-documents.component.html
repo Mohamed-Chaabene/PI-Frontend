@@ -1,0 +1,330 @@
+<!-- Title -->
+<div class="breadcrumb-title">
+    <h1 class="mb-0 fw-semibold">My Documents</h1>
+    <p class="mb-0">Manage your CVs, cover letters and portfolio</p>
+</div>
+
+<!-- Bouton Nouveau Document -->
+<div class="text-end mb-4">
+    <button class="btn-primary" (click)="openCreateModal()">
+        <i class="ri-add-line"></i> New document
+    </button>
+</div>
+
+<!-- Loading -->
+<div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-2">Loading your documents...</p>
+</div>
+
+<!-- Error -->
+<div *ngIf="errorMessage" class="alert alert-danger">
+    <i class="ri-error-warning-line me-2"></i> {{ errorMessage }}
+</div>
+
+<!-- Empty State -->
+<div *ngIf="!isLoading && !errorMessage && documents.length === 0" class="empty-state text-center py-5">
+    <i class="ri-folder-line" style="font-size: 64px; color: #ccc;"></i>
+    <h3 class="mt-3">Aucun document</h3>
+    <p class="text-muted">Créez votre premier document (CV, lettre de motivation...)</p>
+    <button class="btn-outline-primary mt-2" (click)="openCreateModal()">
+        <i class="ri-add-line"></i> Créer un document
+    </button>
+</div>
+
+<!-- Liste des documents -->
+<div *ngIf="!isLoading && !errorMessage && documents.length > 0" class="documents-grid">
+    <div class="document-card" *ngFor="let doc of documents">
+        <div class="document-icon" [style.backgroundColor]="getTypeColor(doc.type) + '20'">
+            <i [class]="getTypeIcon(doc.type)" [style.color]="getTypeColor(doc.type)"></i>
+        </div>
+        <div class="document-info">
+            <h3>{{ doc.nom || getTypeLabel(doc.type) }}</h3>
+            <div class="document-meta">
+                <span class="badge" [ngClass]="{'badge-success': doc.compatibleATS, 'badge-warning': !doc.compatibleATS}">
+                    {{ doc.compatibleATS ? 'ATS compatible' : 'ATS à améliorer' }}
+                </span>
+            </div>
+            <p class="document-preview">{{ (doc.contenu | slice:0:80) }}...</p>
+        </div>
+        <div class="document-actions">
+            <button class="btn-view" (click)="viewDocument(doc)" title="Voir">
+                <i class="ri-eye-line"></i>
+            </button>
+            <button class="btn-edit" (click)="openEditModal(doc)" title="Modifier">
+                <i class="ri-edit-line"></i>
+            </button>
+            <button class="btn-delete" (click)="deleteDocument(doc.id)" title="Supprimer">
+                <i class="ri-delete-bin-line"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL CREATE (CRÉER) ==================== -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>
+                <i class="ri-add-line"></i>
+                Nouveau document
+            </h3>
+            <button class="modal-close" (click)="closeCreateModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Sélection du type -->
+            <div class="type-selector">
+                <button *ngFor="let t of types" 
+                        class="type-btn" 
+                        [class.active]="selectedType === t"
+                        (click)="onTypeChange(t)">
+                    <i [class]="getTypeIcon(t)"></i>
+                    {{ getTypeLabel(t) }}
+                </button>
+            </div>
+
+            <!-- FORMULAIRE CV -->
+            <div *ngIf="selectedType === 'CV'" class="form-cv">
+                <h4>Informations personnelles</h4>
+                <div class="form-group">
+        <label>Photo de profil</label>
+        <input type="file" 
+               accept="image/*" 
+               (change)="onPhotoSelected($event)" 
+               class="form-control">
+        <small class="text-muted" *ngIf="cvData.photo">Photo sélectionnée : {{ cvData.photoName || 'image.jpg' }}</small>
+    </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Prénom *</label><input type="text" class="form-control" [(ngModel)]="cvData.prenom"></div>
+                    <div class="form-group"><label>Nom *</label><input type="text" class="form-control" [(ngModel)]="cvData.nom"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Titre professionnel</label><input type="text" class="form-control" [(ngModel)]="cvData.titre" placeholder="Ex: Développeur Full Stack"></div>
+                    <div class="form-group"><label>Email</label><input type="email" class="form-control" [(ngModel)]="cvData.email"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Téléphone</label><input type="tel" class="form-control" [(ngModel)]="cvData.telephone"></div>
+                    <div class="form-group"><label>Adresse</label><input type="text" class="form-control" [(ngModel)]="cvData.adresse"></div>
+                </div>
+
+                <h4>Expériences professionnelles</h4>
+                <div class="experiences-list">
+                    <div *ngFor="let exp of cvData.experiences; let i=index" class="experience-item">
+                        <div class="exp-header">
+                            <strong>{{ exp.poste }} - {{ exp.entreprise }}</strong>
+                            <button class="btn-remove" (click)="removeExperience(i)">×</button>
+                        </div>
+                        <div class="exp-period">{{ exp.periode }}</div>
+                        <p>{{ exp.description }}</p>
+                    </div>
+                </div>
+                <div class="add-section">
+                    <div class="form-row">
+                        <div class="form-group"><input type="text" class="form-control" [(ngModel)]="newExperience.poste" placeholder="Poste"></div>
+                        <div class="form-group"><input type="text" class="form-control" [(ngModel)]="newExperience.entreprise" placeholder="Entreprise"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><input type="text" class="form-control" [(ngModel)]="newExperience.periode" placeholder="Période (ex: 2020-2024)"></div>
+                        <div class="form-group"><input type="text" class="form-control" [(ngModel)]="newExperience.description" placeholder="Description"></div>
+                    </div>
+                    <button class="btn-add" (click)="addExperience()">+ Ajouter une expérience</button>
+                </div>
+
+                <h4>Formation</h4>
+                <div class="formations-list">
+                    <div *ngFor="let f of cvData.formations; let i=index" class="formation-item">
+                        <div class="formation-header">
+                            <strong>{{ f.diplome }} - {{ f.institution }}</strong>
+                            <button class="btn-remove" (click)="removeFormation(i)">×</button>
+                        </div>
+                        <div class="formation-annee">{{ f.annee }}</div>
+                        <p>{{ f.description }}</p>
+                    </div>
+                </div>
+                <div class="add-section">
+                    <div class="form-row">
+                        <div class="form-group"><input type="text" class="form-control" [(ngModel)]="newFormation.diplome" placeholder="Diplôme"></div>
+                        <div class="form-group"><input type="text" class="form-control" [(ngModel)]="newFormation.institution" placeholder="Institution"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><input type="text" class="form-control" [(ngModel)]="newFormation.annee" placeholder="Année"></div>
+                        <div class="form-group"><input type="text" class="form-control" [(ngModel)]="newFormation.description" placeholder="Description"></div>
+                    </div>
+                    <button class="btn-add" (click)="addFormation()">+ Ajouter une formation</button>
+                </div>
+
+                <h4>Compétences</h4>
+                <div class="skills-tags">
+                    <span *ngFor="let skill of cvData.competences; let i=index" class="skill-tag">
+                        {{ skill }}
+                        <i class="ri-close-line" (click)="removeCompetence(i)"></i>
+                    </span>
+                </div>
+                <div class="add-skill">
+                    <input type="text" #skillInput class="form-control" placeholder="Ajouter une compétence" (keyup.enter)="addCompetence(skillInput.value); skillInput.value=''">
+                    <button class="btn-add-small" (click)="addCompetence(skillInput.value); skillInput.value=''">+</button>
+                </div>
+
+                <h4>Langues</h4>
+                <div class="langues-list">
+                    <div *ngFor="let l of cvData.langues; let i=index" class="langue-item">
+                        <span>{{ l.langue }} - {{ l.niveau }}</span>
+                        <button class="btn-remove" (click)="removeLangue(i)">×</button>
+                    </div>
+                </div>
+                <div class="add-section">
+                    <div class="form-row">
+                        <div class="form-group"><input type="text" class="form-control" [(ngModel)]="newLangue.langue" placeholder="Langue"></div>
+                        <div class="form-group">
+                            <select class="form-control" [(ngModel)]="newLangue.niveau">
+                                <option value="">Niveau</option>
+                                <option value="Débutant">Débutant</option>
+                                <option value="Intermédiaire">Intermédiaire</option>
+                                <option value="Courant">Courant</option>
+                                <option value="Natif">Natif</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn-add" (click)="addLangue()">+ Ajouter une langue</button>
+                </div>
+
+                <h4>Centres d'intérêt</h4>
+                <div class="interests-tags">
+                    <span *ngFor="let interest of cvData.centresInteret; let i=index" class="interest-tag">
+                        {{ interest }}
+                        <i class="ri-close-line" (click)="removeCentreInteret(i)"></i>
+                    </span>
+                </div>
+                <div class="add-skill">
+                    <input type="text" #interestInput class="form-control" placeholder="Ajouter un centre d'intérêt" (keyup.enter)="addCentreInteret(interestInput.value); interestInput.value=''">
+                    <button class="btn-add-small" (click)="addCentreInteret(interestInput.value); interestInput.value=''">+</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Profil personnel</label>
+                    <textarea class="form-control" rows="3" [(ngModel)]="cvData.profil" placeholder="Décrivez votre profil..."></textarea>
+                </div>
+            </div>
+
+            <!-- FORMULAIRE LETTRE DE MOTIVATION -->
+            <div *ngIf="selectedType === 'LETTRE_DE_MOTIVATION'" class="form-lettre">
+                <div class="form-row">
+                    <div class="form-group"><label>Prénom</label><input type="text" class="form-control" [(ngModel)]="lettreData.prenom"></div>
+                    <div class="form-group"><label>Nom</label><input type="text" class="form-control" [(ngModel)]="lettreData.nom"></div>
+                </div>
+                <div class="form-group"><label>Entreprise *</label><input type="text" class="form-control" [(ngModel)]="lettreData.entreprise" placeholder="Nom de l'entreprise"></div>
+                <div class="form-group"><label>Poste *</label><input type="text" class="form-control" [(ngModel)]="lettreData.poste" placeholder="Intitulé du poste"></div>
+                <div class="form-group"><label>Message personnalisé</label><textarea class="form-control" rows="6" [(ngModel)]="lettreData.message" placeholder="Décrivez votre motivation..."></textarea></div>
+                <div class="form-note">💡 La lettre sera générée avec un format professionnel</div>
+            </div>
+
+            <!-- FORMULAIRE PORTFOLIO -->
+            <div *ngIf="selectedType === 'PORTFOLIO'" class="form-portfolio">
+                <div class="form-group"><label>Titre du projet *</label><input type="text" class="form-control" [(ngModel)]="portfolioData.titre" placeholder="Nom de votre projet"></div>
+                <div class="form-group"><label>Année</label><input type="text" class="form-control" [(ngModel)]="portfolioData.annee" placeholder="2024"></div>
+                <div class="form-group"><label>Description</label><textarea class="form-control" rows="4" [(ngModel)]="portfolioData.description" placeholder="Décrivez votre projet..."></textarea></div>
+                <div class="form-group"><label>Lien du projet (optionnel)</label><input type="url" class="form-control" [(ngModel)]="portfolioData.lien" placeholder="https://..."></div>
+                <h4>Technologies utilisées</h4>
+                <div class="tech-tags">
+                    <span *ngFor="let tech of portfolioData.technologies; let i=index" class="tech-tag">
+                        {{ tech }}
+                        <i class="ri-close-line" (click)="removeTechnologie(i)"></i>
+                    </span>
+                </div>
+                <div class="add-skill">
+                    <input type="text" #techInput class="form-control" placeholder="Ajouter une technologie" (keyup.enter)="addTechnologie(techInput.value); techInput.value=''">
+                    <button class="btn-add-small" (click)="addTechnologie(techInput.value); techInput.value=''">+</button>
+                </div>
+            </div>
+
+            <!-- FORMULAIRE AUTRE -->
+            <div *ngIf="selectedType === 'AUTRE'" class="form-autre">
+                <div class="form-group"><label>Titre du document *</label><input type="text" class="form-control" [(ngModel)]="autreData.titre" placeholder="Titre de votre document"></div>
+                <div class="form-group"><label>Contenu *</label><textarea class="form-control" rows="10" [(ngModel)]="autreData.contenu" placeholder="Écrivez votre contenu ici..."></textarea></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeCreateModal()">Annuler</button>
+            <button class="btn-submit" (click)="createDocument()" [disabled]="isCreating">
+                {{ isCreating ? 'Génération...' : 'Générer le document' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL VIEW (VOIR) ==================== -->
+<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+    <div class="modal-container modal-xl" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>
+                <i [class]="getTypeIcon(selectedDocument?.type)"></i>
+                {{ getTypeLabel(selectedDocument?.type) }}
+            </h3>
+            <button class="modal-close" (click)="closeViewModal()">&times;</button>
+        </div>
+        <div class="modal-body view-body">
+            <div class="view-actions">
+                <button class="btn-download" (click)="telechargerDocument(selectedDocument)">
+                    <i class="ri-download-line"></i> Télécharger
+                </button>
+            </div>
+            <div class="document-viewer">
+                <!-- Afficher le document en HTML rendu -->
+                <iframe [srcdoc]="selectedDocument?.contenu" 
+                        class="viewer-iframe"
+                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ==================== MODAL EDIT (MODIFIER) ==================== -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3><i class="ri-edit-line"></i> Modifier le document</h3>
+            <button class="modal-close" (click)="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group"><label>Nom</label><input type="text" class="form-control" [(ngModel)]="editingDocument.nom"></div>
+            <div class="form-group"><label>Type</label><select class="form-control" [(ngModel)]="editingDocument.type"><option *ngFor="let t of types" [value]="t">{{ getTypeLabel(t) }}</option></select></div>
+            <div class="form-group"><label>Contenu</label><textarea class="form-control" rows="10" [(ngModel)]="editingDocument.contenu"></textarea></div>
+            <div class="form-group checkbox"><label><input type="checkbox" [(ngModel)]="editingDocument.compatibleATS"> Compatible ATS</label></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeEditModal()">Annuler</button>
+            <button class="btn-submit" (click)="updateDocument()" [disabled]="isUpdating">{{ isUpdating ? 'Enregistrement...' : 'Enregistrer' }}</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL APERÇU DU DOCUMENT GÉNÉRÉ ==================== -->
+<div class="modal-overlay" *ngIf="showPreviewModal" (click)="closePreviewModal()">
+    <div class="modal-container modal-xl" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>
+                <i class="ri-eye-line"></i>
+                Aperçu du document
+            </h3>
+            <button class="modal-close" (click)="closePreviewModal()">&times;</button>
+        </div>
+        <div class="modal-body preview-body">
+            <div class="preview-actions">
+                <button class="btn-outline" (click)="telechargerDocument(generatedDocument)">
+                    <i class="ri-download-line"></i> Télécharger
+                </button>
+                <button class="btn-primary" (click)="saveGeneratedDocument()" [disabled]="isCreating">
+                    <i class="ri-save-line"></i> {{ isCreating ? 'Sauvegarde...' : 'Sauvegarder' }}
+                </button>
+            </div>
+            <div class="document-preview">
+                <iframe [srcdoc]="generatedDocument?.contenu" 
+                        class="preview-iframe"
+                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>

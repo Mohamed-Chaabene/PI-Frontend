@@ -102,31 +102,76 @@ export class CdBookmarksComponent implements OnInit {
         });
     }
 
-    postuler(offre: any): void {
-        if (offre.statut === 'CLOSED') {
-            this.showMessage('Cette offre est déjà clôturée', 'error');
-            return;
-        }
+  postuler(offre: any): void {
+    if (offre.statut === 'CLOSED') {
+        this.showMessage('Cette offre est déjà clôturée', 'error');
+        return;
+    }
+    
+    if (confirm(`Postuler à l'offre "${offre.titre}" chez ${offre.entreprise} ?`)) {
+        // Get current user info from your auth service or localStorage
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         
-        if (confirm(`Postuler à l'offre "${offre.titre}" chez ${offre.entreprise} ?`)) {
-            const candidatureData = {
-                offreId: offre.id,
-                entreprise: offre.entreprise,
-                poste: offre.titre,
-                lettreGeneree: `Candidature pour le poste de ${offre.titre} chez ${offre.entreprise}`
-            };
-            
-            this.apiService.creerCandidature(candidatureData).subscribe({
-                next: () => {
-                    this.showMessage(`✅ Candidature envoyée avec succès pour "${offre.titre}" !`, 'success');
-                },
-                error: (err) => {
-                    console.error('Erreur:', err);
+        const candidatureData = {
+            offreId: offre.id,
+            entreprise: offre.entreprise,
+            poste: offre.titre,
+            lettreGeneree: `Candidature pour le poste de ${offre.titre} chez ${offre.entreprise}`,
+            // Required fields
+            nomComplet: currentUser.nom || currentUser.fullName || 'Candidat', // Get from user profile
+            email: currentUser.email || '', // Get from user profile
+            acceptRGPD: true,
+            // Optional fields with defaults
+            telephone: currentUser.telephone || '',
+            description: `Candidature pour le poste de ${offre.titre}`,
+            formation: '',
+            experience: '',
+            competences: '',
+            lettreMotivation: '',
+            dateDisponibilite: '',
+            preavis: '',
+            acceptContact: false
+        };
+        
+        console.log('📡 Envoi des données:', candidatureData);
+        
+        this.apiService.creerCandidature(candidatureData).subscribe({
+            next: (response) => {
+                console.log('✅ Réponse reçue:', response);
+                this.showMessage(`✅ Candidature envoyée avec succès pour "${offre.titre}" !`, 'success');
+            },
+            error: (err) => {
+                console.error('❌ Erreur détaillée:', err);
+                if (err.error) {
+                    console.error('Détails de l\'erreur:', err.error);
+                    // Display validation errors
+                    const errorMessage = this.formatErrorMessage(err.error);
+                    this.showMessage(`❌ Erreur: ${errorMessage}`, 'error');
+                } else {
                     this.showMessage(`❌ Erreur lors de la candidature pour "${offre.titre}"`, 'error');
                 }
-            });
-        }
+            }
+        });
     }
+}
+
+formatErrorMessage(error: any): string {
+    if (typeof error === 'string') {
+        return error;
+    }
+    if (error.error) {
+        return error.error;
+    }
+    if (error.message) {
+        return error.message;
+    }
+    // If it's a validation errors object
+    if (typeof error === 'object') {
+        const messages = Object.values(error).join(', ');
+        return messages;
+    }
+    return 'Erreur de validation';
+}
 
     showMessage(msg: string, type: string): void {
         this.message = msg;
@@ -135,4 +180,7 @@ export class CdBookmarksComponent implements OnInit {
             this.message = '';
         }, 3000);
     }
+
+
+    
 }

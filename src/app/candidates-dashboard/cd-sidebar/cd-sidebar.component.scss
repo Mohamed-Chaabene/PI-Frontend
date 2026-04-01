@@ -28,12 +28,12 @@
                     left: 15px;
                     font-size: 18px;
                     position: absolute;
-                    color: var(--primaryColor);
+                    color: #2563eb; // bleu moyen élégant
                     transform: translateY(-50%);
                     transition: var(--transition);
                 }
                 &:hover, &.active {
-                    background-color: var(--primaryColor);
+                    background-color: #2563eb; // bleu moyen élégant
                     color: var(--whiteColor);
 
                     i {
@@ -83,7 +83,7 @@
         -webkit-box-pack: center;
         text-transform: uppercase;
         -webkit-box-align: center;
-        background-color: var(--primaryColor);
+        background-color: #2563eb; // bleu moyen élégant
         box-shadow: rgb(0, 0, 0, .15) 0px 0px 10px;
         font: {
             size: 14px;

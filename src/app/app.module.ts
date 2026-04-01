@@ -47,7 +47,7 @@ import { EdChangePasswordComponent } from './employers-dashboard/ed-change-passw
 import { CandidatesDashboardComponent } from './candidates-dashboard/candidates-dashboard.component';
 import { CDashboardComponent } from './candidates-dashboard/c-dashboard/c-dashboard.component';
 import { CdProfileComponent } from './candidates-dashboard/cd-profile/cd-profile.component';
-import { CdResumeComponent } from './candidates-dashboard/cd-resume/cd-resume.component';
+import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';
 import { CdBookmarksComponent } from './candidates-dashboard/cd-bookmarks/cd-bookmarks.component';
 import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component';
 import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
@@ -107,6 +107,9 @@ import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-passw
 import { HometwoBannerComponent } from './pages/home-demo-two/hometwo-banner/hometwo-banner.component';
 import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-banner/homethree-banner.component';
 
+
+
+
 @NgModule({
     declarations: [
         App,
@@ -142,7 +145,6 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         CandidatesDashboardComponent,
         CDashboardComponent,
         CdProfileComponent,
-        CdResumeComponent,
         CdBookmarksComponent,
         CdAppliedJobsComponent,
         CdAlertJobsComponent,
@@ -190,7 +192,10 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         RdProfileComponent,
         RdChangePasswordComponent,
         HometwoBannerComponent,
-        HomethreeBannerComponent
+        CdDocumentsComponent,
+        HomethreeBannerComponent,
+        
+         CdAppliedJobsComponent
     ],
     imports: [
         BrowserModule,
