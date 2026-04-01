@@ -1,0 +1,330 @@
+.formations-container {
+  padding: 30px 20px;
+  background: #f8f9fa;
+  min-height: 600px;
+}
+
+.formations-header {
+  margin-bottom: 30px;
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+
+    h2 {
+      color: #1a1a1a;
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      i {
+        color: #6c63ff;
+        font-size: 28px;
+      }
+    }
+
+    p {
+      color: #666;
+      margin: 5px 0 0;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: #6c63ff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #5a54d4;
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+.tabs-container {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+
+  .tabs {
+    display: flex;
+    gap: 10px;
+
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 12px 20px;
+      cursor: pointer;
+      color: #666;
+      font-size: 14px;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      i {
+        font-size: 16px;
+      }
+
+      &:hover {
+        color: #333;
+      }
+
+      &.active {
+        color: #6c63ff;
+        border-bottom-color: #6c63ff;
+      }
+    }
+  }
+}
+
+.table-container {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.formations-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: #f5f5f5;
+    border-bottom: 2px solid #e0e0e0;
+
+    th {
+      padding: 12px 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f9f9f9;
+      }
+
+      &.empty-row {
+        &:hover {
+          background-color: white;
+        }
+      }
+
+      td {
+        padding: 12px 15px;
+        font-size: 13px;
+        color: #333;
+      }
+
+      &.formation-row {
+        .id-col {
+          font-weight: 600;
+          color: #6c63ff;
+          width: 40px;
+        }
+
+        .titre-col {
+          font-weight: 500;
+          max-width: 180px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .niveau-col,
+        .statut-col {
+          .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+
+            &.tag-green {
+              background: #d4edda;
+              color: #155724;
+            }
+
+            &.tag-blue {
+              background: #d1ecf1;
+              color: #0c5460;
+            }
+
+            &.tag-amber {
+              background: #fff3cd;
+              color: #856404;
+            }
+
+            &.tag-purple {
+              background: #e2d9f3;
+              color: #6c3eb5;
+            }
+
+            &.tag-gray {
+              background: #e2e3e5;
+              color: #383d41;
+            }
+          }
+        }
+
+        .actions-col {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+
+          .btn-icon {
+            background: none;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s ease;
+
+            &:disabled {
+              opacity: 0.5;
+              cursor: not-allowed;
+            }
+
+            &.btn-view {
+              color: #0066cc;
+              &:hover:not(:disabled) {
+                background: #e3f2fd;
+              }
+            }
+
+            &.btn-edit {
+              color: #ff9800;
+              &:hover:not(:disabled) {
+                background: #fff3e0;
+              }
+            }
+
+            &.btn-archive {
+              color: #9c27b0;
+              &:hover:not(:disabled) {
+                background: #f3e5f5;
+              }
+            }
+
+            &.btn-delete {
+              color: #d32f2f;
+              &:hover:not(:disabled) {
+                background: #ffebee;
+              }
+            }
+
+            &.btn-restore {
+              color: #4caf50;
+              &:hover:not(:disabled) {
+                background: #e8f5e9;
+              }
+            }
+          }
+        }
+      }
+
+      &.empty-row {
+        .empty-message {
+          text-align: center;
+          padding: 40px 20px !important;
+          color: #999;
+
+          i {
+            font-size: 48px;
+            color: #ddd;
+            display: block;
+            margin-bottom: 10px;
+          }
+
+          p {
+            margin: 0;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 20px;
+
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f0f0f0;
+    border-top: 4px solid #6c63ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  p {
+    color: #666;
+    font-size: 14px;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .formations-header .header-top {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .btn-primary {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .formations-table {
+    font-size: 12px;
+
+    thead th,
+    tbody td {
+      padding: 8px 10px;
+    }
+  }
+}
+

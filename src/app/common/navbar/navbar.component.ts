@@ -319,8 +319,8 @@ export class NavbarComponent implements OnInit {
         }
 
         if (normalizedRole === 'CLIENT_FREELANCE') {
-            console.log('[AUTH DEBUG] redirect -> /');
-            this.router.navigate(['/']);
+            console.log('[AUTH DEBUG] redirect -> /freelance/dashboard');
+            this.router.navigate(['/freelance/dashboard']);
             return;
         }
 

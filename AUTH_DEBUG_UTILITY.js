@@ -44,7 +44,7 @@ console.log('ℹ️ Look for "Authorization: Bearer ..." header');
 
 // 4. Test a simple API call
 console.log('\n4️⃣ TESTING API CALL WITH CURRENT TOKEN');
-console.log('Running: fetch("http://localhost:8080/api/domaines", { headers: { "Authorization": "Bearer ' + (token ? token.substring(0, 20) + '..." : "NO_TOKEN") + '" }})');
+console.log(`Running: fetch("http://localhost:8080/api/domaines", { headers: { "Authorization": "Bearer ${token ? token.substring(0, 20) + '...' : 'NO_TOKEN'}" }})`);
 
 if (token) {
   fetch('http://localhost:8080/api/domaines', {

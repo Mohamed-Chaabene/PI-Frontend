@@ -20,6 +20,8 @@ import { AdFooterComponent } from './admin-dashboard/ad-footer/ad-footer.compone
 import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboard.component';
 import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
 import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
+import { EntretienListComponent } from './admin-dashboard/entretien-list/entretien-list.component';
+import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
 import { routes } from './app.routes';
 import { App } from './app';
 
@@ -165,6 +167,8 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         AdDashboardComponent,
         PartenaireListComponent,
         OffreListComponent,
+        EntretienListComponent,
+        FormationListComponent,
     ],
     imports: [
         BrowserModule,

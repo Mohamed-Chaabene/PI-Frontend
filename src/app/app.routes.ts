@@ -59,6 +59,9 @@ import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.compo
 import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboard.component';
 import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
 import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
+import { EntretienListComponent } from './admin-dashboard/entretien-list/entretien-list.component';
+import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
+import { recruteurGuard, recruteurChildGuard } from './guards/recruteur.guard';
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
     {path: 'login', component: HomeDemoOneComponent},
@@ -101,6 +104,11 @@ export const routes: Routes = [
         path: 'candidates-dashboard',
         component: CandidatesDashboardComponent,
         children: [
+    {
+        path: 'freelance',
+        loadChildren: () =>
+            import('./freelance/freelance.module').then(m => m.FreelanceModule)
+    },
             {path: '', component: CDashboardComponent},
             {path: 'my-profile', component: CdProfileComponent},
              { path: 'documents', component: CdDocumentsComponent },   //************************************** */
@@ -114,6 +122,8 @@ export const routes: Routes = [
     {
         path: 'recruiter-dashboard',
         component: RecruiterDashboardComponent,
+        canActivate: [recruteurGuard],
+        canActivateChild: [recruteurChildGuard],
         children: [
             {path: '', component: RdDashboardComponent},
             {path: 'post-job', component: RdPostJobComponent},
@@ -130,6 +140,11 @@ export const routes: Routes = [
   path: 'formations',
   loadChildren: () =>
     import('./formations/formations.module').then(m => m.FormationsModule)
+},
+{
+    path: 'freelance',
+    loadChildren: () =>
+        import('./freelance/freelance.module').then(m => m.FreelanceModule)
 },
 {path: 'evenement-dashboard', component: EvenementDashboardComponent,
         children: [
@@ -148,6 +163,9 @@ export const routes: Routes = [
         { path: '', component: AdDashboardComponent },
         { path: 'partenaires', component: PartenaireListComponent },
         { path: 'partenaires/:id/offres', component: OffreListComponent },
+        { path: 'entrietiens', redirectTo: 'entretiens', pathMatch: 'full' },
+        { path: 'entretiens', component: EntretienListComponent },
+        { path: 'formations', component: FormationListComponent },
     ]
     },
 

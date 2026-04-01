@@ -46,10 +46,22 @@ export class RdInterviews implements OnInit {
   constructor(private apiService: ApiService, private router: Router) {}
 
   ngOnInit(): void {
+    if (!this.isRecruteurSession()) {
+      alert('Acces refuse. Veuillez vous connecter avec un compte recruteur.');
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.getCurrentUser();
     this.loadEntretiens();
     this.loadCandidats();
     this.loadDomaines();
+  }
+
+  private isRecruteurSession(): boolean {
+    const token = localStorage.getItem('token');
+    const role = (localStorage.getItem('userRole') || '').toUpperCase().replace(/^ROLE_/, '');
+    return !!token && role === 'RECRUTEUR';
   }
 
   getCurrentUser(): void {
@@ -74,6 +86,9 @@ export class RdInterviews implements OnInit {
       },
       error: (error: any) => {
         console.error('❌ Erreur recuperation recruteur via API:', error);
+        if (error?.status === 401 || error?.status === 403) {
+          localStorage.removeItem('recruteurId');
+        }
         this.fallbackFromToken();
       }
     });
@@ -247,7 +262,11 @@ export class RdInterviews implements OnInit {
               }
               alert('Erreur : impossible de récupérer un ID recruteur valide. Veuillez vous reconnecter.');
             },
-            error: () => {
+            error: (refreshError: any) => {
+              if (refreshError?.status === 401 || refreshError?.status === 403) {
+                alert('Acces refuse au profil recruteur (401/403). Connectez-vous avec un compte recruteur.');
+                return;
+              }
               alert('Erreur : session invalide. Veuillez vous reconnecter.');
             }
           });

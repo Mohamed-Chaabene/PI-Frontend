@@ -37,9 +37,14 @@ export class ApiService {
 
   // Recruteur courant (permets d'obtenir l'id du recruteur connecté)
   getCurrentRecruteur(): Observable<any> {
-    // Backend actuel: /api/recruteur/me (singulier). On garde un fallback compatibilite.
+    // Fallback only when endpoint path is missing. Do not retry on auth errors (401/403).
     return this.http.get(`${this.apiUrl}/recruteur/me`).pipe(
-      catchError(() => this.http.get(`${this.apiUrl}/recruteurs/me`))
+      catchError((error) => {
+        if (error?.status === 404) {
+          return this.http.get(`${this.apiUrl}/recruteurs/me`);
+        }
+        return throwError(() => error);
+      })
     );
   }
 
@@ -76,12 +81,35 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/entretiens`);
   }
 
+  getAllEntretiensForAdmin(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/entretiens`);
+  }
+
   getEntretiensByCandidat(candidatId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/entretiens/candidat/${candidatId}`);
   }
 
   getEntretien(id: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/entretiens/${id}`);
+  }
+
+  updateEntretienStatutByAdmin(id: number, statut: 'ACCEPTE' | 'REFUSE'): Observable<any> {
+    const queryUrl = `${this.apiUrl}/entretiens/${id}/statut?statut=${encodeURIComponent(statut)}`;
+    const bodyUrl = `${this.apiUrl}/entretiens/${id}/statut`;
+
+    return this.http.put(queryUrl, {}).pipe(
+      catchError((firstError) => {
+        if (firstError?.status === 404 || firstError?.status === 405) {
+          return this.http.put(bodyUrl, { statut });
+        }
+
+        if (firstError?.status === 400) {
+          return this.http.put(bodyUrl, { status: statut });
+        }
+
+        return throwError(() => firstError);
+      })
+    );
   }
 
   getPublicTestEntretiens(): Observable<any> {
@@ -104,7 +132,6 @@ export class ApiService {
         catchError((error) => {
           const errorMessage = String(error?.error?.message || error?.message || '');
           const shouldFallbackToGeneric =
-            error?.status === 403 ||
             error?.status === 404 ||
             (error?.status === 500 && /No static resource|NoResourceFoundException/i.test(errorMessage));
 
