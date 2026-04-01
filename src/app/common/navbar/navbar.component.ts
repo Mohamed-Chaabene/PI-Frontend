@@ -294,31 +294,36 @@ export class NavbarComponent implements OnInit {
         const normalizedRole = this.normalizeRole(role);
         console.log('[AUTH DEBUG] redirectAfterLogin inputRole=', role, 'normalizedRole=', normalizedRole);
 
+        if (normalizedRole === 'ADMIN') {
+            console.log('[AUTH DEBUG] redirect -> /admin-dashboard');
+            this.router.navigate(['/admin-dashboard']);
+            return;
+        }
+
         if (normalizedRole === 'CANDIDAT') {
             console.log('[AUTH DEBUG] redirect -> /candidates-dashboard');
             this.router.navigate(['/candidates-dashboard']);
             return;
         }
       
-        if (normalizedRole === 'ORGANISATEUR') {  // ← change includes par ===
+        if (normalizedRole === 'ORGANISATEUR') {
+            console.log('[AUTH DEBUG] redirect -> /evenement-dashboard');
             this.router.navigate(['/evenement-dashboard']);
             return;
         }
+
         if (normalizedRole === 'RECRUTEUR') {
             console.log('[AUTH DEBUG] redirect -> /recruiter-dashboard');
             this.router.navigate(['/recruiter-dashboard']);
             return;
         }
+
         if (normalizedRole === 'CLIENT_FREELANCE') {
             console.log('[AUTH DEBUG] redirect -> /');
             this.router.navigate(['/']);
             return;
         }
-        if (normalizedRole === 'ADMIN') {
-            console.log('[AUTH DEBUG] redirect -> /');
-            this.router.navigate(['/']);
-            return;
-        }
+
         console.log('[AUTH DEBUG] redirect fallback -> /');
         this.router.navigate(['/']);
     }

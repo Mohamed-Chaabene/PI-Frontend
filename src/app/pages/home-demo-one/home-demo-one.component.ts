@@ -44,10 +44,12 @@ export class HomeDemoOneComponent {
 
         this.apiService.getPublicTestEntretiens().subscribe({
             next: (data: PublicTestEntretien[]) => {
+                console.log('✅ Public test entretiens loaded:', data);
                 this.publicTestEntretiens = Array.isArray(data) ? data : [];
                 this.isLoadingPublicTests = false;
             },
-            error: () => {
+            error: (err) => {
+                console.error('❌ Error loading public test entretiens:', err?.status, err?.message);
                 this.publicTestsError = 'Impossible de charger les entretiens test pour le moment.';
                 this.publicTestEntretiens = [];
                 this.isLoadingPublicTests = false;

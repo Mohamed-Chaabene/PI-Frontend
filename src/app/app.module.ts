@@ -12,7 +12,14 @@ import { GoogleMapsModule } from '@angular/google-maps';
 import { AuthInterceptor } from './auth.interceptor';
 import { SharedModule } from './shared/shared.module';
 import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
-
+// ADMIN
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { AdHeaderComponent } from './admin-dashboard/ad-header/ad-header.component';
+import { AdSidebarComponent } from './admin-dashboard/ad-sidebar/ad-sidebar.component';
+import { AdFooterComponent } from './admin-dashboard/ad-footer/ad-footer.component';
+import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboard.component';
+import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
+import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
 import { routes } from './app.routes';
 import { App } from './app';
 
@@ -151,6 +158,13 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         EvenementEditComponent,
         EvenementDetailComponent,
         EvenementHeaderComponent,
+        AdminDashboardComponent,
+        AdHeaderComponent,
+        AdSidebarComponent,
+        AdFooterComponent,
+        AdDashboardComponent,
+        PartenaireListComponent,
+        OffreListComponent,
     ],
     imports: [
         BrowserModule,

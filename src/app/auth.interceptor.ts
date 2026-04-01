@@ -32,6 +32,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
+  // Do not add token for explicit "public" endpoints
+  if (req.url.includes('/public/')) {
+    console.log('🔓 Public endpoint (no token needed):', req.url);
+    return next(req);
+  }
+
   // Ne pas ajouter le token pour les endpoints d'authentification (login/register)
   if (req.url.includes('/api/auth/')) {
     console.log('🔓 Auth endpoint (no token needed):', req.url);

@@ -55,6 +55,10 @@ import { EvenementFormComponent } from './evenement-dashboard/evenement-form/eve
 import { EvenementListComponent } from './evenement-dashboard/evenement-list/evenement-list.component';
 import { EvenementEditComponent } from './evenement-dashboard/evenement-edit/evenement-edit.component';
 import { EvenementDetailComponent } from './evenement-dashboard/evenement-detail/evenement-detail.component';
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboard.component';
+import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
+import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
     {path: 'login', component: HomeDemoOneComponent},
@@ -137,8 +141,15 @@ export const routes: Routes = [
       
     ]
     }, 
-
-
+{
+    path: 'admin-dashboard',
+    component: AdminDashboardComponent,
+    children: [
+        { path: '', component: AdDashboardComponent },
+        { path: 'partenaires', component: PartenaireListComponent },
+        { path: 'partenaires/:id/offres', component: OffreListComponent },
+    ]
+    },
 
     {path: '**', component: NotFoundComponent}, // This line will remain down from the whole pages component list
 
