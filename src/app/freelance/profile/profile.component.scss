@@ -1,0 +1,282 @@
+// =============================================
+// MATCHY KHEDMA — Profile
+// =============================================
+
+.mk-profile {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 44px 28px 60px;
+}
+
+.mk-profile__layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: flex-start;
+
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+// ── Left Sidebar ──────────────────────────────────
+.mk-profile-card {
+  background: #132035;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 22px;
+  padding: 30px 24px;
+  text-align: center;
+  position: sticky;
+  top: 90px;
+}
+
+.mk-avatar-lg {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 18px;
+  background: linear-gradient(135deg, #1a56db, #f97316);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  color: #fff;
+  position: relative;
+}
+
+.mk-avatar-lg__badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 22px;
+  height: 22px;
+  background: #22c55e;
+  border-radius: 50%;
+  border: 3px solid #132035;
+}
+
+.mk-profile-card__name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #f0f4ff;
+  margin: 0 0 4px;
+}
+
+.mk-profile-card__since {
+  font-size: 12.5px;
+  color: #8fa3c1;
+  margin: 0 0 24px;
+}
+
+.mk-profile-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 18px 0;
+  border-top: 1px solid rgba(255,255,255,.07);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  margin-bottom: 24px;
+}
+
+.mk-profile-stat {
+  text-align: center;
+
+  .value {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #f0f4ff;
+    display: block;
+  }
+
+  .label {
+    font-size: 11px;
+    color: #8fa3c1;
+    display: block;
+    margin-top: 3px;
+  }
+}
+
+// Verify box
+.mk-verify-box {
+  background: rgba(234,179,8,.07);
+  border: 1px solid rgba(234,179,8,.25);
+  border-radius: 16px;
+  padding: 18px;
+  text-align: left;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mk-verify-box__icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+
+.mk-verify-box__title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fbbf24;
+  margin: 0 0 6px;
+}
+
+.mk-verify-box__text {
+  font-size: 12.5px;
+  color: #8fa3c1;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.mk-btn-verify {
+  width: 100%;
+  background: #f97316;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background .2s;
+
+  &:hover { background: #ea580c; }
+}
+
+// Video intro
+.mk-video-intro {
+  background: #0d1b2e;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 16px;
+  padding: 18px;
+  text-align: left;
+}
+
+.mk-video-intro__label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #8fa3c1;
+  margin: 0 0 12px;
+}
+
+.mk-video-intro__drop {
+  border: 1.5px dashed rgba(255,255,255,.12);
+  border-radius: 12px;
+  height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color .2s;
+
+  &:hover { border-color: rgba(249,115,22,.4); }
+
+  span { font-size: 26px; }
+  p { font-size: 12px; color: #8fa3c1; margin: 0; }
+}
+
+// ── Right Content ──────────────────────────────────
+.mk-profile-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.mk-section-card {
+  background: #132035;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 20px;
+  padding: 26px;
+}
+
+.mk-section-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.mk-section-card__title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #f0f4ff;
+  margin: 0;
+}
+
+.mk-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f97316;
+  background: rgba(249,115,22,.1);
+  border: 1px solid rgba(249,115,22,.25);
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background .2s;
+  font-family: 'DM Sans', sans-serif;
+
+  &:hover { background: rgba(249,115,22,.18); }
+}
+
+.mk-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f97316;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: 'DM Sans', sans-serif;
+
+  &:hover { text-decoration: underline; }
+}
+
+.mk-section-empty {
+  text-align: center;
+  padding: 40px 20px;
+  border: 1.5px dashed rgba(255,255,255,.1);
+  border-radius: 14px;
+  font-size: 14px;
+  color: #8fa3c1;
+
+  span { display: block; font-size: 30px; margin-bottom: 10px; }
+}
+
+.mk-headline-placeholder {
+  font-size: 14px;
+  color: #8fa3c1;
+  margin: 0;
+}
+
+.mk-section-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+
+  @media (max-width: 700px) { grid-template-columns: 1fr; }
+}
+
+.mk-dashed-btn {
+  width: 100%;
+  padding: 14px;
+  border: 1.5px dashed rgba(255,255,255,.12);
+  border-radius: 12px;
+  background: none;
+  color: #8fa3c1;
+  font-size: 13.5px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all .2s;
+
+  &:hover {
+    border-color: rgba(249,115,22,.35);
+    color: #f97316;
+  }
+}

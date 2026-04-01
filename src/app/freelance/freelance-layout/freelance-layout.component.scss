@@ -1,0 +1,256 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+// =============================================
+// MATCHY KHEDMA — Layout Shell
+// =============================================
+
+:host {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.mk-shell {
+  min-height: 100vh;
+  background: #0d1b2e;
+  color: #f0f4ff;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Header ──────────────────────────────────
+.mk-header {
+  background: #0f2040;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.mk-header__inner {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+// Brand
+.mk-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.mk-brand__icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #1a56db 0%, #f97316 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: #fff;
+  letter-spacing: -1px;
+  flex-shrink: 0;
+}
+
+.mk-brand__name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: #f0f4ff;
+  line-height: 1.1;
+
+  span {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    color: #8fa3c1;
+    letter-spacing: .5px;
+  }
+}
+
+// Nav
+.mk-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.mk-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #8fa3c1;
+  text-decoration: none;
+  transition: all .2s;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(255,255,255,.06);
+    color: #f0f4ff;
+  }
+
+  &.active {
+    background: rgba(249,115,22,.12);
+    color: #f97316;
+  }
+}
+
+.mk-nav__icon {
+  font-size: 15px;
+  opacity: .85;
+}
+
+// Header right
+.mk-header__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+// Mode toggle
+.mk-mode-toggle {
+  display: flex;
+  background: #132035;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 50px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.mk-mode-toggle__btn {
+  padding: 6px 18px;
+  border-radius: 50px;
+  border: none;
+  background: transparent;
+  color: #8fa3c1;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: 'DM Sans', sans-serif;
+
+  &.active {
+    background: #f97316;
+    color: #fff;
+  }
+
+  &:hover:not(.active) {
+    color: #f0f4ff;
+  }
+}
+
+// Credits badge
+.mk-credits {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(249,115,22,.12);
+  border: 1px solid rgba(249,115,22,.3);
+  color: #f97316;
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+
+  &:hover {
+    background: rgba(249,115,22,.2);
+  }
+}
+
+.mk-credits__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f97316;
+}
+
+// Notification bell
+.mk-notif {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.05);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background .2s;
+
+  &:hover { background: rgba(255,255,255,.1); }
+}
+
+.mk-notif__badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 16px;
+  height: 16px;
+  background: #f97316;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #0f2040;
+}
+
+// Avatar
+.mk-avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 5px 12px 5px 5px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  transition: all .2s;
+
+  &:hover { background: rgba(255,255,255,.08); }
+}
+
+.mk-avatar {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, #1a56db, #f97316);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.mk-avatar__info {
+  p { margin: 0; line-height: 1.25; }
+  .name { font-size: 13px; font-weight: 600; color: #f0f4ff; }
+  .role { font-size: 11px; color: #8fa3c1; }
+}
+
+// ── Content ──────────────────────────────────
+.mk-content {
+  flex: 1;
+}
