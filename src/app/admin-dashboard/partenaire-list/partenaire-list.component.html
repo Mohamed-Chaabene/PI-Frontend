@@ -29,73 +29,106 @@
         </div>
     </div>
 
-    <!-- TABLEAU -->
-    <div class="table-card">
-        <div class="table-wrapper">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Nom</th>
-                        <th>Email</th>
-                        <th>Téléphone</th>
-                        <th>Type</th>
-                        <th>Offres</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let p of filteredPartenaires; let i = index">
-                        <td>{{ i + 1 }}</td>
-                        <td><strong>{{ p.nom }}</strong></td>
-                        <td>{{ p.email }}</td>
-                        <td>{{ p.telephone }}</td>
-                        <td>
-                            <span class="type-badge"
-                                [class.entreprise]="p.type === 'ENTREPRISE'"
-                                [class.universite]="p.type !== 'ENTREPRISE'">
-                                {{ p.type }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="action-group">
-                                <button class="btn btn-voir"
-                                        (click)="voirOffres(p.id)">
-                                    <i class="ri-eye-line"></i> Voir Offres
-                                </button>
-                                <button class="btn btn-ajouter"
-                                        (click)="ajouterOffre(p)">
-                                    <i class="ri-add-line"></i> Ajouter Offre
-                                </button>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="action-group">
-                                <button class="btn btn-modifier"
-                                        (click)="modifier(p)">
-                                    <i class="ri-edit-line"></i>
-                                </button>
-                                <button class="btn btn-supprimer"
-                                        (click)="supprimer(p.id)">
-                                    <i class="ri-delete-bin-line"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr *ngIf="filteredPartenaires.length === 0">
-                        <td colspan="7" class="empty-row">
-                            <i class="ri-inbox-line"></i>
-                            <p>{{ searchTerm ? 'Aucun résultat pour "' + searchTerm + '"' : 'Aucun partenaire trouvé' }}</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <!-- LISTE EN TABLEAU (ADMIN) -->
+    <div class="table-wrapper" *ngIf="isAdminPage && filteredPartenaires.length > 0; else publicOrEmptyState">
+        <table class="partners-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let p of filteredPartenaires; let i = index">
+                    <td class="col-index">{{ i + 1 }}</td>
+                    <td>
+                        <div class="name-cell">
+                            <i class="ri-building-4-line"></i>
+                            <span>{{ p.nom }}</span>
+                        </div>
+                    </td>
+                    <td>{{ p.email }}</td>
+                    <td>{{ p.telephone }}</td>
+                    <td>
+                        <span class="type-badge"
+                            [class.entreprise]="p.type === 'ENTREPRISE'"
+                            [class.universite]="p.type !== 'ENTREPRISE'">
+                            {{ p.type }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-group">
+                            <button class="btn btn-voir" (click)="voirOffres(p.id)">
+                                <i class="ri-eye-line"></i> Voir Offres
+                            </button>
+                            <button *ngIf="canManage" class="btn btn-ajouter" (click)="ajouterOffre(p)">
+                                <i class="ri-add-line"></i> Ajouter Offre
+                            </button>
+                            <button *ngIf="canManage" class="btn btn-modifier" (click)="modifier(p)">
+                                <i class="ri-edit-line"></i> Modifier
+                            </button>
+                            <button *ngIf="canManage" class="btn btn-supprimer" (click)="supprimer(p.id)">
+                                <i class="ri-delete-bin-line"></i> Supprimer
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+
+    <ng-template #publicOrEmptyState>
+        <!-- LISTE FRONT (CANDIDAT / PUBLIC) -->
+        <div class="partners-grid" *ngIf="filteredPartenaires.length > 0; else emptyState">
+            <div class="partner-card" *ngFor="let p of filteredPartenaires; let i = index">
+                <div class="partner-top">
+                    <div class="partner-index">#{{ i + 1 }}</div>
+                    <span class="type-badge"
+                        [class.entreprise]="p.type === 'ENTREPRISE'"
+                        [class.universite]="p.type !== 'ENTREPRISE'">
+                        {{ p.type }}
+                    </span>
+                </div>
+
+                <h5 class="partner-name">
+                    <i class="ri-building-4-line"></i>
+                    {{ p.nom }}
+                </h5>
+
+                <div class="partner-meta">
+                    <div class="meta-item">
+                        <i class="ri-mail-line"></i>
+                        <span>{{ p.email }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="ri-phone-line"></i>
+                        <span>{{ p.telephone }}</span>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="btn btn-voir" (click)="voirOffres(p.id)">
+                        <i class="ri-eye-line"></i> Voir Offres
+                    </button>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template #emptyState>
+        <div class="empty-row">
+            <i class="ri-inbox-line"></i>
+            <p>{{ searchTerm ? 'Aucun résultat pour "' + searchTerm + '"' : 'Aucun partenaire trouvé' }}</p>
+        </div>
+    </ng-template>
 </div>
 
 <!-- POPUP MODIFIER -->
-<div class="popup-overlay" *ngIf="isModifPopupOpen">
+<div class="popup-overlay" *ngIf="canManage && isModifPopupOpen">
     <div class="popup-box">
         <div class="popup-header">
             <h5>
@@ -230,7 +263,7 @@
 </div>
 
 <!-- POPUP CRÉER OFFRE -->
-<div class="popup-overlay" *ngIf="isOffrePopupOpen">
+<div class="popup-overlay" *ngIf="canManage && isOffrePopupOpen">
     <div class="popup-box">
         <div class="popup-header offre">
             <h5>

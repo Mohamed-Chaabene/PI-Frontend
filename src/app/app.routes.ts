@@ -61,6 +61,8 @@ import { PartenaireListComponent } from './admin-dashboard/partenaire-list/parte
 import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
 import { EntretienListComponent } from './admin-dashboard/entretien-list/entretien-list.component';
 import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
+import { CandidatureListComponent } from './admin-dashboard/candidature-list/candidature-list.component';
+import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-admin/evenement-list-admin.component';
 import { recruteurGuard, recruteurChildGuard } from './guards/recruteur.guard';
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
@@ -85,6 +87,8 @@ export const routes: Routes = [
     {path: 'blog', component: BlogPageComponent},
     {path: 'blog-details', component: BlogDetailsPageComponent},
     {path: 'contact', component: ContactPageComponent},
+    {path: 'partenaires', component: PartenaireListComponent},
+    {path: 'partenaires/:id/offres', component: OffreListComponent},
     {path: 'entretiens/test/:id', component: PublicTestPassPageComponent},
     {
         path: 'dashboard',
@@ -165,7 +169,9 @@ export const routes: Routes = [
         { path: 'partenaires/:id/offres', component: OffreListComponent },
         { path: 'entrietiens', redirectTo: 'entretiens', pathMatch: 'full' },
         { path: 'entretiens', component: EntretienListComponent },
+        { path: 'candidatures', component: CandidatureListComponent },
         { path: 'formations', component: FormationListComponent },
+        { path: 'evenements', component: EvenementListAdminComponent },
     ]
     },
 

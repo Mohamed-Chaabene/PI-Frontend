@@ -22,6 +22,8 @@ import { PartenaireListComponent } from './admin-dashboard/partenaire-list/parte
 import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
 import { EntretienListComponent } from './admin-dashboard/entretien-list/entretien-list.component';
 import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
+import { CandidatureListComponent } from './admin-dashboard/candidature-list/candidature-list.component';
+import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-admin/evenement-list-admin.component';
 import { routes } from './app.routes';
 import { App } from './app';
 
@@ -169,6 +171,8 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         OffreListComponent,
         EntretienListComponent,
         FormationListComponent,
+        CandidatureListComponent,
+        EvenementListAdminComponent,
     ],
     imports: [
         BrowserModule,

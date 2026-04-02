@@ -1,0 +1,64 @@
+<div class="page-container">
+    <div class="page-header">
+        <h4>
+            <i class="ri-calendar-event-line"></i>
+            Liste des Evenements
+        </h4>
+        <span class="badge-count">{{ filteredEvenements.length }} evenements</span>
+    </div>
+
+    <div class="search-bar">
+        <div class="search-wrapper">
+            <i class="ri-search-line search-icon"></i>
+            <input
+                type="text"
+                class="search-input"
+                placeholder="Rechercher par titre, lieu, type ou organisateur..."
+                [ngModel]="searchTerm"
+                (ngModelChange)="onSearch($event)"
+            />
+            <button *ngIf="searchTerm" class="clear-btn" type="button" (click)="onSearch('')">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="state-box" *ngIf="isLoading">
+        <i class="ri-loader-4-line spin"></i>
+        <p>Chargement des evenements...</p>
+    </div>
+
+    <div class="table-wrapper" *ngIf="!isLoading && filteredEvenements.length > 0">
+        <table class="events-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Titre</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Lieu</th>
+                    <th>Date</th>
+                    <th>Organisateur</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let e of filteredEvenements; let i = index">
+                    <td>{{ i + 1 }}</td>
+                    <td class="title-col">{{ e.titre || '-' }}</td>
+                    <td>{{ e.description || '-' }}</td>
+                    <td>
+                        <span class="type-badge">{{ e.type || '-' }}</span>
+                    </td>
+                    <td>{{ e.lieu || '-' }}</td>
+                    <td>{{ formatDate(e.date) }}</td>
+                    <td>{{ e.nomOrganisateur || '-' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="state-box" *ngIf="!isLoading && filteredEvenements.length === 0">
+        <i class="ri-inbox-line"></i>
+        <p>{{ searchTerm ? 'Aucun resultat trouve' : 'Aucun evenement disponible' }}</p>
+    </div>
+</div>

@@ -71,6 +71,49 @@ h4 {
     .card-body { padding: 20px; }
 }
 
+.offers-public-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+.offer-public-card {
+    background: linear-gradient(160deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.offer-public-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+
+    h5 {
+        margin: 0;
+        font-size: 17px;
+        color: #1f2937;
+    }
+}
+
+.offer-public-description {
+    color: #475569;
+    font-size: 14px;
+    margin: 0 0 12px;
+    line-height: 1.45;
+}
+
+.offer-public-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 13px;
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
