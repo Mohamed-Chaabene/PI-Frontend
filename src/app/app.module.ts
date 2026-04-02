@@ -10,7 +10,23 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import { NgxScrollTopModule } from 'ngx-scrolltop';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { AuthInterceptor } from './auth.interceptor';
+<<<<<<< Updated upstream
 
+=======
+import { SharedModule } from './shared/shared.module';
+import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
+// ADMIN
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { AdHeaderComponent } from './admin-dashboard/ad-header/ad-header.component';
+import { AdSidebarComponent } from './admin-dashboard/ad-sidebar/ad-sidebar.component';
+import { AdFooterComponent } from './admin-dashboard/ad-footer/ad-footer.component';
+import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboard.component';
+import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
+import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
+import { EntretienListComponent } from './admin-dashboard/entretien-list/entretien-list.component';
+import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
+import { CandidatsListComponent } from './admin-dashboard/candidats-list/candidats-list.component';
+>>>>>>> Stashed changes
 import { routes } from './app.routes';
 import { App } from './app';
 
@@ -190,8 +206,29 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         RdMessagesComponent,
         RdProfileComponent,
         RdChangePasswordComponent,
+<<<<<<< Updated upstream
         HometwoBannerComponent,
         HomethreeBannerComponent
+=======
+        CdDocumentsComponent, 
+        EvenementDashboardComponent,
+        EvenementSidebarComponent,
+        EvenementFormComponent,
+        EvenementListComponent, 
+        EvenementEditComponent,
+        EvenementDetailComponent,
+        EvenementHeaderComponent,
+        AdminDashboardComponent,
+        AdHeaderComponent,
+        AdSidebarComponent,
+        AdFooterComponent,
+        AdDashboardComponent,
+        PartenaireListComponent,
+        OffreListComponent,
+        EntretienListComponent,
+        FormationListComponent,
+        CandidatsListComponent,
+>>>>>>> Stashed changes
     ],
     imports: [
         BrowserModule,

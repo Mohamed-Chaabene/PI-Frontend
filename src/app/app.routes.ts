@@ -47,7 +47,27 @@ import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 import { RdInterviews } from './recruiter-dashboard/rd-interviews/rd-interviews';
 import { RdAddQuestions } from './recruiter-dashboard/rd-add-questions/rd-add-questions';
+<<<<<<< Updated upstream
 
+=======
+import { PublicTestPassPageComponent } from './pages/public-test-pass-page/public-test-pass-page.component';
+import { CandidateEntretiensPageComponent } from './pages/candidate-entretiens-page/candidate-entretiens-page.component';
+import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
+import { EvenementDashboardComponent } from './evenement-dashboard/evenement-dashboard.component';
+import { EvenementTemplateComponent } from './evenement-dashboard/evenement-template/evenement-template.component';
+import { EvenementFormComponent } from './evenement-dashboard/evenement-form/evenement-form';
+import { EvenementListComponent } from './evenement-dashboard/evenement-list/evenement-list.component';
+import { EvenementEditComponent } from './evenement-dashboard/evenement-edit/evenement-edit.component';
+import { EvenementDetailComponent } from './evenement-dashboard/evenement-detail/evenement-detail.component';
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboard.component';
+import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
+import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
+import { EntretienListComponent } from './admin-dashboard/entretien-list/entretien-list.component';
+import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
+import { CandidatsListComponent } from './admin-dashboard/candidats-list/candidats-list.component';
+import { recruteurGuard, recruteurChildGuard } from './guards/recruteur.guard';
+>>>>>>> Stashed changes
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
     {path: 'index-2', component: HomeDemoTwoComponent},
@@ -111,6 +131,42 @@ export const routes: Routes = [
             {path: 'interviews', component: RdInterviews},
             {path: 'interviews/add-questions/:id', component: RdAddQuestions},
         ]
+<<<<<<< Updated upstream
+=======
+
+    },{
+  path: 'formations',
+  loadChildren: () =>
+    import('./formations/formations.module').then(m => m.FormationsModule)
+},
+{
+    path: 'freelance',
+    loadChildren: () =>
+        import('./freelance/freelance.module').then(m => m.FreelanceModule)
+},
+{path: 'evenement-dashboard', component: EvenementDashboardComponent,
+        children: [
+      { path: '', component: EvenementTemplateComponent},
+      {path: 'ajouter', component: EvenementFormComponent}, 
+      {path: 'liste', component: EvenementListComponent},
+      {path: 'modifier/:id', component: EvenementEditComponent},
+      {path: 'detail/:id', component: EvenementDetailComponent},
+      
+    ]
+    }, 
+{
+    path: 'admin-dashboard',
+    component: AdminDashboardComponent,
+    children: [
+        { path: '', component: AdDashboardComponent },
+        { path: 'partenaires', component: PartenaireListComponent },
+        { path: 'partenaires/:id/offres', component: OffreListComponent },
+        { path: 'entrietiens', redirectTo: 'entretiens', pathMatch: 'full' },
+        { path: 'entretiens', component: EntretienListComponent },
+        { path: 'formations', component: FormationListComponent },
+        { path: 'candidats', component: CandidatsListComponent },
+    ]
+>>>>>>> Stashed changes
     },
 
     {path: '**', component: NotFoundComponent} // This line will remain down from the whole pages component list
