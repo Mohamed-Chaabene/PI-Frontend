@@ -153,3 +153,22 @@
         gap: 10px;
     }
 }
+
+.btn-ajouter {
+    background-color: #22c55e;
+    color: white;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    i { font-size: 14px; }
+
+    &:hover { background-color: #16a34a; }
+}

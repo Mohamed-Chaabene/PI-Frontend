@@ -8,6 +8,7 @@ import { EvenementService } from '../../services/evenement-service';
     styleUrls: ['./evenement-list-admin.component.scss']
 })
 export class EvenementListAdminComponent implements OnInit {
+
     evenements: any[] = [];
     filteredEvenements: any[] = [];
     isLoading = true;
@@ -28,7 +29,7 @@ export class EvenementListAdminComponent implements OnInit {
                 this.isLoading = false;
             },
             error: (err) => {
-                console.error('Erreur chargement evenements admin:', err);
+                console.error('Erreur:', err);
                 this.evenements = [];
                 this.filteredEvenements = [];
                 this.isLoading = false;
@@ -47,7 +48,6 @@ export class EvenementListAdminComponent implements OnInit {
             this.filteredEvenements = [...this.evenements];
             return;
         }
-
         this.filteredEvenements = this.evenements.filter((e) =>
             (e?.titre || '').toLowerCase().includes(term) ||
             (e?.description || '').toLowerCase().includes(term) ||
@@ -63,4 +63,14 @@ export class EvenementListAdminComponent implements OnInit {
         if (isNaN(date.getTime())) return String(value);
         return date.toLocaleDateString('fr-FR');
     }
+
+   
+   supprimer(id: number) {
+    if (confirm('Voulez-vous supprimer cet événement ?')) {
+        this.evenementService.annulerAdmin(id).subscribe({ // ✅ utilise annulerAdmin
+            next: () => this.loadEvenements(),
+            error: (err) => console.error('Erreur suppression:', err)
+        });
+    }
+}
 }

@@ -27,6 +27,7 @@ import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-ad
 import { routes } from './app.routes';
 import { App } from './app';
 
+
 // Import all components
 import { HomeDemoOneComponent } from './pages/home-demo-one/home-demo-one.component';
 import { NotFoundComponent } from './common/not-found/not-found.component';
@@ -104,6 +105,7 @@ import { registerLocaleData } from '@angular/common';
 import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header/evenement-header.component';
 // Banner components are now in SharedModule
 
+
 @NgModule({
     declarations: [
         App,
@@ -173,6 +175,9 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         FormationListComponent,
         CandidatureListComponent,
         EvenementListAdminComponent,
+        AdHeaderComponent,  
+        AdSidebarComponent, 
+        AdFooterComponent,
     ],
     imports: [
         BrowserModule,
@@ -186,6 +191,7 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         NgApexchartsModule,
         NgxScrollTopModule,
         GoogleMapsModule
+        
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

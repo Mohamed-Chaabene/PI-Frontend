@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class EvenementService {
- private apiUrl = 'http://localhost:8080/api/evenements';
+ private apiUrl = 'http://localhost:8081/api/evenements';
 
   constructor(private http: HttpClient) {}
 
@@ -39,4 +39,9 @@ getByOrganisateur(organisateurId: number): Observable<any[]> {
   annuler(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+ 
+annulerAdmin(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/admin/${id}`);
+}
 }

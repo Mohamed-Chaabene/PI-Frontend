@@ -14,7 +14,6 @@ export class OffreListComponent implements OnInit {
     offres: any[] = [];
     partenaire: any = null;
     partenaireId: number = 0;
-    userRole: string = '';
 
     // ===== MODIFIER =====
     isModifPopupOpen = false;
@@ -33,18 +32,9 @@ export class OffreListComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.userRole = (localStorage.getItem('userRole') || '').toUpperCase().replace(/^ROLE_/, '');
         this.partenaireId = Number(this.route.snapshot.paramMap.get('id'));
         this.loadPartenaire();
         this.loadOffres();
-    }
-
-    get isAdminPage(): boolean {
-        return this.router.url.startsWith('/admin-dashboard');
-    }
-
-    get canManage(): boolean {
-        return this.isAdminPage && this.userRole === 'ADMIN';
     }
 
     loadPartenaire() {
@@ -62,9 +52,6 @@ export class OffreListComponent implements OnInit {
     }
 
     modifier(o: any) {
-        if (!this.canManage) {
-            return;
-        }
         this.offreModif = {
             id: o.id,
             titre: o.titre,
@@ -79,9 +66,6 @@ export class OffreListComponent implements OnInit {
     }
 
     saveModif() {
-        if (!this.canManage) {
-            return;
-        }
         this.offreService.update(this.offreModif.id, this.offreModif).subscribe({
             next: () => {
                 alert('✅ Offre modifiée !');
@@ -96,9 +80,6 @@ export class OffreListComponent implements OnInit {
     }
 
     supprimer(id: number) {
-        if (!this.canManage) {
-            return;
-        }
         if (confirm('Voulez-vous supprimer cette offre ?')) {
             this.offreService.delete(id).subscribe({
                 next: () => {
@@ -122,11 +103,6 @@ export class OffreListComponent implements OnInit {
     }
 
     retour() {
-        if (this.isAdminPage) {
-            this.router.navigate(['/admin-dashboard/partenaires']);
-            return;
-        }
-
-        this.router.navigate(['/partenaires']);
+        this.router.navigate(['/admin-dashboard/partenaires']);
     }
 }

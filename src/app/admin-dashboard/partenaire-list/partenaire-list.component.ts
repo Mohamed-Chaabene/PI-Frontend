@@ -13,7 +13,6 @@ export class PartenaireListComponent implements OnInit {
 
     partenaires: any[] = [];
     searchTerm: string = '';
-    userRole: string = '';
 
     isModifPopupOpen = false;
     partenaireModif: any = {
@@ -40,20 +39,7 @@ export class PartenaireListComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.userRole = (localStorage.getItem('userRole') || '').toUpperCase().replace(/^ROLE_/, '');
         this.loadPartenaires();
-    }
-
-    get isAdmin(): boolean {
-        return this.userRole === 'ADMIN';
-    }
-
-    get isAdminPage(): boolean {
-        return this.router.url.startsWith('/admin-dashboard');
-    }
-
-    get canManage(): boolean {
-        return this.isAdminPage && this.isAdmin;
     }
 
     loadPartenaires() {
@@ -75,9 +61,6 @@ export class PartenaireListComponent implements OnInit {
     }
 
     modifier(p: any) {
-        if (!this.canManage) {
-            return;
-        }
         this.partenaireModif = {
             id: p.id,
             nom: p.nom,
@@ -93,9 +76,6 @@ export class PartenaireListComponent implements OnInit {
     }
 
     saveModif() {
-        if (!this.canManage) {
-            return;
-        }
         this.partenaireService.update(
             this.partenaireModif.id,
             this.partenaireModif
@@ -113,9 +93,6 @@ export class PartenaireListComponent implements OnInit {
     }
 
     supprimer(id: number) {
-        if (!this.canManage) {
-            return;
-        }
         if (confirm('Voulez-vous supprimer ce partenaire ?')) {
             this.partenaireService.delete(id).subscribe({
                 next: () => {
@@ -131,9 +108,6 @@ export class PartenaireListComponent implements OnInit {
     }
 
     ajouterOffre(p: any) {
-        if (!this.canManage) {
-            return;
-        }
         this.partenaireSelectionne = p;
         this.newOffre = {
             titre: '',
@@ -150,9 +124,6 @@ export class PartenaireListComponent implements OnInit {
     }
 
     saveOffre() {
-        if (!this.canManage) {
-            return;
-        }
         this.offreService.create(this.newOffre).subscribe({
             next: () => {
                 alert('✅ Offre créée avec succès !');
@@ -166,11 +137,6 @@ export class PartenaireListComponent implements OnInit {
     }
 
     voirOffres(id: number) {
-        if (this.isAdminPage) {
-            this.router.navigate(['/admin-dashboard/partenaires', id, 'offres']);
-            return;
-        }
-
-        this.router.navigate(['/partenaires', id, 'offres']);
+        this.router.navigate(['/admin-dashboard/partenaires', id, 'offres']);
     }
 }

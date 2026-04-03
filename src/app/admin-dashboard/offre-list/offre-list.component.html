@@ -8,13 +8,13 @@
             </button>
             <h4>
                 <i class="ri-file-list-3-line"></i>
-                {{ isAdminPage ? 'Offres de' : 'Offres disponibles chez' }} <span class="partenaire-name">{{ partenaire?.nom }}</span>
+                Offres de <span class="partenaire-name">{{ partenaire?.nom }}</span>
             </h4>
         </div>
         <span class="badge-count">{{ offres.length }} offres</span>
     </div>
 
-    <div class="card" *ngIf="isAdminPage; else publicOffersView">
+    <div class="card">
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table">
@@ -25,7 +25,7 @@
                             <th>Description</th>
                             <th>Type</th>
                             <th>Date</th>
-                            <th *ngIf="canManage">Actions</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -39,7 +39,7 @@
                                 </span>
                             </td>
                             <td>{{ formatDate(o.datePublication) }}</td>
-                            <td *ngIf="canManage">
+                            <td>
                                 <div class="btn-group">
                                     <button type="button"
                                             class="btn-yellow"
@@ -55,7 +55,7 @@
                             </td>
                         </tr>
                         <tr *ngIf="offres.length === 0">
-                            <td [attr.colspan]="canManage ? 6 : 5" class="empty-row">
+                            <td colspan="6" class="empty-row">
                                 <i class="ri-inbox-line"></i>
                                 <p>Aucune offre trouvée</p>
                             </td>
@@ -65,35 +65,10 @@
             </div>
         </div>
     </div>
-
-    <ng-template #publicOffersView>
-        <div class="offers-public-grid" *ngIf="offres.length > 0; else emptyPublicOffers">
-            <div class="offer-public-card" *ngFor="let o of offres">
-                <div class="offer-public-head">
-                    <h5>{{ o.titre }}</h5>
-                    <span [class]="'badge ' + (o.type === 'EMPLOI' ? 'badge-emploi' : 'badge-stage')">
-                        {{ o.type }}
-                    </span>
-                </div>
-                <p class="offer-public-description">{{ o.description }}</p>
-                <div class="offer-public-date">
-                    <i class="ri-calendar-line"></i>
-                    <span>{{ formatDate(o.datePublication) }}</span>
-                </div>
-            </div>
-        </div>
-    </ng-template>
-
-    <ng-template #emptyPublicOffers>
-        <div class="empty-row">
-            <i class="ri-inbox-line"></i>
-            <p>Aucune offre trouvée</p>
-        </div>
-    </ng-template>
 </div>
 
 <!-- POPUP MODIFIER OFFRE -->
-<div class="popup-overlay" *ngIf="canManage && isModifPopupOpen">
+<div class="popup-overlay" *ngIf="isModifPopupOpen">
     <div class="popup-box">
         <div class="popup-header">
             <h5>

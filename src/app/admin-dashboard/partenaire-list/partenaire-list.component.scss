@@ -91,133 +91,53 @@
 }
 
 // ===== TABLE =====
-.table-wrapper {
-    background: #fff;
-    border: 1px solid #dbeafe;
-    border-radius: 14px;
-    overflow-x: auto;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+.table-card {
+    background: white;
+    border-radius: 10px;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
 }
 
-.partners-table {
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.custom-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 960px;
 
-    thead th {
-        text-align: left;
-        padding: 14px 12px;
-        background: #f8fafc;
-        color: #475569;
-        font-size: 13px;
-        font-weight: 700;
-        border-bottom: 1px solid #e2e8f0;
-        white-space: nowrap;
+    thead tr {
+        background-color: #1f2937;
+
+        th {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 12px 15px;
+            text-align: left;
+            white-space: nowrap;
+        }
     }
 
-    tbody td {
-        padding: 14px 12px;
-        border-bottom: 1px solid #eef2ff;
-        vertical-align: middle;
-        color: #334155;
-        font-size: 14px;
-    }
+    tbody tr {
+        border-bottom: 1px solid #f3f4f6;
+        transition: background-color 0.15s;
 
-    tbody tr:hover {
-        background: #f8fbff;
-    }
-}
+        &:last-child {
+            border-bottom: none;
+        }
 
-.col-index {
-    color: #1d4ed8;
-    font-weight: 700;
-}
+        &:hover {
+            background-color: #f5f9fc;
+        }
 
-.name-cell {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    color: #1f2937;
-
-    i {
-        color: #2563eb;
-    }
-}
-
-// ===== CARDS =====
-.partners-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
-}
-
-.partner-card {
-    background: linear-gradient(160deg, #ffffff 0%, #f8fbff 100%);
-    border: 1px solid #dbeafe;
-    border-radius: 14px;
-    padding: 16px;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-
-    &:hover {
-        transform: translateY(-3px);
-        border-color: #93c5fd;
-        box-shadow: 0 14px 30px rgba(37, 99, 235, 0.12);
-    }
-}
-
-.partner-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.partner-index {
-    font-size: 12px;
-    font-weight: 700;
-    color: #1d4ed8;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    padding: 4px 9px;
-    border-radius: 999px;
-}
-
-.partner-name {
-    margin: 0 0 12px;
-    color: #1f2937;
-    font-size: 19px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    i {
-        color: #2563eb;
-    }
-}
-
-.partner-meta {
-    display: grid;
-    gap: 8px;
-    margin-bottom: 14px;
-}
-
-.meta-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #4b5563;
-    font-size: 14px;
-
-    i {
-        color: #22c55e;
-        font-size: 16px;
-    }
-
-    span {
-        overflow-wrap: anywhere;
+        td {
+            padding: 12px 15px;
+            font-size: 14px;
+            vertical-align: middle;
+            color: #374151;
+        }
     }
 }
 
@@ -244,24 +164,8 @@
 // ===== BOUTONS =====
 .action-group {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
-}
-
-.card-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.card-admin-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding-top: 10px;
-    border-top: 1px dashed #d1d5db;
 }
 
 .btn {
@@ -325,10 +229,7 @@
 .empty-row {
     text-align: center;
     color: #9ca3af;
-    padding: 42px 14px;
-    border: 1px dashed #cbd5e1;
-    border-radius: 12px;
-    background: #f8fafc;
+    padding: 40px 0 !important;
 
     i {
         font-size: 32px;
@@ -339,27 +240,6 @@
     p {
         margin: 0;
         font-size: 14px;
-    }
-}
-
-@media (max-width: 767px) {
-    .page-header {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .partners-table {
-        min-width: 760px;
-    }
-
-    .partner-card {
-        padding: 14px;
-    }
-
-    .btn {
-        width: 100%;
-        justify-content: center;
     }
 }
 
