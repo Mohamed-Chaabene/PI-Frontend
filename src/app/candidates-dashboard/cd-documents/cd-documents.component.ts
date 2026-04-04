@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../api.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
     selector: 'app-cd-documents',
@@ -26,6 +27,18 @@ export class CdDocumentsComponent implements OnInit {
     
     selectedDocument: any = null;
     editingDocument: any = null;
+    selectedDocumentSrcdoc: SafeHtml | string = '';
+    editCvSkillsText: string = '';
+    editCvData = {
+        prenom: '',
+        nom: '',
+        titre: '',
+        email: '',
+        telephone: '',
+        adresse: '',
+        profil: '',
+        competences: [] as string[]
+    };
     
 
     // ==================== APERÇU DU DOCUMENT GÉNÉRÉ ====================
@@ -35,6 +48,7 @@ generatedDocument: {
     type: string;
     contenu: string;
 } | null = null;
+previewDocumentSrcdoc: SafeHtml | string = '';
 
     // Type de document sélectionné pour le formulaire
     selectedType: string = 'CV';
@@ -118,7 +132,10 @@ onPhotoSelected(event: any): void {
         contenu: ''
     };
 
-    constructor(private apiService: ApiService) {}
+    constructor(
+        private apiService: ApiService,
+        private sanitizer: DomSanitizer
+    ) {}
 
     ngOnInit(): void {
         this.loadDocuments();
@@ -804,6 +821,7 @@ removeTechnologie(index: number): void {
         type: this.selectedType,
         contenu: contenu
     };
+    this.previewDocumentSrcdoc = this.toTrustedHtml(contenu);
 
     this.closeCreateModal();
     this.showPreviewModal = true;
@@ -831,36 +849,115 @@ removeTechnologie(index: number): void {
         }
     }
 
+    getTemplateNameByType(type: string): string {
+        switch(this.normalizeDocumentType(type)) {
+            case 'CV': return 'CV_Professionnel';
+            case 'LETTRE_DE_MOTIVATION': return 'Lettre_Standard';
+            case 'PORTFOLIO': return 'Portfolio_Moderne';
+            default: return 'Standard';
+        }
+    }
+
     // ==================== READ ====================
     viewDocument(doc: any): void {
         this.selectedDocument = doc;
+        this.selectedDocumentSrcdoc = this.toTrustedHtml(doc?.contenu || '');
         this.showViewModal = true;
     }
 
     closeViewModal(): void {
         this.showViewModal = false;
         this.selectedDocument = null;
+        this.selectedDocumentSrcdoc = '';
     }
 
     // ==================== UPDATE ====================
     openEditModal(doc: any): void {
-        this.editingDocument = { ...doc };
+        const normalizedType = this.normalizeDocumentType(doc?.type);
+        this.editingDocument = {
+            ...doc,
+            nom: doc?.nom || '',
+            type: normalizedType,
+            contenu: doc?.contenu || '',
+            template: doc?.template || this.getTemplateNameByType(normalizedType)
+        };
+
+        if (this.isCvType(this.editingDocument.type)) {
+            this.populateCvEditDataFromHtml(this.editingDocument.contenu || '');
+        }
         this.showEditModal = true;
     }
 
     closeEditModal(): void {
         this.showEditModal = false;
         this.editingDocument = null;
+        this.editCvSkillsText = '';
     }
 
     updateDocument(): void {
-        if (!this.editingDocument.nom || !this.editingDocument.contenu) {
-            alert('Veuillez remplir les informations');
+        const normalizedType = this.normalizeDocumentType(this.editingDocument?.type);
+        this.editingDocument.type = normalizedType;
+
+        if (!(this.editingDocument?.nom || '').trim()) {
+            alert('Le nom du document est obligatoire.');
+            return;
+        }
+
+        if (!this.isCvType(normalizedType) && !(this.editingDocument?.contenu || '').trim()) {
+            alert('Veuillez remplir le contenu du document.');
+            return;
+        }
+
+        if (this.isCvType(normalizedType)) {
+            const normalizedPrenom = this.normalizeCvNamePart(this.editCvData.prenom);
+            const normalizedNom = this.normalizeCvNamePart(this.editCvData.nom);
+
+            if (!normalizedPrenom || !normalizedNom) {
+                alert("Le prénom et le nom du CV doivent contenir uniquement des lettres, espaces, tirets ou apostrophes.");
+                return;
+            }
+
+            this.editCvData.competences = (this.editCvSkillsText || '')
+                .split(',')
+                .map((s: string) => s.trim())
+                .filter((s: string) => s.length > 0);
+
+            const backup = { ...this.cvData };
+            this.cvData = {
+                ...this.cvData,
+                prenom: normalizedPrenom,
+                nom: normalizedNom,
+                titre: this.editCvData.titre,
+                email: this.editCvData.email,
+                telephone: this.editCvData.telephone,
+                adresse: this.editCvData.adresse,
+                profil: this.editCvData.profil,
+                competences: [...this.editCvData.competences],
+                experiences: [],
+                formations: [],
+                langues: [],
+                centresInteret: [],
+                photo: '',
+                photoName: ''
+            };
+            this.editingDocument.contenu = this.genererCV();
+            this.cvData = backup;
+        }
+
+        const payload = {
+            nom: (this.editingDocument.nom || '').trim(),
+            type: normalizedType,
+            contenu: this.compactHtmlForStorage((this.editingDocument.contenu || '').trim()),
+            template: (this.editingDocument.template || this.getTemplateNameByType(normalizedType) || 'Standard').trim()
+        };
+
+        if (!payload.nom || !payload.contenu) {
+            alert('Le nom et le contenu sont obligatoires.');
             return;
         }
         
         this.isUpdating = true;
-        this.apiService.modifierDocument(this.editingDocument.id, this.editingDocument).subscribe({
+        this.apiService.modifierDocument(this.editingDocument.id, payload).subscribe({
             next: () => {
                 this.closeEditModal();
                 this.loadDocuments();
@@ -873,6 +970,66 @@ removeTechnologie(index: number): void {
                 this.isUpdating = false;
             }
         });
+    }
+
+    private populateCvEditDataFromHtml(html: string): void {
+        const content = html || '';
+        const fullName = this.extractMatch(content, /<h1>([\s\S]*?)<\/h1>/i);
+        const parts = fullName.split(/\s+/).filter(Boolean);
+        const prenom = parts.length > 0 ? parts[0] : '';
+        const nom = parts.length > 1 ? parts.slice(1).join(' ') : '';
+
+        const titre = this.extractMatch(content, /class="title">([\s\S]*?)<\/div>/i);
+        const email = this.extractMatch(content, /✉️\s*([^<\n\r]+)/i);
+        const telephone = this.extractMatch(content, /📱\s*([^<\n\r]+)/i);
+        const adresse = this.extractMatch(content, /📍\s*([^<\n\r]+)/i);
+        const profil = this.extractMatch(content, /<p class="summary">([\s\S]*?)<\/p>/i);
+
+        const skillsBlock = this.extractMatch(content, /<ul class="skills-list">([\s\S]*?)<\/ul>/i);
+        const skills: string[] = [];
+        const liRegex = /<li>([\s\S]*?)<\/li>/gi;
+        let liMatch: RegExpExecArray | null;
+        while ((liMatch = liRegex.exec(skillsBlock)) !== null) {
+            const skill = this.stripHtml(liMatch[1]);
+            if (skill && !/aucune compétence/i.test(skill)) {
+                skills.push(skill);
+            }
+        }
+
+        this.editCvData = {
+            prenom,
+            nom,
+            titre,
+            email,
+            telephone,
+            adresse,
+            profil,
+            competences: skills
+        };
+        this.editCvSkillsText = skills.join(', ');
+    }
+
+    private extractMatch(source: string, regex: RegExp): string {
+        const match = source.match(regex);
+        return this.stripHtml(match?.[1] || match?.[0] || '');
+    }
+
+    private stripHtml(value: string): string {
+        return (value || '')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/&amp;/gi, '&')
+            .replace(/&lt;/gi, '<')
+            .replace(/&gt;/gi, '>')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    private normalizeCvNamePart(value: string): string {
+        return (value || '')
+            .replace(/[^a-zA-ZÀ-ÿ\s'\-]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
     }
 
     // ==================== DELETE ====================
@@ -902,17 +1059,33 @@ removeTechnologie(index: number): void {
     }
 
     // ==================== UTILITAIRES ====================
+    normalizeDocumentType(type: string): string {
+        const raw = (type || '').toString().trim().toUpperCase();
+
+        if (raw === 'CV') return 'CV';
+        if (raw === 'LETTRE_DE_MOTIVATION' || raw.includes('LETTRE')) return 'LETTRE_DE_MOTIVATION';
+        if (raw === 'PORTFOLIO') return 'PORTFOLIO';
+        if (raw === 'AUTRE' || raw === 'OTHER') return 'AUTRE';
+
+        return 'AUTRE';
+    }
+
+    isCvType(type: string): boolean {
+        return this.normalizeDocumentType(type) === 'CV';
+    }
+
     getTypeLabel(type: string): string {
-        switch(type) {
+        switch(this.normalizeDocumentType(type)) {
             case 'CV': return 'CV';
             case 'LETTRE_DE_MOTIVATION': return 'Lettre de motivation';
             case 'PORTFOLIO': return 'Portfolio';
-            default: return type;
+            case 'AUTRE': return 'Autre';
+            default: return 'Autre';
         }
     }
 
     getTypeIcon(type: string): string {
-        switch(type) {
+        switch(this.normalizeDocumentType(type)) {
             case 'CV': return 'ri-file-pdf-line';
             case 'LETTRE_DE_MOTIVATION': return 'ri-mail-line';
             case 'PORTFOLIO': return 'ri-folder-image-line';
@@ -921,7 +1094,7 @@ removeTechnologie(index: number): void {
     }
 
     getTypeColor(type: string): string {
-        switch(type) {
+        switch(this.normalizeDocumentType(type)) {
             case 'CV': return '#e74c3c';
             case 'LETTRE_DE_MOTIVATION': return '#3498db';
             case 'PORTFOLIO': return '#9b59b6';
@@ -947,15 +1120,23 @@ removeTechnologie(index: number): void {
         return;
     }
 
+        const nom = (this.generatedDocument.nom || '').trim();
+        const contenu = (this.generatedDocument.contenu || '').trim();
+        const type = this.normalizeDocumentType(this.generatedDocument.type || this.selectedType || 'AUTRE');
+        const template = (this.getTemplateNameByType(type) || 'Standard').trim();
+
+        if (!nom || !contenu) {
+            alert('Le nom et le contenu du document sont obligatoires.');
+            return;
+        }
+
     this.isCreating = true;   // On réutilise isCreating pour le bouton "Sauvegarde..."
 
     const dataToSend: any = {
-        nom: this.generatedDocument.nom,
-        type: this.generatedDocument.type,
-        contenu: this.generatedDocument.contenu,
-        template: this.getTemplateName(),
-        compatibleATS: true,
-        ajouterPhoto: this.selectedType === 'CV' && !!this.cvData.photo  
+            nom,
+            type,
+            contenu: this.compactHtmlForStorage(contenu),
+            template
     };
 
     this.apiService.creerDocument(dataToSend).subscribe({
@@ -979,7 +1160,20 @@ removeTechnologie(index: number): void {
 closePreviewModal(): void {
     this.showPreviewModal = false;
     this.generatedDocument = null;
+    this.previewDocumentSrcdoc = '';
 }
+
+    private toTrustedHtml(content: string): SafeHtml {
+        return this.sanitizer.bypassSecurityTrustHtml(content || '');
+    }
+
+    private compactHtmlForStorage(content: string): string {
+        return (content || '')
+            .replace(/<!--[\s\S]*?-->/g, '')
+            .replace(/>\s+</g, '><')
+            .replace(/[\t ]{2,}/g, ' ')
+            .trim();
+    }
 
 
 }

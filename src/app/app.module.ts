@@ -11,7 +11,7 @@ import { NgxScrollTopModule } from 'ngx-scrolltop';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { AuthInterceptor } from './auth.interceptor';
 import { SharedModule } from './shared/shared.module';
-import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
+import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';
 // ADMIN
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { AdHeaderComponent } from './admin-dashboard/ad-header/ad-header.component';
@@ -26,8 +26,11 @@ import { FormationCreateComponent } from './admin-dashboard/formation-create/for
 import { FormationEditComponent } from './admin-dashboard/formation-edit/formation-edit.component';
 import { FormationParticipantsComponent } from './admin-dashboard/formation-participants/formation-participants.component';
 import { FeedbackAdminComponent } from './admin-dashboard/feedback-admin/feedback-admin.component';
+import { CandidatureListComponent } from './admin-dashboard/candidature-list/candidature-list.component';
+import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-admin/evenement-list-admin.component';
 import { routes } from './app.routes';
 import { App } from './app';
+
 
 // Import all components
 import { HomeDemoOneComponent } from './pages/home-demo-one/home-demo-one.component';
@@ -106,6 +109,7 @@ import { registerLocaleData } from '@angular/common';
 import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header/evenement-header.component';
 // Banner components are now in SharedModule
 
+
 @NgModule({
     declarations: [
         App,
@@ -156,11 +160,11 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         RdMessagesComponent,
         RdProfileComponent,
         RdChangePasswordComponent,
-        CdDocumentsComponent, 
+        CdDocumentsComponent,
         EvenementDashboardComponent,
         EvenementSidebarComponent,
         EvenementFormComponent,
-        EvenementListComponent, 
+        EvenementListComponent,
         EvenementEditComponent,
         EvenementDetailComponent,
         EvenementHeaderComponent,
@@ -177,6 +181,8 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         FormationEditComponent,
         FormationParticipantsComponent,
         FeedbackAdminComponent,
+        CandidatureListComponent,
+        EvenementListAdminComponent,
     ],
     imports: [
         BrowserModule,

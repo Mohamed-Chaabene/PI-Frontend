@@ -2,8 +2,8 @@
     z-index: 2;
     position: relative;
     padding: {
-        top: 13px;
-        bottom: 13px;
+        top: 8px;
+        bottom: 8px;
     };
     &.sticky {
         top: 0;
@@ -15,14 +15,14 @@
         box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.09);
         animation: 500ms ease-in-out 0s normal none 1 running fadeInDown;
         padding: {
-            top: 5px;
-            bottom: 5px;
+            top: 4px;
+            bottom: 4px;
         };
     }
     .container-fluid {
         padding: {
-            left: 30px;
-            right: 30px;
+            left: 20px;
+            right: 20px;
         };
     }
     .navbar {
@@ -34,7 +34,7 @@
             padding: 0;
             
             img {
-                max-width: 160px;
+                max-width: 120px;
                 height: auto;
             }
         }
@@ -100,13 +100,13 @@
             }
         }
         .navbar-nav {
-            margin-left: 60px;
+            margin-left: 40px;
     
             .nav-item {
                 position: relative;
                 margin: {
-                    left: 17px;
-                    right: 17px;
+                    left: 12px;
+                    right: 12px;
                 };
                 .nav-link {
                     position: relative;
@@ -119,8 +119,8 @@
                     padding: {
                         left: 0;
                         right: 0;
-                        top: 25px;
-                        bottom: 25px;
+                        top: 16px;
+                        bottom: 16px;
                     };
                     &:hover, &.active {
                         color: var(--primaryColor);
@@ -137,7 +137,7 @@
                         content: "\ea4e";
                         line-height: 1;
                         right: -3px;
-                        top: 31.2px;
+                        top: 22px;
                         font: {
                             family: remixicon;
                             size: 17px;
@@ -146,7 +146,7 @@
                 }
                 .dropdown-menu {
                     left: 0;
-                    top: 70px;
+                    top: 50px;
                     opacity: 0;
                     z-index: 99;
                     border: none;
@@ -304,17 +304,18 @@
             margin-left: auto;
     
             .option-item {
-                margin-left: 30px;
+                margin-left: 18px;
     
                 .login-register {
                     cursor: pointer;
                     color: var(--headingColor);
                     transition: var(--transition);
+                    font-size: 14px;
 
                     i {
                         width: 30px;
                         height: 30px;
-                        display: none;
+                        display: inline-block;
                         line-height: 28px;
                         text-align: center;
                         border-radius: 50%;
@@ -334,7 +335,7 @@
                 }
                 .hotline {
                     text-align: end;
-                    font-size: 19px;
+                    font-size: 16px;
                     color: var(--primaryColor);
 
                     i {

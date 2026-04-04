@@ -21,5 +21,11 @@ export class CdHeaderComponent {
         this.classApplied2 = !this.classApplied2;
     }
 
+    activeDropdown: string | null = null;
+
+    toggleDropdown(menu: string) {
+        this.activeDropdown = this.activeDropdown === menu ? null : menu;
+    }
+
 }
 

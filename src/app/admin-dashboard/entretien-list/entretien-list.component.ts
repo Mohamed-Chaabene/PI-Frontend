@@ -9,6 +9,8 @@ import { ApiService } from '../../api.service';
 })
 export class EntretienListComponent implements OnInit {
   entretiens: any[] = [];
+  filteredEntretiens: any[] = [];
+  searchTerm = '';
   loading = false;
 
   constructor(private apiService: ApiService) {}
@@ -22,14 +24,36 @@ export class EntretienListComponent implements OnInit {
     this.apiService.getAllEntretiensForAdmin().subscribe({
       next: (data: any[]) => {
         this.entretiens = Array.isArray(data) ? data : [];
+        this.filteredEntretiens = [...this.entretiens];
         this.loading = false;
       },
       error: (error: any) => {
         console.error('Erreur chargement entretiens admin:', error);
         this.entretiens = [];
+        this.filteredEntretiens = [];
         this.loading = false;
       }
     });
+  }
+
+  filterEntretiens(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredEntretiens = [...this.entretiens];
+      return;
+    }
+
+    const search = this.searchTerm.toLowerCase();
+    this.filteredEntretiens = this.entretiens.filter(e =>
+      (e.titre?.toLowerCase() || '').includes(search) ||
+      (this.getRecruteur(e).toLowerCase() || '').includes(search) ||
+      (e.type?.toLowerCase() || '').includes(search) ||
+      (e.categorie?.toLowerCase() || '').includes(search)
+    );
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filteredEntretiens = [...this.entretiens];
   }
 
   accepterEntretien(entretien: any): void {

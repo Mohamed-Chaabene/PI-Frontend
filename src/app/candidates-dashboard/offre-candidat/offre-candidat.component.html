@@ -1,0 +1,125 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div class="header-left">
+      <button class="back-btn" type="button" (click)="retour()">
+        <i class="ri-arrow-left-line"></i>
+      </button>
+      <div>
+        <h4><i class="ri-file-list-3-line"></i> Offres — {{ partenaireNom }}</h4>
+        <span class="sub">{{ filteredOffres.length }} offre(s) disponible(s)</span>
+      </div>
+    </div>
+    <div class="filters">
+      <button type="button" class="filter-btn"
+              [class.active]="typeFilter === ''"
+              (click)="typeFilter = ''">Toutes</button>
+      <button type="button" class="filter-btn emploi"
+              [class.active]="typeFilter === 'EMPLOI'"
+              (click)="typeFilter = 'EMPLOI'">Emploi</button>
+      <button type="button" class="filter-btn stage"
+              [class.active]="typeFilter === 'STAGE'"
+              (click)="typeFilter = 'STAGE'">Stage</button>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="offer-card" *ngFor="let o of filteredOffres">
+
+      <div class="card-stripe"
+           [class.stripe-emploi]="o.type === 'EMPLOI'"
+           [class.stripe-stage]="o.type === 'STAGE'">
+      </div>
+
+      <div class="card-body">
+        <div class="card-top-row">
+          <div class="offer-title">{{ o.titre }}</div>
+          <span class="type-tag"
+                [class.tag-emploi]="o.type === 'EMPLOI'"
+                [class.tag-stage]="o.type === 'STAGE'">
+            {{ o.type }}
+          </span>
+        </div>
+
+        <p class="offer-desc">{{ o.description }}</p>
+
+        <div class="partner-chip">
+          <div class="partner-av"
+               [class.av-entreprise]="partenaire?.type === 'ENTREPRISE'"
+               [class.av-universite]="partenaire?.type !== 'ENTREPRISE'">
+            {{ partenaireNom }}
+          </div>
+          <div class="partner-info">
+            <strong>{{ partenaireNom }}</strong>
+            <span>{{ partenaire?.email }}</span>
+          </div>
+        </div>
+
+        <div class="card-divider"></div>
+
+        <button type="button" class="postuler-btn" (click)="ouvrirPostuler(o)">
+          <i class="ri-send-plane-line"></i>
+          Postuler
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="filteredOffres.length === 0">
+      <i class="ri-file-unknow-line"></i>
+      <p>Aucune offre disponible pour le moment</p>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP POSTULER -->
+<div class="popup-overlay" *ngIf="isPostulerOpen">
+  <div class="popup-box">
+    <div class="popup-header">
+      <h5><i class="ri-send-plane-line"></i> Postuler à l'offre</h5>
+      <button type="button" class="close-btn" (click)="fermerPostuler()">✕</button>
+    </div>
+    <div class="popup-body">
+
+      <div class="offer-chip">
+        <i class="ri-file-text-line"></i>
+        <div>
+          <strong>{{ offreSelectionnee?.titre }}</strong>
+          <span>{{ partenaireNom }}</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label><i class="ri-mail-line"></i> Destinataire</label>
+        <div class="readonly-field">{{ partenaire?.email }}</div>
+      </div>
+
+      <div class="form-group">
+        <label><i class="ri-chat-3-line"></i> Votre message *</label>
+        <textarea
+          rows="4"
+          placeholder="Bonjour, je souhaite postuler à cette offre..."
+          [value]="message"
+          (input)="message = $any($event.target).value"
+          [class.input-error]="!message.trim() && submitted">
+        </textarea>
+        <div class="error-box" *ngIf="!message.trim() && submitted">
+          <i class="ri-error-warning-line"></i>
+          <span>Le message est obligatoire</span>
+        </div>
+      </div>
+
+      <div class="popup-footer">
+        <button type="button" class="btn-annuler" (click)="fermerPostuler()">
+          Annuler
+        </button>
+        <button type="button"
+                class="btn-envoyer"
+                (click)="envoyerCandidature()">
+          <i class="ri-send-plane-fill"></i>
+          Envoyer la candidature
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

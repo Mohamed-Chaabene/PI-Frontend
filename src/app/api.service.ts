@@ -367,8 +367,33 @@ export class ApiService {
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    console.log('📡 Envoi des données:', data);
-    return this.http.post(`${this.apiUrl}/candidatures`, data, { headers });
+    const normalizedData = {
+      ...data,
+      nomComplet: this.normalizeCandidatureName(data?.nomComplet, data?.email)
+    };
+    console.log('📡 Envoi des données:', normalizedData);
+    return this.http.post(`${this.apiUrl}/candidatures`, normalizedData, { headers });
+  }
+
+  private normalizeCandidatureName(rawName: string, email: string): string {
+    let candidate = (rawName || '').trim();
+
+    // If name looks like an email, derive a readable name from local-part.
+    if (candidate.includes('@')) {
+      candidate = candidate.split('@')[0] || '';
+    }
+
+    if (!candidate && email) {
+      candidate = (email.split('@')[0] || '').trim();
+    }
+
+    candidate = candidate
+      .replace(/[0-9_\.]+/g, ' ')
+      .replace(/[^a-zA-ZÀ-ÿ\s'\-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return candidate || 'Candidat';
   }
 
   // Modifier une candidature (entreprise, poste, lettre)
@@ -498,7 +523,12 @@ export class ApiService {
   }
 
   quickApply(candidatureData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/candidatures/quick-apply`, candidatureData);
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/candidatures/quick-apply`, candidatureData, { headers });
   }
 
 }

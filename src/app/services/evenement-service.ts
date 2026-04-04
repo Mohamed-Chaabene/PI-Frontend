@@ -39,4 +39,9 @@ getByOrganisateur(organisateurId: number): Observable<any[]> {
   annuler(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+ 
+annulerAdmin(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/admin/${id}`);
+}
 }
