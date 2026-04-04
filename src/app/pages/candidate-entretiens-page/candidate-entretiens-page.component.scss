@@ -1,0 +1,129 @@
+.candidate-entretiens-area {
+  background: linear-gradient(180deg, #f8fafc 0%, #eef4fb 100%);
+  min-height: 70vh;
+}
+
+.section-head {
+  margin-bottom: 20px;
+
+  h2 {
+    margin: 0 0 6px;
+    color: #074d82;
+  }
+
+  p {
+    margin: 0;
+    color: #5b6f89;
+  }
+}
+
+.state-box {
+  background: #fff;
+  border: 1px dashed rgba(9, 101, 164, 0.34);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: #2d587b;
+
+  &.error {
+    border-color: rgba(220, 38, 38, 0.32);
+    color: #b42323;
+  }
+}
+
+.entretiens-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.entretien-card {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(9, 101, 164, 0.2);
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(7, 77, 130, 0.1);
+
+  .cover {
+    height: 190px;
+    position: relative;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .tag {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      background: rgba(7, 77, 130, 0.9);
+      color: #fff;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+  }
+
+  .body {
+    padding: 14px;
+
+    h3 {
+      margin: 0 0 8px;
+      color: #074d82;
+      font-size: 1.06rem;
+    }
+
+    p {
+      margin: 0 0 10px;
+      color: #4a5f79;
+      line-height: 1.45;
+      min-height: 60px;
+    }
+  }
+}
+
+.meta {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+
+  li {
+    color: #3f6688;
+    font-size: 0.88rem;
+
+    i {
+      margin-right: 6px;
+    }
+  }
+}
+
+.actions {
+  margin-top: 12px;
+}
+
+.btn-pass {
+  width: 100%;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #0965A4 0%, #85B7EB 100%);
+  color: #fff;
+
+  &:disabled {
+    background: #d7e5f4;
+    color: #66839f;
+    cursor: not-allowed;
+  }
+}
+
+@media only screen and (max-width: 991px) {
+  .entretiens-grid {
+    grid-template-columns: 1fr;
+  }
+}

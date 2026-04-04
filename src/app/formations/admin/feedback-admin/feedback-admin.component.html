@@ -1,0 +1,119 @@
+<app-navbar />
+
+<div class="page-banner-area">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <h1>Feedbacks · {{ formation?.titre || 'Formation' }}</h1>
+      </div>
+      <div class="col-lg-4">
+        <ul class="ps-0 mb-0 list-unstyled">
+          <li class="d-inline-block position-relative"><a routerLink="/">Home</a></li>
+          <li class="d-inline-block position-relative"><a routerLink="/formations/admin">Admin</a></li>
+          <li class="d-inline-block position-relative">Feedbacks</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="feedback-admin-area">
+  <div class="container">
+
+    <!-- ══ Stats header ══════════════════════════════════════════════════════ -->
+    <div class="stats-banner" *ngIf="!loading && feedbacks.length">
+      <div class="stat-main">
+        <span class="big-note">{{ stats.moyenne }}</span>
+        <div class="big-stars">
+          <span *ngFor="let s of stars" class="star-lg" [class.filled]="s <= stats.moyenne">★</span>
+        </div>
+        <span class="stat-sub">{{ stats.total }} avis</span>
+      </div>
+
+      <div class="distribution">
+        <div class="dist-row" *ngFor="let s of [5,4,3,2,1]">
+          <span class="dist-label">{{ s }} ★</span>
+          <div class="dist-bar">
+            <div class="dist-fill" [style.width.%]="distributionPercent[s-1]"></div>
+          </div>
+          <span class="dist-count">{{ distribution[s-1] }}</span>
+        </div>
+      </div>
+
+      <div class="stat-cards">
+        <div class="stat-card">
+          <span class="stat-val">{{ stats.total }}</span>
+          <span class="stat-lbl">Total avis</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-val">{{ stats.moyenne }}/5</span>
+          <span class="stat-lbl">Note moyenne</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-val">{{ distribution[4] }}</span>
+          <span class="stat-lbl">Avis 5 étoiles</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Bouton retour ══════════════════════════════════════════════════════ -->
+    <div class="page-header">
+      <h2 class="page-title">
+        Tous les avis
+        <span *ngIf="!loading">({{ feedbacks.length }})</span>
+      </h2>
+      <a [routerLink]="['/formations/admin', formationId, 'participants']" class="back-btn">
+        <i class="ri-arrow-left-line"></i> Participants
+      </a>
+    </div>
+
+    <!-- ══ Chargement ════════════════════════════════════════════════════════ -->
+    <div class="empty-state" *ngIf="loading">Chargement des feedbacks...</div>
+
+    <!-- ══ Vide ══════════════════════════════════════════════════════════════ -->
+    <div class="empty-state" *ngIf="!loading && feedbacks.length === 0">
+      <i class="ri-chat-off-line" style="font-size:40px;opacity:0.3;display:block;margin-bottom:12px"></i>
+      Aucun feedback pour cette formation.
+    </div>
+
+    <!-- ══ Liste des feedbacks ════════════════════════════════════════════════ -->
+    <div class="feedbacks-grid" *ngIf="!loading && feedbacks.length">
+      <div class="feedback-card" *ngFor="let f of feedbacks">
+
+        <div class="feedback-card-header">
+          <div class="avatar">
+            {{ (f.candidat?.nom || f.candidat?.email || 'A')[0].toUpperCase() }}
+          </div>
+          <div class="author-info">
+            <span class="author-name">{{ f.candidat?.nom || 'Candidat' }}</span>
+            <span class="author-email">{{ f.candidat?.email || '' }}</span>
+          </div>
+          <div class="note-section ms-auto">
+            <div class="stars-row">
+              <span *ngFor="let s of stars" class="star" [class.filled]="s <= f.note">★</span>
+            </div>
+            <span class="note-tag" [ngClass]="getNoteClass(f.note)">
+              {{ f.note }}/5 — {{ getNoteLabel(f.note) }}
+            </span>
+          </div>
+        </div>
+
+        <p class="feedback-comment">{{ f.commentaire }}</p>
+
+        <div class="feedback-footer">
+          <span class="feedback-date">
+            <i class="ri-calendar-line"></i> {{ formatDate(f.dateCreation) }}
+          </span>
+          <span class="modified-tag" *ngIf="f.dateModification !== f.dateCreation">
+            <i class="ri-edit-2-line"></i> Modifié
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-footer />
+<ngx-scrolltop />

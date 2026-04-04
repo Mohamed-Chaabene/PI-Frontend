@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+﻿import { Component } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
     selector: 'app-rd-sidebar',
@@ -8,10 +8,21 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     styleUrls: ['./rd-sidebar.component.scss']
 })
 export class RdSidebarComponent {
+    classApplied = false;
 
-    constructor() { }
+    constructor(private router: Router) { }
 
-    ngOnInit(): void {
+    ngOnInit(): void { }
+
+    toggleClass(): void {
+        this.classApplied = !this.classApplied;
     }
 
+    logout(): void {
+        localStorage.removeItem('token');
+        localStorage.removeItem('recruteurId');
+        localStorage.removeItem('currentUser');
+        this.classApplied = false;
+        this.router.navigate(['/login']);
+    }
 }

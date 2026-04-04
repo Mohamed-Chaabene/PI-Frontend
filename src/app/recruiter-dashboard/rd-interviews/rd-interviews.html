@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container-fluid interviews-modern">
   <div class="row">
     <div class="col-lg-12">
       <div class="card">
@@ -9,24 +9,125 @@
           </button>
         </div>
         <div class="card-body">
-          <!-- Create Form -->
+          <!-- Edit Form -->
+          <div *ngIf="editingEntretien" class="mb-4 p-3 border rounded bg-warning bg-opacity-10">
+            <h5><i class="ri-edit-line"></i> Modifier l'Entretien</h5>
+            <form (ngSubmit)="updateEntretien(editingEntretien); editingEntretien = null">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="edit-titre" class="form-label">Titre (optionnel)</label>
+                    <input type="text" class="form-control" id="edit-titre" [(ngModel)]="editingEntretien.titre" name="editTitre" maxlength="255">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="edit-type" class="form-label">Type d'entretien <span class="text-danger">*</span></label>
+                    <select class="form-control" id="edit-type" [(ngModel)]="editingEntretien.type" name="editType" required>
+                      <option value="">-- Sélectionner --</option>
+                      <option *ngFor="let type of typesEntretien" [value]="type">{{ type }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="edit-domaine" class="form-label">Domaine <span class="text-danger">*</span></label>
+                    <select class="form-control" id="edit-domaine" [(ngModel)]="editingEntretien.domaine" name="editDomaine" required>
+                      <option value="">-- Sélectionner --</option>
+                      <option *ngFor="let domaine of domaines" [value]="domaine.nom">{{ domaine.nom }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row" *ngIf="editingEntretien.type && editingEntretien.type !== 'TEST'">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="edit-candidat" class="form-label">Candidat <span class="text-danger">*</span></label>
+                    <select id="edit-candidat" class="form-control" [(ngModel)]="editingEntretien.candidatId" name="editCandidatId" [required]="editingEntretien.type !== 'TEST'">
+                      <option [ngValue]="null">-- Sélectionner un candidat --</option>
+                      <option *ngFor="let c of candidats" [ngValue]="c.id">{{ c.nom }} {{ c.prenom }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="edit-dateEntretien" class="form-label">Date et Heure <span class="text-danger">*</span></label>
+                    <input type="datetime-local" class="form-control" id="edit-dateEntretien" [(ngModel)]="editingEntretien.dateEntretien" name="editDateEntretien" required>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="edit-description" class="form-label">Description <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="edit-description" [(ngModel)]="editingEntretien.description" name="editDescription" rows="3" required maxlength="1000"></textarea>
+              </div>
+
+              <div class="row" *ngIf="editingEntretien.type !== 'TEST'">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="edit-seuilReussite" class="form-label">Seuil de réussite (%) <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="edit-seuilReussite" [(ngModel)]="editingEntretien.seuilReussite" name="editSeuilReussite" min="0" max="100" [required]="editingEntretien.type !== 'TEST'">
+                    <small class="text-muted d-block mt-1">Pourcentage minimum requis pour réussir l'entretien</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="edit-photo" class="form-label">Photo (URL) <span class="text-muted">(optionnel)</span></label>
+                <input type="text" class="form-control" id="edit-photo" [(ngModel)]="editingEntretien.photo" name="editPhoto" placeholder="https://example.com/image.jpg" maxlength="500">
+                <small class="form-text text-muted">Entrez l'URL complète de la photo d'entretien</small>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                  <i class="ri-check-line"></i> Mettre à jour
+                </button>
+                <button type="button" class="btn btn-secondary" (click)="editingEntretien = null">
+                  <i class="ri-close-line"></i> Annuler
+                </button>
+              </div>
+            </form>
+          </div>
           <div *ngIf="showCreateForm" class="mb-4 p-3 border rounded bg-light">
             <h5><i class="ri-add-circle-line"></i> Créer un Nouvel Entretien</h5>
-            <form (ngSubmit)="createEntretien()">
+            <form (ngSubmit)="createEntretien()" #createForm="ngForm">
               <div class="row">
                 <div class="col-md-6">
                   <div class="mb-3">
                     <label for="titre" class="form-label">Titre (optionnel)</label>
-                    <input type="text" class="form-control" id="titre" [(ngModel)]="newEntretien.titre" name="titre" placeholder="Ex: Entretien Développeur">
+                    <input type="text" class="form-control" id="titre" [(ngModel)]="newEntretien.titre" name="titre" placeholder="Ex: Entretien Développeur" maxlength="255">
+                    <small class="text-muted d-block mt-1">Max 255 caractères</small>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="mb-3">
                     <label for="type" class="form-label">Type d'entretien <span class="text-danger">*</span></label>
-                    <select class="form-control" id="type" [(ngModel)]="newEntretien.type" name="type" required>
+                    <select class="form-control" id="type" [(ngModel)]="newEntretien.type" name="type" required #typeField="ngModel">
                       <option value="">-- Sélectionner --</option>
                       <option *ngFor="let type of typesEntretien" [value]="type">{{ type }}</option>
                     </select>
+                    <div *ngIf="typeField.invalid && typeField.touched" class="text-danger small mt-1">
+                      <i class="ri-error-warning-line"></i> Le type d'entretien est obligatoire
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="domaine" class="form-label">Domaine <span class="text-danger">*</span></label>
+                    <select class="form-control" id="domaine" [(ngModel)]="newEntretien.domaine" name="domaine" required #domaineField="ngModel">
+                      <option value="">-- Sélectionner --</option>
+                      <option *ngFor="let domaine of domaines" [value]="domaine.nom || domaine">{{ domaine.nom || domaine }}</option>
+                    </select>
+                    <div *ngIf="domaines.length === 0" class="text-danger small mt-1">
+                      Aucun domaine disponible actuellement. Vérifiez la connectivité ou contactez l'administrateur.
+                    </div>
+                    <div *ngIf="domaineField.invalid && domaineField.touched" class="text-danger small mt-1">
+                      <i class="ri-error-warning-line"></i> Le domaine est obligatoire
+                    </div>
                   </div>
                 </div>
               </div>
@@ -35,31 +136,64 @@
                 <div class="col-md-6">
                   <div class="mb-3">
                     <label for="candidat" class="form-label">Candidat <span class="text-danger">*</span></label>
-                    <select id="candidat" class="form-control" [(ngModel)]="newEntretien.candidatId" name="candidatId" [required]="newEntretien.type !== 'TEST'">
+                    <select id="candidat" class="form-control" [(ngModel)]="newEntretien.candidatId" name="candidatId" [required]="newEntretien.type !== 'TEST'" #candidatField="ngModel">
                       <option [ngValue]="null">-- Sélectionner un candidat --</option>
                       <option *ngFor="let c of candidats" [ngValue]="c.id">{{ c.nom }} {{ c.prenom }}</option>
                     </select>
+                    <div *ngIf="candidatField.invalid && candidatField.touched" class="text-danger small mt-1">
+                      <i class="ri-error-warning-line"></i> Un candidat est obligatoire pour ce type
+                    </div>
                   </div>
                 </div>
               </div>
-
 
               <div class="row">
                 <div class="col-md-6">
                   <div class="mb-3">
                     <label for="dateEntretien" class="form-label">Date et Heure <span class="text-danger">*</span></label>
-                    <input type="datetime-local" class="form-control" id="dateEntretien" [(ngModel)]="newEntretien.dateEntretien" name="dateEntretien" required>
+                    <input type="datetime-local" class="form-control" id="dateEntretien" [(ngModel)]="newEntretien.dateEntretien" name="dateEntretien" required #dateField="ngModel">
+                    <div *ngIf="dateField.invalid && dateField.touched" class="text-danger small mt-1">
+                      <i class="ri-error-warning-line"></i> La date est obligatoire et doit être dans le futur
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div class="mb-3">
                 <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
-                <textarea class="form-control" id="description" [(ngModel)]="newEntretien.description" name="description" rows="3" required placeholder="Description de l'entretien..."></textarea>
+                <textarea class="form-control" id="description" [(ngModel)]="newEntretien.description" name="description" rows="3" required placeholder="Description de l'entretien..." minlength="10" maxlength="1000" #descField="ngModel"></textarea>
+                <div *ngIf="descField.invalid && descField.touched" class="text-danger small mt-1">
+                  <span *ngIf="descField.errors?.['required']"><i class="ri-error-warning-line"></i> La description est obligatoire</span>
+                  <span *ngIf="descField.errors?.['minlength']"><i class="ri-error-warning-line"></i> Min 10 caractères ({{ descField.value?.length || 0 }}/10)</span>
+                  <span *ngIf="descField.errors?.['maxlength']"><i class="ri-error-warning-line"></i> Max 1000 caractères</span>
+                </div>
+                <small class="text-muted d-block mt-1">{{ descField.value?.length || 0 }}/1000 caractères</small>
+              </div>
+
+              <div class="row" *ngIf="newEntretien.type !== 'TEST'">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="seuilReussite" class="form-label">Seuil de réussite (%) <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="seuilReussite" [(ngModel)]="newEntretien.seuilReussite" name="seuilReussite" min="0" max="100" [required]="newEntretien.type !== 'TEST'" #seuilField="ngModel">
+                    <div *ngIf="seuilField.invalid && seuilField.touched && newEntretien.type !== 'TEST'" class="text-danger small mt-1">
+                      <i class="ri-error-warning-line"></i> Le seuil doit être entre 0 et 100
+                    </div>
+                    <small class="text-muted d-block mt-1">Pourcentage minimum requis pour réussir l'entretien</small>
+                  </div>
+                </div>
+              </div>
+              <p *ngIf="newEntretien.type === 'TEST'" class="text-muted small mb-3">
+                <i class="ri-information-line"></i> Les tests généraux sont ouverts à tous : aucun seuil de réussite n’est appliqué.
+              </p>
+
+              <div class="mb-3">
+                <label for="photo" class="form-label">Photo (URL) <span class="text-muted">(optionnel)</span></label>
+                <input type="text" class="form-control" id="photo" [(ngModel)]="newEntretien.photo" name="photo" placeholder="https://example.com/image.jpg" maxlength="500">
+                <small class="text-muted d-block mt-1">Entrez l'URL complète de la photo (max 500 caractères)</small>
               </div>
 
               <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-success">
+                <button type="submit" class="btn btn-success" [disabled]="createForm.invalid">
                   <i class="ri-check-line"></i> Créer Entretien
                 </button>
                 <button type="button" class="btn btn-secondary" (click)="showCreateForm = false">
@@ -70,42 +204,68 @@
           </div>
 
           <!-- List of Entretiens -->
-          <div class="table-responsive">
-            <h5 class="mb-3">
-              <i class="ri-list-check-2"></i> Liste des Entretiens
+          <div class="interviews-overview">
+            <div class="overview-card">
+              <div class="overview-label">Total entretiens</div>
+              <div class="overview-value">{{ getTotalEntretiensCount() }}</div>
+            </div>
+            <div class="overview-card">
+              <div class="overview-label">En cours</div>
+              <div class="overview-value">{{ getActiveEntretiensCount() }}</div>
+            </div>
+            <div class="overview-card">
+              <div class="overview-label">Termines</div>
+              <div class="overview-value">{{ getCompletedEntretiensCount() }}</div>
+            </div>
+          </div>
+
+          <div class="table-responsive interviews-table-wrap">
+            <h5 class="mb-3 interviews-title">
+              <i class="ri-briefcase-4-line"></i> Liste des Entretiens
               <span class="badge bg-secondary ms-2">{{ entretiens.length }}</span>
             </h5>
-            <table class="table table-striped table-hover">
+            <table class="table table-hover interviews-table">
               <thead class="table-dark">
                 <tr>
                   <th>ID</th>
                   <th>Titre</th>
                   <th>Description</th>
                   <th>Type</th>
+                  <th>Domaine</th>
                   <th>Statut</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let entretien of entretiens">
-                  <td>{{ entretien.id }}</td>
+                  <td class="mono-id">#{{ entretien.id }}</td>
                   <td><strong>{{ entretien.titre || 'Sans titre' }}</strong></td>
-                  <td>{{ entretien.description }}</td>
+                  <td class="description-cell" [title]="entretien.description">{{ getEntretienDescriptionPreview(entretien.description) }}</td>
                   <td><span class="badge bg-info">{{ entretien.type || '-' }}</span></td>
+                  <td><span class="badge bg-secondary">{{ entretien.domaine || '-' }}</span></td>
                   <td>
-                    <span class="badge" [ngClass]="entretien.completed ? 'bg-success' : 'bg-warning'">
-                      {{ entretien.completed ? 'Terminé' : 'En cours' }}
+                    <span class="badge status-badge" [ngClass]="getStatusClass(entretien)">
+                      {{ getStatusLabel(entretien) }}
                     </span>
                   </td>
                   <td>
-                    <button class="btn btn-sm btn-primary me-2" (click)="goToAddQuestions(entretien.id)" title="Ajouter ou gérer les questions de cet entretien">
+                    <button class="btn btn-sm btn-primary me-2" (click)="goToAddQuestions(entretien.id)" title="Afficher les questions de cet entretien">
                       <i class="ri-question-line"></i> Questions
                     </button>
-                    <button *ngIf="!entretien.completed" class="btn btn-sm btn-success me-2" (click)="completeEntretien(entretien.id)">
-                      <i class="ri-check-double-line"></i>
+                    <button class="btn btn-sm btn-secondary me-2" (click)="openEntretienDetails(entretien)" title="Voir les détails de l'entretien">
+                      <i class="ri-eye-line"></i> Détails
                     </button>
-                    <button class="btn btn-sm btn-info" (click)="viewResult(entretien.id)">
-                      <i class="ri-eye-line"></i>
+                    <button *ngIf="!entretien.completed" class="btn btn-sm btn-success me-2" (click)="completeEntretien(entretien.id)" title="Marquer comme terminé">
+                      <i class="ri-check-double-line"></i> Terminer
+                    </button>
+                    <button *ngIf="!entretien.completed" class="btn btn-sm btn-warning me-2" (click)="editEntretien(entretien)" title="Modifier l'entretien">
+                      <i class="ri-edit-line"></i> Modifier
+                    </button>
+                    <button *ngIf="!entretien.completed" class="btn btn-sm btn-danger me-2" (click)="deleteEntretien(entretien.id)" title="Supprimer l'entretien">
+                      <i class="ri-delete-bin-line"></i> Supprimer
+                    </button>
+                    <button class="btn btn-sm btn-info" (click)="viewResult(entretien.id)" title="Voir les résultats">
+                      <i class="ri-eye-line"></i> Résultats
                     </button>
                   </td>
                 </tr>
@@ -114,6 +274,103 @@
             <div *ngIf="entretiens.length === 0" class="text-center text-muted mt-4 p-5">
               <p><i class="ri-inbox-line" style="font-size: 2rem;"></i></p>
               <p class="mt-2">Aucun entretien n'existe encore.<br/>Créez-en un pour commencer.</p>
+            </div>
+          </div>
+
+          <div class="entretien-modal-backdrop" *ngIf="showEntretienDetailsModal" (click)="closeEntretienDetails()">
+            <div class="entretien-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+              <div class="entretien-modal-header">
+                <div>
+                  <h5><i class="ri-file-list-3-line"></i> Details de l'entretien</h5>
+                  <p>Vue complete de l'entretien selectionne</p>
+                </div>
+                <button class="modal-close" type="button" (click)="closeEntretienDetails()" aria-label="Fermer">
+                  <i class="ri-close-line"></i>
+                </button>
+              </div>
+
+              <div class="entretien-modal-body" *ngIf="selectedEntretienDetails as item">
+                <div class="detail-grid">
+                  <div class="detail-item">
+                    <span class="detail-label">ID</span>
+                    <span class="detail-value">#{{ item.id }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Type</span>
+                    <span class="detail-value">{{ item.type || '-' }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Domaine</span>
+                    <span class="detail-value">{{ item.domaine || '-' }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Statut</span>
+                    <span class="detail-value" [ngClass]="getStatusClass(item)">{{ getStatusLabel(item) }}</span>
+                  </div>
+                  <div class="detail-item detail-item-wide">
+                    <span class="detail-label">Titre</span>
+                    <span class="detail-value">{{ item.titre || 'Sans titre' }}</span>
+                  </div>
+                  <div class="detail-item detail-item-wide">
+                    <span class="detail-label">Date</span>
+                    <span class="detail-value">{{ formatEntretienDate(item.dateEntretien) }}</span>
+                  </div>
+                  <div class="detail-item detail-item-wide">
+                    <span class="detail-label">Candidat</span>
+                    <span class="detail-value">{{ getCandidateName(item.candidatId) || 'Non assigne' }}</span>
+                  </div>
+                  <div class="detail-item detail-item-wide" *ngIf="item.seuilReussite !== null && item.seuilReussite !== undefined">
+                    <span class="detail-label">Seuil de reussite</span>
+                    <span class="detail-value">{{ item.seuilReussite }}%</span>
+                  </div>
+                  <div class="detail-item detail-item-wide">
+                    <span class="detail-label">Description</span>
+                    <p class="detail-description">{{ item.description || '-' }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="entretien-modal-footer">
+                <button class="btn btn-secondary" type="button" (click)="closeEntretienDetails()">
+                  Fermer
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section affichage liste des questions -->
+          <div *ngIf="showQuestionsForm" class="mt-4 p-3 border rounded bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5><i class="ri-question-line"></i> Questions de l'entretien {{ selectedEntretienId }}</h5>
+              <button class="btn btn-secondary btn-sm" (click)="showQuestionsForm = false">
+                <i class="ri-close-line"></i> Fermer
+              </button>
+            </div>
+
+            <div *ngIf="questions.length === 0" class="text-center text-muted p-4">
+              <p><i class="ri-inbox-line" style="font-size: 1.7rem;"></i></p>
+              <p>Aucune question pour cet entretien.</p>
+            </div>
+
+            <div *ngIf="questions.length > 0" class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>ID</th>
+                    <th>Question</th>
+                    <th>Type</th>
+                    <th>Points</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let q of questions">
+                    <td>{{ q.id }}</td>
+                    <td>{{ q.question }}</td>
+                    <td><span class="badge bg-info">{{ q.type }}</span></td>
+                    <td>{{ q.points }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

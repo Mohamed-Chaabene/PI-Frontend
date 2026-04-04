@@ -150,6 +150,8 @@ export class NavbarComponent implements OnInit {
         this.isOpen = true;
     }
     closePopup(): void {
+        const activeEl = document.activeElement as HTMLElement | null;
+        activeEl?.blur();
         this.isOpen = false;
     }
 
@@ -183,6 +185,7 @@ export class NavbarComponent implements OnInit {
         this.apiService.register(userData).subscribe(
             response => {
                 localStorage.setItem('userName', userData.nom);
+                localStorage.setItem('userEmail', userData.email);
                 localStorage.setItem('userRole', userData.role);
                 this.isLoggedIn = true;
                 this.userName = userData.nom;
@@ -230,9 +233,20 @@ export class NavbarComponent implements OnInit {
                     ? (response.role || response.roles || response.user?.role || response.user?.roles)
                     : undefined;
                 const role = this.getRoleFromDecodedToken(decoded, roleFromResponse);
-                const roleFinal = role || this.inferRoleFromEmail(this.loginData.email) || 'CANDIDAT';
+                const normalizedExtractedRole = this.normalizeRole(role);
+                const normalizedInferredRole = this.normalizeRole(this.inferRoleFromEmail(this.loginData.email));
+                const selectedRoleFromTab = this.currentInnerTab === 'organisateur' ? 'ORGANISATEUR' : '';
+                const roleFinal = selectedRoleFromTab === 'ORGANISATEUR'
+                    ? 'ORGANISATEUR'
+                    : (normalizedInferredRole === 'ORGANISATEUR'
+                        ? 'ORGANISATEUR'
+                        : (normalizedExtractedRole || normalizedInferredRole || 'CANDIDAT'));
+                console.log('[AUTH DEBUG] roleFromResponse=', roleFromResponse);
+                console.log('[AUTH DEBUG] token.role=', decoded?.role, 'token.roles=', decoded?.roles, 'token.authorities=', decoded?.authorities);
+                console.log('[AUTH DEBUG] extractedRole=', role, 'roleFinal=', roleFinal);
 
                 let userName = '';
+                let userEmail = this.loginData.email;
                 if (typeof response === 'object' && response.userName) {
                     userName = response.userName;
                 } else if (typeof response === 'object' && response.user?.nom) {
@@ -245,8 +259,20 @@ export class NavbarComponent implements OnInit {
                     userName = this.loginData.email;
                 }
 
+                if (typeof response === 'object' && response.user?.email) {
+                    userEmail = response.user.email;
+                } else if (decoded.email) {
+                    userEmail = decoded.email;
+                } else if (typeof decoded.sub === 'string' && decoded.sub.includes('@')) {
+                    userEmail = decoded.sub;
+                }
+
                 localStorage.setItem('userName', userName);
+                localStorage.setItem('userEmail', userEmail || this.loginData.email);
                 localStorage.setItem('userRole', roleFinal);
+                if (roleFinal !== 'RECRUTEUR') {
+                    localStorage.removeItem('recruteurId');
+                }
                 this.isLoggedIn = true;
                 this.userName = userName;
                 this.userRole = roleFinal;
@@ -265,50 +291,71 @@ export class NavbarComponent implements OnInit {
 
     // ─── Redirection post-login ────────────────────────────────────────────────
     private redirectAfterLogin(role: string) {
-        const normalizedRole = role?.toString().trim().toUpperCase().replace(/^ROLE_/, '');
+        const normalizedRole = this.normalizeRole(role);
+        console.log('[AUTH DEBUG] redirectAfterLogin inputRole=', role, 'normalizedRole=', normalizedRole);
 
-        if (normalizedRole === 'CANDIDAT') {
-            this.router.navigate(['/candidate-details']);
+        if (normalizedRole === 'ADMIN') {
+            console.log('[AUTH DEBUG] redirect -> /admin-dashboard');
+            this.router.navigate(['/admin-dashboard']);
             return;
         }
-        if (['RECRUTEUR', 'CLIENT_FREELANCE', 'ORGANISATEUR'].includes(normalizedRole)) {
+
+        if (normalizedRole === 'CANDIDAT') {
+            console.log('[AUTH DEBUG] redirect -> /candidates-dashboard');
+            this.router.navigate(['/candidates-dashboard']);
+            return;
+        }
+      
+        if (normalizedRole === 'ORGANISATEUR') {
+            console.log('[AUTH DEBUG] redirect -> /evenement-dashboard');
+            this.router.navigate(['/evenement-dashboard']);
+            return;
+        }
+
+        if (normalizedRole === 'RECRUTEUR') {
+            console.log('[AUTH DEBUG] redirect -> /recruiter-dashboard');
             this.router.navigate(['/recruiter-dashboard']);
             return;
         }
-        if (normalizedRole === 'ADMIN') {
-            this.router.navigate(['/']);
+
+        if (normalizedRole === 'CLIENT_FREELANCE') {
+            console.log('[AUTH DEBUG] redirect -> /freelance/dashboard');
+            this.router.navigate(['/freelance/dashboard']);
             return;
         }
+
+        console.log('[AUTH DEBUG] redirect fallback -> /');
         this.router.navigate(['/']);
     }
 
     // ─── Helpers rôle ──────────────────────────────────────────────────────────
     private getRoleFromDecodedToken(decoded: any, roleFromResponse?: any): string {
-        if (roleFromResponse) {
-            const role = this.extractRoleValue(roleFromResponse);
-            if (role) return role;
-        }
-        if (!decoded || typeof decoded !== 'object') return '';
+        const candidates: string[] = [];
 
-        for (const key in decoded) {
-            if (decoded.hasOwnProperty(key)) {
-                const lowerKey = key.toLowerCase();
-                if (lowerKey.includes('role') || lowerKey.includes('authority')) {
-                    const role = this.extractRoleValue(decoded[key]);
-                    if (role) return role;
+        if (roleFromResponse) {
+            candidates.push(...this.extractRoleValues(roleFromResponse));
+        }
+        if (decoded && typeof decoded === 'object') {
+            for (const key in decoded) {
+                if (decoded.hasOwnProperty(key)) {
+                    const lowerKey = key.toLowerCase();
+                    if (lowerKey.includes('role') || lowerKey.includes('authority')) {
+                        candidates.push(...this.extractRoleValues(decoded[key]));
+                    }
                 }
             }
         }
-        return '';
+
+        return this.selectPreferredRole(candidates);
     }
 
     private inferRoleFromEmail(email?: string): string {
         if (!email) return '';
         const e = email.toLowerCase();
+        if (e.includes('organisateur')) return 'ORGANISATEUR';
         if (e.includes('recruteur')) return 'RECRUTEUR';
         if (e.includes('candidat') || e.includes('candidate')) return 'CANDIDAT';
         if (e.includes('freelance')) return 'CLIENT_FREELANCE';
-        if (e.includes('organisateur')) return 'ORGANISATEUR';
         if (e.includes('admin')) return 'ADMIN';
         return '';
     }
@@ -332,6 +379,58 @@ export class NavbarComponent implements OnInit {
             }
         }
         return '';
+    }
+
+    private extractRoleValues(source: any): string[] {
+        if (!source) return [];
+
+        if (typeof source === 'string') {
+            const value = source.trim();
+            return value ? [value] : [];
+        }
+
+        if (Array.isArray(source)) {
+            return source.flatMap(item => this.extractRoleValues(item));
+        }
+
+        if (typeof source === 'object') {
+            const values: string[] = [];
+            for (const field of ['role', 'roles', 'authority', 'authorities', 'name', 'type', 'value']) {
+                if (source[field]) {
+                    values.push(...this.extractRoleValues(source[field]));
+                }
+            }
+            return values;
+        }
+
+        return [];
+    }
+
+    private selectPreferredRole(roles: string[]): string {
+        if (!roles || roles.length === 0) return '';
+
+        const normalized = roles
+            .map(role => this.normalizeRole(role))
+            .filter(role => !!role);
+
+        if (normalized.includes('ORGANISATEUR')) return 'ORGANISATEUR';
+        if (normalized.includes('RECRUTEUR')) return 'RECRUTEUR';
+        if (normalized.includes('CLIENT_FREELANCE')) return 'CLIENT_FREELANCE';
+        if (normalized.includes('CANDIDAT')) return 'CANDIDAT';
+        if (normalized.includes('ADMIN')) return 'ADMIN';
+
+        return normalized[0] || '';
+    }
+
+    private normalizeRole(role?: string): string {
+        const raw = (role || '').toString().trim().toUpperCase().replace(/^ROLE_/, '');
+        if (!raw) return '';
+        if (raw.includes('ORGANISATEUR')) return 'ORGANISATEUR';
+        if (raw.includes('RECRUTEUR')) return 'RECRUTEUR';
+        if (raw.includes('CLIENT_FREELANCE') || raw.includes('FREELANCE')) return 'CLIENT_FREELANCE';
+        if (raw.includes('CANDIDAT') || raw.includes('CANDIDATE')) return 'CANDIDAT';
+        if (raw.includes('ADMIN')) return 'ADMIN';
+        return raw;
     }
 
     // ─── Logout / Delete ───────────────────────────────────────────────────────

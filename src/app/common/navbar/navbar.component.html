@@ -158,8 +158,15 @@
                                     Candidates Dashboard
                                 </a>
                             </li>
+                            <li class="nav-item" *ngIf="userRole && userRole.includes('CANDIDAT')">
+                                <a routerLink="/candidate-entretiens" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Mes Entretiens
+                                </a>
+                            </li>
                         </ul>
                     </li>
+
+                    
 
                 </ul>
 
@@ -268,7 +275,7 @@
 
 <!-- Modal Login/Register -->
 @if (isOpen) {
-    <div class="modal fade loginRegisterModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade loginRegisterModal" tabindex="-1" role="dialog" aria-modal="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body">

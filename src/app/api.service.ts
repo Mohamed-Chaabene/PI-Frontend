@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -37,8 +37,15 @@ export class ApiService {
 
   // Recruteur courant (permets d'obtenir l'id du recruteur connecté)
   getCurrentRecruteur(): Observable<any> {
-    // endpoint probable du backend, peut être adapté si le chemin diffère
-    return this.http.get(`${this.apiUrl}/recruteurs/me`);
+    // Fallback only when endpoint path is missing. Do not retry on auth errors (401/403).
+    return this.http.get(`${this.apiUrl}/recruteur/me`).pipe(
+      catchError((error) => {
+        if (error?.status === 404) {
+          return this.http.get(`${this.apiUrl}/recruteurs/me`);
+        }
+        return throwError(() => error);
+      })
+    );
   }
 
   createUser(user: any): Observable<any> {
@@ -74,6 +81,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/entretiens`);
   }
 
+  getAllEntretiensForAdmin(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/entretiens`);
+  }
+
   getEntretiensByCandidat(candidatId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/entretiens/candidat/${candidatId}`);
   }
@@ -82,15 +93,59 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/entretiens/${id}`);
   }
 
+  updateEntretienStatutByAdmin(id: number, statut: 'ACCEPTE' | 'REFUSE'): Observable<any> {
+    const queryUrl = `${this.apiUrl}/entretiens/${id}/statut?statut=${encodeURIComponent(statut)}`;
+    const bodyUrl = `${this.apiUrl}/entretiens/${id}/statut`;
+
+    return this.http.put(queryUrl, {}).pipe(
+      catchError((firstError) => {
+        if (firstError?.status === 404 || firstError?.status === 405) {
+          return this.http.put(bodyUrl, { statut });
+        }
+
+        if (firstError?.status === 400) {
+          return this.http.put(bodyUrl, { status: statut });
+        }
+
+        return throwError(() => firstError);
+      })
+    );
+  }
+
+  getPublicTestEntretiens(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/entretiens/public/tests`);
+  }
+
   createEntretien(entretien: any, recruteurId?: number): Observable<any> {
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const genericUrl = `${this.apiUrl}/entretiens`;
+
     if (recruteurId != null && !isNaN(recruteurId) && recruteurId > 0) {
       headers = headers.set('Recruteur-ID', String(recruteurId));
-      console.log('📤 Header Recruteur-ID ajouté:', recruteurId);
-    } else {
-      console.warn('⚠️ Header Recruteur-ID non ajouté (valeur invalide):', recruteurId);
     }
-    return this.http.post(`${this.apiUrl}/entretiens`, entretien, { headers });
+
+    // 1) Tentative la plus probable : endpoint lié au recruteur
+    if (recruteurId != null && !isNaN(recruteurId) && recruteurId > 0) {
+      const recruteurScopedUrl = `${this.apiUrl}/recruteurs/${recruteurId}/entretiens`;
+
+      return this.http.post(recruteurScopedUrl, entretien, { headers }).pipe(
+        catchError((error) => {
+          const errorMessage = String(error?.error?.message || error?.message || '');
+          const shouldFallbackToGeneric =
+            error?.status === 404 ||
+            (error?.status === 500 && /No static resource|NoResourceFoundException/i.test(errorMessage));
+
+          if (shouldFallbackToGeneric) {
+            return this.http.post(genericUrl, entretien, { headers });
+          }
+
+          return throwError(() => error);
+        })
+      );
+    }
+
+    // 2) Fallback générique
+    return this.http.post(genericUrl, entretien, { headers });
   }
 
   completeEntretien(id: number): Observable<any> {
@@ -105,13 +160,15 @@ export class ApiService {
   createQuestion(question: any): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const token = localStorage.getItem('token');
-    console.log('📤 createQuestion - Token present:', !!token);
-    console.log('📤 createQuestion - Payload:', question);
+    const entretienId = Number(question?.entretienId);
+
+    if (!entretienId || isNaN(entretienId) || entretienId <= 0) {
+      const invalidIdError = new Error('ID entretien manquant ou invalide pour la création de question');
+      console.error('❌ createQuestion - entretienId invalide:', question?.entretienId);
+      return throwError(() => invalidIdError);
+    }
     
-    return this.http.post(`${this.apiUrl}/questions/entretien/${question.entretienId}`, question, { headers }).pipe(
-      tap(response => {
-        console.log('✅ Question created successfully:', response);
-      }),
+    return this.http.post(`${this.apiUrl}/questions/entretien/${entretienId}`, question, { headers }).pipe(
       catchError(error => {
         console.error('❌ Question creation failed:', error);
         console.error('🔻 response body:', error.error);
@@ -134,9 +191,40 @@ export class ApiService {
     );
   }
 
+  updateQuestion(id: number, question: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.put(`${this.apiUrl}/questions/${id}`, question, { headers });
+  }
+
+  deleteQuestion(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/questions/${id}`);
+  }
+
+  updateEntretien(id: number, entretien: any): Observable<any> {
+    const recruteurId = Number(localStorage.getItem('recruteurId'));
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (!isNaN(recruteurId) && recruteurId > 0) {
+      headers = headers.set('Recruteur-ID', String(recruteurId));
+    }
+    return this.http.put(`${this.apiUrl}/entretiens/${id}`, entretien, { headers });
+  }
+
+  deleteEntretien(id: number): Observable<any> {
+    const recruteurId = Number(localStorage.getItem('recruteurId'));
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (!isNaN(recruteurId) && recruteurId > 0) {
+      headers = headers.set('Recruteur-ID', String(recruteurId));
+    }
+    return this.http.delete(`${this.apiUrl}/entretiens/${id}`, { headers });
+  }
+
   // Resultats
   getResultat(entretienId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/resultats/entretien/${entretienId}`);
+  }
+
+  submitEntretienResponses(entretienId: number, score: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/entretiens/${entretienId}/submit-responses`, { score });
   }
 
   // Domaines
@@ -241,41 +329,26 @@ export class ApiService {
   testAuth(): Observable<any> {
     return this.http.get(`${this.apiUrl}/auth/test-auth`);
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
- // ==================== CANDIDATURES ====================
+  // ==================== CANDIDATURES ====================
 
   // Candidatures
-getMesCandidatures(): Observable<any> {
+  getMesCandidatures(): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get(`${this.apiUrl}/candidatures/mes-candidatures`, { headers });
-}
+  }
 
-getStatsCandidatures(): Observable<any> {
+  getStatsCandidatures(): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get(`${this.apiUrl}/candidatures/stats`, { headers });
-}
+  }
 
   // Récupérer une candidature par ID
   getCandidatureById(id: number): Observable<any> {
@@ -288,42 +361,71 @@ getStatsCandidatures(): Observable<any> {
   }
 
   // Créer une candidature (postuler)
-creerCandidature(data: any): Observable<any> {
+  creerCandidature(data: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    console.log('📡 Envoi des données:', data);
-    return this.http.post(`${this.apiUrl}/candidatures`, data, { headers });
-}
-// Modifier une candidature (entreprise, poste, lettre)
-modifierCandidature(id: number, data: any): Observable<any> {
+    const normalizedData = {
+      ...data,
+      nomComplet: this.normalizeCandidatureName(data?.nomComplet, data?.email)
+    };
+    console.log('📡 Envoi des données:', normalizedData);
+    return this.http.post(`${this.apiUrl}/candidatures`, normalizedData, { headers });
+  }
+
+  private normalizeCandidatureName(rawName: string, email: string): string {
+    let candidate = (rawName || '').trim();
+
+    // If name looks like an email, derive a readable name from local-part.
+    if (candidate.includes('@')) {
+      candidate = candidate.split('@')[0] || '';
+    }
+
+    if (!candidate && email) {
+      candidate = (email.split('@')[0] || '').trim();
+    }
+
+    candidate = candidate
+      .replace(/[0-9_\.]+/g, ' ')
+      .replace(/[^a-zA-ZÀ-ÿ\s'\-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return candidate || 'Candidat';
+  }
+
+  // Modifier une candidature (entreprise, poste, lettre)
+  modifierCandidature(id: number, data: any): Observable<any> {
     console.log('🔧 API - Modification complète:', { id, data });
     return this.http.put(`${this.apiUrl}/candidatures/${id}`, data);
-}
+  }
 
-// Modifier le statut d'une candidature
-modifierStatutCandidature(id: number, statut: string): Observable<any> {
+  // Modifier le statut d'une candidature
+  modifierStatutCandidature(id: number, statut: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/candidatures/${id}/statut?statut=${statut}`, {});
-}
+  }
 
-// Récupérer toutes les candidatures (pour recruteur)
-getAllCandidaturesForRecruteur(): Observable<any[]> {
+  // Récupérer toutes les candidatures (pour recruteur)
+  getAllCandidaturesForRecruteur(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/candidatures/recruteur/toutes`);
-}
+  }
 
-// Récupérer les statistiques pour recruteur
-getStatsForRecruteur(): Observable<any> {
+  // Récupérer les statistiques pour recruteur
+  getStatsForRecruteur(): Observable<any> {
     return this.http.get(`${this.apiUrl}/candidatures/recruteur/stats`);
-}
+  }
 
-supprimerCandidature(id: number): Observable<any> {
+  supprimerCandidature(id: number): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
-    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
     return this.http.delete(`${this.apiUrl}/candidatures/${id}`, { headers });
-}
+  }
+
   // Rechercher des candidatures par entreprise
   rechercherCandidaturesParEntreprise(entreprise: string): Observable<any> {
     const token = localStorage.getItem('token');
@@ -354,79 +456,80 @@ supprimerCandidature(id: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/candidatures/tri/date`, { headers });
   }
 
-
-
-getOffresEmploi(): Observable<any> {
+  getOffresEmploi(): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get(`${this.apiUrl}/offres-emploi`, { headers });
-}
+  }
 
-// Newsletter
-subscribeNewsletter(email: string): Observable<any> {
+  // Newsletter
+  subscribeNewsletter(email: string): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.post(`${this.apiUrl}/newsletter/subscribe`, { email }, { headers });
-}
+  }
 
+  // ==================== DOCUMENTS CRUD ====================
 
-// ==================== DOCUMENTS CRUD ====================
-
-getAllDocuments(): Observable<any> {
+  getAllDocuments(): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get(`${this.apiUrl}/documents`, { headers });
-}
+  }
 
-getDocumentById(id: number): Observable<any> {
+  getDocumentById(id: number): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get(`${this.apiUrl}/documents/${id}`, { headers });
-}
+  }
 
-creerDocument(data: any): Observable<any> {
+  creerDocument(data: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.post(`${this.apiUrl}/documents`, data, { headers });
-}
-modifierDocument(id: number, data: any): Observable<any> {
+  }
+
+  modifierDocument(id: number, data: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.put(`${this.apiUrl}/documents/${id}`, data, { headers });
-}
+  }
 
-supprimerDocument(id: number): Observable<any> {
+  supprimerDocument(id: number): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.delete(`${this.apiUrl}/documents/${id}`, { headers });
-}
+  }
 
-
-
-quickApply(candidatureData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/candidatures/quick-apply`, candidatureData);
-}
+  quickApply(candidatureData: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/candidatures/quick-apply`, candidatureData, { headers });
+  }
 
 }
 

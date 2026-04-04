@@ -1,0 +1,123 @@
+<!-- Title -->
+<div class="breadcrumb-title">
+    <h1 class="mb-0 fw-semibold">Liste des Événements</h1>
+</div>
+
+<!-- Loading -->
+<div *ngIf="loading" class="text-center py-4">
+    <p>Chargement...</p>
+</div>
+
+<!-- Barre de recherche -->
+<form class="jobs-search-form" (ngSubmit)="rechercher()">
+    <div class="row mx-0 align-items-center">
+        <div class="col-4 px-0">
+            <div class="form-group position-relative">
+                <i class="ri-search-line"></i>
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Titre de l'événement"
+                    [(ngModel)]="searchTitre"
+                    name="searchTitre"
+                    (ngModelChange)="rechercher()"
+                >
+            </div>
+        </div>
+        <div class="col-4 px-0">
+            <div class="form-group position-relative">
+                <i class="ri-map-pin-line"></i>
+                <select
+                    class="form-select"
+                    [(ngModel)]="searchLieu"
+                    name="searchLieu"
+                    (ngModelChange)="rechercher()"
+                >
+                    <option value="">Tous les lieux</option>
+                    <option *ngFor="let lieu of lieux" [value]="lieu">{{ lieu }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Résultats -->
+<div class="jove-grid-sorting d-flex align-items-center justify-content-between">
+    <div class="result-count">
+        <p>
+            <span class="count">{{ evenementsFiltres.length }}</span> événement(s) trouvé(s)
+        </p>
+    </div>
+     <!-- ✅ Filtre par date de l'événement (proche/loin) -->
+        <div class="ordering">
+            <label>Date événement:</label>
+            <select [(ngModel)]="sortByDate" (ngModelChange)="trier()">
+                <option value="">-- Choisir --</option>
+                <option value="proche">Plus proche</option>
+                <option value="loin">Plus loin</option>
+            </select>
+        </div>
+
+        <!-- ✅ Filtre par date d'ajout (récent/ancien) -->
+        <div class="ordering">
+            <label>Date ajout:</label>
+            <select [(ngModel)]="sortByAjout" (ngModelChange)="trier()">
+                <option value="">-- Choisir --</option>
+                <option value="recent">Plus récent</option>
+                <option value="ancien">Plus ancien</option>
+            </select>
+        </div>
+</div>
+
+<!-- Erreur -->
+<div class="alert alert-danger" *ngIf="error">
+    Erreur lors du chargement des événements !
+</div>
+
+<!-- ✅ Une seule liste avec evenementsFiltres -->
+<div class="row" *ngIf="!loading && !error">
+    <div class="col-lg-6 col-md-6" *ngFor="let evenement of evenementsFiltres">
+        <div class="job-item text-center overflow-hidden position-relative">
+            <div class="content">
+                <div class="company-logo">
+                    <i class="ri-calendar-event-line" style="font-size: 40px; color: var(--primaryColor); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
+                </div>
+                <h3 class="fw-semibold">{{ evenement.titre }}</h3>
+                <span class="location d-block">
+                    <i class="ri-map-pin-line"></i> {{ evenement.lieu }}
+                </span>
+                <div class="d-flex justify-content-center align-items-center">
+                    <span class="job-type d-block">{{ evenement.type }}</span>
+                    <span class="deadline d-block">
+                        <span class="fw-medium">Date:</span>
+                        {{ evenement.date }}
+                    </span>
+                </div>
+            </div>
+            <div class="info d-flex align-items-center justify-content-between">
+                <span class="salary d-block">
+                    <span class="fw-semibold">Organisateur:</span>
+                    <span>{{ evenement.nomOrganisateur }}</span>
+                </span>
+                <span class="deadline d-block">
+                    <a class="link-btn d-inline-block position-relative" (click)="voir(evenement.id)" style="cursor: pointer;">
+                        Voir détails <i class="ri-arrow-right-line"></i>
+                    </a>
+                </span>
+            </div>
+            <div class="actions-btns">
+                <button type="button" class="fav" (click)="modifier(evenement.id)" title="Modifier">
+                    <i class="ri-edit-line"></i>
+                </button>
+                <button type="button" class="fav delete" (click)="supprimer(evenement.id)" title="Supprimer">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste vide -->
+    <div class="col-12" *ngIf="evenementsFiltres.length === 0">
+        <p class="text-center py-4">Aucun événement trouvé.</p>
+    </div>
+</div>

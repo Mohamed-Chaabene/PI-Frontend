@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -8,27 +8,38 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CarouselModule } from 'ngx-owl-carousel-o';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { NgxScrollTopModule } from 'ngx-scrolltop';
+import { GoogleMapsModule } from '@angular/google-maps';
 import { AuthInterceptor } from './auth.interceptor';
-
+import { SharedModule } from './shared/shared.module';
+import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
+// ADMIN
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { AdHeaderComponent } from './admin-dashboard/ad-header/ad-header.component';
+import { AdSidebarComponent } from './admin-dashboard/ad-sidebar/ad-sidebar.component';
+import { AdFooterComponent } from './admin-dashboard/ad-footer/ad-footer.component';
+import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboard.component';
+import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
+import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
+import { EntretienListComponent } from './admin-dashboard/entretien-list/entretien-list.component';
+import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
+import { CandidatureListComponent } from './admin-dashboard/candidature-list/candidature-list.component';
+import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-admin/evenement-list-admin.component';
 import { routes } from './app.routes';
 import { App } from './app';
 
+
 // Import all components
 import { HomeDemoOneComponent } from './pages/home-demo-one/home-demo-one.component';
-import { HomeDemoTwoComponent } from './pages/home-demo-two/home-demo-two.component';
-import { HomeDemoThreeComponent } from './pages/home-demo-three/home-demo-three.component';
 import { NotFoundComponent } from './common/not-found/not-found.component';
 import { JobsGridPageComponent } from './pages/jobs-grid-page/jobs-grid-page.component';
 import { JobsListingPageComponent } from './pages/jobs-listing-page/jobs-listing-page.component';
 import { JobDetailsPageComponent } from './pages/job-details-page/job-details-page.component';
 import { CandidatesPageComponent } from './pages/candidates-page/candidates-page.component';
-import { CandidateDetailsPageComponent } from './pages/candidate-details-page/candidate-details-page.component';
 import { FileUploadComponent } from './pages/candidate-details-page/file-upload/file-upload.component';
 import { EmployersPageComponent } from './pages/employers-page/employers-page.component';
 import { EmployerDetailsPageComponent } from './pages/employer-details-page/employer-details-page.component';
 import { AboutPageComponent } from './pages/about-page/about-page.component';
 import { PricingPageComponent } from './pages/pricing-page/pricing-page.component';
-import { FaqPageComponent } from './pages/faq-page/faq-page.component';
 import { PrivacyPolicyPageComponent } from './pages/privacy-policy-page/privacy-policy-page.component';
 import { TermsConditionsPageComponent } from './pages/terms-conditions-page/terms-conditions-page.component';
 import { ContactPageComponent } from './pages/contact-page/contact-page.component';
@@ -47,34 +58,16 @@ import { EdChangePasswordComponent } from './employers-dashboard/ed-change-passw
 import { CandidatesDashboardComponent } from './candidates-dashboard/candidates-dashboard.component';
 import { CDashboardComponent } from './candidates-dashboard/c-dashboard/c-dashboard.component';
 import { CdProfileComponent } from './candidates-dashboard/cd-profile/cd-profile.component';
-import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  //************************************** */
-import { CdBookmarksComponent } from './candidates-dashboard/cd-bookmarks/cd-bookmarks.component';  //************************************** */
-import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component';  //************************************** */
-import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';  //************************************** */
+import { CdBookmarksComponent } from './candidates-dashboard/cd-bookmarks/cd-bookmarks.component';
+import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component';
+import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
 import { CdMessageComponent } from './candidates-dashboard/cd-message/cd-message.component';
 import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-password/cd-change-password.component';
 
-// Common components
-import { NavbarComponent } from './common/navbar/navbar.component';
-import { HomeoneBannerComponent } from './pages/home-demo-one/homeone-banner/homeone-banner.component';
-import { CompaniesComponent } from './common/companies/companies.component';
-import { CategoriesComponent } from './common/categories/categories.component';
-import { FeaturesComponent } from './common/features/features.component';
-import { FunfactsComponent } from './common/funfacts/funfacts.component';
-import { PopularJobsComponent } from './common/popular-jobs/popular-jobs.component';
-import { HowJoveWorksComponent } from './common/how-jove-works/how-jove-works.component';
-import { JobsByLocationComponent } from './common/jobs-by-location/jobs-by-location.component';
-import { TestimonialsComponent } from './common/testimonials/testimonials.component';
-import { GetHiredByTopCompaniesComponent } from './common/get-hired-by-top-companies/get-hired-by-top-companies.component';
-import { FaqComponent } from './common/faq/faq.component';
-import { DownloadAppComponent } from './common/download-app/download-app.component';
-import { BlogComponent } from './common/blog/blog.component';
-import { SubscribeComponent } from './common/subscribe/subscribe.component';
-import { FooterComponent } from './common/footer/footer.component';
+// Shared components are in SharedModule now
 
 // More common
 import { BlogSidebarComponent } from './common/blog-sidebar/blog-sidebar.component';
-import { WhyChooseUsComponent } from './common/why-choose-us/why-choose-us.component';
 import { TalentedExpertsComponent } from './common/talented-experts/talented-experts.component';
 import { PartnersComponent } from './common/partners/partners.component';
 import { PricingComponent } from './common/pricing/pricing.component';
@@ -90,12 +83,7 @@ import { EdSidebarComponent } from './employers-dashboard/ed-sidebar/ed-sidebar.
 import { EdHeaderComponent } from './employers-dashboard/ed-header/ed-header.component';
 import { EdFooterComponent } from './employers-dashboard/ed-footer/ed-footer.component';
 
-// Recruiter Dashboard components
-import { RecruiterDashboardComponent } from './recruiter-dashboard/recruiter-dashboard.component';
-import { RdDashboardComponent } from './recruiter-dashboard/rd-dashboard/rd-dashboard.component';
-import { RdHeaderComponent } from './recruiter-dashboard/rd-header/rd-header.component';
-import { RdFooterComponent } from './recruiter-dashboard/rd-footer/rd-footer.component';
-import { RdSidebarComponent } from './recruiter-dashboard/rd-sidebar/rd-sidebar.component';
+// Recruiter Dashboard components are now in SharedModule
 import { RdPostJobComponent } from './recruiter-dashboard/rd-post-job/rd-post-job.component';
 import { RdManageJobsComponent } from './recruiter-dashboard/rd-manage-jobs/rd-manage-jobs.component';
 import { RdApplicantsComponent } from './recruiter-dashboard/rd-applicants/rd-applicants.component';
@@ -103,30 +91,33 @@ import { RdMessagesComponent } from './recruiter-dashboard/rd-messages/rd-messag
 import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.component';
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 
-// Banner components
-import { HometwoBannerComponent } from './pages/home-demo-two/hometwo-banner/hometwo-banner.component';
-import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-banner/homethree-banner.component';
-
-
+// evenement components
+import { EvenementSidebarComponent } from './evenement-dashboard/evenement-sidebar/evenement-sidebar.component';
+import { EvenementDashboardComponent } from './evenement-dashboard/evenement-dashboard.component';
+import { EvenementFormComponent } from './evenement-dashboard/evenement-form/evenement-form';
+import { EvenementListComponent } from './evenement-dashboard/evenement-list/evenement-list.component';
+import { EvenementEditComponent } from './evenement-dashboard/evenement-edit/evenement-edit.component';
+import { EvenementDetailComponent } from './evenement-dashboard/evenement-detail/evenement-detail.component';
+import { DatePipe } from '@angular/common';
+import { LOCALE_ID } from '@angular/core';
+import localeFr from '@angular/common/locales/fr';
+import { registerLocaleData } from '@angular/common';
+import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header/evenement-header.component';
+// Banner components are now in SharedModule
 
 
 @NgModule({
     declarations: [
         App,
-        HomeDemoOneComponent,
-        HomeDemoTwoComponent,
-        HomeDemoThreeComponent,
         NotFoundComponent,
         JobsGridPageComponent,
         JobsListingPageComponent,
         JobDetailsPageComponent,
         CandidatesPageComponent,
-        CandidateDetailsPageComponent,
         EmployersPageComponent,
         EmployerDetailsPageComponent,
         AboutPageComponent,
         PricingPageComponent,
-        FaqPageComponent,
         PrivacyPolicyPageComponent,
         TermsConditionsPageComponent,
         ContactPageComponent,
@@ -150,52 +141,43 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         CdAlertJobsComponent,
         CdMessageComponent,
         CdChangePasswordComponent,
-        NavbarComponent,
-        HomeoneBannerComponent,
-        CompaniesComponent,
-        CategoriesComponent,
-        FeaturesComponent,
-        FunfactsComponent,
-        PopularJobsComponent,
-        HowJoveWorksComponent,
-        JobsByLocationComponent,
-        TestimonialsComponent,
-        GetHiredByTopCompaniesComponent,
-        FaqComponent,
-        DownloadAppComponent,
-        BlogComponent,
-        SubscribeComponent,
-        FooterComponent,
         BlogSidebarComponent,
-        WhyChooseUsComponent,
-        TalentedExpertsComponent,
-        PartnersComponent,
         PricingComponent,
-        LeadingCompanyComponent,
         JobsSidebarComponent,
-        AboutUsComponent,
         CdSidebarComponent,
         CdHeaderComponent,
         CdFooterComponent,
         EdSidebarComponent,
         EdHeaderComponent,
         EdFooterComponent,
-        RecruiterDashboardComponent,
-        RdDashboardComponent,
-        RdHeaderComponent,
-        RdFooterComponent,
-        RdSidebarComponent,
         RdPostJobComponent,
         RdManageJobsComponent,
         RdApplicantsComponent,
         RdMessagesComponent,
         RdProfileComponent,
         RdChangePasswordComponent,
-        HometwoBannerComponent,
-        CdDocumentsComponent,  //************************************** */
-        HomethreeBannerComponent,
-        
-         CdAppliedJobsComponent
+        CdDocumentsComponent, 
+        EvenementDashboardComponent,
+        EvenementSidebarComponent,
+        EvenementFormComponent,
+        EvenementListComponent, 
+        EvenementEditComponent,
+        EvenementDetailComponent,
+        EvenementHeaderComponent,
+        AdminDashboardComponent,
+        AdHeaderComponent,
+        AdSidebarComponent,
+        AdFooterComponent,
+        AdDashboardComponent,
+        PartenaireListComponent,
+        OffreListComponent,
+        EntretienListComponent,
+        FormationListComponent,
+        CandidatureListComponent,
+        EvenementListAdminComponent,
+        AdHeaderComponent,  
+        AdSidebarComponent, 
+        AdFooterComponent,
     ],
     imports: [
         BrowserModule,
@@ -208,11 +190,13 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         CarouselModule,
         NgApexchartsModule,
         NgxScrollTopModule,
-        FileUploadComponent
+        GoogleMapsModule
+        
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
     ],
-    bootstrap: [App]
+    bootstrap: [App],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AppModule { }

@@ -1,20 +1,13 @@
 .recruiter-footer {
-    background-color: #2d3748;
-    color: #cbd5e0;
-    padding: 30px 0;
-    margin-top: 40px;
-    border-top: 1px solid #4a5568;
-
     p {
-        margin: 0;
-
         a {
-            color: #4299e1;
-            text-decoration: none;
+            color: var(--primaryColor);
 
             &:hover {
-                text-decoration: underline;
+                color: var(--secondaryColor);
             }
         }
     }
 }
+
+

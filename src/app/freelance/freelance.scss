@@ -1,0 +1,37 @@
+// =============================================
+// MATCHY KHEDMA — Design Tokens
+// =============================================
+
+// Brand Colors
+$mk-navy:        #0d1b2e;
+$mk-navy-light:  #132035;
+$mk-navy-card:   #192740;
+$mk-navy-input:  #1e3050;
+$mk-navy-hover:  #243760;
+
+$mk-orange:      #f97316;
+$mk-orange-dark: #ea580c;
+$mk-orange-glow: rgba(249,115,22,.18);
+
+$mk-blue:        #1a56db;
+$mk-blue-light:  #3b82f6;
+$mk-blue-mid:    #1e40af;
+
+$mk-text:        #f0f4ff;
+$mk-muted:       #8fa3c1;
+$mk-border:      rgba(255,255,255,.08);
+$mk-border-hover:rgba(249,115,22,.35);
+
+// Typography — brand font stack
+$font-display: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
+$font-body:    'DM Sans', 'Plus Jakarta Sans', sans-serif;
+
+// Radii
+$r-sm:  10px;
+$r-md:  16px;
+$r-lg:  22px;
+$r-xl:  30px;
+
+// Transitions
+$t-fast:   .15s ease;
+$t-normal: .25s ease;

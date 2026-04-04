@@ -1,0 +1,47 @@
+<app-navbar />
+
+<section class="candidate-entretiens-area ptb-100">
+  <div class="container">
+    <div class="section-head">
+      <h2>Mes Entretiens</h2>
+      <p>Retrouvez tous les entretiens qui vous sont attribues et lancez votre test en un clic.</p>
+    </div>
+
+    <div *ngIf="loading" class="state-box">Chargement de vos entretiens...</div>
+
+    <div *ngIf="!loading && errorMessage" class="state-box error">
+      {{ errorMessage }}
+    </div>
+
+    <div class="entretiens-grid" *ngIf="!loading && !errorMessage && entretiens.length > 0">
+      <article class="entretien-card" *ngFor="let item of entretiens; trackBy: trackByEntretien">
+        <div class="cover">
+          <img [src]="getPhoto(item)" [alt]="item.titre || 'Entretien'">
+          <span class="tag">{{ item.domaine || 'General' }}</span>
+        </div>
+
+        <div class="body">
+          <h3>{{ item.titre || 'Entretien' }}</h3>
+          <p>{{ item.description || 'Aucune description fournie.' }}</p>
+
+          <ul class="meta">
+            <li><i class="ri-calendar-event-line"></i> {{ formatDate(item.dateEntretien) }}</li>
+            <li><i class="ri-award-line"></i> {{ item.type || 'Type non specifie' }}</li>
+          </ul>
+
+          <div class="actions">
+            <button class="btn-pass" [disabled]="item.completed" (click)="passEntretien(item)">
+              {{ item.completed ? 'Entretien termine' : 'Passer l\'entretien' }}
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div *ngIf="!loading && !errorMessage && entretiens.length === 0" class="state-box">
+      Aucun entretien ne vous est attribue pour le moment.
+    </div>
+  </div>
+</section>
+
+<app-footer />

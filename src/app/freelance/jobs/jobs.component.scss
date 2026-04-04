@@ -1,0 +1,343 @@
+// =============================================
+// MATCHY KHEDMA — Jobs Listing
+// =============================================
+
+.mk-jobs {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 44px 28px 60px;
+}
+
+// ── Top bar ──────────────────────────────────
+.mk-jobs__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.mk-jobs__title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: #f0f4ff;
+  margin: 0;
+}
+
+.mk-search-bar {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  max-width: 560px;
+}
+
+.mk-search-bar__input-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.mk-search-bar__icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: #8fa3c1;
+  pointer-events: none;
+}
+
+.mk-search-bar__input {
+  width: 100%;
+  background: #132035;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 12px 16px 12px 44px;
+  color: #f0f4ff;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color .2s;
+  box-sizing: border-box;
+
+  &::placeholder { color: #8fa3c1; }
+  &:focus {
+    outline: none;
+    border-color: rgba(249,115,22,.5);
+  }
+}
+
+.mk-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f97316;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+
+  &:hover {
+    background: #ea580c;
+    transform: translateY(-1px);
+  }
+}
+
+// ── Layout ──────────────────────────────────
+.mk-jobs__layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+// ── Filters sidebar ──────────────────────────────────
+.mk-filters {
+  width: 270px;
+  flex-shrink: 0;
+  background: #132035;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 20px;
+  padding: 24px;
+  position: sticky;
+  top: 90px;
+}
+
+.mk-filters__title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f0f4ff;
+  margin: 0 0 22px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mk-filter-group {
+  margin-bottom: 26px;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.mk-filter-group__label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #8fa3c1;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-bottom: 12px;
+}
+
+.mk-filter-group__select {
+  width: 100%;
+  background: #0d1b2e;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #f0f4ff;
+  font-size: 13.5px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+
+  &:focus { outline: none; border-color: rgba(249,115,22,.4); }
+}
+
+.mk-check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mk-check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: #c4d3e8;
+  cursor: pointer;
+  user-select: none;
+
+  input[type="checkbox"] {
+    accent-color: #f97316;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .count {
+    margin-left: auto;
+    font-size: 11px;
+    color: #8fa3c1;
+    background: rgba(255,255,255,.06);
+    padding: 1px 7px;
+    border-radius: 20px;
+  }
+}
+
+// ── Job Cards ──────────────────────────────────
+.mk-jobs__list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mk-jobs__meta {
+  font-size: 13px;
+  color: #8fa3c1;
+  margin-bottom: 4px;
+}
+
+.mk-job-card {
+  background: #132035;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 20px;
+  padding: 28px;
+  transition: border-color .2s, transform .2s;
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba(249,115,22,.3);
+    transform: translateY(-2px);
+  }
+}
+
+.mk-job-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.mk-job-card__posted {
+  font-size: 12px;
+  color: #8fa3c1;
+  margin: 0 0 8px;
+}
+
+.mk-job-card__title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #f0f4ff;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.mk-job-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.mk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 50px;
+  border: 1px solid;
+
+  &--orange {
+    color: #f97316;
+    border-color: rgba(249,115,22,.3);
+    background: rgba(249,115,22,.08);
+  }
+
+  &--blue {
+    color: #60a5fa;
+    border-color: rgba(96,165,250,.3);
+    background: rgba(96,165,250,.08);
+  }
+
+  &--gray {
+    color: #8fa3c1;
+    border-color: rgba(255,255,255,.1);
+    background: rgba(255,255,255,.04);
+  }
+}
+
+.mk-save-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  color: #8fa3c1;
+  flex-shrink: 0;
+  transition: all .2s;
+
+  &:hover {
+    border-color: rgba(249,115,22,.4);
+    color: #f97316;
+    background: rgba(249,115,22,.08);
+  }
+}
+
+.mk-job-card__desc {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #8fa3c1;
+  margin: 16px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mk-job-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.mk-tag {
+  font-size: 12px;
+  color: #8fa3c1;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+.mk-job-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.mk-job-card__footer-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 13px;
+  color: #8fa3c1;
+}
+
+.mk-units-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #f97316;
+  font-weight: 600;
+}
