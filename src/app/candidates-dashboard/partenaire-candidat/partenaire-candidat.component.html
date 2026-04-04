@@ -1,0 +1,76 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <h4><i class="ri-building-line"></i> Nos Partenaires</h4>
+    <span class="badge-count">{{ filteredPartenaires.length }} partenaires</span>
+  </div>
+
+  <div class="search-bar">
+    <div class="search-wrapper">
+      <i class="ri-search-line search-icon"></i>
+      <input type="text"
+             class="search-input"
+             placeholder="Rechercher un partenaire..."
+             [value]="searchTerm"
+             (input)="searchTerm = $any($event.target).value"/>
+      <button *ngIf="searchTerm" class="clear-btn" type="button" (click)="searchTerm = ''">
+        <i class="ri-close-line"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="partner-card" *ngFor="let p of filteredPartenaires">
+
+      <div class="card-cover"
+           [class.cover-entreprise]="p.type === 'ENTREPRISE'"
+           [class.cover-universite]="p.type !== 'ENTREPRISE'">
+        <div class="photo-wrap">
+          <img *ngIf="p.photoUrl" [src]="p.photoUrl" class="partner-photo" [alt]="p.nom" />
+          <div *ngIf="!p.photoUrl"
+               class="partner-initials"
+               [class.initials-entreprise]="p.type === 'ENTREPRISE'"
+               [class.initials-universite]="p.type !== 'ENTREPRISE'">
+            {{ p.nom }}
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="card-name">{{ p.nom }}</div>
+
+        <div class="type-pill"
+             [class.pill-entreprise]="p.type === 'ENTREPRISE'"
+             [class.pill-universite]="p.type !== 'ENTREPRISE'">
+          <span class="pill-dot"
+                [class.dot-entreprise]="p.type === 'ENTREPRISE'"
+                [class.dot-universite]="p.type !== 'ENTREPRISE'">
+          </span>
+          {{ p.type }}
+        </div>
+
+        <div class="info-block">
+          <div class="info-line">
+            <i class="ri-mail-line"></i>
+            <span>{{ p.email }}</span>
+          </div>
+          <div class="info-line">
+            <i class="ri-phone-line"></i>
+            <span>{{ p.telephone || '—' }}</span>
+          </div>
+        </div>
+
+        <div class="card-divider"></div>
+
+        <button class="btn-voir-offres" type="button" (click)="voirOffres(p.id)">
+          <i class="ri-eye-line"></i> Voir les Offres
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="filteredPartenaires.length === 0">
+      <i class="ri-inbox-line"></i>
+      <p>{{ searchTerm ? 'Aucun résultat pour "' + searchTerm + '"' : 'Aucun partenaire trouvé' }}</p>
+    </div>
+  </div>
+</div>

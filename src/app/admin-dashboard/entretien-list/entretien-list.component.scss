@@ -32,19 +32,24 @@
 }
 
 .table {
-  margin-bottom: 0;
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 950px;
 
   thead th {
-    color: #5a6b86;
-    font-size: 13px;
-    font-weight: 700;
-    border-bottom: 1px solid #e8edf5;
-    white-space: nowrap;
+    background-color: #1f2937;
+    color: white;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 12px 15px;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
   }
 
   tbody td {
-    vertical-align: middle;
-    border-color: #eef2f8;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s
   }
 }
 

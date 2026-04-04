@@ -63,7 +63,10 @@ import { EntretienListComponent } from './admin-dashboard/entretien-list/entreti
 import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
 import { CandidatureListComponent } from './admin-dashboard/candidature-list/candidature-list.component';
 import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-admin/evenement-list-admin.component';
+import { CandidatsListComponent } from './admin-dashboard/candidats-list/candidats-list.component';
 import { recruteurGuard, recruteurChildGuard } from './guards/recruteur.guard';
+import { PartenaireCandidatComponent } from './candidates-dashboard/partenaire-candidat/partenaire-candidat.component';
+import { OffreCandidatComponent } from './candidates-dashboard/offre-candidat/offre-candidat.component';
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
     {path: 'login', component: HomeDemoOneComponent},
@@ -115,12 +118,15 @@ export const routes: Routes = [
     },
             {path: '', component: CDashboardComponent},
             {path: 'my-profile', component: CdProfileComponent},
-             { path: 'documents', component: CdDocumentsComponent },   //************************************** */
+            { path: 'documents', component: CdDocumentsComponent },   //************************************** */
             {path: 'bookmarks', component: CdBookmarksComponent},
             {path: 'applied-jobs', component: CdAppliedJobsComponent},
             {path: 'alert-jobs', component: CdAlertJobsComponent},
             {path: 'message', component: CdMessageComponent},
             {path: 'change-password', component: CdChangePasswordComponent},
+            {path: 'candidate-details', component: CandidateDetailsPageComponent},
+            { path: 'partenaires', component: PartenaireCandidatComponent },
+            { path: 'partenaires/:id/offres', component: OffreCandidatComponent },
         ]
     },
     {
@@ -172,6 +178,7 @@ export const routes: Routes = [
         { path: 'candidatures', component: CandidatureListComponent },
         { path: 'formations', component: FormationListComponent },
         { path: 'evenements', component: EvenementListAdminComponent },
+        { path: 'candidats', component: CandidatsListComponent },
     ]
     },
 
