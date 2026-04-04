@@ -2,7 +2,7 @@
 
 <div class="formations-area">
 
-  <!-- ══════════════════════════════════════════ HERO BANNER (Style C) -->
+  <!-- ══════════════════════════════════════════ HERO BANNER -->
   <div class="formations-hero">
     <div class="container">
       <div class="row align-items-center hero-content">
@@ -47,71 +47,71 @@
 
   <!-- ══════════════════════════════════════════ CONTENU -->
   <div class="container pb-5">
-    <div class="row">
 
-      <!-- Colonne formations -->
-      <div class="col-lg-8 col-md-12">
+    <!-- ── CAS ADMIN : layout avec sidebar ── -->
+    <ng-container *ngIf="isAdmin; else publicLayout">
+      <div class="row justify-content-between">
 
-        <!-- Filtres chips (Style C) -->
-        <div class="formations-filters">
-          <button
-            type="button"
-            *ngFor="let f of filters"
-            class="filter-chip"
-            [class.active]="activeFilter === f"
-            (click)="applyFilter(f)"
-          >{{ f }}</button>
-        </div>
+        <!-- Colonne formations (admin) -->
+        <div class="col-lg-8 col-md-12">
 
-        <!-- Chargement -->
-        <div class="empty-state" *ngIf="loading">
-          <p>Chargement des formations...</p>
-        </div>
+          <!-- Filtres chips -->
+          <div class="formations-filters">
+            <button
+              type="button"
+              *ngFor="let f of filters"
+              class="filter-chip"
+              [class.active]="activeFilter === f"
+              (click)="applyFilter(f)"
+            >{{ f }}</button>
+          </div>
 
-        <!-- Vide -->
-        <div class="empty-state" *ngIf="!loading && filtered.length === 0">
-          <div class="empty-icon">📚</div>
-          <p>Aucune formation trouvée.</p>
-        </div>
+          <!-- Chargement -->
+          <div class="empty-state" *ngIf="loading">
+            <p>Chargement des formations...</p>
+          </div>
 
-        <!-- Grille de cards (Style A) -->
-        <div class="row g-4" *ngIf="!loading && filtered.length">
-          <div class="col-lg-6 col-md-6" *ngFor="let formation of filtered">
-            <div class="formation-card">
-              <div class="card-top-banner" [ngClass]="getCatClass(formation.categorie)">
-                <span class="cat-emoji">{{ getIconEmoji(formation.categorie) }}</span>
-                <span class="statut-badge" [ngClass]="getStatutClass(formation.statut)">
-                  {{ formation.statut }}
-                </span>
-              </div>
-              <div class="card-body">
-                <div class="card-plateforme">{{ formation.plateforme }}</div>
-                <h3 class="card-title">
-                  <a [routerLink]="['/formations', formation.id]">{{ formation.titre }}</a>
-                </h3>
-                <div class="card-meta">
-                  <span><i class="ri-folder-line"></i> {{ formation.categorie }}</span>
-                  <span><i class="ri-time-line"></i> {{ formation.duree }}</span>
+          <!-- Vide -->
+          <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+            <div class="empty-icon">📚</div>
+            <p>Aucune formation trouvée.</p>
+          </div>
+
+          <!-- Grille de cards -->
+          <div class="row g-4" *ngIf="!loading && filtered.length">
+            <div class="col-lg-6 col-md-6" *ngFor="let formation of filtered">
+              <div class="formation-card">
+                <div class="card-top-banner" [ngClass]="getCatClass(formation.categorie)">
+                  <span class="cat-emoji">{{ getIconEmoji(formation.categorie) }}</span>
+                  <span class="statut-badge" [ngClass]="getStatutClass(formation.statut)">
+                    {{ formation.statut }}
+                  </span>
                 </div>
-              </div>
-              <div class="card-footer">
-                <span class="niveau-badge" [ngClass]="getNiveauClass(formation.niveau)">{{ formation.niveau }}</span>
-                <a [routerLink]="['/formations', formation.id]" class="voir-btn">
-                  Voir détails <i class="ri-arrow-right-line"></i>
-                </a>
+                <div class="card-body">
+                  <div class="card-plateforme">{{ formation.plateforme }}</div>
+                  <h3 class="card-title">
+                    <a [routerLink]="['/formations', formation.id]">{{ formation.titre }}</a>
+                  </h3>
+                  <div class="card-meta">
+                    <span><i class="ri-folder-line"></i> {{ formation.categorie }}</span>
+                    <span><i class="ri-time-line"></i> {{ formation.duree }}</span>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <span class="niveau-badge" [ngClass]="getNiveauClass(formation.niveau)">{{ formation.niveau }}</span>
+                  <a [routerLink]="['/formations', formation.id]" class="voir-btn">
+                    Voir détails <i class="ri-arrow-right-line"></i>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
+
         </div>
 
-      </div>
-
-      <!-- Sidebar -->
-      <div class="col-lg-4 col-md-12">
-        <div class="sidebar-area">
-
-          <!-- ADMIN : stats + actions (Style B) -->
-          <ng-container *ngIf="isAdmin">
+        <!-- Sidebar admin -->
+        <div class="col-lg-4 col-md-12">
+          <div class="sidebar-area">
             <div class="stats-grid">
               <div class="stat-card">
                 <span class="stat-value">{{ formations.length }}</span>
@@ -132,20 +132,75 @@
                 <i class="ri-add-line"></i> Ajouter une formation
               </a>
             </div>
-          </ng-container>
-
-          <!-- CANDIDAT / autres -->
-          <div class="sidebar-card" *ngIf="!isAdmin">
-            <h3>Mes formations</h3>
-            <p>Suivez votre progression et récupérez vos certificats.</p>
-            <a routerLink="/formations/mes-formations" class="sidebar-btn btn-primary">
-              Accéder
-            </a>
           </div>
         </div>
+
       </div>
-    </div>
+    </ng-container>
+
+    <!-- ── CAS PUBLIC : layout centré, pleine largeur ── -->
+    <ng-template #publicLayout>
+      <div class="row">
+        <div class="col-12">
+
+          <!-- Filtres chips -->
+          <div class="formations-filters">
+            <button
+              type="button"
+              *ngFor="let f of filters"
+              class="filter-chip"
+              [class.active]="activeFilter === f"
+              (click)="applyFilter(f)"
+            >{{ f }}</button>
+          </div>
+
+          <!-- Chargement -->
+          <div class="empty-state" *ngIf="loading">
+            <p>Chargement des formations...</p>
+          </div>
+
+          <!-- Vide -->
+          <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+            <div class="empty-icon">📚</div>
+            <p>Aucune formation trouvée.</p>
+          </div>
+
+          <!-- Grille de cards centrée -->
+          <div class="row g-4 justify-content-center" *ngIf="!loading && filtered.length">
+            <div class="col-lg-4 col-md-6 col-sm-12" *ngFor="let formation of filtered">
+              <div class="formation-card">
+                <div class="card-top-banner" [ngClass]="getCatClass(formation.categorie)">
+                  <span class="cat-emoji">{{ getIconEmoji(formation.categorie) }}</span>
+                  <span class="statut-badge" [ngClass]="getStatutClass(formation.statut)">
+                    {{ formation.statut }}
+                  </span>
+                </div>
+                <div class="card-body">
+                  <div class="card-plateforme">{{ formation.plateforme }}</div>
+                  <h3 class="card-title">
+                    <a [routerLink]="['/formations', formation.id]">{{ formation.titre }}</a>
+                  </h3>
+                  <div class="card-meta">
+                    <span><i class="ri-folder-line"></i> {{ formation.categorie }}</span>
+                    <span><i class="ri-time-line"></i> {{ formation.duree }}</span>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <span class="niveau-badge" [ngClass]="getNiveauClass(formation.niveau)">{{ formation.niveau }}</span>
+                  <a [routerLink]="['/formations', formation.id]" class="voir-btn">
+                    Voir détails <i class="ri-arrow-right-line"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </ng-template>
+
   </div>
 </div>
+
 <app-footer />
 <ngx-scrolltop />

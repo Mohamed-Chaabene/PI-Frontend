@@ -1,19 +1,6 @@
-<app-navbar />
 
-<div class="page-banner-area">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-lg-8 col-md-12"><h1>Administration · Formations</h1></div>
-      <div class="col-lg-4 col-md-12">
-        <ul class="ps-0 mb-0 list-unstyled">
-          <li class="d-inline-block position-relative"><a routerLink="/">Home</a></li>
-          <li class="d-inline-block position-relative"><a routerLink="/formations">Formations</a></li>
-          <li class="d-inline-block position-relative">Admin</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
+
+
 
 <div class="admin-formations-area">
   <div class="container">
@@ -24,9 +11,11 @@
         Gestion des formations
         <span *ngIf="!loading">({{ totalFormations }})</span>
       </h2>
-      <a routerLink="/formations/admin/create" class="add-btn">
-        <i class="ri-add-line"></i> Ajouter une formation
-      </a>
+      <div style="display: flex; gap: 12px;">
+        <a routerLink="/admin-dashboard/formations/create" class="add-btn">
+          <i class="ri-add-line"></i> Ajouter une formation
+        </a>
+      </div>
     </div>
 
     <!-- ══ Stats ══════════════════════════════════════════════════════════════ -->
@@ -114,19 +103,21 @@
           </thead>
           <tbody>
             <tr *ngFor="let f of actives">
-              <td class="td-title">{{ f.titre }}</td>
+              <td class="td-title">
+                <span class="formation-title">{{ f.titre }}</span>
+              </td>
               <td>{{ f.categorie }}</td>
               <td><span class="tag" [ngClass]="getNiveauTag(f.niveau)">{{ f.niveau }}</span></td>
               <td><span class="tag" [ngClass]="getStatutTag(f.statut)">{{ f.statut }}</span></td>
               <td>{{ f.duree }}</td>
               <td class="td-actions">
-                <a [routerLink]="['/formations/admin', f.id, 'participants']" class="action-btn btn-view">
+                <a [routerLink]="['/admin-dashboard/formations', f.id, 'participants']" class="action-btn btn-view">
                   <i class="ri-group-line"></i> Participants
                 </a>
-                <a [routerLink]="['/formations/admin', f.id, 'feedbacks']" class="action-btn btn-feedback">
+                <a [routerLink]="['/admin-dashboard/formations', f.id, 'feedbacks']" class="action-btn btn-feedback">
                   <i class="ri-chat-3-line"></i> Feedbacks
                 </a>
-                <a [routerLink]="['/formations/admin/edit', f.id]" class="action-btn btn-edit">
+                <a [routerLink]="['/admin-dashboard/formations/edit', f.id]" class="action-btn btn-edit">
                   <i class="ri-edit-line"></i> Modifier
                 </a>
                 <!-- ✅ Bouton Archiver -->
@@ -188,7 +179,9 @@
           </thead>
           <tbody>
             <tr *ngFor="let f of archivees" class="archived-row">
-              <td class="td-title td-archived">{{ f.titre }}</td>
+              <td class="td-title td-archived">
+                <span class="formation-title">{{ f.titre }}</span>
+              </td>
               <td>{{ f.categorie }}</td>
               <td><span class="tag" [ngClass]="getNiveauTag(f.niveau)">{{ f.niveau }}</span></td>
               <td>{{ f.duree }}</td>
@@ -203,7 +196,7 @@
                   <i class="ri-archive-drawer-line"></i>
                   {{ archivingId === f.id ? '...' : 'Désarchiver' }}
                 </button>
-                <a [routerLink]="['/formations/admin/edit', f.id]" class="action-btn btn-edit">
+                <a [routerLink]="['/admin-dashboard/formations/edit', f.id]" class="action-btn btn-edit">
                   <i class="ri-edit-line"></i> Modifier
                 </a>
                 <button
@@ -225,5 +218,4 @@
   </div>
 </div>
 
-<app-footer />
-<ngx-scrolltop />
+

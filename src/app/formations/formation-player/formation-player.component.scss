@@ -1,0 +1,335 @@
+$primary:       #0965A4;
+$primary-light: #E1F5EE;
+$primary-dark:  #0965A4;
+$accent:        #85B7EB;
+$border:        #e5e7eb;
+$bg-page:       #f8fafc;
+$text-muted:    #6b7280;
+
+.player-container {
+  margin-top: 28px;
+  border: 1px solid $border;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+// ── Barre player — fond light ─────────────────────────────────────
+.player-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: #0C447C;
+  border-bottom: none;
+  flex-wrap: wrap;
+  gap: 0;
+  min-height: 52px;
+}
+
+.player-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0;
+
+  i {
+    color: #fff;
+    font-size: 17px;
+  }
+}
+
+.player-tabs {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  gap: 0;
+}
+
+.player-tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 18px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(#fff, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 3px solid transparent;
+  min-height: 52px;
+  cursor: default;
+
+  i { font-size: 14px; }
+
+  &.tab-active {
+    color: #fff;
+    border-bottom-color: #fff;
+  }
+}
+
+// ── Shared Video Wrappers ──
+.video-wrapper-16-9 {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  background: #000;
+  iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+}
+
+.video-wrapper-full {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  background: #000;
+  iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+}
+
+// ── Layout avec éditeur (50/50) ───────────────────────────────────
+.player-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 520px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.player-left {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid $border;
+
+  @media (max-width: 900px) {
+    border-right: none;
+    border-bottom: 1px solid $border;
+  }
+}
+
+.player-right {
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Éditeur ───────────────────────────────────────────────────────
+.editor-wrapper {
+  flex: 1;
+  min-height: 480px;
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 480px;
+    border: none;
+    display: block;
+  }
+}
+
+// ── Custom Playlist Layout (Mockup Style) ─────────────────────────
+.playlist-custom-layout {
+  display: flex;
+  min-height: 600px;
+  background: #fff;
+  
+  @media (max-width: 900px) {
+    flex-direction: column;
+  }
+}
+
+.playlist-video-side {
+  flex: 1.6;
+  background: #000; // Plus de bleu, fond noir harmonieux et cinématographique
+  display: flex;
+  flex-direction: column;
+  justify-content: center; // Centre la vidéo verticalement
+}
+
+.video-info-overlay {
+  padding: 30px;
+  color: #fff;
+  flex: 1;
+  
+  h3 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  
+  .stats {
+    font-size: 13px;
+    color: #85B7EB;
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+  
+  .description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.85);
+  }
+}
+
+.playlist-menu-side {
+  flex: 1;
+  background: #fff;
+  border-left: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  
+  @media (max-width: 900px) {
+    border-left: none;
+    border-top: 1px solid $border;
+    max-height: 400px;
+  }
+}
+
+.playlist-items-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 600px; //Fallback
+  padding: 10px 0;
+  
+  /* Scrollbar customization */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+  }
+}
+
+.playlist-item {
+  display: flex;
+  padding: 12px 16px;
+  cursor: pointer;
+  align-items: flex-start;
+  gap: 12px;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(0,0,0,0.03);
+  }
+  
+  &.active {
+    background: #E1F5EE;
+    .item-title { font-weight: 600; color: #0965A4; }
+  }
+
+  .position {
+    color: $text-muted;
+    font-size: 13px;
+    min-width: 15px;
+    text-align: right;
+    margin-top: 2px;
+  }
+
+  .thumbnail-wrapper {
+    width: 120px;
+    height: 68px;
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #000;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .play-overlay {
+      position: absolute;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      i { font-size: 24px; color: #fff; }
+    }
+  }
+
+  .item-title {
+    font-size: 13.5px;
+    color: #333;
+    line-height: 1.4;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+}
+
+// ── Small Playlist for when Editor is active ──
+.playlist-bottom-menu {
+  background: #f8fafc;
+  max-height: 180px;
+  overflow-y: auto;
+  border-top: 1px solid $border;
+  
+  .playlist-item-small {
+    padding: 10px 15px;
+    font-size: 13px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    color: #444;
+    
+    &:hover { background: #eee; }
+    &.active { font-weight: bold; background: #E1F5EE; color: #0965A4; }
+    .idx { color: #888; font-weight: 500; min-width: 25px; display: inline-block; }
+  }
+}
+
+// ── Pas de vidéo ──────────────────────────────────────────────────
+.no-video {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: $text-muted;
+  gap: 12px;
+  background: $bg-page;
+  min-height: 300px;
+
+  i { font-size: 40px; color: $primary; opacity: 0.35; }
+  p { font-size: 14px; margin: 0; }
+}
+
+// ── Tip ───────────────────────────────────────────────────────────
+.player-tip {
+  padding: 11px 20px;
+  background: #0C447C;
+  border-top: 1px solid rgba($primary, 0.2);
+  font-size: 13px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+
+  i { color: rgba(#fff, 0.85); font-size: 15px; flex-shrink: 0; }
+}

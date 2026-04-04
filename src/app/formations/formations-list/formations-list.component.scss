@@ -178,6 +178,10 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
   }
 
   // ─── Cards formations (Style A) ────────────────────────────────────────────
+  .row.g-4 {
+    justify-content: center;
+  }
+
   .formation-card {
     background: $bg-card;
     border: 1px solid $border;

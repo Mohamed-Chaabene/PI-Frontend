@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Inscription } from '../models/inscription.model';
 import { Certificat } from '../models/certificat.model';
 import { FormationService } from '../services/formation.service';
@@ -18,7 +19,7 @@ export class MesFormationsComponent implements OnInit {
   get enCours()  { return this.inscriptions.filter(i => i.statut === 'EnCours').length; }
   get terminees(){ return this.inscriptions.filter(i => i.statut === 'Terminé').length; }
 
-  constructor(private formationService: FormationService) {}
+  constructor(private formationService: FormationService, private router: Router) {}
 
   ngOnInit(): void {
     this.resolveCandidatIdAndLoad();
@@ -42,6 +43,10 @@ export class MesFormationsComponent implements OnInit {
       },
       error: (err) => console.error('Erreur updateProgression:', err)
     });
+  }
+
+  voirDetailsFormation(formationId: number): void {
+    this.router.navigate(['/formations', formationId]);
   }
 
   private resolveCandidatIdAndLoad(): void {

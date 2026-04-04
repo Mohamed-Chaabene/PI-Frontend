@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Feedback, FeedbackStats } from '../../models/feedback.model';
-import { FeedbackService } from '../../services/feedback.service';
-import { FormationService } from '../../services/formation.service';
-import { Formation } from '../../models/formation.model';
+import { Feedback, FeedbackStats } from '../../formations/models/feedback.model';
+import { FeedbackService } from '../../formations/services/feedback.service';
+import { FormationService } from '../../formations/services/formation.service';
+import { Formation } from '../../formations/models/formation.model';
 
 @Component({
   selector: 'app-feedback-admin',

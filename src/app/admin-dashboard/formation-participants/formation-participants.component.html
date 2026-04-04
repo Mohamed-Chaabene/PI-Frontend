@@ -1,21 +1,6 @@
-<app-navbar />
 
-<div class="page-banner-area">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-lg-8">
-        <h1>Participants · {{ formation?.titre }}</h1>
-      </div>
-      <div class="col-lg-4">
-        <ul class="ps-0 mb-0 list-unstyled">
-          <li class="d-inline-block position-relative"><a routerLink="/">Home</a></li>
-          <li class="d-inline-block position-relative"><a routerLink="/formations/admin">Admin</a></li>
-          <li class="d-inline-block position-relative">Participants</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
+
+
 
 <div class="participants-area">
   <div class="container pb-5">
@@ -61,7 +46,7 @@
           Liste des participants
           <span *ngIf="!loading">({{ inscriptions.length }})</span>
         </h3>
-        <a routerLink="/formations/admin" class="back-btn">
+        <a routerLink="/admin-dashboard/formations" class="back-btn">
           <i class="ri-arrow-left-line"></i> Retour
         </a>
       </div>
@@ -95,7 +80,10 @@
                 <div class="candidat-avatar">
                   {{ (ins.candidat?.nom || 'C')[0].toUpperCase() }}
                 </div>
-                <span>{{ ins.candidat?.nom || 'Candidat #' + ins.candidat?.id }}</span>
+                <div class="candidat-info">
+                  <span class="candidat-nom">{{ ins.candidat?.nom || 'Candidat #' + ins.candidat?.id }}</span>
+                  <span class="candidat-warning" *ngIf="!ins.candidat?.nom || !ins.candidat?.email" title="Données incomplètes dans le profil">⚠️</span>
+                </div>
               </td>
               <td>{{ ins.dateInscription | date:'dd/MM/yyyy' }}</td>
               <td>
@@ -124,5 +112,4 @@
   </div>
 </div>
 
-<app-footer />
-<ngx-scrolltop />
+

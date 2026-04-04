@@ -1,0 +1,43 @@
+<div class="ecrite-page">
+
+  <!-- ══ Header ═══════════════════════════════════════════ -->
+  <div class="ecrite-header">
+    <div class="container">
+      <a [routerLink]="['/formations', formation?.id]" class="back-link">
+        <i class="ri-arrow-left-line"></i> Retour à la formation
+      </a>
+
+      <h2 *ngIf="formation">
+        <i class="ri-book-read-line"></i>
+        {{ formation.titre }} — Documentation
+      </h2>
+    </div>
+  </div>
+
+  <!-- ══ Body ════════════════════════════════════════════ -->
+  <div class="ecrite-body">
+
+    <!-- Chargement -->
+    <div class="text-center py-5" *ngIf="loading">
+      <span class="text-muted">Chargement...</span>
+    </div>
+
+    <!-- Contenu -->
+    <ng-container *ngIf="!loading">
+
+      <!-- Sous-barre -->
+      <div class="ecrite-subbar">
+        <div class="ecrite-tab">
+          <i class="ri-book-read-line"></i>
+          {{ sourceLabel || 'Documentation' }}
+        </div>
+      </div>
+
+      <!-- ✅ Contenu HTML dynamique (remplace iframe) -->
+      <div class="ecrite-content" [innerHTML]="safeHtml"></div>
+
+    </ng-container>
+
+  </div>
+
+</div>

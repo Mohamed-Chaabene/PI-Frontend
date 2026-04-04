@@ -42,6 +42,25 @@ $amber-dk:      #e4762c;
       }
     }
 
+    .list-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      background: #6b7280;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+
+      i { font-size: 16px; }
+      &:hover { background: #4b5563; transform: translateY(-1px); color: #fff; }
+    }
+
     .add-btn {
       display: inline-flex;
       align-items: center;
@@ -336,6 +355,18 @@ $amber-dk:      #e4762c;
             text-decoration-color: rgba($amber-dk, 0.4);
           }
           &.td-actions  { text-align: right; white-space: nowrap; }
+        }
+
+        .formation-title-link {
+          color: #667eea;
+          text-decoration: none;
+          font-weight: 600;
+          transition: color 0.3s ease;
+
+          &:hover {
+            color: #5568d3;
+            text-decoration: underline;
+          }
         }
       }
     }

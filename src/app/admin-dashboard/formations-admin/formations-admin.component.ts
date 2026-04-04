@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { Formation } from '../../models/formation.model';
-import { FormationService } from '../../services/formation.service';
+import { Formation } from '../../formations/models/formation.model';
+import { FormationService } from '../../formations/services/formation.service';
 
 @Component({
   selector: 'app-formations-admin',

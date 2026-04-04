@@ -1,0 +1,120 @@
+<div class="player-container">
+
+  <!-- Header -->
+  <div class="player-header">
+    <div class="player-title">
+      <i class="ri-play-circle-line"></i>
+      Contenu de la formation
+    </div>
+
+    <div class="player-tabs">
+      <div class="player-tab tab-active" *ngIf="hasEditor()">
+        <i class="ri-code-s-slash-line"></i>
+        Éditeur {{ getStackBlitzLabel() }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout avec éditeur -->
+  <div class="player-split" *ngIf="hasEditor()">
+
+    <!-- Gauche -->
+    <div class="player-left">
+      <div class="video-wrapper-16-9" *ngIf="safeYoutubeUrl">
+        <iframe
+          [src]="safeYoutubeUrl"
+          frameborder="0"
+          allowfullscreen>
+        </iframe>
+      </div>
+      
+      <div class="playlist-bottom-menu" *ngIf="isPlaylist && playlistVideos.length > 0">
+        <div class="playlist-item-small"
+             *ngFor="let v of playlistVideos; let i = index"
+             [class.active]="currentVideoId === v.videoId"
+             (click)="playVideo(v)">
+           <span class="idx">{{i + 1}}.</span> {{ v.title }}
+        </div>
+      </div>
+
+      <div class="no-video" *ngIf="!safeYoutubeUrl">
+        <i class="ri-video-off-line"></i>
+        <p>Aperçu vidéo non disponible</p>
+      </div>
+    </div>
+
+    <!-- Droite -->
+    <div class="player-right">
+      <div class="editor-wrapper">
+        <iframe
+          [src]="safeStackBlitzUrl"
+          frameborder="0"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Playlist sans éditeur -->
+  <div class="playlist-custom-layout" *ngIf="isPlaylist && !hasEditor()">
+    
+    <div class="playlist-video-side">
+      <div class="video-wrapper-16-9">
+        <iframe
+          [src]="safeYoutubeUrl"
+          frameborder="0"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+
+    <div class="playlist-menu-side">
+      <div class="playlist-items-wrapper">
+        <div class="playlist-item"
+             *ngFor="let v of playlistVideos; let i = index"
+             [class.active]="currentVideoId === v.videoId"
+             (click)="playVideo(v)">
+
+          <div class="position">{{ i + 1 }}</div>
+
+          <div class="thumbnail-wrapper">
+            <img [src]="v.thumbnail" alt="thumbnail">
+            <div class="play-overlay" *ngIf="currentVideoId === v.videoId">
+              <i class="ri-play-fill"></i>
+            </div>
+          </div>
+
+          <div class="item-title" [title]="v.title">
+            {{ v.title }}
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Vidéo simple -->
+  <div class="player-full" *ngIf="!hasEditor() && !isPlaylist">
+    <div class="video-wrapper-full" *ngIf="safeYoutubeUrl">
+      <iframe
+        [src]="safeYoutubeUrl"
+        frameborder="0"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <div class="no-video" *ngIf="!safeYoutubeUrl">
+      <i class="ri-video-off-line"></i>
+      <p>Aperçu vidéo non disponible</p>
+    </div>
+  </div>
+
+  <!-- Tip -->
+  <div class="player-tip" *ngIf="hasEditor()">
+    <i class="ri-lightbulb-line"></i>
+    <span>Regardez la playlist et pratiquez en même temps dans l'éditeur interactif !</span>
+  </div>
+
+</div>

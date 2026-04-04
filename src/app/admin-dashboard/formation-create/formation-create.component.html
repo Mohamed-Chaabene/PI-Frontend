@@ -1,0 +1,290 @@
+<div class="form-page-area">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7 col-md-12">
+        <div class="form-card">
+
+          <div class="form-card-header">
+            <div class="form-icon">📚</div>
+            <div>
+              <h2>Nouvelle formation</h2>
+            </div>
+          </div>
+
+          <div class="form-card-body">
+            <form [formGroup]="form" (ngSubmit)="submit()">
+
+              <!-- SECTION 1 -->
+              <div class="form-section-title">
+                <span class="section-number">1</span> Informations générales
+              </div>
+
+              <div class="form-group">
+                <label>Titre de la formation <span class="required">*</span></label>
+                <input
+                  class="form-control"
+                  formControlName="titre"
+                  (input)="onTitreChange($any($event.target).value)"
+                  placeholder="Ex: Cours Angular débutant, Python Machine Learning..."
+                >
+
+                <div class="suggestions-loading" *ngIf="loading">
+                  <i class="ri-loader-4-line spin"></i>
+                  Recherche des meilleures playlists YouTube...
+                </div>
+
+                <div class="suggestions-list" *ngIf="suggestions.length > 0 && !suggestionSelected">
+                  <div class="suggestions-header">
+                    <i class="ri-youtube-line" style="color:#E24B4A; font-size:16px"></i>
+                    Playlists trouvées — cliquez pour sélectionner
+                  </div>
+
+                  <div class="suggestion-card"
+                       *ngFor="let s of suggestions"
+                       (click)="selectSuggestion(s)">
+                    <img [src]="s.thumbnail" [alt]="s.titre" class="thumb">
+
+                    <div class="suggestion-info">
+                      <strong class="suggestion-title">{{ s.titre }}</strong>
+                      <span class="channel">
+                        <i class="ri-youtube-line"></i> {{ s.chaineYoutube }}
+                      </span>
+
+                      <div class="suggestion-badges">
+                        <span class="badge cat">{{ s.categorie }}</span>
+                        <span class="badge niv">{{ s.niveau }}</span>
+                        <span class="badge videos">
+                          <i class="ri-time-line"></i> {{ getDureeBadge(s) }}
+                        </span>
+                        <span class="badge doc" *ngIf="s.writtenUrl">
+                          <i class="ri-book-read-line"></i> Doc incluse
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="suggestion-arrow">
+                      <i class="ri-arrow-right-line"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CATEGORIE + PLATEFORME -->
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Catégorie <span class="required">*</span></label>
+                    <select class="form-select" formControlName="categorie">
+                      <option value="">-- Choisir --</option>
+                      <option value="Frontend">Frontend</option>
+                      <option value="Backend">Backend</option>
+                      <option value="IA">IA</option>
+                      <option value="Data">Data</option>
+                      <option value="DevOps">DevOps</option>
+                      <option value="Design">Design</option>
+                      <option value="Mobile">Mobile</option>
+                      <option value="Développement">Développement</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Plateforme <span class="required">*</span></label>
+                    <select class="form-select" formControlName="plateforme">
+                      <option value="">-- Choisir --</option>
+                      <option value="YouTube">YouTube</option>
+                      <option value="Udemy">Udemy</option>
+                      <option value="Coursera">Coursera</option>
+                      <option value="OpenClassrooms">OpenClassrooms</option>
+                      <option value="LinkedIn Learning">LinkedIn Learning</option>
+                      <option value="Autre">Autre</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SECTION 2 -->
+              <div class="form-section-title">
+                <span class="section-number">2</span> Configuration
+              </div>
+
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Niveau</label>
+                    <select class="form-select" formControlName="niveau">
+                      <option value="Débutant">Débutant</option>
+                      <option value="Intermédiaire">Intermédiaire</option>
+                      <option value="Avancé">Avancé</option>
+                      <option value="Expert">Expert</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Statut</label>
+                    <select class="form-select" formControlName="statut">
+                      <option value="Disponible">Disponible</option>
+                      <option value="Bientôt">Bientôt</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Durée <span class="required">*</span></label>
+                    <input class="form-control"
+                           formControlName="duree"
+                           placeholder="Ex : 2h 30min / 12h total">
+                  </div>
+                </div>
+              </div>
+
+              <!-- SECTION 3 -->
+              <div class="form-section-title">
+                <span class="section-number">3</span> Playlist YouTube
+              </div>
+
+              <div class="form-group">
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <input class="form-control"
+                         formControlName="playlistId"
+                         placeholder="Ex: PLxxxx"
+                         style="flex:1">
+
+                  <a *ngIf="form.get('playlistId')?.value"
+                     [href]="'https://www.youtube.com/playlist?list=' + form.get('playlistId')?.value"
+                     target="_blank"
+                     class="btn-preview-yt">
+                    <i class="ri-youtube-line"></i> Vérifier
+                  </a>
+                </div>
+              </div>
+
+              <!-- SECTION 4 -->
+              <div class="form-section-title">
+                <span class="section-number">4</span> Lien externe
+              </div>
+
+              <div class="form-group">
+                <input class="form-control"
+                       formControlName="lienExterne"
+                       placeholder="https://...">
+              </div>
+
+              <!-- SECTION 5 -->
+              <div class="form-section-title">
+                <span class="section-number">5</span> Éditeur interactif
+              </div>
+
+              <div class="form-group">
+                <div class="editor-toggle-row">
+                  <div class="toggle-info">
+                    <label>Activer l'éditeur</label>
+                  </div>
+
+                  <label class="switch">
+                    <input type="checkbox" formControlName="hasEditor">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group" *ngIf="form.get('hasEditor')?.value">
+                <select class="form-select" formControlName="stackBlitzUrl">
+                  <option *ngFor="let t of stackBlitzTemplates"
+                          [value]="t.value">
+                    {{ t.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- ===================== -->
+              <!-- ✅ SECTION 6 (NOUVELLE) -->
+              <!-- ===================== -->
+
+              <div class="form-section-title">
+                <span class="section-number">6</span> Source documentation
+              </div>
+
+              <!-- Tabs -->
+              <div class="doc-source-tabs">
+                <button type="button"
+                        *ngFor="let src of docSources"
+                        class="doc-source-tab"
+                        [class.active]="activeDocSource === src.key"
+                        (click)="selectDocSource(src.key)">
+                  <i [class]="src.icon"></i>
+                  {{ src.label }}
+                  <small>{{ src.desc }}</small>
+                </button>
+              </div>
+
+              <!-- Loader -->
+              <div class="suggestions-loading" *ngIf="loadingDoc">
+                <i class="ri-loader-4-line spin"></i>
+                Recherche en cours...
+              </div>
+
+              <!-- Suggestions -->
+              <div class="doc-suggestions-list"
+                   *ngIf="docSuggestions.length > 0 && !docSelected">
+
+                <div class="doc-suggestion-card"
+                     *ngFor="let doc of docSuggestions"
+                     (click)="selectDoc(doc)">
+
+                  <div class="doc-icon">
+                    <i class="ri-book-2-line" *ngIf="doc.sourceType === 'devdocs'"></i>
+                    <i class="ri-article-line" *ngIf="doc.sourceType === 'devto'"></i>
+                    <i class="ri-github-line" *ngIf="doc.sourceType === 'github'"></i>
+                  </div>
+
+                  <div class="doc-info">
+                    <strong>{{ doc.titre }}</strong>
+                    <span class="doc-source-badge">{{ doc.source }}</span>
+                  </div>
+
+                  <i class="ri-arrow-right-line"></i>
+                </div>
+              </div>
+
+              <!-- Sélection -->
+              <div class="selected-ok" *ngIf="docSelected">
+                <i class="ri-check-line"></i>
+                Documentation sélectionnée — {{ getWrittenUrlLabel() }}
+
+                <button type="button"
+                        class="btn-clear-sm"
+                        (click)="docSelected = false; form.patchValue({writtenUrl: ''})">
+                  Changer
+                </button>
+              </div>
+
+              <!-- Hidden -->
+              <input type="hidden" formControlName="writtenUrl">
+              <input type="hidden" formControlName="docSourceType">
+
+              <!-- ACTIONS -->
+              <div class="form-actions">
+                <button type="button" class="btn-cancel" (click)="cancel()">
+                  Annuler
+                </button>
+
+                <button type="submit"
+                        class="btn-submit"
+                        [disabled]="saving">
+                  {{ saving ? 'Enregistrement...' : 'Ajouter la formation' }}
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

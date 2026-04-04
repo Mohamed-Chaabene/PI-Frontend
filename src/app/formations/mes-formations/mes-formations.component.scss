@@ -12,7 +12,23 @@ $radius-card:   16px;
 $radius-pill:   50px;
 $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
 $shadow-hover:  0 8px 24px rgba(9, 101, 164, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+// Header (bannière) coloré à la manière de la page detail formation
+.page-banner-area {
+  background: linear-gradient(135deg, #5388c1, #85B7EB);
+  color: #fff;
 
+  h1 {
+    color: #fff;
+  }
+
+  ul li a {
+    color: #ffffff;
+  }
+
+  ul li::before {
+    background: rgba(255, 255, 255, 0.5);
+  }
+}
 .mes-formations-area {
   background: $bg-page;
   padding-top: 40px;

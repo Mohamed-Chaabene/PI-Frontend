@@ -1,0 +1,28 @@
+<div class="video-page">
+
+  <!-- ── Header ── -->
+  <div class="video-header">
+    <div class="container">
+      <button class="back-link" (click)="retour()">
+        <i class="ri-arrow-left-line"></i> Retour à la formation
+      </button>
+      <h2 *ngIf="formation">
+        <i class="ri-play-circle-line"></i>
+        {{ formation.titre }} — Formation vidéo
+      </h2>
+    </div>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div class="text-center py-5" *ngIf="loading">
+    <span class="text-muted">Chargement...</span>
+  </div>
+
+  <!-- ── Player ── -->
+  <div class="video-content" *ngIf="!loading && formation">
+    <div class="container-fluid px-0">
+      <app-formation-player [formation]="formation"></app-formation-player>
+    </div>
+  </div>
+
+</div>
