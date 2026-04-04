@@ -15,7 +15,7 @@ import { EdCompanyProfileComponent } from './employers-dashboard/ed-company-prof
 import { EdManageJobsComponent } from './employers-dashboard/ed-manage-jobs/ed-manage-jobs.component';
 import { EdMessageComponent } from './employers-dashboard/ed-message/ed-message.component';
 import { EdPostANewJobComponent } from './employers-dashboard/ed-post-a-new-job/ed-post-a-new-job.component';
-// import { EdResumesComponent } from './employers-dashboard/ed-resumes/ed-resumes.component';
+// import { EdResumesComponent } from './employers-dashboard/ed-resumes/ed-resumes.component';  //************************************** */
 import { EmployersDashboardComponent } from './employers-dashboard/employers-dashboard.component';
 import { AboutPageComponent } from './pages/about-page/about-page.component';
 import { BlogDetailsPageComponent } from './pages/blog-details-page/blog-details-page.component';
@@ -46,7 +46,7 @@ import { RdMessagesComponent } from './recruiter-dashboard/rd-messages/rd-messag
 import { RdPostJobComponent } from './recruiter-dashboard/rd-post-job/rd-post-job.component';
 import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.component';
 import { RecruiterDashboardComponent } from './recruiter-dashboard/recruiter-dashboard.component';
-import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';
+import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  //************************************** */
 
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
@@ -87,13 +87,12 @@ export const routes: Routes = [
         children: [
             {path: '', component: CDashboardComponent},
             {path: 'my-profile', component: CdProfileComponent},
-            { path: 'documents', component: CdDocumentsComponent },
+            { path: 'documents', component: CdDocumentsComponent },   //************************************** */
             {path: 'bookmarks', component: CdBookmarksComponent},
             {path: 'applied-jobs', component: CdAppliedJobsComponent},
             {path: 'alert-jobs', component: CdAlertJobsComponent},
             {path: 'message', component: CdMessageComponent},
             {path: 'change-password', component: CdChangePasswordComponent},
-            { path: 'candidates-dashboard/documents', component: CdDocumentsComponent },
         ]
     },
     {

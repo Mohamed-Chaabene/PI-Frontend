@@ -47,10 +47,10 @@ import { EdChangePasswordComponent } from './employers-dashboard/ed-change-passw
 import { CandidatesDashboardComponent } from './candidates-dashboard/candidates-dashboard.component';
 import { CDashboardComponent } from './candidates-dashboard/c-dashboard/c-dashboard.component';
 import { CdProfileComponent } from './candidates-dashboard/cd-profile/cd-profile.component';
-import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';
-import { CdBookmarksComponent } from './candidates-dashboard/cd-bookmarks/cd-bookmarks.component';
-import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component';
-import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
+import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  //************************************** */
+import { CdBookmarksComponent } from './candidates-dashboard/cd-bookmarks/cd-bookmarks.component';  //************************************** */
+import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component';  //************************************** */
+import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';  //************************************** */
 import { CdMessageComponent } from './candidates-dashboard/cd-message/cd-message.component';
 import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-password/cd-change-password.component';
 
@@ -192,7 +192,7 @@ import { HomethreeBannerComponent } from './pages/home-demo-three/homethree-bann
         RdProfileComponent,
         RdChangePasswordComponent,
         HometwoBannerComponent,
-        CdDocumentsComponent,
+        CdDocumentsComponent,  //************************************** */
         HomethreeBannerComponent,
         
          CdAppliedJobsComponent
