@@ -341,6 +341,15 @@
         </div>
         <div class="modal-body">
             <form class="create-form">
+                <div class="form-section" *ngIf="newCandidature.offreId || newCandidature.poste || newCandidature.entreprise">
+                    <h4>🎯 Offre ciblée</h4>
+                    <div class="alert alert-light mb-0">
+                        <div><strong>Poste:</strong> {{ newCandidature.poste || '-' }}</div>
+                        <div><strong>Entreprise:</strong> {{ newCandidature.entreprise || '-' }}</div>
+                        <div><strong>ID offre:</strong> {{ newCandidature.offreId || '-' }}</div>
+                    </div>
+                </div>
+
                 <div class="form-section">
                     <h4>👤 Informations personnelles</h4>
                     <div class="form-grid">

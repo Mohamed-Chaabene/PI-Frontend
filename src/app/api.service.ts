@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
 
-  private apiUrl = 'http://localhost:8080/api'; // URL de votre backend Spring Boot
+  // Use relative URL so Angular dev proxy can forward to Spring Boot and avoid CORS issues.
+  private apiUrl = '/api';
 
   constructor(private http: HttpClient) { }
 
@@ -409,7 +410,12 @@ export class ApiService {
 
   // Récupérer toutes les candidatures (pour recruteur)
   getAllCandidaturesForRecruteur(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/candidatures/recruteur/toutes`);
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get<any[]>(`${this.apiUrl}/candidatures/admin/toutes`, { headers });
   }
 
   // Récupérer les statistiques pour recruteur
@@ -463,6 +469,78 @@ export class ApiService {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get(`${this.apiUrl}/offres-emploi`, { headers });
+  }
+
+  getOffreEmploiById(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const primaryUrl = `${this.apiUrl}/offres-emploi/${id}`;
+    const altUrl = `${this.apiUrl}/offres/${id}`;
+
+    return this.http.get(primaryUrl, { headers }).pipe(
+      catchError((firstError) => {
+        const shouldTryAltEndpoint = firstError?.status === 404 || firstError?.status === 405 || firstError?.status === 500;
+
+        if (shouldTryAltEndpoint) {
+          return this.http.get(altUrl, { headers }).pipe(
+            catchError(() => {
+              // Last fallback: fetch list and resolve the item client-side.
+              return this.http.get<any[]>(`${this.apiUrl}/offres-emploi`, { headers }).pipe(
+                map((offres) => {
+                  const matched = (offres || []).find((item: any) => Number(item?.id) === Number(id));
+                  if (!matched) {
+                    throw firstError;
+                  }
+                  return matched;
+                })
+              );
+            })
+          );
+        }
+
+        return throwError(() => firstError);
+      })
+    );
+  }
+
+  getMesOffresEmploi(): Observable<any[]> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get<any[]>(`${this.apiUrl}/offres-emploi/mes-offres`, { headers });
+  }
+
+  creerOffreEmploi(data: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/offres-emploi`, data, { headers });
+  }
+
+  modifierOffreEmploi(id: number, data: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.put(`${this.apiUrl}/offres-emploi/${id}`, data, { headers });
+  }
+
+  supprimerOffreEmploi(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.delete(`${this.apiUrl}/offres-emploi/${id}`, { headers });
   }
 
   // Newsletter
@@ -530,7 +608,60 @@ export class ApiService {
     }
     return this.http.post(`${this.apiUrl}/candidatures/quick-apply`, candidatureData, { headers });
   }
+  // Envoyer un email de notification pour une candidature
+  envoyerEmailCandidature(emailData: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/candidatures/send-email`, emailData, { headers });
+  }
 
+  // Envoyer un message entre utilisateur connecté et destinataire
+  sendMessage(messageData: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/messages/send`, messageData, { headers });
+  }
+
+  // Récupérer les messages de la boîte actuelle (candidat ou recruteur)
+  getMessagesForCurrentUser(): Observable<any[]> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get<any[]>(`${this.apiUrl}/messages/mes-messages`, { headers });
+  }
+
+  // Alias conservé pour compatibilité avec l'existant
+  getMessagesForCandidat(): Observable<any[]> {
+    return this.getMessagesForCurrentUser();
+  }
+
+  // Marquer un message comme lu
+  marquerMessageCommeL(messageId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.put(`${this.apiUrl}/messages/${messageId}/lu`, {}, { headers });
+  }
+
+  // Supprimer un message
+  supprimerMessage(messageId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.delete(`${this.apiUrl}/messages/${messageId}`, { headers });
+  }
 }
 
 

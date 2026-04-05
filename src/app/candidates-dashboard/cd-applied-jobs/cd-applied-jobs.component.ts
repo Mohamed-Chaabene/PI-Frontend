@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../api.service';
 
 @Component({
@@ -33,6 +34,9 @@ export class CdAppliedJobsComponent implements OnInit {
     vuesRecruteurs: number = 0;
     
     newCandidature = {
+        offreId: null as number | null,
+        poste: '',
+        entreprise: '',
         nomComplet: '',
         email: '',
         telephone: '',
@@ -122,10 +126,26 @@ export class CdAppliedJobsComponent implements OnInit {
     
     searchEntreprise: string = '';
 
-    constructor(private apiService: ApiService, private router: Router) {}
+    constructor(private apiService: ApiService, private router: Router, private route: ActivatedRoute) {}
 
     ngOnInit(): void {
         this.loadData();
+        this.handleLinkedOfferFormOpen();
+    }
+
+    private handleLinkedOfferFormOpen(): void {
+        this.route.queryParamMap.subscribe((params) => {
+            if (params.get('openForm') !== '1') {
+                return;
+            }
+
+            const rawOffreId = Number(params.get('offreId'));
+            const offreId = Number.isFinite(rawOffreId) && rawOffreId > 0 ? rawOffreId : null;
+            const offreTitre = params.get('offreTitre') || '';
+            const entreprise = params.get('entreprise') || '';
+
+            this.openCreateModal({ offreId, offreTitre, entreprise });
+        });
     }
 
     
@@ -644,8 +664,11 @@ addAlertStyles(): void {
     
     // ==================== CREATE ====================
 
-openCreateModal(): void {
+openCreateModal(prefill?: { offreId?: number | null; offreTitre?: string; entreprise?: string }): void {
     this.newCandidature = {
+        offreId: prefill?.offreId ?? null,
+        poste: prefill?.offreTitre || '',
+        entreprise: prefill?.entreprise || '',
         nomComplet: '',
         email: '',
         telephone: '',
@@ -698,6 +721,9 @@ createCandidature(): void {
 
     
     const dataToSend = {
+        offreId: this.newCandidature.offreId,
+        poste: this.newCandidature.poste,
+        entreprise: this.newCandidature.entreprise,
         nomComplet: this.newCandidature.nomComplet,
         email: this.newCandidature.email,
         telephone: this.newCandidature.telephone,

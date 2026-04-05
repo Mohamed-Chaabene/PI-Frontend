@@ -13,6 +13,17 @@ interface PublicTestEntretien {
     photo?: string;
 }
 
+interface HomeOffreEmploi {
+    id: number;
+    titre?: string;
+    description?: string;
+    type?: string;
+    datePublication?: string;
+    dateLimite?: string;
+    statut?: string;
+    status?: string;
+}
+
 @Component({
     selector: 'app-home-demo-one',
     standalone: true,
@@ -24,8 +35,11 @@ export class HomeDemoOneComponent {
 
     title = 'Home Demo - 1 - Jove';
     publicTestEntretiens: PublicTestEntretien[] = [];
+    offresDisponibles: HomeOffreEmploi[] = [];
     isLoadingPublicTests = false;
+    isLoadingOffres = false;
     publicTestsError = '';
+    offresError = '';
     readonly defaultEntretienPhoto = 'images/banner/banner1.jpg';
  
     constructor(
@@ -35,7 +49,88 @@ export class HomeDemoOneComponent {
     
     ngOnInit() {
         this.titleService.setTitle(this.title);
+        this.loadOffresDisponibles();
         this.loadPublicTestEntretiens();
+    }
+
+    loadOffresDisponibles(): void {
+        this.isLoadingOffres = true;
+        this.offresError = '';
+
+        this.apiService.getOffresEmploi().subscribe({
+            next: (data: HomeOffreEmploi[]) => {
+                const raw = Array.isArray(data) ? data : [];
+                this.offresDisponibles = raw
+                    .filter((item) => this.isOffreAvailable(item))
+                    .sort((a, b) => this.getDateTime(b.datePublication) - this.getDateTime(a.datePublication))
+                    .slice(0, 6);
+                this.isLoadingOffres = false;
+            },
+            error: () => {
+                this.offresError = 'Impossible de charger les offres d emploi pour le moment.';
+                this.offresDisponibles = [];
+                this.isLoadingOffres = false;
+            }
+        });
+    }
+
+    private isOffreAvailable(item: HomeOffreEmploi): boolean {
+        const status = String(item?.statut || item?.status || '').toUpperCase();
+        if (status === 'CLOSED' || status === 'CLOTUREE' || status === 'INACTIVE' || status === 'ARCHIVEE') {
+            return false;
+        }
+
+        const deadlineTime = this.getDateTime(item?.dateLimite);
+        if (Number.isFinite(deadlineTime) && deadlineTime < Date.now()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private getDateTime(value?: string): number {
+        if (!value) {
+            return Number.NEGATIVE_INFINITY;
+        }
+        const date = new Date(value);
+        return date.getTime();
+    }
+
+    getOffreTitle(item: HomeOffreEmploi): string {
+        return String(item?.titre || '').trim() || 'Offre d emploi';
+    }
+
+    getOffreDescription(item: HomeOffreEmploi): string {
+        const raw = String(item?.description || '').trim();
+        if (!raw) {
+            return 'Consultez les details de cette opportunite et postulez rapidement.';
+        }
+        return raw.length > 120 ? `${raw.slice(0, 120)}...` : raw;
+    }
+
+    getOffreType(item: HomeOffreEmploi): string {
+        return String(item?.type || 'EMPLOI').toUpperCase();
+    }
+
+    formatOffreDate(value?: string): string {
+        if (!value) {
+            return 'Date non specifiee';
+        }
+
+        const date = new Date(value);
+        if (isNaN(date.getTime())) {
+            return 'Date non specifiee';
+        }
+
+        return date.toLocaleDateString('fr-FR', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    }
+
+    trackByOffreId(index: number, item: HomeOffreEmploi): number {
+        return item?.id ?? index;
     }
 
     loadPublicTestEntretiens(): void {

@@ -11,12 +11,12 @@ interface MessageConversation {
 }
 
 @Component({
-    selector: 'app-cd-message',
+    selector: 'app-rd-messages-mailbox',
     standalone: false,
-    templateUrl: './cd-message.component.html',
-    styleUrls: ['./cd-message.component.scss']
+    templateUrl: './rd-messages-mailbox.component.html',
+    styleUrls: ['./rd-messages-mailbox.component.scss']
 })
-export class CdMessageComponent implements OnInit {
+export class RdMessagesMailboxComponent implements OnInit {
     messages: any[] = [];
     conversations: MessageConversation[] = [];
     filteredConversations: MessageConversation[] = [];
@@ -67,10 +67,10 @@ export class CdMessageComponent implements OnInit {
                 return;
             }
 
-            const existing = map.get(counterpart.email);
             const messageDate = this.formatDateValue(message.dateEnvoi);
             const preview = String(message.contenu || '').slice(0, 90);
             const unreadCount = String(message.receiverEmail || '').toLowerCase() === this.currentUserEmail.toLowerCase() && !message.lu ? 1 : 0;
+            const existing = map.get(counterpart.email);
 
             if (!existing) {
                 map.set(counterpart.email, {
@@ -118,12 +118,8 @@ export class CdMessageComponent implements OnInit {
         this.selectedContactName = conversation.name;
         this.composeForm.receiverEmail = conversation.email;
         this.composeForm.receiverName = conversation.name;
-
-        const replySubject = this.composeForm.subject.trim();
-        if (!replySubject || replySubject === 'Nouveau message') {
-            this.composeForm.subject = 'Re: ' + (conversation.lastMessagePreview || 'Conversation');
-        }
-
+        this.composeForm.subject = conversation.lastMessagePreview ? `Re: ${conversation.lastMessagePreview}` : 'Re: message';
+        this.composeForm.contenu = '';
         this.markConversationMessagesAsRead(conversation.email);
     }
 
@@ -152,9 +148,7 @@ export class CdMessageComponent implements OnInit {
                 this.composeForm.subject = 'Nouveau message';
                 this.loadMessages();
             },
-            error: (error) => {
-                console.error('Erreur envoi message:', error);
-            }
+            error: (error) => console.error('Erreur envoi message:', error)
         });
     }
 
@@ -185,9 +179,7 @@ export class CdMessageComponent implements OnInit {
 
         unreadMessages.forEach((message: any) => {
             this.apiService.marquerMessageCommeL(message.id).subscribe({
-                next: () => {
-                    message.lu = true;
-                },
+                next: () => message.lu = true,
                 error: (error) => console.error('Erreur marquage lu:', error)
             });
         });
@@ -249,4 +241,3 @@ export class CdMessageComponent implements OnInit {
         return new Date(date).toISOString();
     }
 }
-

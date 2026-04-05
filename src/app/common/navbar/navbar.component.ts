@@ -284,7 +284,11 @@ export class NavbarComponent implements OnInit {
             },
             error => {
                 const serverMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
-                alert(`Erreur lors de la connexion (${error.status || '?'}): ${serverMessage}`);
+                const isNetworkOrCors = error?.status === 0;
+                const finalMessage = isNetworkOrCors
+                    ? 'Impossible de joindre le backend. Verifiez que Spring Boot tourne sur http://localhost:8080 et que le front est lance via ng serve (proxy actif).'
+                    : serverMessage;
+                alert(`Erreur lors de la connexion (${error.status || '?'}): ${finalMessage}`);
             }
         );
     }

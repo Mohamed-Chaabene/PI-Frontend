@@ -2,6 +2,48 @@
 
 <app-homeone-banner />
 
+<section class="home-offres-area ptb-100">
+	<div class="container">
+		<div class="section-title">
+			<span class="sub-title">Offres d emploi</span>
+			<h2>Offres d emploi disponibles</h2>
+			<p>Decouvrez les offres actives et trouvez rapidement l opportunite qui vous correspond.</p>
+		</div>
+
+		<div class="home-offres-state" *ngIf="isLoadingOffres">
+			Chargement des offres d emploi...
+		</div>
+
+		<div class="home-offres-state error" *ngIf="!isLoadingOffres && offresError">
+			{{ offresError }}
+		</div>
+
+		<div class="home-offres-grid" *ngIf="!isLoadingOffres && !offresError && offresDisponibles.length > 0">
+			<article class="home-offre-card" *ngFor="let item of offresDisponibles; trackBy: trackByOffreId">
+				<div class="offre-card-header">
+					<span class="offre-type">{{ getOffreType(item) }}</span>
+					<span class="offre-date">Publiee: {{ formatOffreDate(item.datePublication) }}</span>
+				</div>
+
+				<h3>{{ getOffreTitle(item) }}</h3>
+				<p>{{ getOffreDescription(item) }}</p>
+
+				<div class="offre-card-footer">
+					<span>
+						<i class="ri-calendar-check-line"></i>
+						Limite: {{ formatOffreDate(item.dateLimite) }}
+					</span>
+					<a [routerLink]="['/job-details', item.id]">Voir plus</a>
+				</div>
+			</article>
+		</div>
+
+		<div class="home-offres-state" *ngIf="!isLoadingOffres && !offresError && offresDisponibles.length === 0">
+			Aucune offre d emploi disponible pour le moment.
+		</div>
+	</div>
+</section>
+
 <section class="public-tests-area ptb-100">
 	<div class="container">
 		<div class="section-title">
