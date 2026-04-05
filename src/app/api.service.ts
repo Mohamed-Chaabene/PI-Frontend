@@ -31,9 +31,13 @@ export class ApiService {
 
   getUsersByName(name: string): Observable<any[]> {
     const query = encodeURIComponent(name?.trim() || '');
-    const url = `${this.apiUrl}/users/search?name=${query}`;
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    headers = headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers = headers.set('Pragma', 'no-cache');
+    const timestamp = Date.now();
+    const url = `${this.apiUrl}/users/search?name=${query}&t=${timestamp}`;
     console.log('🌐 Calling API search endpoint:', url);
-    return this.http.get<any[]>(url);
+    return this.http.get<any[]>(url, { headers });
   }
 
   // Candidats (pour lier un entretien à un candidat)
@@ -703,7 +707,61 @@ export class ApiService {
     }
     return this.http.delete(`${this.apiUrl}/messages/${messageId}`, { headers });
   }
+
+  // ==================== NOTIFICATIONS ====================
+
+  getUnreadNotificationCount(token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    headers = headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers = headers.set('Pragma', 'no-cache');
+    headers = headers.set('Expires', '0');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Add timestamp to prevent caching
+    const timestamp = Date.now();
+    return this.http.get(`${this.apiUrl}/notifications/unread-count?t=${timestamp}`, { headers });
+  }
+
+  getNotifications(token: string): Observable<any[]> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    headers = headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers = headers.set('Pragma', 'no-cache');
+    headers = headers.set('Expires', '0');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Add timestamp to prevent caching
+    const timestamp = Date.now();
+    return this.http.get<any[]>(`${this.apiUrl}/notifications?t=${timestamp}`, { headers });
+  }
+
+  markNotificationAsRead(notificationId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/notifications/${notificationId}/read`, {}, { headers });
+  }
+
+  markAllNotificationsAsRead(token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/notifications/mark-all-read`, {}, { headers });
+  }
+
+  deleteAllNotifications(token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/notifications/delete-all`, {}, { headers });
+  }
 }
+
 
 
 

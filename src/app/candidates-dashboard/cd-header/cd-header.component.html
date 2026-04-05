@@ -122,10 +122,59 @@
             </div>
 
             <div class="header-right">
-                <button type="button" class="notification-btn">
-                    <i class="ri-notification-3-line"></i>
-                    <span class="notification-badge" *ngIf="unreadNotifications > 0">{{ unreadNotifications }}</span>
-                </button>
+                <div class="notification-container">
+                    <button type="button" class="notification-btn" (click)="toggleNotificationPanel()" [class.active]="showNotificationPanel">
+                        <i class="ri-notification-3-line"></i>
+                        <span class="notification-badge" *ngIf="unreadNotifications > 0">{{ unreadNotifications }}</span>
+                    </button>
+
+                    <!-- Notification Dropdown Panel -->
+                    <div class="notification-panel" *ngIf="showNotificationPanel" (click)="$event.stopPropagation()">
+                        <div class="notification-header">
+                            <h3>Notifications</h3>
+                            <button type="button" class="close-btn" (click)="showNotificationPanel = false">
+                                <i class="ri-close-line"></i>
+                            </button>
+                        </div>
+
+                        <div class="notification-list" #notificationList>
+                            <!-- Empty State -->
+                            <div class="notification-empty" *ngIf="notifications.length === 0">
+                                <i class="ri-notification-off-line"></i>
+                                <p>No notifications yet</p>
+                            </div>
+
+                            <!-- Notification Items -->
+                            <div class="notification-item" *ngFor="let notif of notifications; let i = index" 
+                                 [class.unread]="!notif.isRead"
+                                 [class.new-notification]="i === 0 && !notif.isRead"
+                                 (click)="markNotificationAsRead(notif.id)">
+                                <div class="notification-icon">
+                                    <i class="ri-user-follow-line" *ngIf="notif.type === 'follow'"></i>
+                                    <i class="ri-mail-line" *ngIf="notif.type === 'message'"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <p class="notification-message">{{ notif.message }}</p>
+                                    <span class="notification-time">{{ formatDate(notif.createdAt) }}</span>
+                                </div>
+                                <div class="notification-status">
+                                    <span class="unread-dot" *ngIf="!notif.isRead"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mark All As Read Button -->
+                        <div class="notification-footer" *ngIf="notifications.length > 0">
+                            <button type="button" class="mark-all-btn" (click)="markAllAsRead()">
+                                Mark all as read
+                            </button>
+                            <button type="button" class="delete-all-btn" (click)="deleteAllNotifications()">
+                                <i class="ri-delete-bin-line"></i>
+                                Delete all
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <button type="button" class="user-profile-button" (click)="toggleDropdown('profile')">
                     <img [src]="displayProfilePictureUrl" alt="Candidate image" class="user-image" />

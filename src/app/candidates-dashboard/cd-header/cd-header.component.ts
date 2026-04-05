@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ApplicationRef, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { ProfileUpdateService } from '../../services/profile-update.service';
+import { PusherService } from '../../services/pusher.service';
+import { JwtTokenUtil } from '../../utils/jwt-token.util';
+import { Subscription } from 'rxjs';
 
 interface SearchResult {
     id: number;
@@ -16,7 +19,9 @@ interface SearchResult {
     templateUrl: './cd-header.component.html',
     styleUrls: ['./cd-header.component.scss']
 })
-export class CdHeaderComponent implements OnInit {
+export class CdHeaderComponent implements OnInit, OnDestroy {
+
+    @ViewChild('notificationList') notificationList?: ElementRef;
 
     searchTerm = '';
     searchResults: SearchResult[] = [];
@@ -30,9 +35,24 @@ export class CdHeaderComponent implements OnInit {
     activeDropdown: string | null = null;
     followedUsers: Set<number> = new Set();
     followingUsers: Set<number> = new Set();
+    currentUserId: number | null = null;
+    
+    // Notification panel properties
+    showNotificationPanel = false;
+    notifications: any[] = [];
+    
     private searchDebounce?: number;
+    private notificationSubscription?: Subscription;
 
-    constructor(private apiService: ApiService, private router: Router, private profileUpdateService: ProfileUpdateService) { }
+    constructor(
+        private apiService: ApiService,
+        private router: Router,
+        private profileUpdateService: ProfileUpdateService,
+        private pusherService: PusherService,
+        private changeDetectorRef: ChangeDetectorRef,
+        private appRef: ApplicationRef,
+        private ngZone: NgZone
+    ) { }
 
     ngOnInit() {
         this.currentUserEmail = this.resolveCurrentUserEmail();
@@ -40,11 +60,78 @@ export class CdHeaderComponent implements OnInit {
         this.currentUserName = String(localStorage.getItem('userName') || this.currentUserName);
         this.loadHeaderProfileData();
 
+        // Get token and extract user ID from JWT
+        const token = localStorage.getItem('token');
+        
+        console.log('🔐 Token available:', !!token);
+
+        if (token) {
+            // Extract user ID from JWT token
+            this.currentUserId = JwtTokenUtil.extractUserIdFromToken(token);
+            console.log('👤 Current user ID extracted from token:', this.currentUserId);
+            
+            if (this.currentUserId) {
+                // Subscribe to Pusher notifications
+                console.log('📡 Subscribing to Pusher notifications...');
+                this.pusherService.subscribeToNotifications(this.currentUserId);
+
+                // Listen for incoming notifications in real-time
+                this.notificationSubscription = this.pusherService.getNotificationStream().subscribe((notification) => {
+                    if (notification) {
+                        console.log('📬 NEW NOTIFICATION RECEIVED IN REAL-TIME:', notification);
+                        console.log('🔍 Current unreadNotifications before update:', this.unreadNotifications);
+                        
+                        // Update in angular zone to ensure proper change detection
+                        this.ngZone.run(() => {
+                            // Add notification to the beginning of the list
+                            this.notifications.unshift({
+                                id: notification.id,
+                                type: notification.type,
+                                message: notification.message,
+                                senderId: notification.senderId,
+                                createdAt: notification.createdAt,
+                                isRead: false
+                            });
+                            
+                            // Increment unread count - explicitly reassign to trigger bindings
+                            this.unreadNotifications = this.unreadNotifications + 1;
+                            console.log('🔔 Unread count updated to:', this.unreadNotifications);
+                            console.log('📬 Notifications in panel:', this.notifications.length);
+                            
+                            // Mark for check and force detection
+                            this.changeDetectorRef.markForCheck();
+                            this.changeDetectorRef.detectChanges();
+                            
+                            // Scroll to top if panel is open to show newest notification
+                            this.scrollNotificationListToTop();
+                        });
+                    }
+                });
+
+                // Load initial unread notification count
+                this.loadUnreadNotificationCount();
+            } else {
+                console.error('❌ Could not extract user ID from token');
+            }
+        } else {
+            console.warn('⚠️ No token found. Cannot subscribe to notifications.');
+        }
+
         // Listen for profile picture updates
         this.profileUpdateService.profilePictureUpdated$.subscribe((newImageUrl: string) => {
             this.currentUserImageUrl = newImageUrl;
             console.log('✅ Profile picture updated in header:', newImageUrl);
         });
+    }
+
+    ngOnDestroy() {
+        // Unsubscribe from Pusher when component is destroyed
+        if (this.currentUserId) {
+            this.pusherService.unsubscribeFromNotifications(this.currentUserId);
+        }
+        if (this.notificationSubscription) {
+            this.notificationSubscription.unsubscribe();
+        }
     }
 
     onSearchChange() {
@@ -218,6 +305,158 @@ export class CdHeaderComponent implements OnInit {
 
     private buildInitial(email: string): string {
         return email ? email.charAt(0).toUpperCase() : 'U';
+    }
+
+    private loadUnreadNotificationCount(): void {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            return;
+        }
+
+        this.apiService.getUnreadNotificationCount(token).subscribe({
+            next: (response: any) => {
+                this.unreadNotifications = response.unreadCount || 0;
+                console.log('📊 Unread notifications:', this.unreadNotifications);
+                
+                // Trigger global change detection
+                this.appRef.tick();
+            },
+            error: (error) => {
+                console.error('❌ Error loading unread notification count:', error);
+            }
+        });
+    }
+
+    // ==================== NOTIFICATION PANEL METHODS ====================
+
+    toggleNotificationPanel(): void {
+        this.showNotificationPanel = !this.showNotificationPanel;
+        
+        if (this.showNotificationPanel) {
+            console.log('📬 Opening notification panel...');
+            this.loadNotifications();
+        }
+    }
+
+    loadNotifications(): void {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('❌ No token found');
+            return;
+        }
+
+        this.apiService.getNotifications(token).subscribe({
+            next: (notifications: any[]) => {
+                this.notifications = notifications || [];
+                console.log('📬 Notifications loaded:', this.notifications.length);
+            },
+            error: (error) => {
+                console.error('❌ Error loading notifications:', error);
+                this.notifications = [];
+            }
+        });
+    }
+
+    markNotificationAsRead(notificationId: number): void {
+        if (!notificationId) return;
+
+        this.apiService.markNotificationAsRead(notificationId).subscribe({
+            next: (response: any) => {
+                console.log('✅ Notification marked as read:', notificationId);
+                
+                // Update the notification in the list
+                const notification = this.notifications.find(n => n.id === notificationId);
+                if (notification) {
+                    notification.isRead = true;
+                    this.unreadNotifications = Math.max(0, this.unreadNotifications - 1);
+                    
+                    // Trigger global change detection for badge update
+                    this.appRef.tick();
+                }
+            },
+            error: (error) => {
+                console.error('❌ Error marking notification as read:', error);
+            }
+        });
+    }
+
+    markAllAsRead(): void {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        this.apiService.markAllNotificationsAsRead(token).subscribe({
+            next: (response: any) => {
+                console.log('✅ All notifications marked as read');
+                
+                // Update all notifications
+                this.notifications.forEach(n => n.isRead = true);
+                this.unreadNotifications = 0;
+                
+                // Trigger global change detection for badge update
+                this.appRef.tick();
+            },
+            error: (error) => {
+                console.error('❌ Error marking all notifications as read:', error);
+            }
+        });
+    }
+
+    deleteAllNotifications(): void {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        this.apiService.deleteAllNotifications(token).subscribe({
+            next: (response: any) => {
+                console.log('✅ All notifications deleted');
+                
+                // Clear the notifications list
+                this.notifications = [];
+                this.unreadNotifications = 0;
+                console.log('📬 Notification list cleared');
+                
+                // Trigger global change detection
+                this.appRef.tick();
+            },
+            error: (error) => {
+                console.error('❌ Error deleting all notifications:', error);
+            }
+        });
+    }
+
+    formatDate(dateString: string): string {
+        try {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now.getTime() - date.getTime();
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) {
+                return 'just now';
+            } else if (diffMins < 60) {
+                return `${diffMins}m ago`;
+            } else if (diffHours < 24) {
+                return `${diffHours}h ago`;
+            } else if (diffDays < 7) {
+                return `${diffDays}d ago`;
+            } else {
+                // Format as date
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+        } catch (error) {
+            return 'recently';
+        }
+    }
+
+    private scrollNotificationListToTop(): void {
+        // Use setTimeout to allow DOM to update first
+        setTimeout(() => {
+            if (this.notificationList && this.notificationList.nativeElement) {
+                this.notificationList.nativeElement.scrollTop = 0;
+                console.log('⬆️ Scrolled notification list to top');
+            }
+        }, 0);
     }
 }
 
