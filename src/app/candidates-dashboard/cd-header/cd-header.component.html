@@ -1,5 +1,6 @@
 <div class="navbar-area">
     <div class="container-fluid">
+<<<<<<< Updated upstream
         <nav
             class="navbar navbar-expand-lg"
             [class.active]="classApplied"
@@ -20,6 +21,22 @@
             </button>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav">
+=======
+        <nav class="navbar">
+            <div class="navbar-left">
+                <!-- Logo with Brand Info -->
+                <div class="navbar-brand">
+                    <img src="/images/logo.png" alt="MatchyKhedma Logo">
+                    <div class="header-brand">
+                        <h5>MatchyKhedma</h5>
+                        <p class="brand-subtitle">Dashboard</p>
+                    </div>
+                </div>
+                <ul class="navbar-nav">
+
+            
+                    <!-- ✅ Formations — menu conditionnel selon rôle -->
+>>>>>>> Stashed changes
                     <li class="nav-item">
                         <a href="javascript:void(0)" class="dropdown-toggle nav-link">
                             Home
@@ -114,6 +131,7 @@
                         </ul>
                     </li>
                 </ul>
+<<<<<<< Updated upstream
                 <div class="others-option d-md-flex align-items-center">
                     <div class="option-item">
                         <form class="search-box position-relative">
@@ -191,6 +209,70 @@
                                         <i class="ri-logout-box-line"></i>
                                         Logout
                                     </a>
+=======
+            </div>
+
+            <div class="navbar-center">
+                <div class="search-circle">
+                    <div class="search-box">
+                        <div class="search-icon" (click)="searchByName()" title="Rechercher">
+                            <i class="ri-search-line"></i>
+                        </div>
+                        <input type="search" placeholder="Rechercher un utilisateur" aria-label="Rechercher un utilisateur"
+                               [(ngModel)]="searchName"
+                               (input)="onSearchInput()"
+                               (focus)="searchOpen = true"
+                               (keyup.enter)="searchByName()">
+                    </div>
+                    <div class="search-results" *ngIf="searchName && (searchResults.length || searchError || searchLoading)">
+                        <div class="search-loading" *ngIf="searchLoading">
+                            Recherche en cours...
+                        </div>
+                        <div class="search-empty" *ngIf="!searchLoading && searchError && !searchResults.length">
+                            {{ searchError }}
+                        </div>
+                        <ul *ngIf="!searchLoading && searchResults.length">
+                            <li *ngFor="let user of searchResults" class="search-item" (mousedown)="$event.preventDefault()">
+                                <div class="search-item-info">
+                                    <strong>{{ user.nom || user.email }}</strong>
+                                    <span class="search-meta">{{ user.email }}</span>
+                                </div>
+                                <button type="button" class="follow-btn" (click)="followUser(user); $event.stopPropagation()">
+                                    Suivre
+                                </button>
+                                <span class="search-role" *ngIf="user.role && user.role !== 'ADMIN'">{{ user.role }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navbar-right">
+                <div class="others-option">
+                    <div class="notification-item" title="Notifications">
+                        <button type="button" class="notification-btn" aria-label="Notifications" (click)="toggleNotifications()">
+                            <i class="ri-notification-line"></i>
+                            <span class="notification-count">{{ notificationCount }}</span>
+                        </button>
+                        <div class="notification-dropdown" [class.show]="notificationOpen">
+                            <div class="notification-panel">
+                                <p class="notification-empty-text">Aucune notification pour le moment.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="option-item">
+                        <p class="welcome-text">Welcome, {{ userName }}!</p>
+                        <div class="profile-avatar-dropdown">
+                            <button type="button" class="profile-avatar-btn" (click)="toggleDropdown('profile')">
+                                <img [src]="displayProfilePictureUrl" alt="Profile Picture" class="profile-avatar-img">
+                            </button>
+                            <ul class="dropdown-menu profile-dropdown" [class.show]="activeDropdown === 'profile'">
+                                <li class="dropdown-item">
+                                    <button type="button" class="logout-btn" (click)="logout()">
+                                        <i class="ri-logout-box-r-line"></i>
+                                        Logout
+                                    </button>
+>>>>>>> Stashed changes
                                 </li>
                             </ul>
                         </div>

@@ -13,7 +13,7 @@ import { RouterOutlet } from '@angular/router';
 })
 export class CandidatesDashboardComponent {
 
-    title = 'Candidates Dashboard - Jove';
+    title = 'MatchyKhedma Dashboard';
  
     constructor(private titleService:Title) {}
     
