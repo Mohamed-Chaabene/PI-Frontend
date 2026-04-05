@@ -1,8 +1,75 @@
 <div class="card">
     <div class="card-header">
-        <h4>Manage Jobs</h4>
+        <h4>Gerer les Offres d'emploi</h4>
     </div>
     <div class="card-body">
-        <p>Manage and edit your job postings.</p>
+        <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+        <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+        <div *ngIf="loading" class="text-muted">Chargement...</div>
+        <div *ngIf="!loading && offres.length === 0" class="text-muted">Vous n'avez encore publie aucune offre.</div>
+
+        <div class="table-responsive" *ngIf="!loading && offres.length > 0">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Localisation</th>
+                        <th>Contrat</th>
+                        <th>Date publication</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let offre of offres">
+                        <td>{{ offre.titre }}</td>
+                        <td>{{ offre.location }}</td>
+                        <td>{{ offre.typeContrat || '-' }}</td>
+                        <td>{{ formatDate(offre.datePublication) }}</td>
+                        <td>{{ offre.statut || '-' }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary me-2" (click)="modifier(offre)">Modifier</button>
+                            <button class="btn btn-sm btn-secondary" (click)="supprimer(offre)">Supprimer</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div *ngIf="offreEditee" class="border rounded p-3 mt-3 bg-light">
+            <h6 class="mb-3">Modifier une offre</h6>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Titre</label>
+                    <input class="form-control" [(ngModel)]="offreEditee.titre" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Localisation</label>
+                    <input class="form-control" [(ngModel)]="offreEditee.location" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Type de contrat</label>
+                    <input class="form-control" [(ngModel)]="offreEditee.typeContrat" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Salaire</label>
+                    <input class="form-control" [(ngModel)]="offreEditee.salary" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Date limite</label>
+                    <input type="date" class="form-control" [(ngModel)]="offreEditee.deadline" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" rows="4" [(ngModel)]="offreEditee.description"></textarea>
+                </div>
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+                <button class="btn btn-primary" (click)="enregistrer()" [disabled]="saving">{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</button>
+                <button class="btn btn-secondary" (click)="annuler()" [disabled]="saving">Annuler</button>
+            </div>
+        </div>
     </div>
 </div>

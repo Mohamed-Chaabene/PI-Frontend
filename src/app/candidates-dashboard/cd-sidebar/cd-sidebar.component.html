@@ -1,6 +1,15 @@
 <div class="sidebar-area" [class.active]="classApplied">
     <ul class="ps-0 mb-0 list-unstyled">
         <li>
+            <a routerLink="/"
+               class="d-block position-relative"
+               routerLinkActive="active"
+               [routerLinkActiveOptions]="{exact: true}">
+                <i class="ri-home-4-line"></i>
+                Home
+            </a>
+        </li>
+        <li>
             <a routerLink="/candidates-dashboard"
                class="d-block position-relative"
                routerLinkActive="active"
@@ -34,15 +43,6 @@
                [routerLinkActiveOptions]="{exact: true}">
                 <i class="ri-send-plane-2-line"></i>
                 My Documents
-            </a>
-        </li>
-        <li>
-            <a routerLink="/candidates-dashboard/bookmarks"
-               class="d-block position-relative"
-               routerLinkActive="active"
-               [routerLinkActiveOptions]="{exact: true}">
-                <i class="ri-briefcase-line"></i>
-                Bookmarks
             </a>
         </li>
         <li>
