@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Inscription } from '../models/inscription.model';
-import { Certificat } from '../models/certificat.model';
-import { FormationService } from '../services/formation.service';
+import { Inscription } from '../../formations/models/inscription.model';
+import { Certificat } from '../../formations/models/certificat.model';
+import { FormationService } from '../../formations/services/formation.service';
 
 @Component({
   selector: 'app-mes-formations',
@@ -46,7 +46,7 @@ export class MesFormationsComponent implements OnInit {
   }
 
   voirDetailsFormation(formationId: number): void {
-    this.router.navigate(['/formations', formationId]);
+    this.router.navigate(['/formations', formationId], { queryParams: { from: 'dashboard' } });
   }
 
   private resolveCandidatIdAndLoad(): void {

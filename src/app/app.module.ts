@@ -67,7 +67,7 @@ import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/c
 import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
 import { CdMessageComponent } from './candidates-dashboard/cd-message/cd-message.component';
 import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-password/cd-change-password.component';
-
+import { MesFormationsComponent } from './candidates-dashboard/mes-formations/mes-formations.component';
 // Shared components are in SharedModule now
 
 // More common
@@ -145,6 +145,7 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         CdAlertJobsComponent,
         CdMessageComponent,
         CdChangePasswordComponent,
+        MesFormationsComponent,
         BlogSidebarComponent,
         PricingComponent,
         JobsSidebarComponent,

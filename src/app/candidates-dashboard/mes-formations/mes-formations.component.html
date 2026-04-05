@@ -1,14 +1,11 @@
-
-<div class="page-banner-area">
+<div class="mes-formations-header-wrapper">
   <div class="container">
-    <div class="row align-items-center">
-      <div class="col-lg-8 col-md-12"><h1>Mes formations</h1></div>
-      <div class="col-lg-4 col-md-12">
-        <ul class="ps-0 mb-0 list-unstyled">
-          <li class="d-inline-block position-relative"><a routerLink="/">Home</a></li>
-          <li class="d-inline-block position-relative"><a routerLink="/formations">Formations</a></li>
-          <li class="d-inline-block position-relative">Mes formations</li>
-        </ul>
+    <div class="row justify-content-center">
+      <div class="col-12">
+        <div class="dashboard-blue-banner">
+          <h2>Mes formations</h2>
+          <p>Découvrez les opportunités qui vous correspondent</p>
+        </div>
       </div>
     </div>
   </div>
@@ -19,7 +16,7 @@
     <div class="row justify-content-center">
 
       <!-- ── Colonne principale centrée ── -->
-      <div class="col-lg-8 col-md-12">
+      <div class="col-12">
 
         <!-- Résumé stats -->
         <div class="stats-grid">
@@ -60,7 +57,7 @@
             </div>
 
             <div class="row g-4" *ngIf="inscriptions.length">
-              <div class="col-lg-6 col-md-6" *ngFor="let ins of inscriptions">
+              <div class="col-lg-4 col-md-6 col-sm-12" *ngFor="let ins of inscriptions">
                 <div class="formation-progress-card" (click)="voirDetailsFormation(ins.formation.id)" style="cursor: pointer;">
 
                   <!-- Bandeau -->

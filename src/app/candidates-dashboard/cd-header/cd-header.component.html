@@ -1,7 +1,6 @@
 ﻿<div class="navbar-area navbar-expand-lg">
     <div class="container-fluid">
         <nav class="navbar">
-
             <!-- Logo with Brand Info -->
             <div class="navbar-brand">
                 <img src="/images/logo.png" alt="Jove Logo">
@@ -10,78 +9,64 @@
                     <p class="brand-subtitle">Dashboard</p>
                 </div>
             </div>
+                    <ul class="navbar-nav">
 
-            <ul class="navbar-nav">
+            
+                    <!-- ✅ Formations — menu conditionnel selon rôle -->
+                    <li class="nav-item">
+                        <button type="button" class="dropdown-toggle nav-link" (click)="toggleDropdown('formations')">
+                            Formations
+                        </button>
+                        <ul class="dropdown-menu" [class.show]="activeDropdown === 'formations'">
 
-                <!-- Formations -->
-                <li class="nav-item">
-                    <button type="button" class="dropdown-toggle nav-link" (click)="toggleDropdown('formations')">
-                        Formations
-                    </button>
-                    <ul class="dropdown-menu" [class.show]="activeDropdown === 'formations'">
-                        <li class="nav-item">
-                            <a routerLink="/formations" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                Liste des formations
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a routerLink="/formations/mes-formations" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                Mes formations
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a routerLink="/formations/admin" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                Gérer les formations
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a routerLink="/formations/admin/create" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                Ajouter une formation
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                            <!-- ✅ Tout le monde : liste publique -->
+                            <li class="nav-item">
+                                <a routerLink="/formations" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Liste des formations
+                                </a>
+                            </li>
 
-                <!-- Candidates -->
-                <li class="nav-item">
-                    <button type="button" class="dropdown-toggle nav-link" (click)="toggleDropdown('candidates')">
-                        Candidates
-                    </button>
-                    <ul class="dropdown-menu" [class.show]="activeDropdown === 'candidates'">
-                        <li class="nav-item">
-                            <a routerLink="/candidates" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                Candidates
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a routerLink="/candidate-details" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                Candidate Details
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a routerLink="/candidates-dashboard" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                Candidates Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a routerLink="/candidate-entretiens" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                Mes Entretiens
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                        </ul>
+                    </li>
 
-            </ul>
+                    <!-- Candidates -->
+                    <li class="nav-item">
+                        <button type="button" class="dropdown-toggle nav-link" (click)="toggleDropdown('candidates')">
+                            Candidates
+                        </button>
+                        <ul class="dropdown-menu" [class.show]="activeDropdown === 'candidates'">
+                            <li class="nav-item">
+                                <a routerLink="/candidates" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Candidates
+                                </a>
+                            </li>
+                            <li class="nav-item" >
+                                <a routerLink="/candidate-details" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Candidate Details
+                                </a>
+                            </li>
+                            <li class="nav-item" >
+                                <a routerLink="/candidates-dashboard" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Candidates Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a routerLink="/candidate-entretiens" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                    Mes Entretiens
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
 
-            <div class="others-option">
-                <div class="option-item">
-                    <p class="welcome-text">Welcome Back!</p>
-                    <div class="profile-avatar">
-                        <i class="ri-user-line"></i>
+                <div class="others-option">
+                    <div class="option-item">
+                        <p class="welcome-text">Welcome Back!</p>
+                        <div class="profile-avatar">
+                            <i class="ri-user-line"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
-
         </nav>
     </div>
 </div>

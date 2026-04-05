@@ -71,6 +71,7 @@ import { CandidatsListComponent } from './admin-dashboard/candidats-list/candida
 import { recruteurGuard, recruteurChildGuard } from './guards/recruteur.guard';
 import { PartenaireCandidatComponent } from './candidates-dashboard/partenaire-candidat/partenaire-candidat.component';
 import { OffreCandidatComponent } from './candidates-dashboard/offre-candidat/offre-candidat.component';
+import { MesFormationsComponent } from './candidates-dashboard/mes-formations/mes-formations.component';
 
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
@@ -132,6 +133,7 @@ export const routes: Routes = [
             {path: 'candidate-details', component: CandidateDetailsPageComponent},
             {path: 'partenaires', component: PartenaireCandidatComponent},
             {path: 'partenaires/:id/offres', component: OffreCandidatComponent},
+            {path: 'mes-formations', component: MesFormationsComponent},
         ]
     },
     {

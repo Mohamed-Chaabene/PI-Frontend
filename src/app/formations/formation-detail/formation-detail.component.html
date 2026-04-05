@@ -33,7 +33,7 @@
 
             <div class="detail-card-body">
               <div class="detail-back-btn-wrapper">
-                <a routerLink="/formations" class="voir-btn">
+                <a [routerLink]="returnUrl" class="voir-btn">
                   <i class="ri-arrow-left-line"></i> Retour
                 </a>
               </div>
@@ -84,7 +84,7 @@
                     <i class="ri-play-circle-line"></i>
                     Accéder à la formation
                   </button>
-                  <a routerLink="/formations/mes-formations" class="btn-mes-formations">
+                  <a routerLink="/candidates-dashboard/mes-formations" class="btn-mes-formations">
                     <i class="ri-book-open-line"></i>
                     Voir ma progression
                   </a>

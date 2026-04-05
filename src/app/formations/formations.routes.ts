@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { FormationsListComponent } from './formations-list/formations-list.component';
 import { FormationDetailComponent } from './formation-detail/formation-detail.component';
-import { MesFormationsComponent } from './mes-formations/mes-formations.component';
 import { FormationEcriteComponent } from './formation-ecrite/formation-ecrite.component';
 import { FormationVideoComponent } from './formation-video/formation-video.component';
 import { adminGuard } from './guards/admin.guard';
@@ -12,7 +11,6 @@ export const formationsRoutes: Routes = [
   { path: '', component: FormationsListComponent },
 
   // ── Candidat ────────────────────────────────────────────────────
-  { path: 'mes-formations', component: MesFormationsComponent, canActivate: [authGuard] },
 
   // ── Sous-routes avec ID (AVANT :id) ─────────────────────────────
   { path: ':id/video',  component: FormationVideoComponent  },

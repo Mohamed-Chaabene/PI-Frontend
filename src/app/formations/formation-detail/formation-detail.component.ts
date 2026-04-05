@@ -16,6 +16,7 @@ export class FormationDetailComponent implements OnInit {
   inscribing  = false;
   candidatId: number | null = null;
   isAdmin     = false;
+  returnUrl   = '/formations';
 
   // ── Modal ─────────────────────────────────────────────────────────
   showAccessModal = false;
@@ -29,6 +30,12 @@ export class FormationDetailComponent implements OnInit {
   ngOnInit(): void {
     const role = (localStorage.getItem('userRole') || '').toUpperCase().replace('ROLE_', '');
     this.isAdmin = role === 'ADMIN';
+
+    this.route.queryParams.subscribe(params => {
+      if (params['from'] === 'dashboard') {
+        this.returnUrl = '/candidates-dashboard/mes-formations';
+      }
+    });
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.loading = true;
