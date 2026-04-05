@@ -13,9 +13,9 @@ import { RouterOutlet } from '@angular/router';
 })
 export class CandidatesDashboardComponent {
 
-    title = 'Candidates Dashboard - Jove';
+    title = 'MatchyKhedma Dashboard';
  
-    constructor(private titleService:Title) {}
+    constructor(private titleService: Title) {}
     
     ngOnInit() {
         this.titleService.setTitle(this.title);

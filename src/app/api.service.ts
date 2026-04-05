@@ -29,6 +29,13 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/users`);
   }
 
+  getUsersByName(name: string): Observable<any[]> {
+    const query = encodeURIComponent(name?.trim() || '');
+    const url = `${this.apiUrl}/users/search?name=${query}`;
+    console.log('🌐 Calling API search endpoint:', url);
+    return this.http.get<any[]>(url);
+  }
+
   // Candidats (pour lier un entretien à un candidat)
   // See getCandidats() method below in Candidat methods section
 
