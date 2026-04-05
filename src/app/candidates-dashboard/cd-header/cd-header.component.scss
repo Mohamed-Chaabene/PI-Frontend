@@ -297,12 +297,24 @@
                     font-weight: 700;
                     cursor: pointer;
                     white-space: nowrap;
-                    transition: background-color 0.2s ease;
+                    transition: all 0.2s ease;
                     min-width: max-content;
                 }
 
                 .follow-btn:hover {
                     background: #dcfce7;
+                }
+
+                .follow-btn.followed {
+                    border-color: #10b981;
+                    background: #d1fae5;
+                    color: #059669;
+                    cursor: pointer;
+                }
+
+                .follow-btn.followed:hover {
+                    background: #a7f3d0;
+                    border-color: #059669;
                 }
 
                 .result-tag {

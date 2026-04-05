@@ -28,6 +28,8 @@ export class CdHeaderComponent implements OnInit {
     currentUserInitial = 'U';
     currentUserImageUrl = '';
     activeDropdown: string | null = null;
+    followedUsers: Set<number> = new Set();
+    followingUsers: Set<number> = new Set();
     private searchDebounce?: number;
 
     constructor(private apiService: ApiService, private router: Router, private profileUpdateService: ProfileUpdateService) { }
@@ -75,6 +77,12 @@ export class CdHeaderComponent implements OnInit {
                 this.searchResults = results.filter((user: SearchResult) =>
                     user.email?.toLowerCase() !== normalizedEmail
                 );
+                
+                // Check follow status for each result
+                this.searchResults.forEach(user => {
+                    this.checkFollowStatus(user.id, token);
+                });
+                
                 this.isSearching = false;
                 this.showSearchResults = true;
             },
@@ -87,9 +95,68 @@ export class CdHeaderComponent implements OnInit {
         });
     }
 
+    checkFollowStatus(userId: number, token: string | null) {
+        if (!token) {
+            return;
+        }
+
+        this.apiService.isFollowing(userId, token).subscribe({
+            next: (response) => {
+                if (response.isFollowing) {
+                    this.followedUsers.add(userId);
+                    this.followingUsers.add(userId);
+                    console.log('✅ User', userId, 'is already followed');
+                }
+            },
+            error: (error) => {
+                console.error('❌ Error checking follow status for user', userId, ':', error);
+            }
+        });
+    }
+
     selectUser(user: SearchResult) {
         this.searchTerm = user.nom;
         this.showSearchResults = false;
+    }
+
+    followUser(user: SearchResult) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('❌ No token found. User not authenticated.');
+            return;
+        }
+
+        // If already followed, unfollow instead
+        if (this.isUserFollowed(user.id)) {
+            console.log('👥 Unfollowing user:', user.nom, 'ID:', user.id);
+            this.apiService.unfollowUser(user.id, token).subscribe({
+                next: (response) => {
+                    console.log('✅ Successfully unfollowed user:', response);
+                    this.followedUsers.delete(user.id);
+                    this.followingUsers.delete(user.id);
+                },
+                error: (error) => {
+                    console.error('❌ Error unfollowing user:', error);
+                }
+            });
+        } else {
+            // Follow the user
+            console.log('👥 Following user:', user.nom, 'ID:', user.id);
+            this.apiService.followUser(user.id, token).subscribe({
+                next: (response) => {
+                    console.log('✅ Successfully followed user:', response);
+                    this.followedUsers.add(user.id);
+                    this.followingUsers.add(user.id);
+                },
+                error: (error) => {
+                    console.error('❌ Error following user:', error);
+                }
+            });
+        }
+    }
+
+    isUserFollowed(userId: number): boolean {
+        return this.followedUsers.has(userId) || this.followingUsers.has(userId);
     }
 
     onSearchBlur() {

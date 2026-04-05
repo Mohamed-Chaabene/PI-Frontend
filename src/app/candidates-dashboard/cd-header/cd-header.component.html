@@ -106,7 +106,13 @@
                                     <span class="result-email">{{ user.email }}</span>
                                 </div>
                                 <div class="result-actions">
-                                    <button type="button" class="follow-btn">Suivre</button>
+                                    <button 
+                                        type="button" 
+                                        class="follow-btn"
+                                        [class.followed]="isUserFollowed(user.id)"
+                                        (click)="followUser(user); $event.stopPropagation()">
+                                        {{ isUserFollowed(user.id) ? '✓ Suivi' : 'Suivre' }}
+                                    </button>
                                     <span class="result-tag" *ngIf="user.role">{{ user.role }}</span>
                                 </div>
                             </div>

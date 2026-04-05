@@ -278,6 +278,40 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/candidats`, candidateData, { headers });
   }
 
+  // ==================== FOLLOW FEATURE ====================
+
+  followUser(userToFollowId: number, token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/follows/${userToFollowId}/follow`, {}, { headers });
+  }
+
+  unfollowUser(userToUnfollowId: number, token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/follows/${userToUnfollowId}/unfollow`, {}, { headers });
+  }
+
+  getFollowers(userId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/follows/${userId}/followers`);
+  }
+
+  isFollowing(userIdToCheck: number, token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/follows/${userIdToCheck}/is-following`, { headers });
+  }
+
+  getFollowersCount(userId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/follows/${userId}/followers-count`);
+  }
+
   updateCandidate(id: number, candidateData: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
