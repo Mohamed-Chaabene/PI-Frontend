@@ -66,6 +66,7 @@ import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-pass
 import { EvenementCandidatComponent } from './candidates-dashboard/evenement-candidat/evenement-candidat.component';
 import { MesParticipationsComponent } from './candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component';
 import { MaCalendarComponent } from './candidates-dashboard/evenement-candidat/ma-calendar/ma-calendar.component';
+
 // Shared components are in SharedModule now
 
 // More common
@@ -108,6 +109,7 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
 import { EvenementDemandesComponent } from './evenement-dashboard/evenement-demandes/evenement-demandes.component';
 import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
+
 
 
 // Banner components are now in SharedModule

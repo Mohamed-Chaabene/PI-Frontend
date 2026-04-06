@@ -8,8 +8,6 @@
     <p>Chargement...</p>
 </div>
 
-
-
 <!-- Liste -->
 <div class="row" *ngIf="!isLoading">
     <div class="col-lg-6 col-md-6" *ngFor="let p of participations">
@@ -27,13 +25,13 @@
                             <i class="ri-calendar-line"></i>
                             {{ formatDate(p.dateInscription) }}
                         </span>
-                        <!-- ✅ Badge statut -->
                         <span class="job-type d-block" [class]="getStatutClass(p.statut)">
                             {{ p.statut }}
                         </span>
                     </div>
                 </div>
             </div>
+
             <div class="info d-sm-flex align-items-center justify-content-between">
                 <span class="salary d-block">
                     <span class="fw-semibold">Événement:</span>
@@ -49,6 +47,25 @@
                     </span>
                 </span>
             </div>
+
+            <!-- ← QR Code — uniquement si CONFIRME -->
+            <div class="qr-section" *ngIf="p.statut === 'CONFIRME' && p.qrCode">
+                <div class="qr-divider"></div>
+                <p class="qr-label">
+                    <i class="ri-qr-code-line"></i> Votre billet numérique
+                </p>
+                <div class="qr-image-wrapper">
+                    <img
+                        [src]="'data:image/png;base64,' + p.qrCode"
+                        alt="QR Code participation"
+                        class="qr-image"
+                    />
+                </div>
+                <p class="qr-hint">
+                    <i class="ri-scan-line"></i> Présentez ce QR à l'entrée de l'événement
+                </p>
+            </div>
+
         </div>
     </div>
 

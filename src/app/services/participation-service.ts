@@ -50,6 +50,12 @@ export class ParticipationService {
     return this.http.get<any>(
         `http://localhost:8081/api/participations/stats/candidat/${candidatId}`
     );
+
+    
+    
+}
+getQRCode(id: number): Observable<string> {
+  return this.http.get(`/api/participations/${id}/qrcode`, { responseType: 'text' });
 }
 
 }

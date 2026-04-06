@@ -38,7 +38,7 @@ export class MesParticipationsComponent implements OnInit {
         });
     }
 
-    // ✅ Couleur selon statut
+    //  Couleur selon statut
     getStatutClass(statut: string): string {
         switch (statut) {
             case 'CONFIRME': return 'statut-confirme';
