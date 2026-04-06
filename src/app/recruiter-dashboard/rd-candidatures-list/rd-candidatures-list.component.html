@@ -1,0 +1,174 @@
+<div class="candidate-list-container">
+  <!-- En-tête -->
+  <div class="list-header">
+    <h2 class="title">📋 Liste des Candidatures</h2>
+    <p class="subtitle">Gérez les candidatures et mettez à jour leur statut</p>
+  </div>
+
+  <!-- Contrôles de filtrage -->
+  <div class="filter-section">
+    <div class="filter-group">
+      <!-- Filtrage par statut -->
+      <div class="filter-item">
+        <label for="statut-filter">Filtrer par statut:</label>
+        <select id="statut-filter" [(ngModel)]="selectedStatut" (change)="applyFilters()" class="form-select">
+          <option *ngFor="let statut of statuts" [value]="statut">
+            {{ getStatusLabel(statut) }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Recherche -->
+      <div class="filter-item">
+        <label for="search-input">Rechercher:</label>
+        <input id="search-input" type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Nom, email ou entreprise..." class="form-input">
+      </div>
+
+      <!-- Bouton de rafraîchissement -->
+      <button (click)="loadCandidatures()" class="btn btn-primary">
+        <i class="fas fa-sync-alt" [class.loading]="loading"></i> Rafraîchir
+      </button>
+    </div>
+
+    <!-- Affichage du nombre de résultats -->
+    <div class="results-info">
+      <p>Affichage {{ (currentPage - 1) * pageSize + 1 }} à {{ getDisplayEndCount() }} sur {{ filteredCandidatures.length }} candidatures</p>
+    </div>
+  </div>
+
+  <!-- Tableau des candidatures -->
+  <div class="table-responsive">
+    <div *ngIf="loading" class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Chargement des candidatures...</p>
+    </div>
+
+    <div *ngIf="!loading && paginatedCandidatures.length === 0" class="no-data">
+      <p>Aucune candidature trouvée</p>
+    </div>
+
+    <table *ngIf="!loading && paginatedCandidatures.length > 0" class="table">
+      <thead>
+        <tr>
+          <th>Candidat</th>
+          <th>Email</th>
+          <th>Poste</th>
+          <th>Date d'envoi</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let candidature of paginatedCandidatures">
+          <td>
+            <strong>{{ candidature.nomComplet }}</strong>
+          </td>
+          <td>{{ candidature.email }}</td>
+          <td>
+            <span class="poste-tag">{{ candidature.offreTitre || candidature.poste || 'N/A' }}</span>
+          </td>
+          <td>{{ candidature.dateEnvoi | date: 'short' }}</td>
+          <td>
+            <span class="badge" [ngClass]="getStatusBadge(candidature.statut)">
+              {{ getStatusLabel(candidature.statut) }}
+            </span>
+          </td>
+          <td>
+            <div class="actions">
+              <button (click)="showDetails(candidature)" class="btn btn-sm btn-info">
+                <i class="fas fa-eye"></i> Détails
+              </button>
+              <button (click)="creerEntretienPourCandidat(candidature)" class="btn btn-sm btn-primary">
+                <i class="fas fa-calendar-plus"></i> Créer entretien
+              </button>
+              <button *ngIf="candidature.statut === 'EN_ATTENTE'" (click)="accepterCandidature(candidature)" class="btn btn-sm btn-success">
+                <i class="fas fa-check"></i> Accepter
+              </button>
+              <button *ngIf="candidature.statut === 'EN_ATTENTE'" (click)="rejeterCandidature(candidature)" class="btn btn-sm btn-danger">
+                <i class="fas fa-times"></i> Rejeter
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && totalPages > 1" class="pagination-controls">
+    <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn btn-secondary">
+      <i class="fas fa-chevron-left"></i> Précédent
+    </button>
+    <span class="page-info">Page {{ currentPage }} sur {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn btn-secondary">
+      Suivant <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+
+  <!-- Modal des détails -->
+  <div *ngIf="showDetailModal && selectedCandidature" class="modal-overlay" (click)="closeDetailModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Détails de la candidature</h3>
+        <button (click)="closeDetailModal()" class="close-btn">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-group">
+          <label>Nom complet:</label>
+          <p>{{ selectedCandidature.nomComplet }}</p>
+        </div>
+        <div class="detail-group">
+          <label>Email:</label>
+          <p><a href="mailto:{{ selectedCandidature.email }}">{{ selectedCandidature.email }}</a></p>
+        </div>
+        <div class="detail-group">
+          <label>Téléphone:</label>
+          <p>{{ selectedCandidature.telephone || 'N/A' }}</p>
+        </div>
+        <div class="detail-group">
+          <label>Poste demandé:</label>
+          <p>{{ selectedCandidature.offreTitre || selectedCandidature.poste || 'N/A' }}</p>
+        </div>
+        <div class="detail-group">
+          <label>Formation:</label>
+          <p>{{ selectedCandidature.formation || 'N/A' }}</p>
+        </div>
+        <div class="detail-group">
+          <label>Expérience:</label>
+          <p>{{ selectedCandidature.experience || 'N/A' }}</p>
+        </div>
+        <div class="detail-group">
+          <label>Compétences:</label>
+          <p>{{ selectedCandidature.competences || 'N/A' }}</p>
+        </div>
+        <div class="detail-group">
+          <label>Lettre de motivation:</label>
+          <p class="letter-text">{{ selectedCandidature.lettreMotivation || 'N/A' }}</p>
+        </div>
+        <div class="detail-group">
+          <label>Date disponibilité:</label>
+          <p>{{ selectedCandidature.dateDisponibilite || 'N/A' }}</p>
+        </div>
+        <div class="detail-group">
+          <label>Préavis:</label>
+          <p>{{ selectedCandidature.preavis || 'N/A' }}</p>
+        </div>
+        <div class="detail-group">
+          <label>Statut:</label>
+          <span class="badge" [ngClass]="getStatusBadge(selectedCandidature.statut)">
+            {{ getStatusLabel(selectedCandidature.statut) }}
+          </span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button *ngIf="selectedCandidature.statut === 'EN_ATTENTE'" (click)="accepterCandidature(selectedCandidature)" class="btn btn-success">
+          <i class="fas fa-check"></i> Accepter
+        </button>
+        <button *ngIf="selectedCandidature.statut === 'EN_ATTENTE'" (click)="rejeterCandidature(selectedCandidature)" class="btn btn-danger">
+          <i class="fas fa-times"></i> Rejeter
+        </button>
+        <button (click)="closeDetailModal()" class="btn btn-secondary">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

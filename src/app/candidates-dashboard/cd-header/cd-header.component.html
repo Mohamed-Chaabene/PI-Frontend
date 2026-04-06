@@ -1,94 +1,199 @@
 ﻿<div class="navbar-area navbar-expand-lg">
     <div class="container-fluid">
         <nav class="navbar">
-            <!-- Logo with Brand Info -->
             <div class="navbar-brand">
-                <img src="/images/logo.png" alt="Jove Logo">
+                <img src="/images/logo.png" alt="MatchyKhedma Logo">
                 <div class="header-brand">
-                    <h5>Candidates</h5>
-                    <p class="brand-subtitle">Dashboard</p>
+                    <h5>MatchyKhedma</h5>
+                    <p class="brand-subtitle">Candidates Dashboard</p>
                 </div>
             </div>
-                    <ul class="navbar-nav">
 
-            
-                    <!-- ✅ Formations — menu conditionnel selon rôle -->
-                    <li class="nav-item">
-                        <button type="button" class="dropdown-toggle nav-link" (click)="toggleDropdown('formations')">
-                            Formations
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <button type="button" class="dropdown-toggle nav-link" (click)="toggleDropdown('formations')">
+                        Formations
+                    </button>
+                    <ul class="dropdown-menu" [class.show]="activeDropdown === 'formations'">
+                        <li class="nav-item">
+                            <a routerLink="/formations" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                Liste des formations
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a routerLink="/formations/mes-formations" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                Mes formations
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a routerLink="/formations/admin" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                Gérer les formations
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a routerLink="/formations/admin/create" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                Ajouter une formation
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <button type="button" class="dropdown-toggle nav-link" (click)="toggleDropdown('candidates')">
+                        Candidates
+                    </button>
+                    <ul class="dropdown-menu" [class.show]="activeDropdown === 'candidates'">
+                        <li class="nav-item">
+                            <a routerLink="/candidates" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                Candidates
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a routerLink="/candidate-details" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                Candidate Details
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a routerLink="/candidates-dashboard" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                Candidates Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a routerLink="/candidate-entretiens" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                Mes Entretiens
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="header-actions">
+                <div class="search-container">
+                    <i class="ri-search-line search-icon"></i>
+                    <input
+                        type="text"
+                        placeholder="Search users..."
+                        [(ngModel)]="searchTerm"
+                        (input)="onSearchChange()"
+                        (focus)="showSearchResults = true"
+                        (blur)="onSearchBlur()"
+                    />
+                    <button
+                        type="button"
+                        class="clear-btn"
+                        *ngIf="searchTerm"
+                        (click)="clearSearch()"
+                    >
+                        ✕
+                    </button>
+
+                    <div class="search-results" *ngIf="showSearchResults">
+                        <div class="search-status" *ngIf="isSearching">
+                            Searching...
+                        </div>
+                        <div class="search-status" *ngIf="!isSearching && searchResults.length === 0 && searchTerm">
+                            No users found
+                        </div>
+                        <button
+                            type="button"
+                            class="search-result-item"
+                            *ngFor="let user of searchResults"
+                            (click)="selectUser(user)"
+                        >
+                            <div class="result-content">
+                                <div class="result-info">
+                                    <span class="result-name">{{ user.nom }}</span>
+                                    <span class="result-email">{{ user.email }}</span>
+                                </div>
+                                <div class="result-actions">
+                                    <button 
+                                        type="button" 
+                                        class="follow-btn"
+                                        [class.followed]="isUserFollowed(user.id)"
+                                        (click)="followUser(user); $event.stopPropagation()">
+                                        {{ isUserFollowed(user.id) ? '✓ Suivi' : 'Suivre' }}
+                                    </button>
+                                    <span class="result-tag" *ngIf="user.role">{{ user.role }}</span>
+                                </div>
+                            </div>
                         </button>
-                        <ul class="dropdown-menu" [class.show]="activeDropdown === 'formations'">
+                    </div>
+                </div>
+            </div>
 
-                            <!-- ✅ Tout le monde : liste publique -->
-                            <li class="nav-item">
-                                <a routerLink="/formations" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Liste des formations
-                                </a>
-                            </li>
+            <div class="header-right">
+                <div class="notification-container">
+                    <button type="button" class="notification-btn" (click)="toggleNotificationPanel()" [class.active]="showNotificationPanel">
+                        <i class="ri-notification-3-line"></i>
+                        <span class="notification-badge" *ngIf="unreadNotifications > 0">{{ unreadNotifications }}</span>
+                    </button>
 
-                            <!-- ✅ Candidat connecté uniquement -->
-                            <li class="nav-item" >
-                                <a routerLink="/formations/mes-formations" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Mes formations
-                                </a>
-                            </li>
+                    <!-- Notification Dropdown Panel -->
+                    <div class="notification-panel" *ngIf="showNotificationPanel" (click)="$event.stopPropagation()">
+                        <div class="notification-header">
+                            <h3>Notifications</h3>
+                            <button type="button" class="close-btn" (click)="showNotificationPanel = false">
+                                <i class="ri-close-line"></i>
+                            </button>
+                        </div>
 
-                            <!-- ✅ Admin uniquement -->
-                            <li class="nav-item" >
-                                <a routerLink="/formations/admin" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Gérer les formations
-                                </a>
-                            </li>
-                            <li class="nav-item" >
-                                <a routerLink="/formations/admin/create" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Ajouter une formation
-                                </a>
-                            </li>
+                        <div class="notification-list" #notificationList>
+                            <!-- Empty State -->
+                            <div class="notification-empty" *ngIf="notifications.length === 0">
+                                <i class="ri-notification-off-line"></i>
+                                <p>No notifications yet</p>
+                            </div>
 
-                        </ul>
-                    </li>
+                            <!-- Notification Items -->
+                            <div class="notification-item" *ngFor="let notif of notifications; let i = index" 
+                                 [class.unread]="!notif.isRead"
+                                 [class.new-notification]="i === 0 && !notif.isRead"
+                                 (click)="markNotificationAsRead(notif.id)">
+                                <div class="notification-icon">
+                                    <i class="ri-user-follow-line" *ngIf="notif.type === 'follow'"></i>
+                                    <i class="ri-briefcase-line" *ngIf="notif.type === 'new_job_posted'"></i>
+                                    <i class="ri-mail-line" *ngIf="notif.type === 'message'"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <p class="notification-message">{{ notif.message }}</p>
+                                    <span class="notification-time">{{ formatDate(notif.createdAt) }}</span>
+                                </div>
+                                <div class="notification-status">
+                                    <span class="unread-dot" *ngIf="!notif.isRead"></span>
+                                </div>
+                            </div>
+                        </div>
 
-                    <!-- Candidates -->
-                    <li class="nav-item">
-                        <button type="button" class="dropdown-toggle nav-link" (click)="toggleDropdown('candidates')">
-                            Candidates
-                        </button>
-                        <ul class="dropdown-menu" [class.show]="activeDropdown === 'candidates'">
-                            <li class="nav-item">
-                                <a routerLink="/candidates" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Candidates
-                                </a>
-                            </li>
-                            <li class="nav-item" >
-                                <a routerLink="/candidate-details" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Candidate Details
-                                </a>
-                            </li>
-                            <li class="nav-item" >
-                                <a routerLink="/candidates-dashboard" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Candidates Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a routerLink="/candidate-entretiens" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Mes Entretiens
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    
-
-                </ul>
-
-                <div class="others-option">
-                    <div class="option-item">
-                        <p class="welcome-text">Welcome Back!</p>
-                        <div class="profile-avatar">
-                            <i class="ri-user-line"></i>
+                        <!-- Mark All As Read Button -->
+                        <div class="notification-footer" *ngIf="notifications.length > 0">
+                            <button type="button" class="mark-all-btn" (click)="markAllAsRead()">
+                                Mark all as read
+                            </button>
+                            <button type="button" class="delete-all-btn" (click)="deleteAllNotifications()">
+                                <i class="ri-delete-bin-line"></i>
+                                Delete all
+                            </button>
                         </div>
                     </div>
                 </div>
+
+                <button type="button" class="user-profile-button" (click)="toggleDropdown('profile')">
+                    <img [src]="displayProfilePictureUrl" alt="Candidate image" class="user-image" />
+                    <div class="user-info">
+                        <span class="user-greeting">Welcome,</span>
+                        <span class="user-name">{{ currentUserName }}</span>
+                    </div>
+                </button>
+
+                <ul class="header-dropdown-menu" [class.show]="activeDropdown === 'profile'">
+                    <li>
+                        <button type="button" class="dropdown-item" (click)="logout()">
+                            <i class="ri-logout-box-r-line"></i>
+                            Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
         </nav>
     </div>
 </div>

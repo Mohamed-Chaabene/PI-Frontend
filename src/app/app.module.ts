@@ -61,7 +61,7 @@ import { CdProfileComponent } from './candidates-dashboard/cd-profile/cd-profile
 import { CdBookmarksComponent } from './candidates-dashboard/cd-bookmarks/cd-bookmarks.component';
 import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component';
 import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
-import { CdMessageComponent } from './candidates-dashboard/cd-message/cd-message.component';
+import { CdMessageMailboxComponent } from './candidates-dashboard/cd-message-mailbox/cd-message-mailbox.component';
 import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-password/cd-change-password.component';
 
 // Shared components are in SharedModule now
@@ -87,7 +87,7 @@ import { EdFooterComponent } from './employers-dashboard/ed-footer/ed-footer.com
 import { RdPostJobComponent } from './recruiter-dashboard/rd-post-job/rd-post-job.component';
 import { RdManageJobsComponent } from './recruiter-dashboard/rd-manage-jobs/rd-manage-jobs.component';
 import { RdApplicantsComponent } from './recruiter-dashboard/rd-applicants/rd-applicants.component';
-import { RdMessagesComponent } from './recruiter-dashboard/rd-messages/rd-messages.component';
+import { RdMessagesMailboxComponent } from './recruiter-dashboard/rd-messages-mailbox/rd-messages-mailbox.component';
 import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.component';
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 
@@ -139,7 +139,7 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         CdBookmarksComponent,
         CdAppliedJobsComponent,
         CdAlertJobsComponent,
-        CdMessageComponent,
+        CdMessageMailboxComponent,
         CdChangePasswordComponent,
         BlogSidebarComponent,
         PricingComponent,
@@ -153,7 +153,7 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         RdPostJobComponent,
         RdManageJobsComponent,
         RdApplicantsComponent,
-        RdMessagesComponent,
+        RdMessagesMailboxComponent,
         RdProfileComponent,
         RdChangePasswordComponent,
         CdDocumentsComponent, 

@@ -171,6 +171,9 @@ showGamificationModal: boolean = false;
 
     constructor(private apiService: ApiService, private router: Router) {}
 
+        constructor(private apiService: ApiService, private router: Router, private route: ActivatedRoute) {}
+
+        
     ngOnInit(): void {
         this.loadData();
     }

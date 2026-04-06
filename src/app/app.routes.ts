@@ -34,18 +34,20 @@ import { CdProfileComponent } from './candidates-dashboard/cd-profile/cd-profile
 import { CdBookmarksComponent } from './candidates-dashboard/cd-bookmarks/cd-bookmarks.component';
 import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component';
 import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
-import { CdMessageComponent } from './candidates-dashboard/cd-message/cd-message.component';
+import { CdMessageMailboxComponent } from './candidates-dashboard/cd-message-mailbox/cd-message-mailbox.component';
 import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-password/cd-change-password.component';
+import { CdMailboxComponent } from './candidates-dashboard/cd-mailbox/cd-mailbox.component';
 import { RecruiterDashboardComponent } from './recruiter-dashboard/recruiter-dashboard.component';
 import { RdDashboardComponent } from './recruiter-dashboard/rd-dashboard/rd-dashboard.component';
 import { RdPostJobComponent } from './recruiter-dashboard/rd-post-job/rd-post-job.component';
 import { RdManageJobsComponent } from './recruiter-dashboard/rd-manage-jobs/rd-manage-jobs.component';
 import { RdApplicantsComponent } from './recruiter-dashboard/rd-applicants/rd-applicants.component';
-import { RdMessagesComponent } from './recruiter-dashboard/rd-messages/rd-messages.component';
+import { RdMessagesMailboxComponent } from './recruiter-dashboard/rd-messages-mailbox/rd-messages-mailbox.component';
 import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.component';
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 import { RdInterviews } from './recruiter-dashboard/rd-interviews/rd-interviews';
 import { RdAddQuestions } from './recruiter-dashboard/rd-add-questions/rd-add-questions';
+import { RdCandidaturesListComponent } from './recruiter-dashboard/rd-candidatures-list/rd-candidatures-list.component';
 import { PublicTestPassPageComponent } from './pages/public-test-pass-page/public-test-pass-page.component';
 import { CandidateEntretiensPageComponent } from './pages/candidate-entretiens-page/candidate-entretiens-page.component';
 import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
@@ -76,6 +78,7 @@ export const routes: Routes = [
     {path: 'pricing', component: PricingPageComponent},
     {path: 'jobs-grid', component: JobsGridPageComponent},
     {path: 'jobs-listing', component: JobsListingPageComponent},
+    {path: 'job-details/:id', component: JobDetailsPageComponent},
     {path: 'job-details', component: JobDetailsPageComponent},
     {path: 'categories', component: CategoriesPageComponent},
     {path: 'candidates', component: CandidatesPageComponent},
@@ -119,10 +122,12 @@ export const routes: Routes = [
             {path: '', component: CDashboardComponent},
             {path: 'my-profile', component: CdProfileComponent},
             { path: 'documents', component: CdDocumentsComponent },   //************************************** */
+            {path: 'test', redirectTo: '', pathMatch: 'full'},
             {path: 'bookmarks', component: CdBookmarksComponent},
             {path: 'applied-jobs', component: CdAppliedJobsComponent},
             {path: 'alert-jobs', component: CdAlertJobsComponent},
-            {path: 'message', component: CdMessageComponent},
+            {path: 'message', component: CdMessageMailboxComponent},
+            {path: 'mailbox', component: CdMailboxComponent},
             {path: 'change-password', component: CdChangePasswordComponent},
             {path: 'candidate-details', component: CandidateDetailsPageComponent},
             { path: 'partenaires', component: PartenaireCandidatComponent },
@@ -139,7 +144,8 @@ export const routes: Routes = [
             {path: 'post-job', component: RdPostJobComponent},
             {path: 'manage-jobs', component: RdManageJobsComponent},
             {path: 'applicants', component: RdApplicantsComponent},
-            {path: 'messages', component: RdMessagesComponent},
+            {path: 'candidatures', component: RdCandidaturesListComponent},
+            {path: 'messages', component: RdMessagesMailboxComponent},
             {path: 'profile', component: RdProfileComponent},
             {path: 'change-password', component: RdChangePasswordComponent},
             {path: 'interviews', component: RdInterviews},

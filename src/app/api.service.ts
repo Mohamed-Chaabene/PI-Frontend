@@ -568,6 +568,110 @@ getRelances(): Observable<any> {
     return this.http.get(`${this.apiUrl}/candidatures/avancee/relances`, { headers });
 }
 
+
+
+
+
+  // Envoyer un message entre utilisateur connecté et destinataire
+  sendMessage(messageData: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/messages/send`, messageData, { headers });
+  }
+
+  // Récupérer les messages de la boîte actuelle (candidat ou recruteur)
+  getMessagesForCurrentUser(): Observable<any[]> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get<any[]>(`${this.apiUrl}/messages/mes-messages`, { headers });
+  }
+
+  // Alias conservé pour compatibilité avec l'existant
+  getMessagesForCandidat(): Observable<any[]> {
+    return this.getMessagesForCurrentUser();
+  }
+
+  // Marquer un message comme lu
+  marquerMessageCommeL(messageId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.put(`${this.apiUrl}/messages/${messageId}/lu`, {}, { headers });
+  }
+
+  // Supprimer un message
+  supprimerMessage(messageId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.delete(`${this.apiUrl}/messages/${messageId}`, { headers });
+  }
+
+  // ==================== NOTIFICATIONS ====================
+
+  getUnreadNotificationCount(token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    headers = headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers = headers.set('Pragma', 'no-cache');
+    headers = headers.set('Expires', '0');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Add timestamp to prevent caching
+    const timestamp = Date.now();
+    return this.http.get(`${this.apiUrl}/notifications/unread-count?t=${timestamp}`, { headers });
+  }
+
+  getNotifications(token: string): Observable<any[]> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    headers = headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers = headers.set('Pragma', 'no-cache');
+    headers = headers.set('Expires', '0');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Add timestamp to prevent caching
+    const timestamp = Date.now();
+    return this.http.get<any[]>(`${this.apiUrl}/notifications?t=${timestamp}`, { headers });
+  }
+
+  markNotificationAsRead(notificationId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/notifications/${notificationId}/read`, {}, { headers });
+  }
+
+  markAllNotificationsAsRead(token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/notifications/mark-all-read`, {}, { headers });
+  }
+
+  deleteAllNotifications(token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/notifications/delete-all`, {}, { headers });
+  }
+
+
+
 }
 
 

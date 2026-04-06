@@ -66,9 +66,6 @@
             <button class="btn-view" [routerLink]="['/job-details']" [queryParams]="{id: offre.id}">
                 <i class="ri-eye-line"></i> Voir détails
             </button>
-            <button class="btn-apply" (click)="postuler(offre)" [disabled]="offre.statut === 'CLOSED'">
-                <i class="ri-check-line"></i> Postuler
-            </button>
         </div>
     </div>
 </div>
@@ -78,8 +75,8 @@
     <div class="empty-icon">
         <i class="ri-briefcase-line"></i>
     </div>
-    <h3>Aucune offre disponible</h3>
-    <p>Revenez plus tard pour découvrir de nouvelles opportunités</p>
+    <h3>Aucune offre postulee</h3>
+    <p>Cette page affiche uniquement les offres pour lesquelles vous avez deja depose une candidature.</p>
     <button class="btn-refresh" (click)="loadOffres()">
         <i class="ri-refresh-line"></i> Actualiser
     </button>
