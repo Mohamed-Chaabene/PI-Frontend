@@ -15,6 +15,7 @@ export class FormationDetailComponent implements OnInit {
   inscrit     = false;
   inscribing  = false;
   candidatId: number | null = null;
+  inscriptionId: number | null = null;
   isAdmin     = false;
   returnUrl   = '/formations';
 
@@ -65,21 +66,28 @@ export class FormationDetailComponent implements OnInit {
   }
 
   // ── S'inscrire ────────────────────────────────────────────────────
-  sInscrire(): void {
-    if (this.isAdmin || this.inscrit) return;
-    if (!this.candidatId) {
-      this.resolveCandidatId(() => this.sInscrire());
-      return;
-    }
-    this.inscribing = true;
-    this.formationService.inscrire(this.candidatId, this.formation.id).subscribe({
-      next: () => {
-        this.inscrit    = true;
-        this.inscribing = false;
-      },
-      error: () => { this.inscribing = false; }
-    });
-  }
+sInscrire(): void {
+  if (!this.candidatId || !this.formation?.id) return;
+
+  this.formationService.inscrire(
+    this.candidatId, this.formation.id
+  ).subscribe({
+    next: (inscription) => {
+      // ✅ Stocker inscriptionId pour le player de progression
+      localStorage.setItem(
+        'inscription_' + this.formation.id,
+        String(inscription.id)
+      );
+
+      // Mettre à jour l'état local
+      this.inscrit       = true;
+      this.inscriptionId = inscription.id;
+
+      console.log('✅ Inscrit, inscriptionId:', inscription.id);
+    },
+    error: (err) => console.error('Erreur inscription:', err)
+  });
+}
 
   // ── Modal accès ───────────────────────────────────────────────────
 openAccessModal(): void  { this.showAccessModal = true; }

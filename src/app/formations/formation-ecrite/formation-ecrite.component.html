@@ -1,12 +1,10 @@
 <div class="ecrite-page">
 
-  <!-- ══ Header ═══════════════════════════════════════════ -->
   <div class="ecrite-header">
     <div class="container">
       <a [routerLink]="['/formations', formation?.id]" class="back-link">
         <i class="ri-arrow-left-line"></i> Retour à la formation
       </a>
-
       <h2 *ngIf="formation">
         <i class="ri-book-read-line"></i>
         {{ formation.titre }} — Documentation
@@ -14,30 +12,37 @@
     </div>
   </div>
 
-  <!-- ══ Body ════════════════════════════════════════════ -->
   <div class="ecrite-body">
 
     <!-- Chargement -->
     <div class="text-center py-5" *ngIf="loading">
-      <span class="text-muted">Chargement...</span>
+      <div class="loading-spinner" style="margin:0 auto"></div>
+      <p class="text-muted mt-3">{{ sourceLabel || 'Chargement...' }}</p>
     </div>
 
-    <!-- Contenu -->
     <ng-container *ngIf="!loading">
 
       <!-- Sous-barre -->
       <div class="ecrite-subbar">
-        <div class="ecrite-tab">
+        <div class="ecrite-tab active">
           <i class="ri-book-read-line"></i>
           {{ sourceLabel || 'Documentation' }}
         </div>
+
+        <!-- Onglets autres sources -->
+        <button
+          *ngFor="let r of docResults; let i = index"
+          class="ecrite-source-btn"
+          [class.active]="selectedIndex === i"
+          (click)="selectResult(i)"
+          type="button">
+          {{ r.source }}
+        </button>
       </div>
 
-      <!-- ✅ Contenu HTML dynamique (remplace iframe) -->
-      <div class="ecrite-content" [innerHTML]="safeHtml"></div>
+      <!-- Contenu dans l'app -->
+      <div class="ecrite-content" [innerHTML]="safeHtml" (click)="onProxyLinkClick($event)"></div>
 
     </ng-container>
-
   </div>
-
 </div>

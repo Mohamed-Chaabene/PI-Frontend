@@ -10,8 +10,10 @@ import { FormationService } from '../services/formation.service';
   styleUrls: ['./formation-video.component.scss']
 })
 export class FormationVideoComponent implements OnInit {
-  formation!: Formation;
-  loading = true;
+  formation!:     Formation;
+  loading       = true;
+  inscriptionId: number | null = null;
+  candidatId:    number | null = null;
 
   private route            = inject(ActivatedRoute);
   private router           = inject(Router);
@@ -19,11 +21,14 @@ export class FormationVideoComponent implements OnInit {
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
+
+    // Lire depuis localStorage
+    this.candidatId    = Number(localStorage.getItem('candidatId')) || null;
+    this.inscriptionId = Number(
+      localStorage.getItem('inscription_' + id)) || null;
+
     this.formationService.getFormationById(id).subscribe({
-      next: (f) => {
-        this.formation = f;
-        this.loading   = false;
-      },
+      next: (f) => { this.formation = f; this.loading = false; },
       error: () => {
         this.loading = false;
         this.router.navigate(['/formations']);

@@ -12,18 +12,20 @@ import { Formation } from '../models/formation.model';
   styleUrls: ['./formation-ecrite.component.scss']
 })
 export class FormationEcriteComponent implements OnInit {
-  formation!: Formation;
-  loading    = true;
-  safeHtml: SafeHtml | null = null;
+  formation!:   Formation;
+  loading     = true;
+  safeHtml:   SafeHtml | null = null;
   sourceLabel = '';
-  errorMsg    = '';
+  docResults: any[] = [];
+  selectedIndex = 0;
+  googleNotConfigured = false;
 
   private sanitizer        = inject(DomSanitizer);
   private route            = inject(ActivatedRoute);
   private formationService = inject(FormationService);
   private http             = inject(HttpClient);
 
-  private readonly base = 'http://localhost:8080/api/suggestions';
+  private readonly base = 'http://localhost:8080/api';
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -36,150 +38,264 @@ export class FormationEcriteComponent implements OnInit {
   private loadContent(f: Formation): void {
     const w = f.writtenUrl || '';
 
-    if (w.includes('|')) {
-      const [id, sourceType] = w.split('|');
-      this.loadBySource(id.trim(), sourceType.trim());
+    if (w && w.startsWith('http')) {
+      // URL configurée manuellement par l'admin
+      this.sourceLabel = this.extractDomain(w);
+      this.loadViaProxy(w);
     } else {
-      // Pas de doc configurée → fallback DevDocs selon catégorie
-      this.loadFallback(f.categorie);
+      // Recherche automatique via Google
+      this.searchAndLoad(f.titre, f.categorie);
     }
   }
 
-  private loadBySource(id: string, sourceType: string): void {
-    if (sourceType === 'devdocs') {
-      this.loadDevDocs(id);
-    } else if (sourceType === 'devto') {
-      this.loadDevTo(id);
-    } else if (sourceType === 'github') {
-      this.loadGithub(id);
-    } else {
-      this.loadFallback(this.formation?.categorie || 'Développement');
-    }
-  }
+  // ── Recherche Google ───────────────────────────────────────────
+  private searchAndLoad(titre: string, categorie: string): void {
+    this.sourceLabel = 'Recherche en cours...';
 
-  // ── DevDocs ───────────────────────────────────────────────────────
-  private loadDevDocs(slug: string): void {
-    this.sourceLabel = 'DevDocs.io';
     this.http.get<any>(
-      `${this.base}/docs/devdocs/content?slug=${encodeURIComponent(slug)}`
+      `${this.base}/suggestions/docs/auto` +
+      `?titre=${encodeURIComponent(titre)}`
     ).subscribe({
       next: (data) => {
+        // Google pas configuré
+        if (data.error) {
+          this.googleNotConfigured = true;
+          this.showGoogleNotConfigured();
+          return;
+        }
+
+        this.docResults = data.results || [];
+
+        if (this.docResults.length > 0) {
+          this.selectResult(0);
+        } else {
+          this.showNoContent(titre);
+        }
+      },
+      error: () => this.showNoContent(titre)
+    });
+  }
+
+  // ── Changer de source ──────────────────────────────────────────
+  selectResult(index: number): void {
+    if (index < 0 || index >= this.docResults.length) return;
+    this.selectedIndex = index;
+    const result       = this.docResults[index];
+    this.sourceLabel   = result.source || '';
+    this.loading       = true;
+    this.safeHtml      = null;
+
+    this.loadViaProxy(result.url);
+  }
+
+  // ── Proxy Spring → contenu dans l'app ─────────────────────────
+  private loadViaProxy(url: string): void {
+    this.http.get(
+      `${this.base}/proxy/fetch?url=${encodeURIComponent(url)}`,
+      { responseType: 'text' }
+    ).subscribe({
+      next: (html) => {
+        const processedHtml = this.rewriteRelativeUrls(html, url);
+        this.safeHtml = this.sanitizer.bypassSecurityTrustHtml(processedHtml);
+        this.loading  = false;
+      },
+      error: () => {
+        // Site bloque le proxy → message avec snippet
+        const current = this.docResults[this.selectedIndex];
         this.safeHtml = this.sanitizer.bypassSecurityTrustHtml(
-          this.buildDevDocsHtml(data, slug)
+          this.buildSnippetCard(current)
         );
         this.loading = false;
-      },
-      error: (err) => {
-        console.error('DevDocs error:', err);
-        this.loadFallback(this.formation?.categorie || 'Développement');
       }
     });
   }
 
-  private buildDevDocsHtml(data: any, slug: string): string {
-    const name = slug.replace('~', ' ').replace('_', ' ');
-    let html = `
-      <div class="devdocs-content">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;
-                    padding:16px;background:#E6F1FB;border-radius:10px;">
-          <i class="ri-book-2-line" style="font-size:24px;color:#0965A4"></i>
-          <div>
-            <h1 style="margin:0;font-size:1.4rem;color:#0965A4">${name}</h1>
-            <p style="margin:4px 0 0;font-size:0.85rem;color:#4b5563">
-              Documentation officielle via DevDocs.io
-            </p>
-          </div>
-        </div>`;
+  // ── Intercepter les clics sur les liens de la doc ────────────────
+  onProxyLinkClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const anchor = target.closest('a');
+    
+    // Si on a cliqué sur un lien marqué avec data-proxy-link
+    if (anchor && anchor.getAttribute('data-proxy-link') === 'true') {
+      const href = anchor.getAttribute('href');
+      
+      // Assurer qu'on navigue vers une vraie page HTTP
+      if (href && href.startsWith('http')) {
+        event.preventDefault(); // Annuler l'ouverture du vrai site
+        this.loading = true;
+        this.safeHtml = null;
+        window.scrollTo(0, 0);  // Remonter
+        this.loadViaProxy(href); // Re-télécharger via le proxy !
+      }
+    }
+  }
 
-    const entries = data?.entries;
-    if (entries && Array.isArray(entries) && entries.length > 0) {
-      // Grouper par type
-      const groups: Record<string, string[]> = {};
-      entries.forEach((e: any) => {
-        const type = e.type || 'Général';
-        if (!groups[type]) groups[type] = [];
-        groups[type].push(e.name);
+  // ── Corriger les URLs relatives (Images, CSS, Liens) ─────────────
+  private rewriteRelativeUrls(html: string, baseUrl: string): string {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    try {
+      const base = new URL(baseUrl);
+
+      // 1. Images (utilise setAttribute)
+      doc.querySelectorAll('img').forEach((el: Element) => {
+        const img = el as HTMLImageElement;
+        const src = img.getAttribute('src');
+        if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+          try { img.setAttribute('src', new URL(src, base.href).href); } catch (e) {}
+        }
+
+        const srcset = img.getAttribute('srcset');
+        if (srcset) {
+          const newSrcset = srcset.split(',').map(part => {
+            const parts = part.trim().split(' ');
+            const srcPart = parts[0];
+            if (srcPart && !srcPart.startsWith('http') && !srcPart.startsWith('data:')) {
+              try { parts[0] = new URL(srcPart, base.href).href; } catch(e){}
+            }
+            return parts.join(' ');
+          }).join(', ');
+          img.setAttribute('srcset', newSrcset);
+        }
       });
 
-      Object.entries(groups).forEach(([type, names]) => {
-        html += `<h2 style="font-size:1rem;font-weight:700;color:#1a1a2e;
-                            margin:20px 0 10px;padding-bottom:6px;
-                            border-bottom:2px solid #E6F1FB">${type}</h2>
-                 <ul style="list-style:none;padding:0;display:grid;
-                             grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px">`;
-        names.forEach(name => {
-          html += `<li style="padding:6px 10px;background:#f8fafc;
-                               border:1px solid #e5e7eb;border-radius:6px;
-                               font-size:0.875rem;color:#374151">
-                     <code style="color:#0965A4">${name}</code>
-                   </li>`;
-        });
-        html += `</ul>`;
+      // 2. CSS (Stylesheets)
+      // On cherche les links pour les thèmes CSS aussi
+      doc.querySelectorAll('link').forEach((el: Element) => {
+        const link = el as HTMLLinkElement;
+        const rel = link.getAttribute('rel');
+        const href = link.getAttribute('href');
+        if (href && rel && rel.toLowerCase().includes('stylesheet') && !href.startsWith('http') && !href.startsWith('data:')) {
+          try { link.setAttribute('href', new URL(href, base.href).href); } catch (e) {}
+        }
       });
-    } else {
-      html += `<p style="color:#6b7280">Chargement du contenu...</p>`;
+
+      // 3. Liens (Anchor tags) -> Taguer pour onProxyLinkClick
+      doc.querySelectorAll('a').forEach((el: Element) => {
+        const a = el as HTMLAnchorElement;
+        const href = a.getAttribute('href');
+        
+        if (href && !href.startsWith('mailto:') && !href.startsWith('javascript:') && !href.startsWith('#')) {
+          try { 
+            const absUrl = new URL(href, base.href).href;
+            a.setAttribute('href', absUrl);
+            a.setAttribute('data-proxy-link', 'true'); // On indique qu'on va intercepter
+          } catch(e) {}
+        }
+      });
+
+      // 4. Icônes SVG (utilisation de xlink:href)
+      doc.querySelectorAll('use').forEach((use: Element) => {
+        const href = use.getAttribute('href') || use.getAttribute('xlink:href');
+        if (href && !href.startsWith('http') && !href.startsWith('data:') && !href.startsWith('#')) {
+          try {
+            const newHref = new URL(href, base.href).href;
+            if (use.hasAttribute('href')) use.setAttribute('href', newHref);
+            if (use.hasAttribute('xlink:href')) use.setAttribute('xlink:href', newHref);
+          } catch(e) {}
+        }
+      });
+
+    } catch (e) {
+      console.warn("Impossible d'analyser l'URL de base pour la réécriture:", e);
     }
 
-    html += `
-        <div style="margin-top:24px;padding:14px 16px;background:#f0fdf4;
-                    border:1px solid #bbf7d0;border-radius:10px;
-                    display:flex;align-items:center;gap:10px">
-          <i class="ri-external-link-line" style="color:#16a34a;font-size:18px"></i>
-          <span style="font-size:0.875rem;color:#166534">
-            Voir la documentation complète :
-            <a href="https://devdocs.io/${slug}" target="_blank" rel="noopener"
-               style="color:#0965A4;font-weight:600">
-              devdocs.io/${slug} →
+    return doc.documentElement.outerHTML;
+  }
+
+  // ── Carte snippet quand proxy bloqué ──────────────────────────
+  private buildSnippetCard(result: any): string {
+    if (!result) return this.buildNoContentHtml('');
+    return `
+      <div style="font-family:sans-serif;padding:32px;max-width:700px;margin:0 auto">
+        <div style="background:#E6F1FB;border-radius:12px;
+                    padding:20px 24px;margin-bottom:24px">
+          <h2 style="margin:0 0 8px;color:#0965A4;font-size:1.2rem">
+            ${result.title || ''}
+          </h2>
+          <p style="margin:0;color:#374151;font-size:0.95rem;line-height:1.6">
+            ${result.snippet || ''}
+          </p>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;
+                    border-radius:10px;padding:16px 20px;
+                    display:flex;align-items:center;gap:12px">
+          <span style="font-size:20px">🔗</span>
+          <div>
+            <p style="margin:0 0 4px;font-size:0.875rem;color:#166534;font-weight:600">
+              Ce site ne peut pas être affiché directement dans l'app.
+            </p>
+            <a href="${result.url}" target="_blank" rel="noopener"
+               style="color:#0965A4;font-size:0.875rem;font-weight:600">
+              Ouvrir ${result.source} dans un nouvel onglet →
             </a>
-          </span>
+          </div>
         </div>
       </div>`;
-    return html;
   }
 
-  // ── dev.to ────────────────────────────────────────────────────────
-  private loadDevTo(articleId: string): void {
-    this.sourceLabel = 'dev.to';
-    this.http.get(
-      `${this.base}/docs/devto/content?articleId=${articleId}`,
-      { responseType: 'text' }
-    ).subscribe({
-      next: (html) => {
-        this.safeHtml = this.sanitizer.bypassSecurityTrustHtml(html);
-        this.loading  = false;
-      },
-      error: () => this.loadFallback(this.formation?.categorie || 'Développement')
-    });
+  // ── Google non configuré ───────────────────────────────────────
+  private showGoogleNotConfigured(): void {
+    this.safeHtml = this.sanitizer.bypassSecurityTrustHtml(`
+      <div style="font-family:sans-serif;padding:40px;max-width:600px;
+                  margin:0 auto;text-align:center">
+        <span style="font-size:48px;display:block;margin-bottom:16px">⚙️</span>
+        <h3 style="color:#1a1a2e;margin-bottom:12px">
+          Configuration requise
+        </h3>
+        <p style="color:#6b7280;margin-bottom:20px;line-height:1.6">
+          La recherche automatique de documentation nécessite une clé
+          <strong>Google Custom Search API</strong>.
+        </p>
+        <div style="background:#fef3c7;border:1px solid #fbbf24;
+                    border-radius:10px;padding:16px 20px;text-align:left">
+          <p style="margin:0 0 8px;font-weight:600;color:#92400e">
+            Dans application.properties :
+          </p>
+          <code style="font-size:0.85rem;color:#92400e;display:block;
+                       line-height:2">
+            google.search.api.key=AIza...<br>
+            google.search.cx=...
+          </code>
+        </div>
+        <p style="margin-top:16px;font-size:0.85rem;color:#6b7280">
+          Obtenir gratuitement sur
+          <a href="https://console.cloud.google.com" target="_blank"
+             style="color:#0965A4">console.cloud.google.com</a>
+          et
+          <a href="https://cse.google.com" target="_blank"
+             style="color:#0965A4">cse.google.com</a>
+        </p>
+      </div>
+    `);
+    this.loading = false;
   }
 
-  // ── GitHub ────────────────────────────────────────────────────────
-  private loadGithub(repo: string): void {
-    this.sourceLabel = 'GitHub';
-    this.http.get(
-      `${this.base}/docs/github/content?repo=${encodeURIComponent(repo)}`,
-      { responseType: 'text' }
-    ).subscribe({
-      next: (html) => {
-        this.safeHtml = this.sanitizer.bypassSecurityTrustHtml(html);
-        this.loading  = false;
-      },
-      error: () => this.loadFallback(this.formation?.categorie || 'Développement')
-    });
+  private showNoContent(titre: string): void {
+    this.safeHtml = this.sanitizer.bypassSecurityTrustHtml(
+      this.buildNoContentHtml(titre)
+    );
+    this.loading = false;
   }
 
-  // ── Fallback par catégorie → DevDocs ──────────────────────────────
-  private loadFallback(categorie: string): void {
-    const slugMap: Record<string, string> = {
-      'Frontend':      'javascript~5',
-      'Backend':       'node~18_lts',
-      'Data':          'python~3.12',
-      'IA':            'python~3.12',
-      'DevOps':        'docker~27',
-      'Design':        'css',
-      'Mobile':        'react_native',
-      'Développement': 'javascript~5'
-    };
-    const slug = slugMap[categorie] || 'javascript~5';
-    this.loadDevDocs(slug);
+  private buildNoContentHtml(titre: string): string {
+    return `
+      <div style="font-family:sans-serif;padding:40px;text-align:center">
+        <span style="font-size:48px;display:block;margin-bottom:16px">📚</span>
+        <h3 style="color:#1a1a2e;margin-bottom:8px">
+          Aucune documentation trouvée
+        </h3>
+        <p style="color:#6b7280">
+          ${titre
+            ? `Aucun résultat pour <strong>${titre}</strong>.`
+            : 'Aucun résultat trouvé.'}
+        </p>
+      </div>`;
+  }
+
+  private extractDomain(url: string): string {
+    try { return new URL(url).hostname.replace('www.', ''); }
+    catch { return url; }
   }
 }

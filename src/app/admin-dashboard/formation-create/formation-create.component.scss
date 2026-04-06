@@ -1,8 +1,8 @@
 // ─── Variables ────────────────────────────────────────────────────────────────
-$primary:       #0965A4;
-$primary-light: #E6F1FB;
-$primary-dark:  #0965A4;
-$text-main:     #1a1a2e;
+$primary:       #667eea;
+$primary-light: #e0e7ff;
+$primary-dark:  #764ba2;
+$text-main:     #374151;
 $text-muted:    #6b7280;
 $text-light:    #9ca3af;
 $border:        #e5e7eb;
@@ -10,7 +10,7 @@ $bg-page:       #f8fafc;
 $bg-card:       #ffffff;
 $radius-card:   16px;
 $radius-input:  10px;
-$shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+$shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
 
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -24,7 +24,7 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
   // ─── Card formulaire ───────────────────────────────────────────────────────
   .form-card {
     background: $bg-card;
-    border: 1px solid $border;
+    border: none;
     border-radius: $radius-card;
     box-shadow: $shadow-card;
     overflow: hidden;
@@ -34,36 +34,17 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
       display: flex;
       align-items: center;
       gap: 16px;
-      padding: 28px 32px;
-      background: linear-gradient(135deg, $primary 0%, #1a7cc4 100%);
+      padding: 20px 24px;
+      background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
       border-bottom: none;
       position: relative;
       overflow: hidden;
 
-      // Cercles décoratifs
-      &::before {
-        content: '';
-        position: absolute;
-        top: -30px; right: -30px;
-        width: 120px; height: 120px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.08);
-      }
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: -40px; left: 30%;
-        width: 100px; height: 100px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.05);
-      }
-
       .form-icon {
-        width: 52px;
-        height: 52px;
-        background: rgba(255, 255, 255, 0.18);
-        border: 1.5px solid rgba(255, 255, 255, 0.25);
-        border-radius: 14px;
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -74,20 +55,19 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
       }
 
       h2 {
-        font-size: 1.15rem;
-        font-weight: 700;
+        font-size: 18px;
+        font-weight: 600;
         color: #fff;
-        margin: 0 0 3px;
+        margin: 0;
         line-height: 1.2;
         position: relative;
         z-index: 1;
       }
 
       p {
-        font-size: 0.82rem;
-        color: rgba(255, 255, 255, 0.78);
-        margin: 0;
-        line-height: 1.4;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.9);
+        margin: 4px 0 0;
         position: relative;
         z-index: 1;
       }
@@ -95,6 +75,7 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
 
     .form-card-body {
       padding: 28px;
+      background: #fafafa;
     }
   }
 
@@ -103,11 +84,11 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: $text-muted;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.05em;
     margin-bottom: 18px;
     margin-top: 8px;
 
@@ -118,12 +99,12 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
     }
 
     .section-number {
-      width: 22px;
-      height: 22px;
-      background: $primary;
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, $primary, $primary-dark);
       color: #fff;
       border-radius: 50%;
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -138,48 +119,49 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
 
     label {
       display: block;
-      font-size: 0.875rem;
+      font-size: 13px;
       font-weight: 600;
       color: $text-main;
-      margin-bottom: 7px;
+      margin-bottom: 6px;
 
-      .required { color: #e03e3e; margin-left: 2px; }
+      .required { color: #ef4444; margin-left: 2px; }
     }
 
     .form-control,
     .form-select {
       width: 100%;
-      padding: 11px 14px;
-      border: 1.5px solid $border;
+      padding: 10px 14px;
+      border: 2px solid $border;
       border-radius: $radius-input;
-      font-size: 0.9rem;
+      font-size: 14px;
       color: $text-main;
       background: $bg-card;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: all 0.2s;
       appearance: none;
       -webkit-appearance: none;
 
       &::placeholder { color: $text-light; }
 
       &:focus {
-        border-color: $primary;
-        box-shadow: 0 0 0 3px rgba($primary, 0.1);
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
       }
 
       &.is-invalid {
-        border-color: #e03e3e;
-        &:focus { box-shadow: 0 0 0 3px rgba(224, 62, 62, 0.1); }
+        border-color: #ef4444;
+        &:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
       }
     }
 
     .invalid-feedback {
-      font-size: 0.78rem;
-      color: #e03e3e;
-      margin-top: 5px;
+      font-size: 12px;
+      color: #ef4444;
+      margin-top: 6px;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
+      font-weight: 500;
     }
 
     .select-wrap {
@@ -202,8 +184,8 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
   // ─── Boutons d'action ──────────────────────────────────────────────────────
   .form-actions {
     display: flex;
+    justify-content: flex-end;
     gap: 10px;
-    align-items: center;
     padding-top: 24px;
     border-top: 1px solid $border;
     margin-top: 8px;
@@ -211,50 +193,48 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
     .btn-cancel {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      padding: 11px 20px;
-      background: transparent;
-      color: $text-muted;
-      border: 1.5px solid $border;
+      gap: 6px;
+      padding: 10px 24px;
+      background: #f3f4f6;
+      color: #6b7280;
+      border: none;
       border-radius: $radius-input;
-      font-size: 0.9rem;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       text-decoration: none;
       transition: all 0.2s;
 
-      i { font-size: 15px; }
+      i { font-size: 16px; }
 
       &:hover {
-        background: $bg-page;
-        color: $text-main;
-        border-color: darken($border, 8%);
+        background: #e5e7eb;
       }
     }
 
     .btn-submit {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      padding: 11px 28px;
-      background: $primary;
+      gap: 6px;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, #16a34a, #15803d);
       color: #fff;
       border: none;
       border-radius: $radius-input;
-      font-size: 0.9rem;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
 
       i { font-size: 16px; }
 
       &:hover:not(:disabled) {
-        background: darken($primary, 6%);
         transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4);
       }
 
       &:disabled {
-        opacity: 0.65;
+        opacity: 0.5;
         cursor: not-allowed;
         transform: none;
       }

@@ -12,43 +12,61 @@ import { FormationService } from '../../formations/services/formation.service';
 })
 export class MesFormationsComponent implements OnInit {
   inscriptions: Inscription[] = [];
-  certificats: Certificat[] = [];
-  candidatId: number | null = null;
+  certificats:  Certificat[]  = [];
+  candidatId:   number | null = null;
   loading = false;
 
-  get enCours()  { return this.inscriptions.filter(i => i.statut === 'EnCours').length; }
-  get terminees(){ return this.inscriptions.filter(i => i.statut === 'Terminé').length; }
+  get enCours()   { return this.inscriptions.filter(i => i.statut === 'EnCours').length; }
+  get terminees() { return this.inscriptions.filter(i => i.statut === 'Terminé').length; }
 
-  constructor(private formationService: FormationService, private router: Router) {}
+  constructor(
+    private formationService: FormationService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.resolveCandidatIdAndLoad();
   }
 
-  updateProgression(inscription: Inscription): void {
-    if (!this.candidatId) return;
-    const candidatId = this.candidatId;
+  // ── Voir la formation ──────────────────────────────────────────
+  voirDetailsFormation(formationId: number): void {
+    this.router.navigate(['/formations', formationId],
+      { queryParams: { from: 'dashboard' } });
+  }
 
-    this.formationService.updateProgression(
-      inscription.id, inscription.progression
-    ).subscribe({
-      next: (updated: Inscription) => {
-        const idx = this.inscriptions.findIndex(i => i.id === updated.id);
-        if (idx !== -1) this.inscriptions[idx] = updated;
-        if (updated.statut === 'Terminé') {
-          this.formationService.getMesCertificats(candidatId).subscribe({
-            next: (data: Certificat[]) => { this.certificats = data; }
-          });
-        }
+  // ── Télécharger certificat ─────────────────────────────────────
+  telecharger(cert: Certificat): void {
+    this.formationService.telechargerCertificat(cert.id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href     = url;
+        a.download = `certificat-${cert.id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
       },
-      error: (err) => console.error('Erreur updateProgression:', err)
+      error: (err) => console.error('Erreur téléchargement:', err)
     });
   }
 
-  voirDetailsFormation(formationId: number): void {
-    this.router.navigate(['/formations', formationId], { queryParams: { from: 'dashboard' } });
+  // ── Progression affichée en entier ────────────────────────────
+  getProgression(ins: Inscription): number {
+    return Math.round(ins.progression || 0);
   }
 
+  // ── Label progression ─────────────────────────────────────────
+  getProgressionLabel(ins: Inscription): string {
+    const p = this.getProgression(ins);
+    if (p === 0)   return 'Non commencée';
+    if (p >= 100)  return 'Terminée ✅';
+    if (p >= 75)   return 'Presque terminée';
+    if (p >= 50)   return 'À mi-chemin';
+    return 'En cours';
+  }
+
+  // ── Résolution candidatId ──────────────────────────────────────
   private resolveCandidatIdAndLoad(): void {
     // 1. Cache localStorage
     const cached = Number(localStorage.getItem('candidatId'));
@@ -62,11 +80,11 @@ export class MesFormationsComponent implements OnInit {
       .toUpperCase().replace(/^ROLE_/, '');
     if (role !== 'CANDIDAT') return;
 
-    // 2. ✅ Depuis le token JWT directement
+    // 2. Depuis le token JWT
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const payload     = JSON.parse(atob(token.split('.')[1]));
         const idFromToken = Number(payload.id);
         if (!Number.isNaN(idFromToken) && idFromToken > 0) {
           this.candidatId = idFromToken;
@@ -93,7 +111,7 @@ export class MesFormationsComponent implements OnInit {
       },
       error: () => {
         this.inscriptions = [];
-        this.certificats = [];
+        this.certificats  = [];
       }
     });
   }
@@ -104,8 +122,16 @@ export class MesFormationsComponent implements OnInit {
 
     this.formationService.getMesInscriptions(this.candidatId).subscribe({
       next: (data: Inscription[]) => {
-        console.log('Inscriptions reçues:', data); // ← debug
         this.inscriptions = data;
+        // ✅ Stocker inscriptionId dans localStorage pour chaque formation
+        data.forEach(ins => {
+          if (ins.formation?.id && ins.id) {
+            localStorage.setItem(
+              'inscription_' + ins.formation.id,
+              String(ins.id)
+            );
+          }
+        });
         this.loading = false;
       },
       error: (err) => {
@@ -119,19 +145,4 @@ export class MesFormationsComponent implements OnInit {
       error: (err) => console.error('Erreur getMesCertificats:', err)
     });
   }
-telecharger(cert: Certificat): void {
-  this.formationService.telechargerCertificat(cert.id).subscribe({
-    next: (blob: Blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `certificat-${cert.id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    },
-    error: (err) => console.error('Erreur téléchargement:', err)
-  });
-}
 }

@@ -117,25 +117,6 @@
                                 </a>
                             </li>
 
-                            <!-- ✅ Candidat connecté uniquement -->
-                            <li class="nav-item" *ngIf="isCandidat">
-                                <a routerLink="/formations/mes-formations" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Mes formations
-                                </a>
-                            </li>
-
-                            <!-- ✅ Admin uniquement -->
-                            <li class="nav-item" *ngIf="isAdmin">
-                                <a routerLink="/formations/admin" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Gérer les formations
-                                </a>
-                            </li>
-                            <li class="nav-item" *ngIf="isAdmin">
-                                <a routerLink="/formations/admin/create" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Ajouter une formation
-                                </a>
-                            </li>
-
                         </ul>
                     </li>
 
