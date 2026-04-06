@@ -67,6 +67,11 @@ import { CandidatsListComponent } from './admin-dashboard/candidats-list/candida
 import { recruteurGuard, recruteurChildGuard } from './guards/recruteur.guard';
 import { PartenaireCandidatComponent } from './candidates-dashboard/partenaire-candidat/partenaire-candidat.component';
 import { OffreCandidatComponent } from './candidates-dashboard/offre-candidat/offre-candidat.component';
+import { EvenementCandidatComponent } from './candidates-dashboard/evenement-candidat/evenement-candidat.component';
+import { EvenementDemandesComponent } from './evenement-dashboard/evenement-demandes/evenement-demandes.component'
+import { MesParticipationsComponent } from './candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component';
+import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';
+import { MaCalendarComponent } from './candidates-dashboard/evenement-candidat/ma-calendar/ma-calendar.component';
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
     {path: 'login', component: HomeDemoOneComponent},
@@ -127,6 +132,9 @@ export const routes: Routes = [
             {path: 'candidate-details', component: CandidateDetailsPageComponent},
             { path: 'partenaires', component: PartenaireCandidatComponent },
             { path: 'partenaires/:id/offres', component: OffreCandidatComponent },
+            {path: 'evenements', component: EvenementCandidatComponent}, 
+            {path: 'mes-participations', component: MesParticipationsComponent},
+            { path: 'ma-calendar', component: MaCalendarComponent },
         ]
     },
     {
@@ -163,6 +171,8 @@ export const routes: Routes = [
       {path: 'liste', component: EvenementListComponent},
       {path: 'modifier/:id', component: EvenementEditComponent},
       {path: 'detail/:id', component: EvenementDetailComponent},
+      {path: 'demandes', component: EvenementDemandesComponent},
+      {path: 'calendrier', component: EvenementCalendrierComponent},
       
     ]
     }, 

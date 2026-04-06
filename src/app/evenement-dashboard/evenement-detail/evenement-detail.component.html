@@ -68,6 +68,50 @@
 
     </div>
 
+    <!-- Participations confirmées -->
+<div class="jove-card mt-4" *ngIf="participations.length > 0">
+    <h3 class="title">
+        Participants confirmés
+        <span style="background:#1a6b3c; color:white; padding:4px 10px; border-radius:20px; font-size:14px; margin-left:10px;">
+            {{ participations.length }}
+        </span>
+    </h3>
+
+    <div class="row jobs-applied-recently">
+        <div class="col-xxl-12" *ngFor="let p of participations">
+            <div class="single-job-box">
+                <div class="d-sm-flex align-items-center justify-content-between">
+                    <div class="d-sm-flex align-items-center">
+                        <div class="image">
+                            <i class="ri-user-line"
+                               style="font-size:25px; color:var(--primaryColor); position:absolute; top:50%; left:50%; transform:translate(-50%,-50%)">
+                            </i>
+                        </div>
+                        <div class="content">
+                            <h3 class="fw-semibold">{{ p.nomCandidat }}</h3>
+                            <span class="job-type d-block" style="color:#1a6b3c;">
+                                ✅ {{ p.statut }}
+                            </span>
+                        </div>
+                    </div>
+                    <span class="created d-block">
+                        <span class="fw-semibold">Inscrit le:</span>
+                        {{ formatDate(p.dateInscription) }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Aucun participant -->
+<div class="jove-card mt-4" *ngIf="participations.length === 0 && !loading">
+    <p class="text-center py-3">
+        <i class="ri-user-line" style="font-size:30px; color:#ccc;"></i>
+        <br>Aucun participant confirmé pour cet événement.
+    </p>
+</div>
+
     <!-- Boutons -->
     <div class="d-flex gap-3 mt-4">
         <button class="btn-submit" (click)="retour()">

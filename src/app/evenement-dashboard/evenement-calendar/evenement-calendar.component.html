@@ -1,0 +1,157 @@
+<!-- Title -->
+<div class="breadcrumb-title">
+    <h1 class="mb-0 fw-semibold">Calendrier des Événements</h1>
+</div>
+
+<!--  Stats au-dessus du calendrier -->
+<div class="row mb-4" *ngIf="stats">
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#e3f2fd">
+                <i class="ri-calendar-event-line" style="color:#1565c0"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.totalEvenements }}</h3>
+                <p>Événements ce mois</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#e8f5e9">
+                <i class="ri-group-line" style="color:#1a6b3c"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.totalParticipations }}</h3>
+                <p>Total participations</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fff8e1">
+                <i class="ri-time-line" style="color:#f9a825"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.totalEnAttente }}</h3>
+                <p>En attente</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fce4ec">
+                <i class="ri-star-line" style="color:#d81b60"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.maxParticipations }}</h3>
+                <p>{{ stats.evenementLePlusPopulaire }}</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Légende -->
+<div class="jove-card mb-3">
+    <div class="d-flex flex-wrap gap-3">
+        <span class="legend-item">
+            <span class="legend-color" style="background:#1565c0"></span> Job Fair
+        </span>
+        <span class="legend-item">
+            <span class="legend-color" style="background:#6a1b9a"></span> Workshop
+        </span>
+        <span class="legend-item">
+            <span class="legend-color" style="background:#e65100"></span> Conférence
+        </span>
+        <span class="legend-item">
+            <span class="legend-color" style="background:#00695c"></span> Networking
+        </span>
+        <span class="legend-item" *ngIf="isCandidat">
+            <span class="legend-color" style="background:#1a6b3c"></span> Confirmé ✅
+        </span>
+        <span class="legend-item" *ngIf="isCandidat">
+            <span class="legend-color" style="background:#f9a825"></span> En attente ⏳
+        </span>
+    </div>
+</div>
+
+<!-- Calendrier -->
+<div class="jove-card">
+    <full-calendar [options]="calendarOptions"></full-calendar>
+</div>
+
+<!-- Modal détail -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+            <h5 class="fw-semibold">{{ selectedEvenement?.titre }}</h5>
+            <button (click)="closeModal()">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="detail-item">
+                <i class="ri-calendar-line"></i>
+                <span>{{ formatDate(selectedEvenement?.date) }}</span>
+            </div>
+            <div class="detail-item">
+                <i class="ri-map-pin-line"></i>
+                <span>{{ selectedEvenement?.lieu }}</span>
+            </div>
+            <div class="detail-item">
+                <i class="ri-bookmark-line"></i>
+                <span>{{ selectedEvenement?.type }}</span>
+            </div>
+            <div class="detail-item">
+                <i class="ri-user-line"></i>
+                <span>{{ selectedEvenement?.organisateur }}</span>
+            </div>
+
+            <!-- ✅ Statut participation (candidat) -->
+            <div class="participation-status mt-3" *ngIf="isCandidat">
+                <div class="status-badge confirme"
+                     *ngIf="selectedEvenement?.statut === 'CONFIRME'">
+                    <i class="ri-check-circle-line"></i>
+                    Vous êtes inscrit ! Statut : CONFIRMÉ ✅
+                </div>
+                <div class="status-badge attente"
+                     *ngIf="selectedEvenement?.statut === 'EN_ATTENTE'">
+                    <i class="ri-time-line"></i>
+                    Inscription en attente de confirmation ⏳
+                </div>
+                <div class="status-badge refuse"
+                     *ngIf="selectedEvenement?.statut === 'REFUSE'">
+                    <i class="ri-close-circle-line"></i>
+                    Votre demande a été refusée ❌
+                </div>
+                <div class="status-badge disponible"
+                     *ngIf="!selectedEvenement?.estInscrit">
+                    <i class="ri-calendar-check-line"></i>
+                    Vous pouvez vous inscrire à cet événement
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons -->
+        <div class="modal-footer">
+            <!-- Candidat peut participer -->
+            <button class="btn-submit"
+                    *ngIf="isCandidat && !selectedEvenement?.estInscrit"
+                    (click)="participer(selectedEvenement?.id)">
+                <i class="ri-user-add-line"></i> Participer
+            </button>
+
+            <button class="btn-cancel" (click)="closeModal()">
+                Fermer
+            </button>
+        </div>
+    </div>
+</div>

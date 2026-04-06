@@ -63,7 +63,9 @@ import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/c
 import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
 import { CdMessageComponent } from './candidates-dashboard/cd-message/cd-message.component';
 import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-password/cd-change-password.component';
-
+import { EvenementCandidatComponent } from './candidates-dashboard/evenement-candidat/evenement-candidat.component';
+import { MesParticipationsComponent } from './candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component';
+import { MaCalendarComponent } from './candidates-dashboard/evenement-candidat/ma-calendar/ma-calendar.component';
 // Shared components are in SharedModule now
 
 // More common
@@ -103,7 +105,15 @@ import { LOCALE_ID } from '@angular/core';
 import localeFr from '@angular/common/locales/fr';
 import { registerLocaleData } from '@angular/common';
 import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header/evenement-header.component';
+import { EvenementDemandesComponent } from './evenement-dashboard/evenement-demandes/evenement-demandes.component';
+import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';
+import { FullCalendarModule } from '@fullcalendar/angular';
+
+
 // Banner components are now in SharedModule
+// participations
+
+
 
 
 @NgModule({
@@ -178,6 +188,13 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         AdHeaderComponent,  
         AdSidebarComponent, 
         AdFooterComponent,
+        EvenementCandidatComponent,
+        EvenementDemandesComponent,
+        MesParticipationsComponent,
+        EvenementCalendrierComponent,
+        MaCalendarComponent,
+        
+        
     ],
     imports: [
         BrowserModule,
@@ -190,11 +207,16 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         CarouselModule,
         NgApexchartsModule,
         NgxScrollTopModule,
-        GoogleMapsModule
+        GoogleMapsModule,
+        FullCalendarModule,
+        
+        
+        
         
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+        
     ],
     bootstrap: [App],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]

@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class EvenementService {
- private apiUrl = 'http://localhost:8080/api/evenements';
+ private apiUrl = 'http://localhost:8081/api/evenements';
 
   constructor(private http: HttpClient) {}
 
@@ -43,5 +43,12 @@ getByOrganisateur(organisateurId: number): Observable<any[]> {
  
 annulerAdmin(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/admin/${id}`);
+}
+
+//  Récupère les statistiques par mois
+getStats(mois: number, annee: number, organisateurId: number): Observable<any> {
+    return this.http.get<any>(
+        `${this.apiUrl}/stats?mois=${mois}&annee=${annee}&organisateurId=${organisateurId}`
+    );
 }
 }

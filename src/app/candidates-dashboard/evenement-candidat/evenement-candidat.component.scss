@@ -1,0 +1,192 @@
+.default-btn {
+    display: inline-block;
+    padding: 8px 20px 10px;
+    border-radius: 5px;
+    font-size: var(--fontSize);
+    color: var(--whiteColor);
+    background-color: var(--primaryColor);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+
+    i { margin-right: 5px; }
+
+    &:hover {
+        background-color: var(--secondaryColor);
+        color: var(--whiteColor);
+    }
+}
+
+.jobs-search-form {
+    border: 1px solid var(--borderColor);
+    padding: 10px 10px 10px 20px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+
+    .form-group {
+        i {
+            left: 0;
+            top: 50%;
+            font-size: 22px;
+            position: absolute;
+            color: var(--primaryColor);
+            transform: translateY(-50%);
+        }
+        .form-control {
+            height: auto;
+            border: none;
+            font-size: var(--fontSize);
+            box-shadow: unset !important;
+            padding: 13px 0 13px 30px;
+            &::placeholder { color: var(--bodyColor); }
+        }
+    }
+}
+
+.demande-envoyee {
+    background-color: #f9a825 !important; // jaune = en attente
+    cursor: not-allowed !important;
+    opacity: 0.8;
+}
+
+.btn-mes-participations {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: #1a6b3c;
+    color: white;
+    text-decoration: none;
+    font-size: var(--fontSize);
+    transition: var(--transition);
+    position: relative;
+
+    i { font-size: 18px; }
+
+    &:hover {
+        background-color: var(--primaryColor);
+        color: white;
+    }
+}
+
+.notif-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #d8342b;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-mes-participations {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: #1a6b3c;
+    color: white !important;
+    text-decoration: none;
+    font-size: var(--fontSize);
+    transition: var(--transition);
+
+    i { font-size: 18px; }
+
+    &:hover {
+        background-color: var(--primaryColor);
+        color: white !important;
+    }
+}
+
+.notif-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #d8342b;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.demande-envoyee {
+    background-color: #f9a825 !important;
+    cursor: not-allowed !important;
+    opacity: 0.9;
+}
+
+.default-btn {
+    display: inline-block;
+    padding: 8px 20px 10px;
+    border-radius: 5px;
+    font-size: var(--fontSize);
+    color: var(--whiteColor);
+    background-color: var(--primaryColor);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+
+    i { margin-right: 5px; }
+
+    &:hover {
+        background-color: var(--secondaryColor);
+        color: var(--whiteColor);
+    }
+}
+
+.jobs-search-form {
+    border: 1px solid var(--borderColor);
+    padding: 10px 10px 10px 20px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+
+    .form-group {
+        i {
+            left: 0;
+            top: 50%;
+            font-size: 22px;
+            position: absolute;
+            color: var(--primaryColor);
+            transform: translateY(-50%);
+        }
+        .form-control {
+            height: auto;
+            border: none;
+            font-size: var(--fontSize);
+            box-shadow: unset !important;
+            padding: 13px 0 13px 30px;
+            &::placeholder { color: var(--bodyColor); }
+        }
+    }
+}
+.btn-calendrier {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: #1565c0;
+    color: white !important;
+    text-decoration: none;
+    font-size: var(--fontSize);
+    transition: var(--transition);
+
+    i { font-size: 18px; }
+
+    &:hover {
+        background-color: #0d47a1;
+        color: white !important;
+    }
+}

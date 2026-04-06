@@ -35,7 +35,11 @@ export class EvenementListComponent implements OnInit {
         if (token) {
             const decoded: any = jwtDecode(token);
             this.organisateurId = decoded?.id;
+            
         }
+
+    
+        
 
         //  Charge uniquement ses événements
         this.service.getByOrganisateur(this.organisateurId).subscribe({

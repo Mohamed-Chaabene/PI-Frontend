@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EvenementService } from '../../services/evenement-service';
+import { ParticipationService } from '../../services/participation-service';
 
 @Component({
     selector: 'app-evenement-detail',
@@ -11,11 +12,13 @@ import { EvenementService } from '../../services/evenement-service';
 export class EvenementDetailComponent implements OnInit {
 
     evenement: any = {};
+     participations: any[] = [];
     loading = true;
     error = false;
 
     constructor(
         private service: EvenementService,
+        private participationService: ParticipationService,
         private route: ActivatedRoute,
         private router: Router
     ) {}
@@ -33,7 +36,21 @@ export class EvenementDetailComponent implements OnInit {
                 this.loading = false;
             }
         });
+
+        this.participationService.getConfirmeesByEvenement(id).subscribe({
+            next: (data) => {
+                this.participations = data;
+            },
+            error: (err) => console.error('Erreur participations:', err)
+        });
     }
+    formatDate(value: any): string {
+    if (!value) return '-';
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return String(value);
+    return date.toLocaleDateString('fr-FR');
+}
+    
 
     retour() {
         this.router.navigate(['/evenement-dashboard/liste']);

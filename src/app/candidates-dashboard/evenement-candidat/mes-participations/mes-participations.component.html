@@ -1,0 +1,62 @@
+<!-- Title -->
+<div class="breadcrumb-title">
+    <h1 class="mb-0 fw-semibold">Mes Participations</h1>
+</div>
+
+<!-- Loading -->
+<div *ngIf="isLoading" class="text-center py-4">
+    <p>Chargement...</p>
+</div>
+
+
+
+<!-- Liste -->
+<div class="row" *ngIf="!isLoading">
+    <div class="col-lg-6 col-md-6" *ngFor="let p of participations">
+        <div class="single-job-box">
+            <div class="d-sm-flex align-items-center justify-content-between">
+                <div class="d-sm-flex align-items-center">
+                    <div class="company-logo">
+                        <i class="ri-calendar-event-line"
+                           style="font-size:30px; color:var(--primaryColor); position:absolute; top:50%; left:50%; transform:translate(-50%,-50%)">
+                        </i>
+                    </div>
+                    <div class="content">
+                        <h3 class="fw-semibold">{{ p.titreEvenement }}</h3>
+                        <span class="location d-block">
+                            <i class="ri-calendar-line"></i>
+                            {{ formatDate(p.dateInscription) }}
+                        </span>
+                        <!-- ✅ Badge statut -->
+                        <span class="job-type d-block" [class]="getStatutClass(p.statut)">
+                            {{ p.statut }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="info d-sm-flex align-items-center justify-content-between">
+                <span class="salary d-block">
+                    <span class="fw-semibold">Événement:</span>
+                    <span>{{ p.titreEvenement }}</span>
+                </span>
+                <span class="created d-block">
+                    <span class="fw-semibold">Date:</span>
+                    {{ formatDate(p.dateInscription) }}
+                </span>
+                <span class="deadline d-block">
+                    <span [class]="getStatutClass(p.statut)">
+                        {{ p.statut }}
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vide -->
+    <div class="col-12" *ngIf="participations.length === 0">
+        <div class="text-center py-4">
+            <i class="ri-inbox-line" style="font-size:40px; color:#ccc;"></i>
+            <p>Aucune participation trouvée.</p>
+        </div>
+    </div>
+</div>

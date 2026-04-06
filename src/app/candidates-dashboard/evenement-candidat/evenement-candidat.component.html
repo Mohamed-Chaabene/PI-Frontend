@@ -1,0 +1,102 @@
+<!--  UN SEUL titre avec bouton Mes Participations -->
+<div class="breadcrumb-title d-flex align-items-center justify-content-between mb-4">
+    <h1 class="mb-0 fw-semibold">Événements disponibles</h1>
+    <a routerLink="/candidates-dashboard/ma-calendar"
+   class="btn-calendrier">
+    <i class="ri-calendar-2-line"></i> Calendrier
+    </a>
+    <a routerLink="/candidates-dashboard/mes-participations"
+       class="btn-mes-participations position-relative">
+        <i class="ri-calendar-check-line"></i> Mes Participations
+        <!--  Badge rouge si confirmations -->
+        <span class="notif-badge" *ngIf="participationsConfirmees.length > 0">
+            {{ participationsConfirmees.length }}
+        </span>
+    </a>
+</div>
+
+<!-- Barre de recherche -->
+<form class="jobs-search-form">
+    <div class="row mx-0 align-items-center">
+        <div class="col-8 px-0">
+            <div class="form-group position-relative">
+                <i class="ri-search-line"></i>
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Rechercher un événement..."
+                    [ngModel]="searchTerm"
+                    (ngModelChange)="onSearch($event)"
+                    name="search"
+                >
+            </div>
+        </div>
+        <div class="col-4 px-0">
+            <button type="button" class="default-btn" (click)="onSearch(searchTerm)">
+                <i class="ri-search-line"></i> Rechercher
+            </button>
+        </div>
+    </div>
+</form>
+
+<!-- Loading -->
+<div *ngIf="isLoading" class="text-center py-4">
+    <p>Chargement...</p>
+</div>
+
+<!-- Liste -->
+<div class="row" *ngIf="!isLoading">
+    <div class="col-lg-6 col-md-6" *ngFor="let evenement of filteredEvenements">
+        <div class="single-job-box">
+            <div class="d-sm-flex align-items-center justify-content-between">
+                <div class="d-sm-flex align-items-center">
+                    <div class="company-logo">
+                        <i class="ri-calendar-event-line"
+                           style="font-size: 35px; color: var(--primaryColor); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                        </i>
+                    </div>
+                    <div class="content">
+                        <h3 class="fw-semibold">{{ evenement.titre }}</h3>
+                        <span class="location d-block">
+                            <i class="ri-map-pin-line"></i> {{ evenement.lieu }}
+                        </span>
+                        <span class="job-type d-block">{{ evenement.type }}</span>
+                    </div>
+                </div>
+                <div class="apply-btn">
+                    <!-- ✅ Demande déjà envoyée -->
+                    <button class="default-btn demande-envoyee"
+                            *ngIf="aDejaDemandeA(evenement.id)"
+                            disabled>
+                        <i class="ri-check-line"></i> Demande envoyée
+                    </button>
+                    <!-- ✅ Pas encore demandé -->
+                    <button class="default-btn"
+                            *ngIf="!aDejaDemandeA(evenement.id)"
+                            (click)="participer(evenement.id)">
+                        <i class="ri-user-add-line"></i> Participer
+                    </button>
+                </div>
+            </div>
+            <div class="info d-sm-flex align-items-center justify-content-between">
+                <span class="salary d-block">
+                    <span class="fw-semibold">Type:</span>
+                    <span>{{ evenement.type }}</span>
+                </span>
+                <span class="created d-block">
+                    <span class="fw-semibold">Date:</span>
+                    {{ formatDate(evenement.date) }}
+                </span>
+                <span class="deadline d-block">
+                    <span class="fw-semibold">Lieu:</span>
+                    {{ evenement.lieu }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vide -->
+    <div class="col-12" *ngIf="filteredEvenements.length === 0">
+        <p class="text-center py-4">Aucun événement trouvé.</p>
+    </div>
+</div>

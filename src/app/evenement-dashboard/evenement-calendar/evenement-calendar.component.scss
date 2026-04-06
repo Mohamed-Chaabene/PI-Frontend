@@ -1,0 +1,196 @@
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--bodyColor);
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+// ✅ Modal
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--whiteColor);
+    border-radius: 15px;
+    width: 450px;
+    max-width: 95%;
+    padding: 30px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        button {
+            border: none;
+            background: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        background-color: #f4f7fb;
+        margin-bottom: 10px;
+        i {
+            font-size: 20px;
+            color: #1a6b3c;
+        }
+    }
+
+    .modal-footer {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        justify-content: flex-end;
+    }
+}
+
+// ✅ Statuts
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+
+    &.confirme {
+        background: #f0fdf4;
+        color: #1a6b3c;
+        border: 1px solid #bbf7d0;
+    }
+    &.attente {
+        background: #fffbeb;
+        color: #f9a825;
+        border: 1px solid #fde68a;
+    }
+    &.refuse {
+        background: #fef2f2;
+        color: #d8342b;
+        border: 1px solid #fecaca;
+    }
+    &.disponible {
+        background: #eff6ff;
+        color: #1565c0;
+        border: 1px solid #bfdbfe;
+    }
+}
+
+// ✅ Boutons
+.btn-submit {
+    height: 45px;
+    border: none;
+    cursor: pointer;
+    padding: 0 25px;
+    border-radius: 8px;
+    color: var(--whiteColor);
+    background-color: #1a6b3c;
+    transition: var(--transition);
+    i { margin-right: 5px; }
+    &:hover { background-color: var(--primaryColor); }
+}
+
+.btn-cancel {
+    height: 45px;
+    border: none;
+    cursor: pointer;
+    padding: 0 25px;
+    border-radius: 8px;
+    color: var(--headingColor);
+    background-color: #f4f7fb;
+    transition: var(--transition);
+    &:hover { background-color: #e0e0e0; }
+}
+
+// ✅ Style FullCalendar override
+:host ::ng-deep {
+    .fc-button-primary {
+        background-color: #1a6b3c !important;
+        border-color: #1a6b3c !important;
+        &:hover {
+            background-color: var(--primaryColor) !important;
+        }
+    }
+    .fc-day-today {
+        background-color: #f0fdf4 !important;
+    }
+    .fc-event {
+        cursor: pointer;
+        border-radius: 5px;
+        padding: 2px 5px;
+        font-size: 13px;
+    }
+}
+
+.stat-card {
+    background: var(--whiteColor);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    border: 1px solid var(--borderColor);
+    transition: var(--transition);
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+}
+
+.stat-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i { font-size: 26px; }
+}
+
+.stat-info {
+    h3 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--headingColor);
+        margin-bottom: 4px;
+    }
+    p {
+        font-size: 13px;
+        color: var(--bodyColor);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 120px;
+    }
+}
