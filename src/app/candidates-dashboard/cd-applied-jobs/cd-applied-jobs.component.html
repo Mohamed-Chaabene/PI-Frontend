@@ -65,6 +65,384 @@
             </div>
         </div>
 
+
+
+        <!-- ==================== FONCTIONNALITÉS AVANCÉES ==================== -->
+<div class="advanced-features-section">
+    <div class="section-header">
+        <h2><i class="ri-rocket-line"></i> Fonctionnalités Avancées</h2>
+        <span class="section-badge">IA Powered</span>
+    </div>
+    
+    <div class="features-grid">
+        <!-- Gamification -->
+        <div class="feature-card gamification-card" (click)="ouvrirGamification()">
+            <div class="feature-icon">🏆</div>
+            <div class="feature-info">
+                <h4>Mon Niveau</h4>
+                <p>{{ niveau }} — {{ pointsTotal }} pts</p>
+                <div class="mini-progress">
+                    <div class="mini-bar" [style.width]="niveauProgress + '%'"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Smart Match -->
+        <div class="feature-card match-card" (click)="ouvrirSmartMatch()">
+            <div class="feature-icon">🎯</div>
+            <div class="feature-info">
+                <h4>Smart Match</h4>
+                <p>Offres compatibles avec votre profil</p>
+            </div>
+        </div>
+
+        <!-- Radar Compétences -->
+        <div class="feature-card radar-card" (click)="ouvrirRadar()">
+            <div class="feature-icon">📡</div>
+            <div class="feature-info">
+                <h4>Radar Compétences</h4>
+                <p>Analysez vos points forts</p>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="feature-card stats-card" (click)="ouvrirStatistiques()">
+            <div class="feature-icon">📈</div>
+            <div class="feature-info">
+                <h4>Statistiques</h4>
+                <p>Taux de réussite : {{ tauxReussiteCalcule }}%</p>
+            </div>
+        </div>
+
+        <!-- Prédiction IA -->
+        <div class="feature-card prediction-card" (click)="ouvrirPrediction()">
+            <div class="feature-icon">🤖</div>
+            <div class="feature-info">
+                <h4>Prédiction IA</h4>
+                <p>Probabilité de succès</p>
+            </div>
+        </div>
+
+        <!-- Relances -->
+        <div class="feature-card relances-card" (click)="ouvrirRelances()">
+            <div class="feature-icon">📧</div>
+            <div class="feature-info">
+                <h4>Suivi Relances</h4>
+                <p>{{ stats.enAttente }} candidatures à relancer</p>
+            </div>
+        </div>
+
+        <!-- Assistant IA -->
+        <div class="feature-card assistant-card" (click)="ouvrirAssistant()">
+            <div class="feature-icon">💬</div>
+            <div class="feature-info">
+                <h4>Assistant IA</h4>
+                <p>Conseils personnalisés</p>
+            </div>
+        </div>
+
+        <!-- Career Timeline -->
+        <div class="feature-card timeline-card" (click)="ouvrirTimeline()">
+            <div class="feature-icon">🗓️</div>
+            <div class="feature-info">
+                <h4>Career Timeline</h4>
+                <p>Votre parcours de candidatures</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL GAMIFICATION ==================== -->
+<div class="modal-overlay" *ngIf="showGamificationModal" (click)="showGamificationModal=false">
+    <div class="modal-container modal-gamification" (click)="$event.stopPropagation()">
+        <div class="modal-header gradient-header">
+            <h3>🏆 Mon Niveau & Badges</h3>
+            <button class="modal-close" (click)="showGamificationModal=false">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="niveau-container">
+                <div class="niveau-badge">{{ niveau }}</div>
+                <div class="points-total">{{ pointsTotal }} points</div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" [style.width]="niveauProgress + '%'"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span>{{ niveau }}</span>
+                        <span>{{ pointsPourNiveauSuivant }} pts → {{ niveauSuivant }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="badges-grid">
+                <div class="badge-item" *ngFor="let badge of badges" 
+                     [ngClass]="{'badge-obtenu': badge.obtenu, 'badge-locked': !badge.obtenu}">
+                    <div class="badge-icon">{{ badge.icon }}</div>
+                    <div class="badge-name">{{ badge.nom }}</div>
+                    <div class="badge-desc">{{ badge.desc }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL SMART MATCH ==================== -->
+<div class="modal-overlay" *ngIf="showSmartMatchModal" (click)="showSmartMatchModal=false">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header gradient-header">
+            <h3>🎯 Smart Match — Offres compatibles</h3>
+            <button class="modal-close" (click)="showSmartMatchModal=false">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="match-subtitle">Basé sur vos {{ getTouteMesCompetences().length }} compétences identifiées</p>
+            <div *ngIf="matchScores.length === 0" class="empty-match">
+                <p>Aucune offre disponible pour le moment. Ajoutez des compétences à vos candidatures pour améliorer le matching.</p>
+            </div>
+            <div class="match-list" *ngFor="let m of matchScores">
+                <div class="match-item">
+                    <div class="match-info">
+                        <h4>{{ m.offre.titre || 'Offre disponible' }}</h4>
+                        <p>{{ m.offre.entreprise || 'Entreprise' }} — {{ m.offre.location || 'Tunisie' }}</p>
+                        <span class="match-label" [style.color]="m.couleur">{{ m.label }}</span>
+                    </div>
+                    <div class="match-score-circle" [style.borderColor]="m.couleur">
+                        <span [style.color]="m.couleur">{{ m.score }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL RADAR ==================== -->
+<div class="modal-overlay" *ngIf="showRadarModal" (click)="showRadarModal=false">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header gradient-header">
+            <h3>📡 Radar de Compétences</h3>
+            <button class="modal-close" (click)="showRadarModal=false">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="radar-bars">
+                <div class="radar-item" *ngFor="let item of radarData">
+                    <div class="radar-label">{{ item.label }}</div>
+                    <div class="radar-bar-container">
+                        <div class="radar-bar-fill" [style.width]="item.valeur + '%'"
+                             [style.background]="item.valeur >= 70 ? '#10b981' : item.valeur >= 40 ? '#f59e0b' : '#ef4444'">
+                        </div>
+                        <span class="radar-value">{{ item.valeur }}%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="competences-list" *ngIf="competencesUtilisateur.length > 0">
+                <h4>Vos compétences :</h4>
+                <div class="skills-cloud">
+                    <span class="skill-cloud-tag" *ngFor="let skill of competencesUtilisateur">{{ skill }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL STATISTIQUES ==================== -->
+<div class="modal-overlay" *ngIf="showStatsModal" (click)="showStatsModal=false">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header gradient-header">
+            <h3>📈 Statistiques de Performance</h3>
+            <button class="modal-close" (click)="showStatsModal=false">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="stats-kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ tauxReussiteCalcule }}%</div>
+                    <div class="kpi-label">Taux de réussite</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ tempsMoyenReponse }}j</div>
+                    <div class="kpi-label">Temps moyen réponse</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ stats.total }}</div>
+                    <div class="kpi-label">Total candidatures</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ candidaturesCeMois }}</div>
+                    <div class="kpi-label">Ce mois</div>
+                </div>
+            </div>
+            <h4>Candidatures par mois</h4>
+            <div class="bar-chart">
+                <div class="bar-item" *ngFor="let m of candidaturesParMois">
+                    <div class="bar-col">
+                        <div class="bar-fill" [style.height]="(m.count * 20) + 'px'"
+                             [style.background]="m.count > 0 ? '#6c5ce7' : '#e5e7eb'">
+                        </div>
+                        <span class="bar-count" *ngIf="m.count > 0">{{ m.count }}</span>
+                    </div>
+                    <div class="bar-label">{{ m.mois }}</div>
+                </div>
+            </div>
+            <div class="repartition-section">
+                <h4>Répartition des statuts</h4>
+                <div class="repartition-bars">
+                    <div class="rep-item">
+                        <span>En attente</span>
+                        <div class="rep-bar">
+                            <div class="rep-fill pending" [style.width]="stats.total > 0 ? (stats.enAttente/stats.total*100) + '%' : '0%'"></div>
+                        </div>
+                        <span>{{ stats.enAttente }}</span>
+                    </div>
+                    <div class="rep-item">
+                        <span>Acceptées</span>
+                        <div class="rep-bar">
+                            <div class="rep-fill accepted" [style.width]="stats.total > 0 ? (stats.acceptees/stats.total*100) + '%' : '0%'"></div>
+                        </div>
+                        <span>{{ stats.acceptees }}</span>
+                    </div>
+                    <div class="rep-item">
+                        <span>Refusées</span>
+                        <div class="rep-bar">
+                            <div class="rep-fill rejected" [style.width]="stats.total > 0 ? (stats.refusees/stats.total*100) + '%' : '0%'"></div>
+                        </div>
+                        <span>{{ stats.refusees }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL PRÉDICTION ==================== -->
+<div class="modal-overlay" *ngIf="showPredictionModal" (click)="showPredictionModal=false">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header gradient-header">
+            <h3>🤖 Prédiction IA de Succès</h3>
+            <button class="modal-close" (click)="showPredictionModal=false">&times;</button>
+        </div>
+        <div class="modal-body" *ngIf="predictionData">
+            <div class="prediction-score">
+                <div class="prediction-circle" [style.borderColor]="predictionData.couleur">
+                    <span [style.color]="predictionData.couleur">{{ predictionData.probabilite }}%</span>
+                    <small>de succès</small>
+                </div>
+            </div>
+            <div class="prediction-details">
+                <div class="pred-section">
+                    <h4>⏰ Meilleur moment pour postuler</h4>
+                    <p class="pred-value">{{ predictionData.meilleurMoment }}</p>
+                </div>
+                <div class="pred-section">
+                    <h4>✅ Points forts</h4>
+                    <ul>
+                        <li *ngFor="let p of predictionData.pointsForts">{{ p }}</li>
+                        <li *ngIf="predictionData.pointsForts.length === 0">Complétez votre profil</li>
+                    </ul>
+                </div>
+                <div class="pred-section">
+                    <h4>🎯 Points à améliorer</h4>
+                    <ul>
+                        <li *ngFor="let p of predictionData.pointsAmeliorer">{{ p }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL RELANCES ==================== -->
+<div class="modal-overlay" *ngIf="showRelancesModal" (click)="showRelancesModal=false">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header gradient-header">
+            <h3>📧 Suivi & Relances Intelligentes</h3>
+            <button class="modal-close" (click)="showRelancesModal=false">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div *ngIf="relancesData.length === 0" class="empty-relances">
+                <p>✅ Aucune candidature en attente à relancer !</p>
+            </div>
+            <div class="relance-item" *ngFor="let r of relancesData">
+                <div class="relance-header">
+                    <div class="relance-info">
+                        <h4>{{ r.offreTitre || 'Candidature spontanée' }}</h4>
+                        <span>Envoyée il y a {{ r.joursEcoules }} jours</span>
+                    </div>
+                    <div class="urgence-badge" [ngClass]="r.urgence">
+                        {{ r.urgence === 'haute' ? '🔴 Urgent' : r.urgence === 'moyenne' ? '🟡 Moyen' : '🟢 Ok' }}
+                    </div>
+                </div>
+                <div class="relance-message">
+                    <textarea [(ngModel)]="r.messageRelance" rows="4" class="form-control"></textarea>
+                </div>
+                <button class="btn-copy" (click)="copierRelance(r.messageRelance)">
+                    <i class="ri-file-copy-line"></i> Copier le message
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL ASSISTANT IA ==================== -->
+<div class="modal-overlay" *ngIf="showAssistantModal" (click)="showAssistantModal=false">
+    <div class="modal-container modal-assistant" (click)="$event.stopPropagation()">
+        <div class="modal-header gradient-header">
+            <h3>💬 Assistant Carrière IA</h3>
+            <button class="modal-close" (click)="showAssistantModal=false">&times;</button>
+        </div>
+        <div class="chat-container">
+            <div class="chat-messages" #chatMessages>
+                <div class="message" *ngFor="let msg of assistantMessages"
+                     [ngClass]="msg.role === 'user' ? 'message-user' : 'message-assistant'">
+                    <div class="message-bubble">
+                        <pre>{{ msg.content }}</pre>
+                    </div>
+                </div>
+                <div class="message message-assistant" *ngIf="isAssistantTyping">
+                    <div class="message-bubble typing">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" class="form-control" 
+                       [(ngModel)]="assistantInput" 
+                       placeholder="Posez votre question..."
+                       (keyup.enter)="envoyerMessageAssistant()">
+                <button class="btn-send" (click)="envoyerMessageAssistant()">
+                    <i class="ri-send-plane-line"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL CAREER TIMELINE ==================== -->
+<div class="modal-overlay" *ngIf="showTimelineModal" (click)="showTimelineModal=false">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header gradient-header">
+            <h3>🗓️ Career Timeline</h3>
+            <button class="modal-close" (click)="showTimelineModal=false">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div *ngIf="candidatures.length === 0" class="empty-timeline">
+                <p>Aucune candidature dans votre timeline.</p>
+            </div>
+            <div class="timeline">
+                <div class="timeline-item" *ngFor="let item of getTimelineItems()">
+                    <div class="timeline-dot" [style.background]="item.couleur">
+                        {{ item.icon }}
+                    </div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">{{ formatDate(item.dateEnvoi) }}</div>
+                        <h4>{{ item.offreTitre || 'Candidature spontanée' }}</h4>
+                        <p>{{ item.nomComplet }}</p>
+                        <span class="timeline-status" [ngClass]="getStatusClass(item.statut)">
+                            {{ getStatusLabel(item.statut) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
         <!-- Stats avancées -->
         <div class="stats-advanced-grid">
             <div class="stat-advanced-card">

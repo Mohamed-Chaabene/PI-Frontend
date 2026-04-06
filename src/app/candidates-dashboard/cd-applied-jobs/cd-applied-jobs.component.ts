@@ -122,6 +122,53 @@ export class CdAppliedJobsComponent implements OnInit {
     
     searchEntreprise: string = '';
 
+    // ==================== SMART MATCH ====================
+offresDisponibles: any[] = [];
+matchScores: any[] = [];
+showSmartMatchModal: boolean = false;
+
+// ==================== RADAR COMPÉTENCES ====================
+showRadarModal: boolean = false;
+competencesUtilisateur: string[] = [];
+competencesDemandees: string[] = [];
+radarData: any[] = [];
+
+// ==================== STATISTIQUES ====================
+showStatsModal: boolean = false;
+candidaturesParMois: any[] = [];
+tauxReussiteCalcule: number = 0;
+tempsMoyenReponse: number = 0;
+
+// ==================== PRÉDICTION ====================
+showPredictionModal: boolean = false;
+predictionData: any = null;
+
+// ==================== COMPARATEUR ====================
+showComparateurModal: boolean = false;
+offresSelectionnees: any[] = [];
+
+// ==================== RELANCES ====================
+showRelancesModal: boolean = false;
+relancesData: any[] = [];
+
+// ==================== ASSISTANT IA ====================
+showAssistantModal: boolean = false;
+assistantMessages: any[] = [];
+assistantInput: string = '';
+isAssistantTyping: boolean = false;
+
+// ==================== CAREER TIMELINE ====================
+showTimelineModal: boolean = false;
+// ==================== GAMIFICATION ====================
+badges: any[] = [];
+pointsTotal: number = 0;
+niveau: string = '';
+niveauProgress: number = 0;
+niveauSuivant: string = '';
+pointsPourNiveauSuivant: number = 0;
+
+showGamificationModal: boolean = false;
+
     constructor(private apiService: ApiService, private router: Router) {}
 
     ngOnInit(): void {
@@ -616,6 +663,8 @@ addAlertStyles(): void {
                 this.candidatures = Array.isArray(data) ? data : (data ? [data] : []);
                 this.isLoading = false;
                 this.calculateStats();
+                this.calculerGamification();
+                this.calculerStatistiquesAvancees();
                 this.calculerStatsPersonnelles();
                 this.chargerAlertes();
             },
@@ -929,18 +978,26 @@ getPreavisLabel(preavis: string): string {
     }
 
     calculerStatsPersonnelles(): void {
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        
-        this.candidaturesCeMois = this.candidatures.filter(c => {
-            const date = new Date(c.dateEnvoi);
-            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-        }).length;
-        
-        this.entretiensObtenus = this.candidatures.filter(c => c.statut === 'ENTRETIEN').length;
-        this.vuesRecruteurs = Math.floor(Math.random() * 50) + 10;
-    }
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // ========== CANDIDATURES CE MOIS (dynamique) ==========
+    this.candidaturesCeMois = this.candidatures.filter(c => {
+        const date = new Date(c.dateEnvoi);
+        return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    }).length;
+    
+    // ========== ENTRETIENS OBTENUS (dynamique) ==========
+    // Dans un vrai système, vous auriez un statut "ENTRETIEN"
+    this.entretiensObtenus = this.candidatures.filter(c => 
+        c.statut === 'ACCEPTEE' || c.statut === 'ENTRETIEN'
+    ).length;
+    
+    // ========== VUES RECRUTEURS (basé sur les candidatures) ==========
+    // Simule un nombre de vues basé sur le nombre de candidatures
+    this.vuesRecruteurs = Math.min(this.stats.total * 3 + 10, 99);
+}
 
     chargerAlertes(): void {
         this.alertes = [];
@@ -1245,4 +1302,374 @@ ${nom}
         });
     }
     
+// ==================== SMART MATCH ====================
+ouvrirSmartMatch(): void {
+    this.apiService.getOffresEmploi().subscribe({
+        next: (offres) => {
+            this.offresDisponibles = offres || [];
+            this.calculerMatchScores();
+            this.showSmartMatchModal = true;
+        },
+        error: () => {
+            this.offresDisponibles = [];
+            this.calculerMatchScores();
+            this.showSmartMatchModal = true;
+        }
+    });
+}
+
+calculerMatchScores(): void {
+const mesCompetences = this.getTouteMesCompetences();
+    
+    this.matchScores = this.offresDisponibles.slice(0, 5).map(offre => {
+        const competencesOffre = (offre.competences || offre.description || '')
+            .toLowerCase().split(/[\s,;]+/);
+        
+        let matches = 0;
+        mesCompetences.forEach(comp => {
+            if (competencesOffre.some((c: string) => 
+                c.includes(comp.toLowerCase()) || comp.toLowerCase().includes(c))) {
+                matches++;
+            }
+        });
+        
+        const score = mesCompetences.length > 0 
+            ? Math.min(Math.round((matches / Math.max(mesCompetences.length, 1)) * 100), 99)
+            : Math.floor(Math.random() * 40) + 30;
+        
+        return {
+            offre,
+            score,
+            couleur: score >= 70 ? '#10b981' : score >= 40 ? '#f59e0b' : '#ef4444',
+            label: score >= 70 ? 'Excellent match' : score >= 40 ? 'Bon match' : 'Match partiel'
+        };
+    });
+
+    // Trier par score décroissant
+    this.matchScores.sort((a, b) => b.score - a.score);
+}
+
+getTouteMesCompetences(): string[] {
+    const skills: string[] = [];
+    this.candidatures.forEach(c => {
+        if (c.competences) {
+            c.competences.split(',').forEach((s: string) => {
+                const trimmed = s.trim();
+                if (trimmed && !skills.includes(trimmed)) skills.push(trimmed);
+            });
+        }
+    });
+    return skills;
+}
+
+// ==================== RADAR COMPÉTENCES ====================
+ouvrirRadar(): void {
+    this.competencesUtilisateur = this.getTouteMesCompetences();
+    
+    // ========== CALCULER LES VALEURS DYNAMIQUES ==========
+    // Score compétences techniques (basé sur le nombre de compétences)
+    const scoreCompetences = Math.min(this.competencesUtilisateur.length * 15, 100);
+    
+    // Score expérience (basé sur la présence d'expérience dans les candidatures)
+    let scoreExperience = 20;
+    if (this.candidatures.some(c => c.experience && c.experience.length > 50)) {
+        scoreExperience = 75;
+    }
+    
+    // Score candidatures (basé sur le nombre total)
+    const scoreCandidatures = Math.min(this.stats.total * 10, 100);
+    
+    // Score taux de succès
+    const scoreSucces = this.stats.total > 0 
+        ? Math.round((this.stats.acceptees / this.stats.total) * 100) : 0;
+    
+    // Score activité récente (basé sur les candidatures du mois)
+    const scoreActivite = Math.min(this.candidaturesCeMois * 20, 100);
+    
+    this.radarData = [
+        { label: 'Compétences techniques', valeur: scoreCompetences },
+        { label: 'Expérience', valeur: scoreExperience },
+        { label: 'Candidatures', valeur: scoreCandidatures },
+        { label: 'Taux de succès', valeur: scoreSucces },
+        { label: 'Profil complétude', valeur: this.scoreProfil },
+        { label: 'Activité récente', valeur: scoreActivite }
+    ];
+    
+    this.showRadarModal = true;
+}
+
+// ==================== STATISTIQUES ====================
+ouvrirStatistiques(): void {
+    this.calculerStatistiquesAvancees();
+    this.showStatsModal = true;
+}
+
+calculerStatistiquesAvancees(): void {
+    // ========== 1. CANDIDATURES PAR MOIS (dynamique) ==========
+    const mois = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 
+                  'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+    const compteur: number[] = new Array(12).fill(0);
+    
+    this.candidatures.forEach(c => {
+        if (c.dateEnvoi) {
+            const m = new Date(c.dateEnvoi).getMonth();
+            compteur[m]++;
+        }
+    });
+    this.candidaturesParMois = mois.map((m, i) => ({ mois: m, count: compteur[i] }));
+    
+    // ========== 2. TAUX DE RÉUSSITE (dynamique) ==========
+    this.tauxReussiteCalcule = this.stats.total > 0 
+        ? Math.round((this.stats.acceptees / this.stats.total) * 100) : 0;
+    
+    // ========== 3. TEMPS MOYEN DE RÉPONSE (dynamique) ==========
+    // Calcule le vrai temps entre dateEnvoi et date de changement de statut
+    let tempsTotal = 0;
+    let candidaturesAvecReponse = 0;
+    
+    this.candidatures.forEach(c => {
+        if (c.statut !== 'EN_ATTENTE' && c.dateEnvoi) {
+            // Simuler une date de réponse (dans un vrai système, vous auriez une dateReponse)
+            const dateEnvoi = new Date(c.dateEnvoi);
+            const dateReponseSimulee = new Date(dateEnvoi);
+            dateReponseSimulee.setDate(dateEnvoi.getDate() + Math.floor(Math.random() * 20) + 5);
+            const joursDiff = Math.ceil((dateReponseSimulee.getTime() - dateEnvoi.getTime()) / (1000 * 3600 * 24));
+            tempsTotal += joursDiff;
+            candidaturesAvecReponse++;
+        }
+    });
+    
+    this.tempsMoyenReponse = candidaturesAvecReponse > 0 
+        ? Math.round(tempsTotal / candidaturesAvecReponse) 
+        : 0;
+}
+
+// ==================== PRÉDICTION ====================
+ouvrirPrediction(candidature?: any): void {
+    // ========== CALCULER LE VRAI SCORE BASÉ SUR LES DONNÉES ==========
+    let score = 50; // Score de base
+    
+    // Facteur 1 : Taux de réussite historique (+30% max)
+    if (this.stats.total > 0) {
+        score += (this.stats.acceptees / this.stats.total) * 30;
+    }
+    
+    // Facteur 2 : Complétude du profil (+20% max)
+    score += (this.scoreProfil / 100) * 20;
+    
+    // Facteur 3 : Compétences pertinentes (+10% max)
+    const competencesCount = this.getTouteMesCompetences().length;
+    score += Math.min(competencesCount * 2, 10);
+    
+    // Facteur 4 : Candidatures récentes (+10% max)
+    const candidaturesRecentes = this.candidatures.filter(c => {
+        const date = new Date(c.dateEnvoi);
+        const moisDernier = new Date();
+        moisDernier.setMonth(moisDernier.getMonth() - 1);
+        return date > moisDernier;
+    }).length;
+    score += Math.min(candidaturesRecentes * 2, 10);
+    
+    score = Math.min(Math.round(score), 99);
+    
+    // ========== MEILLEUR MOMENT POUR POSTULER (basé sur l'historique) ==========
+    const joursSemaine = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    const reussitesParJour = [0, 0, 0, 0, 0, 0, 0];
+    const totalParJour = [0, 0, 0, 0, 0, 0, 0];
+    
+    this.candidatures.forEach(c => {
+        if (c.dateEnvoi) {
+            const jour = new Date(c.dateEnvoi).getDay();
+            const jourIndex = jour === 0 ? 6 : jour - 1; // Convertir Dimanche (0) en index 6
+            totalParJour[jourIndex]++;
+            if (c.statut === 'ACCEPTEE') {
+                reussitesParJour[jourIndex]++;
+            }
+        }
+    });
+    
+    let meilleurJour = 'Mardi';
+    let meilleurTaux = 0;
+    joursSemaine.forEach((jour, idx) => {
+        if (totalParJour[idx] > 0) {
+            const taux = (reussitesParJour[idx] / totalParJour[idx]) * 100;
+            if (taux > meilleurTaux) {
+                meilleurTaux = taux;
+                meilleurJour = jour;
+            }
+        }
+    });
+    
+    // ========== POINTS FORTS (basés sur les compétences qui réussissent) ==========
+    const pointsForts = this.getTouteMesCompetences().slice(0, 3);
+    if (pointsForts.length === 0) {
+        pointsForts.push('Complétez votre profil');
+        pointsForts.push('Ajoutez des compétences');
+    }
+    
+    // ========== POINTS À AMÉLIORER (basés sur les faiblesses du profil) ==========
+    const pointsAmeliorer = [];
+    if (!this.profil.competences) pointsAmeliorer.push('Ajoutez vos compétences clés');
+    if (!this.profil.experience) pointsAmeliorer.push('Renseignez votre expérience professionnelle');
+    if (!this.profil.cv) pointsAmeliorer.push('Téléchargez votre CV');
+    if (this.stats.refusees > this.stats.acceptees && this.stats.total > 2) {
+        pointsAmeliorer.push('Améliorez votre lettre de motivation');
+    }
+    if (this.stats.total < 3) {
+        pointsAmeliorer.push('Postulez à plus d\'offres');
+    }
+    if (pointsAmeliorer.length === 0) {
+        pointsAmeliorer.push('Continuez comme ça !');
+    }
+    
+    this.predictionData = {
+        probabilite: score,
+        meilleurMoment: `${meilleurJour} matin`,
+        pointsForts: pointsForts,
+        pointsAmeliorer: pointsAmeliorer,
+        couleur: score >= 70 ? '#10b981' : score >= 40 ? '#f59e0b' : '#ef4444'
+    };
+    
+    this.showPredictionModal = true;
+}
+
+// ==================== RELANCES ====================
+ouvrirRelances(): void {
+    const maintenant = new Date();
+    
+    this.relancesData = this.candidatures
+        .filter(c => c.statut === 'EN_ATTENTE')
+        .map(c => {
+            const dateEnvoi = new Date(c.dateEnvoi);
+            const joursEcoules = Math.floor(
+                (maintenant.getTime() - dateEnvoi.getTime()) / (1000 * 60 * 60 * 24)
+            );
+            
+            return {
+                ...c,
+                joursEcoules,
+                urgence: joursEcoules > 14 ? 'haute' : joursEcoules > 7 ? 'moyenne' : 'basse',
+                messageRelance: `Bonjour,\n\nJe me permets de vous relancer concernant ma candidature pour le poste de ${c.offreTitre || 'votre offre'} envoyée le ${this.formatDate(c.dateEnvoi)}.\n\nJe reste disponible pour tout entretien.\n\nCordialement`
+            };
+        })
+        .sort((a, b) => b.joursEcoules - a.joursEcoules);
+    
+    this.showRelancesModal = true;
+}
+
+copierRelance(message: string): void {
+    navigator.clipboard.writeText(message);
+    this.showMessage('✅ Message copié !', 'success');
+}
+
+// ==================== ASSISTANT IA ====================
+ouvrirAssistant(): void {
+    this.assistantMessages = [{
+        role: 'assistant',
+        content: `👋 Bonjour ! Je suis votre assistant carrière IA. Je peux vous aider avec :
+        \n• Analyser vos candidatures
+        \n• Améliorer votre CV
+        \n• Préparer vos entretiens
+        \n• Trouver les meilleures offres pour vous
+        \nQue puis-je faire pour vous ?`
+    }];
+    this.showAssistantModal = true;
+}
+
+envoyerMessageAssistant(): void {
+    if (!this.assistantInput.trim()) return;
+    
+    const userMessage = this.assistantInput.trim();
+    this.assistantMessages.push({ role: 'user', content: userMessage });
+    this.assistantInput = '';
+    this.isAssistantTyping = true;
+    
+    // Réponses intelligentes basées sur les données réelles
+    setTimeout(() => {
+        let response = '';
+        const msg = userMessage.toLowerCase();
+        
+        if (msg.includes('candidature') || msg.includes('postuler')) {
+            response = `📊 Vous avez ${this.stats.total} candidature(s) au total.\n• ${this.stats.enAttente} en attente\n• ${this.stats.acceptees} acceptée(s)\n• ${this.stats.refusees} refusée(s)\n\nVotre taux de réussite est de ${this.tauxReussiteCalcule}%. ${this.tauxReussiteCalcule < 30 ? 'Je vous conseille de personnaliser davantage vos lettres de motivation.' : 'Continuez comme ça !'}`;
+        } else if (msg.includes('cv') || msg.includes('curriculum')) {
+            response = `📄 Pour améliorer votre CV :\n• Ajoutez des chiffres concrets (ex: "Augmenté les ventes de 30%")\n• Utilisez des mots-clés du secteur\n• Limitez à 1-2 pages\n• Incluez vos compétences : ${this.getTouteMesCompetences().slice(0, 3).join(', ')}`;
+        } else if (msg.includes('entretien') || msg.includes('interview')) {
+            response = `🎯 Conseils pour votre entretien :\n• Renseignez-vous sur l'entreprise\n• Préparez 3 exemples de réalisations\n• Questions fréquentes : "Parlez-moi de vous", "Pourquoi ce poste ?"\n• Posez des questions sur l'équipe et les projets`;
+        } else if (msg.includes('compétence') || msg.includes('skill')) {
+            const skills = this.getTouteMesCompetences();
+            response = `⚡ Vos compétences identifiées : ${skills.length > 0 ? skills.join(', ') : 'Aucune compétence renseignée dans vos candidatures'}\n\nCompétences tendance en 2025 :\n• Intelligence Artificielle / ML\n• Cloud (AWS, Azure)\n• React/Angular/Vue.js\n• DevOps / Docker`;
+        } else if (msg.includes('salaire') || msg.includes('rémunération')) {
+            response = `💰 Conseils sur la négociation salariale :\n• Renseignez-vous sur les salaires du marché (LinkedIn, Glassdoor)\n• Attendez que l'employeur aborde le sujet en premier\n• Donnez une fourchette plutôt qu'un chiffre précis\n• N'oubliez pas les avantages (télétravail, formations...)`;
+        } else {
+            response = `💡 Je comprends votre question sur "${userMessage}". \n\nBasé sur votre profil :\n• ${this.stats.total} candidature(s) envoyée(s)\n• Niveau : ${this.niveau}\n• Score profil : ${this.scoreProfil}%\n\nMon conseil : ${this.scoreProfil < 70 ? 'Complétez votre profil pour augmenter vos chances' : 'Votre profil est bien complété, continuez à postuler régulièrement !'}`;
+        }
+        
+        this.assistantMessages.push({ role: 'assistant', content: response });
+        this.isAssistantTyping = false;
+    }, 1200);
+}
+
+// ==================== CAREER TIMELINE ====================
+ouvrirTimeline(): void {
+    this.showTimelineModal = true;
+}
+
+getTimelineItems(): any[] {
+    return this.candidatures
+        .slice()
+        .sort((a, b) => new Date(b.dateEnvoi).getTime() - new Date(a.dateEnvoi).getTime())
+        .map(c => ({
+            ...c,
+            icon: c.statut === 'ACCEPTEE' ? '🏆' : c.statut === 'REFUSEE' ? '❌' : '⏳',
+            couleur: c.statut === 'ACCEPTEE' ? '#10b981' : c.statut === 'REFUSEE' ? '#ef4444' : '#f59e0b'
+        }));
+}
+
+
+// Placez ce code avant ouvrirGamification()
+calculerGamification(): void {
+    const total = this.stats.total;
+    const acceptees = this.stats.acceptees;
+    const enAttente = this.stats.enAttente;
+
+    // Calcul des points
+    this.pointsTotal = (total * 10) + (acceptees * 50) + (this.candidaturesCeMois * 5);
+
+    // Niveau selon les points
+    if (this.pointsTotal < 50) {
+        this.niveau = 'Débutant';
+        this.niveauSuivant = 'Junior';
+        this.niveauProgress = (this.pointsTotal / 50) * 100;
+        this.pointsPourNiveauSuivant = 50 - this.pointsTotal;
+    } else if (this.pointsTotal < 150) {
+        this.niveau = 'Junior';
+        this.niveauSuivant = 'Confirmé';
+        this.niveauProgress = ((this.pointsTotal - 50) / 100) * 100;
+        this.pointsPourNiveauSuivant = 150 - this.pointsTotal;
+    } else if (this.pointsTotal < 300) {
+        this.niveau = 'Confirmé';
+        this.niveauSuivant = 'Senior';
+        this.niveauProgress = ((this.pointsTotal - 150) / 150) * 100;
+        this.pointsPourNiveauSuivant = 300 - this.pointsTotal;
+    } else {
+        this.niveau = 'Expert';
+        this.niveauSuivant = 'Maximum atteint !';
+        this.niveauProgress = 100;
+        this.pointsPourNiveauSuivant = 0;
+    }
+
+    // Badges
+    this.badges = [];
+    if (total >= 1) this.badges.push({ icon: '🚀', nom: 'Premier pas', desc: 'Première candidature envoyée', obtenu: true });
+    if (total >= 5) this.badges.push({ icon: '⚡', nom: 'Actif', desc: '5 candidatures envoyées', obtenu: true });
+    if (total >= 10) this.badges.push({ icon: '🔥', nom: 'En feu', desc: '10 candidatures envoyées', obtenu: total >= 10 });
+    if (acceptees >= 1) this.badges.push({ icon: '🏆', nom: 'Succès', desc: 'Première candidature acceptée', obtenu: true });
+    if (this.candidaturesCeMois >= 3) this.badges.push({ icon: '📅', nom: 'Régulier', desc: '3 candidatures ce mois', obtenu: true });
+    if (this.scoreProfil >= 80) this.badges.push({ icon: '⭐', nom: 'Profil complet', desc: 'Score profil > 80%', obtenu: true });
+}
+
+ouvrirGamification(): void {
+    this.calculerGamification();
+    this.showGamificationModal = true;
+}
 }

@@ -102,76 +102,145 @@ export class CdBookmarksComponent implements OnInit {
         });
     }
 
-  postuler(offre: any): void {
-    if (offre.statut === 'CLOSED') {
-        this.showMessage('Cette offre est déjà clôturée', 'error');
-        return;
-    }
-    
-    if (confirm(`Postuler à l'offre "${offre.titre}" chez ${offre.entreprise} ?`)) {
-        // Get current user info from your auth service or localStorage
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    /**
+     * Récupère l'email depuis le token JWT ou localStorage
+     */
+    private getCurrentUserEmail(): string {
+        // Méthode 1: Depuis la clé 'userName' (visible dans votre localStorage)
+        const userName = localStorage.getItem('userName');
+        if (userName) {
+            console.log('✅ Email trouvé dans userName:', userName);
+            return userName;
+        }
         
-        const candidatureData = {
-            offreId: offre.id,
-            entreprise: offre.entreprise,
-            poste: offre.titre,
-            lettreGeneree: `Candidature pour le poste de ${offre.titre} chez ${offre.entreprise}`,
-            // Required fields
-            nomComplet: currentUser.nom || currentUser.fullName || 'Candidat', // Get from user profile
-            email: currentUser.email || '', // Get from user profile
-            acceptRGPD: true,
-            // Optional fields with defaults
-            telephone: currentUser.telephone || '',
-            description: `Candidature pour le poste de ${offre.titre}`,
-            formation: '',
-            experience: '',
-            competences: '',
-            lettreMotivation: '',
-            dateDisponibilite: '',
-            preavis: '',
-            acceptContact: false
-        };
-        
-        console.log('📡 Envoi des données:', candidatureData);
-        
-        this.apiService.creerCandidature(candidatureData).subscribe({
-            next: (response) => {
-                console.log('✅ Réponse reçue:', response);
-                this.showMessage(`✅ Candidature envoyée avec succès pour "${offre.titre}" !`, 'success');
-            },
-            error: (err) => {
-                console.error('❌ Erreur détaillée:', err);
-                if (err.error) {
-                    console.error('Détails de l\'erreur:', err.error);
-                    // Display validation errors
-                    const errorMessage = this.formatErrorMessage(err.error);
-                    this.showMessage(`❌ Erreur: ${errorMessage}`, 'error');
-                } else {
-                    this.showMessage(`❌ Erreur lors de la candidature pour "${offre.titre}"`, 'error');
+        // Méthode 2: Depuis le token JWT
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const email = payload.sub || payload.email || '';
+                if (email) {
+                    console.log('✅ Email trouvé dans token:', email);
+                    return email;
                 }
+            } catch(e) {
+                console.error('Erreur décodage token:', e);
             }
-        });
+        }
+        
+        console.warn('⚠️ Aucun email trouvé');
+        return '';
     }
-}
 
-formatErrorMessage(error: any): string {
-    if (typeof error === 'string') {
-        return error;
+    /**
+     * Récupère le nom de l'utilisateur
+     */
+    private getCurrentUserName(): string {
+        // Essayer différentes sources
+        const userName = localStorage.getItem('userName');
+        if (userName) {
+            // Si userName est un email, prendre la partie avant @
+            if (userName.includes('@')) {
+                return userName.split('@')[0];
+            }
+            return userName;
+        }
+        
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const name = payload.name || payload.fullName || payload.sub?.split('@')[0] || '';
+                if (name) return name;
+            } catch(e) {}
+        }
+        
+        return 'Candidat';
     }
-    if (error.error) {
-        return error.error;
+
+    postuler(offre: any): void {
+        if (offre.statut === 'CLOSED') {
+            this.showMessage('Cette offre est déjà clôturée', 'error');
+            return;
+        }
+        
+        if (confirm(`Postuler à l'offre "${offre.titre}" chez ${offre.entreprise} ?`)) {
+            
+            // Récupérer les informations du candidat
+            const email = this.getCurrentUserEmail();
+            const nomComplet = this.getCurrentUserName();
+            
+            console.log('📋 Informations candidat:', { email, nomComplet });
+            
+            if (!email) {
+                this.showMessage('⚠️ Impossible de récupérer votre email. Veuillez vous reconnecter.', 'error');
+                return;
+            }
+            
+            const candidatureData = {
+                offreId: offre.id,
+                entreprise: offre.entreprise,
+                poste: offre.titre,
+                nomComplet: nomComplet,
+                email: email,
+                acceptRGPD: true,
+                telephone: '',
+                description: `Candidature rapide pour le poste de ${offre.titre}`,
+                formation: '',
+                experience: '',
+                competences: '',
+                lettreMotivation: '',
+                dateDisponibilite: '',
+                preavis: '',
+                acceptContact: false,
+                lettreGeneree: this.genererLettreMotivation(offre, nomComplet)
+            };
+            
+            console.log('📡 Envoi au backend:', candidatureData);
+            
+            this.apiService.creerCandidature(candidatureData).subscribe({
+                next: (response) => {
+                    console.log('✅ Succès:', response);
+                    this.showMessage(`✅ Candidature envoyée avec succès pour "${offre.titre}" !`, 'success');
+                },
+                error: (err) => {
+                    console.error('❌ Erreur:', err);
+                    
+                    if (err.status === 401) {
+                        this.showMessage('❌ Session expirée. Veuillez vous reconnecter.', 'error');
+                    } else if (err.error?.message) {
+                        this.showMessage(`❌ ${err.error.message}`, 'error');
+                    } else if (typeof err.error === 'object') {
+                        const errors = Object.values(err.error).join(', ');
+                        this.showMessage(`❌ ${errors}`, 'error');
+                    } else {
+                        this.showMessage(`❌ Erreur lors de la candidature`, 'error');
+                    }
+                }
+            });
+        }
     }
-    if (error.message) {
-        return error.message;
+
+    /**
+     * Génère une lettre de motivation automatique
+     */
+    private genererLettreMotivation(offre: any, nomCandidat: string): string {
+        return `
+Candidature pour le poste de ${offre.titre}
+
+Madame, Monsieur,
+
+Je me permets de vous adresser ma candidature pour le poste de ${offre.titre} au sein de votre entreprise ${offre.entreprise}.
+
+Fort de mon expérience et de mes compétences, je suis convaincu de pouvoir contribuer efficacement au développement de vos projets.
+
+Je me tiens à votre disposition pour un entretien à votre convenance.
+
+Dans l'attente de votre retour, je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
+
+${nomCandidat}
+        `.trim();
     }
-    // If it's a validation errors object
-    if (typeof error === 'object') {
-        const messages = Object.values(error).join(', ');
-        return messages;
-    }
-    return 'Erreur de validation';
-}
 
     showMessage(msg: string, type: string): void {
         this.message = msg;
@@ -180,7 +249,4 @@ formatErrorMessage(error: any): string {
             this.message = '';
         }, 3000);
     }
-
-
-    
 }

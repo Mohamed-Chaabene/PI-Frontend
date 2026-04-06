@@ -36,18 +36,18 @@
 
 <!-- Liste des documents -->
 <div *ngIf="!isLoading && !errorMessage && documents.length > 0" class="documents-grid">
-    <div class="document-card" *ngFor="let doc of documents">
-        <div class="document-icon" [style.backgroundColor]="getTypeColor(doc.type) + '20'">
-            <i [class]="getTypeIcon(doc.type)" [style.color]="getTypeColor(doc.type)"></i>
-        </div>
-        <div class="document-info">
-            <h3>{{ doc.nom || getTypeLabel(doc.type) }}</h3>
-            <div class="document-meta">
+   <div class="document-card" *ngFor="let doc of documents">
+    <div class="card-header-row">
+        <div class="card-left">
+            <div class="document-icon" [style.backgroundColor]="getTypeColor(doc.type) + '20'">
+                <i [class]="getTypeIcon(doc.type)" [style.color]="getTypeColor(doc.type)"></i>
+            </div>
+            <div class="document-info">
+                <h3>{{ doc.nom || getTypeLabel(doc.type) }}</h3>
                 <span class="badge" [ngClass]="{'badge-success': doc.compatibleATS, 'badge-warning': !doc.compatibleATS}">
                     {{ doc.compatibleATS ? 'ATS compatible' : 'ATS à améliorer' }}
                 </span>
             </div>
-            <p class="document-preview">{{ (doc.contenu | slice:0:80) }}...</p>
         </div>
         <div class="document-actions">
             <button class="btn-view" (click)="viewDocument(doc)" title="Voir">
@@ -61,7 +61,11 @@
             </button>
         </div>
     </div>
+    <div class="document-preview-frame">
+        <iframe [srcdoc]="doc.contenu" sandbox="allow-same-origin" scrolling="no"></iframe>
+    </div>
 </div>
+    </div>
 
 <!-- ==================== MODAL CREATE (CRÉER) ==================== -->
 <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">

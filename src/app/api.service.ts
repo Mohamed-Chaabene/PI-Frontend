@@ -531,6 +531,43 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/candidatures/quick-apply`, candidatureData, { headers });
   }
 
+  // ==================== FONCTIONNALITÉS AVANCÉES ====================
+
+getStatistiquesAvancees(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    return this.http.get(`${this.apiUrl}/candidatures/avancee/statistiques`, { headers });
+}
+
+getTauxReussite(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    return this.http.get(`${this.apiUrl}/candidatures/avancee/taux-reussite`, { headers });
+}
+
+getSuggestions(candidatureId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    return this.http.get(`${this.apiUrl}/candidatures/avancee/suggestions/${candidatureId}`, { headers });
+}
+
+getPrediction(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    return this.http.get(`${this.apiUrl}/candidatures/avancee/prediction`, { headers });
+}
+
+getRelances(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    return this.http.get(`${this.apiUrl}/candidatures/avancee/relances`, { headers });
+}
+
 }
 
 
