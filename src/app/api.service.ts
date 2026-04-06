@@ -88,6 +88,12 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/auth/login`, credentials, { headers });
   }
 
+  // Reset Password
+  resetPassword(phone: string): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(`${this.apiUrl}/auth/reset-password`, { phone }, { headers });
+  }
+
   // Entretiens (Interviews)
   getEntretiens(): Observable<any> {
     return this.http.get(`${this.apiUrl}/entretiens`);
