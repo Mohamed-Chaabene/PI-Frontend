@@ -37,18 +37,21 @@ export class MesParticipationsComponent implements OnInit {
         this.loadParticipations();
     }
 
-    loadParticipations() {
-        this.participationService.getByCandidat(this.candidatId).subscribe({
-            next: (data) => {
-                this.participations = data;
-                this.isLoading = false;
-            },
-            error: (err) => {
-                console.error('Erreur:', err);
-                this.isLoading = false;
-            }
-        });
-    }
+   loadParticipations() {
+    this.participationService.getByCandidat(this.candidatId).subscribe({
+        next: (data) => {
+            // ← filtre uniquement les participations confirmées
+            this.participations = data.filter(
+                (p: any) => p.statut === 'CONFIRME'
+            );
+            this.isLoading = false;
+        },
+        error: (err) => {
+            console.error('Erreur:', err);
+            this.isLoading = false;
+        }
+    });
+}
 
     // Ouvre/ferme le formulaire feedback pour une participation
     toggleFeedback(participationId: number): void {

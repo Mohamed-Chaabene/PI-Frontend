@@ -37,5 +37,20 @@ export class FeedbackEventService {
     getByEvenement(evenementId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/evenement/${evenementId}`);
 }
+    getReputation(
+    organisateurId: number,
+    nomOrganisateur: string,
+    type: string,
+    titre: string
+    ): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/reputation`, {
+        params: {
+            organisateurId: organisateurId.toString(),
+            nomOrganisateur,
+            type,
+            titre
+        }
+    });
+}   
 
 }

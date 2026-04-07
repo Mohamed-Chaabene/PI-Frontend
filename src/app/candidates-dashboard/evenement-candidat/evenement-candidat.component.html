@@ -1,14 +1,12 @@
-<!--  UN SEUL titre avec bouton Mes Participations -->
+<!-- Titre + navigation -->
 <div class="breadcrumb-title d-flex align-items-center justify-content-between mb-4">
     <h1 class="mb-0 fw-semibold">Événements disponibles</h1>
-    <a routerLink="/candidates-dashboard/ma-calendar"
-   class="btn-calendrier">
-    <i class="ri-calendar-2-line"></i> Calendrier
+    <a routerLink="/candidates-dashboard/ma-calendar" class="btn-calendrier">
+        <i class="ri-calendar-2-line"></i> Calendrier
     </a>
     <a routerLink="/candidates-dashboard/mes-participations"
        class="btn-mes-participations position-relative">
         <i class="ri-calendar-check-line"></i> Mes Participations
-        <!--  Badge rouge si confirmations -->
         <span class="notif-badge" *ngIf="participationsConfirmees.length > 0">
             {{ participationsConfirmees.length }}
         </span>
@@ -21,14 +19,11 @@
         <div class="col-8 px-0">
             <div class="form-group position-relative">
                 <i class="ri-search-line"></i>
-                <input
-                    type="text"
-                    class="form-control"
+                <input type="text" class="form-control"
                     placeholder="Rechercher un événement..."
                     [ngModel]="searchTerm"
                     (ngModelChange)="onSearch($event)"
-                    name="search"
-                >
+                    name="search">
             </div>
         </div>
         <div class="col-4 px-0">
@@ -44,7 +39,7 @@
     <p>Chargement...</p>
 </div>
 
-<!-- Liste -->
+<!-- Liste événements -->
 <div class="row" *ngIf="!isLoading">
     <div class="col-lg-6 col-md-6" *ngFor="let evenement of filteredEvenements">
         <div class="single-job-box">
@@ -52,7 +47,9 @@
                 <div class="d-sm-flex align-items-center">
                     <div class="company-logo">
                         <i class="ri-calendar-event-line"
-                           style="font-size: 35px; color: var(--primaryColor); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                           style="font-size: 35px; color: var(--primaryColor);
+                                  position: absolute; top: 50%; left: 50%;
+                                  transform: translate(-50%, -50%);">
                         </i>
                     </div>
                     <div class="content">
@@ -64,20 +61,43 @@
                     </div>
                 </div>
                 <div class="apply-btn">
-                    <!-- ✅ Demande déjà envoyée -->
-                    <button class="default-btn demande-envoyee"
-                            *ngIf="aDejaDemandeA(evenement.id)"
-                            disabled>
-                        <i class="ri-check-line"></i> Demande envoyée
-                    </button>
-                    <!-- ✅ Pas encore demandé -->
-                    <button class="default-btn"
-                            *ngIf="!aDejaDemandeA(evenement.id)"
-                            (click)="participer(evenement.id)">
-                        <i class="ri-user-add-line"></i> Participer
-                    </button>
-                </div>
+
+    <!-- Déjà inscrit = CONFIRME — non annulable -->
+    <button class="default-btn btn-inscrit"
+            *ngIf="getStatutEvenement(evenement.id) === 'CONFIRME'"
+            disabled>
+        <i class="ri-check-double-line"></i> Déjà inscrit
+    </button>
+
+    <!-- Demande envoyée = EN_ATTENTE — annulable -->
+    <div class="btn-group-attente"
+         *ngIf="getStatutEvenement(evenement.id) === 'EN_ATTENTE'">
+        <button class="default-btn demande-envoyee" disabled>
+            <i class="ri-time-line"></i> Demande envoyée
+        </button>
+        <button class="btn-annuler"
+                (click)="annulerParticipation(evenement.id)">
+            <i class="ri-close-line"></i> Annuler
+        </button>
+    </div>
+
+    <!-- Refusé -->
+    <button class="default-btn btn-refuse"
+            *ngIf="getStatutEvenement(evenement.id) === 'REFUSE'"
+            disabled>
+        <i class="ri-close-line"></i> Refusé
+    </button>
+
+    <!-- Pas encore demandé -->
+    <button class="default-btn"
+            *ngIf="!aDejaDemandeA(evenement.id)"
+            (click)="participer(evenement.id)">
+        <i class="ri-user-add-line"></i> Participer
+    </button>
+
+</div>
             </div>
+
             <div class="info d-sm-flex align-items-center justify-content-between">
                 <span class="salary d-block">
                     <span class="fw-semibold">Type:</span>
@@ -92,12 +112,140 @@
                     {{ evenement.lieu }}
                 </span>
             </div>
+
+            <!-- Bouton voir les avis -->
+            <div class="detail-link" (click)="ouvrirDetail(evenement)">
+                <i class="ri-information-line"></i> Voir les avis de l'organisateur
+            </div>
+
         </div>
     </div>
-
 
     <!-- Vide -->
     <div class="col-12" *ngIf="filteredEvenements.length === 0">
         <p class="text-center py-4">Aucun événement trouvé.</p>
+    </div>
+</div>
+
+<!-- Popup détail + réputation -->
+<div class="popup-overlay" *ngIf="popupDetailOuvert" (click)="fermerDetail()">
+    <div class="popup-box" (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="popup-header">
+            <div>
+                <h3 class="popup-titre">{{ evenementSelectionne?.titre }}</h3>
+                <span class="popup-type">{{ evenementSelectionne?.type }}</span>
+            </div>
+            <button class="popup-close" (click)="fermerDetail()">✕</button>
+        </div>
+
+        <!-- Infos événement -->
+        <div class="popup-infos">
+            <span>
+                <i class="ri-map-pin-line"></i>
+                {{ evenementSelectionne?.lieu }}
+            </span>
+            <span>
+                <i class="ri-calendar-line"></i>
+                {{ formatDate(evenementSelectionne?.date) }}
+            </span>
+            <span>
+                <i class="ri-user-line"></i>
+                {{ evenementSelectionne?.nomOrganisateur }}
+            </span>
+        </div>
+
+        <!-- Loading réputation -->
+        <div class="popup-loading" *ngIf="loadingReputation">
+            <p>Chargement des avis...</p>
+        </div>
+
+        <!-- Réputation -->
+        <div class="popup-reputation" *ngIf="!loadingReputation && reputationData">
+
+            <!-- Niveau 1 — badge global -->
+            <div class="rep-section">
+                <p class="rep-label">
+                    <i class="ri-user-star-line"></i>
+                    Réputation globale de l'organisateur
+                </p>
+                <div class="rep-row">
+                    <span class="rep-badge"
+                          [class]="getBadgeClass(reputationData.badgeReputation)">
+                        {{ getBadgeLabel(reputationData.badgeReputation) }}
+                    </span>
+                    <span class="rep-note" *ngIf="reputationData.totalFeedbacks > 0">
+                        {{ reputationData.noteMoyenneGlobale }}/5
+                        — {{ reputationData.totalFeedbacks }} avis
+                    </span>
+                    <span class="rep-note" *ngIf="reputationData.totalFeedbacks === 0">
+                        Aucun avis encore
+                    </span>
+                </div>
+            </div>
+
+            <!-- Niveau 2 — badge par type -->
+            <div class="rep-section">
+                <p class="rep-label">
+                    <i class="ri-bookmark-line"></i>
+                    Ses événements "{{ evenementSelectionne?.type }}"
+                </p>
+                <div class="rep-row">
+                    <span class="rep-badge"
+                          [class]="getBadgeClass(reputationData.badgeType)">
+                        {{ getBadgeLabel(reputationData.badgeType) }}
+                    </span>
+                    <span class="rep-note" *ngIf="reputationData.totalFeedbacksParType > 0">
+                        {{ reputationData.noteMoyenneParType }}/5
+                        — {{ reputationData.totalFeedbacksParType }} avis
+                    </span>
+                    <span class="rep-note" *ngIf="reputationData.totalFeedbacksParType === 0">
+                        Premier événement de ce type
+                    </span>
+                </div>
+            </div>
+
+            <!-- Niveau 3 — badge par titre -->
+            <div class="rep-section"
+                 *ngIf="reputationData.noteMoyenneTitrePasse > 0">
+                <p class="rep-label">
+                    <i class="ri-history-line"></i>
+                    Éditions précédentes "{{ evenementSelectionne?.titre }}"
+                </p>
+                <div class="rep-row">
+                    <span class="rep-badge"
+                          [class]="getBadgeClass(reputationData.badgeTitre)">
+                        {{ getBadgeLabel(reputationData.badgeTitre) }}
+                    </span>
+                    <span class="rep-note">
+                        {{ reputationData.noteMoyenneTitrePasse }}/5
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Erreur chargement -->
+        <div class="rep-aucun"
+             *ngIf="!loadingReputation && !reputationData">
+            <i class="ri-chat-3-line"></i>
+            Impossible de charger les avis
+        </div>
+
+        <!-- Footer — bouton participer -->
+        <div class="popup-footer">
+            <button class="default-btn demande-envoyee"
+                    *ngIf="aDejaDemandeA(evenementSelectionne?.id)"
+                    disabled>
+                <i class="ri-check-line"></i> Demande envoyée
+            </button>
+            <button class="default-btn"
+                    *ngIf="!aDejaDemandeA(evenementSelectionne?.id)"
+                    (click)="participer(evenementSelectionne?.id); fermerDetail()">
+                <i class="ri-user-add-line"></i> Participer
+            </button>
+        </div>
+
     </div>
 </div>

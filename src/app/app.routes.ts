@@ -72,6 +72,7 @@ import { EvenementDemandesComponent } from './evenement-dashboard/evenement-dema
 import { MesParticipationsComponent } from './candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component';
 import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';
 import { MaCalendarComponent } from './candidates-dashboard/evenement-candidat/ma-calendar/ma-calendar.component';
+import { EvenementFeedbacksComponent } from './evenement-dashboard/evenement-feedback/evenement-feedbacks.component';
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
     {path: 'login', component: HomeDemoOneComponent},
@@ -173,7 +174,7 @@ export const routes: Routes = [
       {path: 'detail/:id', component: EvenementDetailComponent},
       {path: 'demandes', component: EvenementDemandesComponent},
       {path: 'calendrier', component: EvenementCalendrierComponent},
-      
+       {path: 'feedbacks', component: EvenementFeedbacksComponent},
     ]
     }, 
 {

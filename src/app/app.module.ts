@@ -109,7 +109,7 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
 import { EvenementDemandesComponent } from './evenement-dashboard/evenement-demandes/evenement-demandes.component';
 import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
-
+import { EvenementFeedbacksComponent } from './evenement-dashboard/evenement-feedback/evenement-feedbacks.component';
 
 
 // Banner components are now in SharedModule
@@ -195,6 +195,7 @@ import { FullCalendarModule } from '@fullcalendar/angular';
         MesParticipationsComponent,
         EvenementCalendrierComponent,
         MaCalendarComponent,
+        EvenementFeedbacksComponent 
         
         
     ],
