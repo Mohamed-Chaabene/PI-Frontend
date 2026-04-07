@@ -59,7 +59,7 @@ export class OffreCandidatComponent implements OnInit {
   }
 
   loadOffres() {
-    this.offreService.getByPartenaire(this.partenaireId).subscribe({
+    this.offreService.getByPartenaireTriees(this.partenaireId).subscribe({
       next: (data: any[]) => this.offres = data,
       error: (err: any) => console.error(err)
     });
@@ -76,9 +76,13 @@ export class OffreCandidatComponent implements OnInit {
   this.offreService.searchByKeyword(this.searchKeyword).subscribe({
     next: (data: any[]) => {
       
-      this.offres = data.filter(
-        o => o.partenaire?.id === this.partenaireId
-      );
+      this.offres = data
+        .filter(o => o.partenaire?.id === this.partenaireId)
+        .sort((a, b) => {
+          if (a.epinglee && !b.epinglee) return -1;
+          if (!a.epinglee && b.epinglee) return 1;
+          return 0;
+        });
       this.isSearching = false;
     },
     error: (err: any) => {

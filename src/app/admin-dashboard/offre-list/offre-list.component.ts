@@ -105,4 +105,9 @@ export class OffreListComponent implements OnInit {
     retour() {
         this.router.navigate(['/admin-dashboard/partenaires']);
     }
+    toggleEpingle(id: number) {this.offreService.toggleEpingle(id).subscribe({
+        next: () => this.loadOffres(),
+        error: (err: any) => console.error(err)
+        });
+    }
 }
