@@ -12,6 +12,7 @@
 <div class="row" *ngIf="!isLoading">
     <div class="col-lg-6 col-md-6" *ngFor="let p of participations">
         <div class="single-job-box">
+
             <div class="d-sm-flex align-items-center justify-content-between">
                 <div class="d-sm-flex align-items-center">
                     <div class="company-logo">
@@ -48,7 +49,7 @@
                 </span>
             </div>
 
-            <!-- ← QR Code — uniquement si CONFIRME -->
+            <!-- QR Code -->
             <div class="qr-section" *ngIf="p.statut === 'CONFIRME' && p.qrCode">
                 <div class="qr-divider"></div>
                 <p class="qr-label">
@@ -64,6 +65,73 @@
                 <p class="qr-hint">
                     <i class="ri-scan-line"></i> Présentez ce QR à l'entrée de l'événement
                 </p>
+            </div>
+
+            <!-- Feedback -->
+            <div class="feedback-section" *ngIf="p.statut === 'CONFIRME'">
+                <div class="feedback-divider"></div>
+
+                <!-- Événement pas encore passé -->
+                <div class="feedback-attente" *ngIf="!evenementPasse(p)">
+                    <i class="ri-time-line"></i>
+                    Le feedback sera disponible après la date de l'événement
+                </div>
+
+                <!-- Événement passé -->
+                <ng-container *ngIf="evenementPasse(p)">
+
+                    <!-- Message succès -->
+                    <div class="feedback-succes" *ngIf="feedbackSucces === p.id">
+                        <i class="ri-check-circle-line"></i> Feedback envoyé avec succès !
+                    </div>
+
+                    <!-- Bouton ouvrir formulaire -->
+                    <button class="btn-feedback"
+                            (click)="toggleFeedback(p.id)"
+                            *ngIf="feedbackSucces !== p.id">
+                        <i class="ri-chat-3-line"></i>
+                        {{ feedbackOuvert === p.id ? 'Annuler' : 'Laisser un feedback' }}
+                    </button>
+
+                    <!-- Formulaire feedback -->
+                    <div class="feedback-form" *ngIf="feedbackOuvert === p.id">
+
+                        <!-- Étoiles -->
+                        <div class="stars-wrapper">
+                            <span class="stars-label">Note :</span>
+                            <div class="stars">
+                                <span *ngFor="let star of [1,2,3,4,5]"
+                                      class="star"
+                                      [class.active]="star <= feedbackNote"
+                                      (click)="setNote(star)">★</span>
+                            </div>
+                            <span class="note-value">{{ feedbackNote }}/5</span>
+                        </div>
+
+                        <!-- Commentaire -->
+                        <textarea
+                            class="feedback-textarea"
+                            placeholder="Décrivez votre expérience..."
+                            [(ngModel)]="feedbackCommentaire"
+                            rows="3">
+                        </textarea>
+
+                        <!-- Erreur -->
+                        <p class="feedback-erreur" *ngIf="feedbackErreur">
+                            <i class="ri-error-warning-line"></i> {{ feedbackErreur }}
+                        </p>
+
+                        <!-- Bouton soumettre -->
+                        <button class="btn-soumettre"
+                                (click)="soumettreFeedback(p.id)"
+                                [disabled]="feedbackEnvoi">
+                            <i class="ri-send-plane-line"></i>
+                            {{ feedbackEnvoi ? 'Envoi...' : 'Envoyer le feedback' }}
+                        </button>
+
+                    </div>
+
+                </ng-container>
             </div>
 
         </div>

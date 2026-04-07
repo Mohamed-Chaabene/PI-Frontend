@@ -112,6 +112,65 @@
     </p>
 </div>
 
+<!-- Section Feedbacks -->
+<div class="jove-card mt-4">
+
+    <!-- Header avec note moyenne -->
+    <div class="feedback-header">
+        <h3 class="title">
+            Feedbacks reçus
+            <span class="feedback-count">{{ totalFeedbacks }}</span>
+        </h3>
+
+        <!-- Note moyenne -->
+        <div class="moyenne-wrapper" *ngIf="totalFeedbacks > 0">
+            <div class="moyenne-note">{{ noteMoyenne }}</div>
+            <div class="moyenne-etoiles">
+                <span *ngFor="let star of getEtoiles(5)"
+                      class="star"
+                      [class.active]="star <= noteMoyenne">★</span>
+            </div>
+            <div class="moyenne-label">Note moyenne</div>
+        </div>
+    </div>
+
+    <!-- Liste feedbacks -->
+    <div class="feedback-list" *ngIf="feedbacks.length > 0">
+        <div class="feedback-item" *ngFor="let f of feedbacks">
+
+            <!-- Header candidat + note -->
+            <div class="feedback-item-header">
+                <div class="candidat-info">
+                    <div class="candidat-avatar">
+                        {{ f.nomCandidat ? f.nomCandidat.charAt(0).toUpperCase() : 'C' }}
+                    </div>
+                    <div>
+                        <p class="candidat-nom">{{ f.nomCandidat || 'Candidat' }}</p>
+                        <p class="feedback-date">{{ formatDate(f.date) }}</p>
+                    </div>
+                </div>
+                <div class="note-stars">
+                    <span *ngFor="let star of getEtoiles(5)"
+                          class="star"
+                          [class.active]="star <= f.note">★</span>
+                    <span class="note-num">{{ f.note }}/5</span>
+                </div>
+            </div>
+
+            <!-- Commentaire -->
+            <p class="feedback-commentaire">{{ f.commentaire }}</p>
+
+        </div>
+    </div>
+
+    <!-- Aucun feedback -->
+    <div class="text-center py-3" *ngIf="feedbacks.length === 0">
+        <i class="ri-chat-3-line" style="font-size:30px; color:#ccc;"></i>
+        <p style="color:#aaa; margin-top:8px;">Aucun feedback pour cet événement.</p>
+    </div>
+
+</div>
+
     <!-- Boutons -->
     <div class="d-flex gap-3 mt-4">
         <button class="btn-submit" (click)="retour()">

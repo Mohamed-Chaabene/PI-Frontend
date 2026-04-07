@@ -61,3 +61,133 @@
     margin-right: 4px;
   }
 }
+
+.feedback-section {
+  margin-top: 12px;
+}
+
+.feedback-divider {
+  border-top: 1px dashed #e0e0e0;
+  margin-bottom: 12px;
+}
+
+.btn-feedback {
+  background: transparent;
+  border: 1px solid #1a6b3c;
+  color: #1a6b3c;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #f0faf4;
+  }
+
+  i { margin-right: 5px; }
+}
+
+.feedback-form {
+  margin-top: 12px;
+}
+
+.stars-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.stars-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.stars {
+  display: flex;
+  gap: 4px;
+}
+
+.star {
+  font-size: 22px;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.1s;
+
+  &.active { color: #f9a825; }
+  &:hover  { color: #f9a825; }
+}
+
+.note-value {
+  font-size: 13px;
+  color: #888;
+}
+
+.feedback-textarea {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 13px;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  color: #333;
+
+  &:focus {
+    border-color: #1a6b3c;
+  }
+}
+
+.feedback-erreur {
+  font-size: 12px;
+  color: #d8342b;
+  margin: 6px 0;
+
+  i { margin-right: 4px; }
+}
+
+.btn-soumettre {
+  width: 100%;
+  background: #1a6b3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 9px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.15s;
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &:hover:not(:disabled) { opacity: 0.9; }
+
+  i { margin-right: 5px; }
+}
+
+.feedback-succes {
+  background: #f0faf4;
+  color: #1a6b3c;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  text-align: center;
+
+  i { margin-right: 5px; }
+}
+.feedback-attente {
+  text-align: center;
+  padding: 10px;
+  font-size: 13px;
+  color: #f9a825;
+  background: #fffde7;
+  border-radius: 6px;
+  border: 1px solid #fff176;
+
+  i {
+    margin-right: 5px;
+  }
+}
