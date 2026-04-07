@@ -8,7 +8,7 @@ import { catchError } from 'rxjs/operators';
 })
 export class ApiService {
 
-  private apiUrl = 'http://localhost:8080/api'; // URL de votre backend Spring Boot
+  private apiUrl = 'http://localhost:8086/api'; // URL de votre backend Spring Boot
 
   constructor(private http: HttpClient) { }
 

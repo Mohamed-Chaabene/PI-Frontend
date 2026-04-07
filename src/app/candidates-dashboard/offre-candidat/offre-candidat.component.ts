@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { OffrePartenaireService } from '../../services/offre-partenaire.service';
 import { PartenaireService } from '../../services/partenaire.service';
+import { EmailService } from '../../services/email.service';
 
 @Component({
   selector: 'app-offre-candidat',
@@ -18,10 +19,16 @@ export class OffreCandidatComponent implements OnInit {
   partenaireNom: string = '';
   typeFilter: string = '';
 
+  
+  searchKeyword: string = '';
+  isSearching: boolean = false;
+
   isPostulerOpen = false;
   offreSelectionnee: any = null;
   message: string = '';
   submitted: boolean = false;
+  envoyeEnCours: boolean = false;
+  cvFile: File | null = null;
 
   private partenaireId!: number;
 
@@ -29,13 +36,16 @@ export class OffreCandidatComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private offreService: OffrePartenaireService,
-    private partenaireService: PartenaireService
+    private partenaireService: PartenaireService,
+    private emailService: EmailService
   ) {}
 
   ngOnInit() {
     this.partenaireId = +this.route.snapshot.paramMap.get('id')!;
     this.loadPartenaire();
     this.loadOffres();
+    this.partenaireService.incrementerVues(this.partenaireId)
+    .subscribe();
   }
 
   loadPartenaire() {
@@ -55,15 +65,61 @@ export class OffreCandidatComponent implements OnInit {
     });
   }
 
+  
+  searchOffres() {
+  if (!this.searchKeyword.trim()) {
+    this.loadOffres();
+    return;
+  }
+
+  this.isSearching = true;
+  this.offreService.searchByKeyword(this.searchKeyword).subscribe({
+    next: (data: any[]) => {
+      
+      this.offres = data.filter(
+        o => o.partenaire?.id === this.partenaireId
+      );
+      this.isSearching = false;
+    },
+    error: (err: any) => {
+      console.error(err);
+      this.isSearching = false;
+    }
+  });
+}
+
+  
+  clearSearch() {
+    this.searchKeyword = '';
+    this.loadOffres();
+  }
+
   get filteredOffres(): any[] {
     if (!this.typeFilter) return this.offres;
     return this.offres.filter((o: any) => o.type === this.typeFilter);
+  }
+
+  getEmailCandidat(): string {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.sub || payload.email || '';
+      } catch { return ''; }
+    }
+    return '';
+  }
+
+  onCvSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) this.cvFile = file;
   }
 
   ouvrirPostuler(offre: any) {
     this.offreSelectionnee = offre;
     this.message = '';
     this.submitted = false;
+    this.cvFile = null;
     this.isPostulerOpen = true;
   }
 
@@ -75,11 +131,38 @@ export class OffreCandidatComponent implements OnInit {
   envoyerCandidature() {
     this.submitted = true;
     if (!this.message.trim()) return;
-    alert('✅ Candidature envoyée avec succès !');
-    this.fermerPostuler();
+    this.envoyeEnCours = true;
+    this.emailService.postuler(
+      this.partenaire?.email,
+      '',
+      this.getEmailCandidat(),
+      this.message,
+      this.offreSelectionnee?.titre,
+      this.cvFile || undefined
+    ).subscribe({
+      next: () => {
+        this.envoyeEnCours = false;
+        alert('✅ Candidature envoyée avec succès !');
+        this.fermerPostuler();
+      },
+      error: (err: any) => {
+        this.envoyeEnCours = false;
+        alert('❌ Erreur : ' + err.message);
+      }
+    });
   }
 
   retour() {
     this.router.navigate(['/candidates-dashboard/partenaires']);
+  }
+
+  triggerFileInput() {
+    document.getElementById('cvInput')?.click();
+  }
+
+  removeCv() {
+    this.cvFile = null;
+    const input = document.getElementById('cvInput') as HTMLInputElement;
+    if (input) input.value = '';
   }
 }

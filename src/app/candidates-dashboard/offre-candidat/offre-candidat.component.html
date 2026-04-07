@@ -23,6 +23,26 @@
     </div>
   </div>
 
+  <!-- ✅ Barre de recherche par mot-clé -->
+  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+    <div style="display:flex; align-items:center; background:white; border:1.5px solid #e5e7eb; border-radius:50px; padding:6px 14px 6px 6px; flex:1; box-shadow:0 2px 8px rgba(0,0,0,.06);">
+      <div style="background:#ede9fe; color:#7c3aed; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; margin-right:8px; flex-shrink:0;">
+        <i class="ri-search-eye-line"></i>
+      </div>
+      <input type="text"
+             style="flex:1; border:none; outline:none; font-size:14px; padding:4px 0; background:transparent; color:#374151;"
+             placeholder="Rechercher une offre par mot-clé..."
+             [value]="searchKeyword"
+             (input)="searchKeyword = $any($event.target).value; searchOffres()"/>
+      <button *ngIf="searchKeyword"
+              type="button"
+              style="background:#f3f4f6; border:none; cursor:pointer; color:#9ca3af; font-size:13px; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;"
+              (click)="clearSearch()">
+        <i class="ri-close-line"></i>
+      </button>
+    </div>
+  </div>
+
   <div class="cards-grid">
     <div class="offer-card" *ngFor="let o of filteredOffres">
 
@@ -47,7 +67,7 @@
           <div class="partner-av"
                [class.av-entreprise]="partenaire?.type === 'ENTREPRISE'"
                [class.av-universite]="partenaire?.type !== 'ENTREPRISE'">
-            {{ partenaireNom }}
+            {{ (partenaireNom || '').substring(0, 2).toUpperCase() }}
           </div>
           <div class="partner-info">
             <strong>{{ partenaireNom }}</strong>
@@ -66,7 +86,7 @@
 
     <div class="empty-state" *ngIf="filteredOffres.length === 0">
       <i class="ri-file-unknow-line"></i>
-      <p>Aucune offre disponible pour le moment</p>
+      <p>{{ searchKeyword ? 'Aucun résultat pour "' + searchKeyword + '"' : 'Aucune offre disponible pour le moment' }}</p>
     </div>
   </div>
 </div>
@@ -94,6 +114,11 @@
       </div>
 
       <div class="form-group">
+        <label><i class="ri-user-line"></i> Votre email</label>
+        <div class="readonly-field">{{ getEmailCandidat() }}</div>
+      </div>
+
+      <div class="form-group">
         <label><i class="ri-chat-3-line"></i> Votre message *</label>
         <textarea
           rows="4"
@@ -108,15 +133,41 @@
         </div>
       </div>
 
+      <div class="form-group">
+        <label><i class="ri-attachment-line"></i> Votre CV (PDF, DOC)</label>
+
+        <div class="upload-zone" *ngIf="!cvFile" (click)="triggerFileInput()">
+          <i class="ri-upload-cloud-line upload-icon"></i>
+          <div class="upload-text">Cliquez pour choisir votre CV</div>
+          <div class="upload-sub">PDF, DOC, DOCX — Max 5MB</div>
+        </div>
+
+        <div class="file-chosen" *ngIf="cvFile">
+          <i class="ri-file-check-line file-icon"></i>
+          <div class="file-info">
+            <div class="file-name">{{ cvFile.name }}</div>
+            <div class="file-size">{{ (cvFile.size / 1024).toFixed(0) }} KB</div>
+          </div>
+          <button type="button" class="remove-btn" (click)="removeCv()">✕</button>
+        </div>
+
+        <input type="file"
+               id="cvInput"
+               accept=".pdf,.doc,.docx"
+               style="display:none"
+               (change)="onCvSelected($event)"/>
+      </div>
+
       <div class="popup-footer">
         <button type="button" class="btn-annuler" (click)="fermerPostuler()">
           Annuler
         </button>
         <button type="button"
                 class="btn-envoyer"
-                (click)="envoyerCandidature()">
+                (click)="envoyerCandidature()"
+                [disabled]="envoyeEnCours || !message.trim()">
           <i class="ri-send-plane-fill"></i>
-          Envoyer la candidature
+          {{ envoyeEnCours ? 'Envoi en cours...' : 'Envoyer la candidature' }}
         </button>
       </div>
 
