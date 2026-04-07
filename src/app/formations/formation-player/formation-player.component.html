@@ -2,47 +2,92 @@
 
   <!-- ── Quiz Final Overlay ═══════════════════════════════════════ -->
   <div class="quiz-final-overlay" *ngIf="showQuizFinal">
-    <div class="quiz-final-panel">
+    <div class="quiz-final-panel"
+         [class.no-select]="!quizFinalSubmitted && !quizBloque">
 
-      <!-- Loading -->
+      <!-- ── Avertissement flottant ──────────────────────────── -->
+      <div class="quiz-avertissement" *ngIf="showAvertissement">
+        <i class="ri-alert-line"></i>
+        {{ avertissementMessage }}
+      </div>
+
+      <!-- ── Loading ──────────────────────────────────────────── -->
       <div class="quiz-final-loading" *ngIf="quizFinalLoading">
         <div class="loading-spinner"></div>
         <h3>Génération de votre évaluation finale...</h3>
       </div>
 
-      <!-- Questions -->
-      <ng-container *ngIf="!quizFinalLoading && !quizFinalSubmitted">
+      <!-- ── Quiz bloqué pour triche ──────────────────────────── -->
+      <div class="quiz-bloque-panel" *ngIf="quizBloque && !quizFinalLoading">
+        <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+          <span class="bloque-icon" style="font-size: 1.1em; margin: 0; line-height: 1;">🚫</span> 
+          Tentative annulée
+        </h2>
+        <p class="bloque-raison">{{ quizBloqueMessage }}</p>
+
+        <div class="tentatives-info danger">
+          <i class="ri-close-circle-line"></i>
+          <span>
+            Cette tentative a été comptabilisée.
+            <ng-container *ngIf="tentativesRestantes > 0">
+              Il vous reste <strong>{{ tentativesRestantes }}</strong>
+              tentative{{ tentativesRestantes > 1 ? 's' : '' }}.
+            </ng-container>
+            <ng-container *ngIf="tentativesRestantes === 0">
+              Vous avez épuisé toutes vos tentatives.
+            </ng-container>
+          </span>
+        </div>
+
+        <button *ngIf="peutReessayer"
+                class="btn-retry-final"
+                (click)="fermerQuizFinal()"
+                type="button">
+          <i class="ri-restart-line"></i>
+          Réessayer l'évaluation
+        </button>
+
+        <button *ngIf="!peutReessayer"
+                class="btn-close-final"
+                (click)="fermerQuizFinal()"
+                type="button">
+          <i class="ri-close-line"></i>
+          Fermer
+        </button>
+      </div>
+
+      <!-- ── Questions ─────────────────────────────────────────── -->
+      <ng-container *ngIf="!quizFinalLoading && !quizFinalSubmitted
+                           && !quizBloque">
 
         <div class="quiz-final-header">
           <div class="quiz-final-badge">🎓 Évaluation finale</div>
           <h2>{{ formation.titre }}</h2>
-          <p>
-            Répondez correctement à <strong>70%</strong>
-            des questions pour obtenir votre certificat.
-          </p>
           <div class="quiz-final-progress-info">
             <span>{{ quizFinalQuestions.length }} questions</span>
             <span>•</span>
-            <span>Score minimum : 70%</span>
+            <span>Score minimum pour obtenir un certificat : 70%</span>
             <span>•</span>
             <span class="tentatives-badge"
                   [class.warning]="tentativesUtilisees === 1">
               Tentative {{ tentativesUtilisees + 1 }} / {{ MAX_TENTATIVES }}
             </span>
           </div>
+
+          <!-- Avertissement anti-triche -->
+          <div class="anti-triche-notice">
+            <i class="ri-shield-check-line"></i>
+            Copier-coller désactivé · Quitter la fenêtre annule la tentative
+          </div>
         </div>
 
         <div class="quiz-final-questions">
           <div class="quiz-final-question"
                *ngFor="let q of quizFinalQuestions; let qi = index">
-
             <div class="question-header">
               <span class="question-num">{{ qi + 1 }}</span>
-
             </div>
-
             <p class="question-text">{{ q.question }}</p>
-
             <div class="quiz-options">
               <button
                 *ngFor="let opt of q.options; let oi = index"
@@ -50,9 +95,7 @@
                 [class.selected]="quizFinalAnswers[qi] === oi"
                 (click)="selectFinalAnswer(qi, oi)"
                 type="button">
-                <span class="opt-letter">
-                  {{ ['A','B','C','D'][oi] }}
-                </span>
+                <span class="opt-letter">{{ ['A','B','C','D'][oi] }}</span>
                 {{ opt }}
               </button>
             </div>
@@ -61,8 +104,7 @@
 
         <div class="quiz-final-submit-bar">
           <div class="answers-count">
-            {{ answeredQuestionsCount }}
-            / {{ quizFinalQuestions.length }} réponses
+            {{ answeredQuestionsCount }} / {{ quizFinalQuestions.length }} réponses
           </div>
           <button class="btn-submit-final"
                   (click)="submitQuizFinal()"
@@ -71,21 +113,18 @@
             Soumettre mon évaluation
           </button>
         </div>
-
       </ng-container>
 
-      <!-- Résultat -->
-      <div class="quiz-final-result" *ngIf="quizFinalSubmitted">
+      <!-- ── Résultat ───────────────────────────────────────────── -->
+      <div class="quiz-final-result"
+           *ngIf="quizFinalSubmitted && !quizBloque">
 
-        <!-- ══ Succès ══ -->
+        <!-- Succès -->
         <div class="result-success" *ngIf="quizFinalReussi">
           <div class="result-trophy">🏆</div>
           <h2>Félicitations !</h2>
-          <div class="result-score-circle success">
-            {{ quizFinalScore }}%
-          </div>
+          <div class="result-score-circle success">{{ quizFinalScore }}%</div>
           <p>{{ quizFinalMessage }}</p>
-
           <div class="cert-actions">
             <button class="btn-download-cert"
                     (click)="telechargerCertificat()"
@@ -94,74 +133,51 @@
               <i class="ri-download-line"></i>
               Télécharger mon certificat
             </button>
-            <div class="cert-loading"
-                 *ngIf="!certificatId">
+            <div class="cert-loading" *ngIf="!certificatId">
               <div class="loading-spinner-sm"></div>
               Génération du certificat...
             </div>
           </div>
         </div>
 
-        <!-- ══ Échec ══ -->
-        <div class="result-fail" *ngIf="!quizFinalReussi">
-
-          <!-- Cas : encore des tentatives -->
-          <ng-container *ngIf="peutReessayer">
-            <div class="result-emoji">😔</div>
-            <h2>Score insuffisant</h2>
-            <div class="result-score-circle fail">
-              {{ quizFinalScore }}%
-            </div>
-            <p>{{ quizFinalMessage }}</p>
-
-            <div class="tentatives-info warning">
-              <i class="ri-error-warning-line"></i>
-              Il vous reste <strong>{{ tentativesRestantes }}</strong>
-              tentative{{ tentativesRestantes > 1 ? 's' : '' }}.
-              Préparez-vous bien avant de réessayer !
-            </div>
-
-            <button class="btn-retry-final"
-                    (click)="fermerQuizFinal()"
-                    type="button">
-              <i class="ri-restart-line"></i>
-              Réessayer l'évaluation
-            </button>
-          </ng-container>
-
-          <!-- Cas : plus de tentatives -->
-          <ng-container *ngIf="!peutReessayer">
-            <div class="result-emoji">😞</div>
-            <h2>Tentatives épuisées</h2>
-            <div class="result-score-circle fail">
-              {{ quizFinalScore }}%
-            </div>
-            <p>{{ quizFinalMessage }}</p>
-
-            <div class="tentatives-info danger">
-              <i class="ri-close-circle-line"></i>
-              Vous avez utilisé vos <strong>{{ MAX_TENTATIVES }}</strong> tentatives.
-              Le certificat ne peut plus être obtenu pour cette inscription.
-            </div>
-
-            <button class="btn-close-final"
-                    (click)="fermerQuizFinal()"
-                    type="button"
-                    style="display:inline-flex; align-items:center; justify-content:center;
-                           gap:8px; padding:13px 32px; background:#dc2626; color:#fff;
-                           border:none; border-radius:10px; font-size:15px;
-                           font-weight:600; cursor:pointer; margin-top:20px;
-                           box-shadow:0 2px 8px rgba(220,38,38,0.3);"
-                    onmouseover="this.style.background='#b91c1c'"
-                    onmouseout="this.style.background='#dc2626'">
-              <i class="ri-close-circle-line" style="font-size:17px;"></i>
-              Fermer
-            </button>
-          </ng-container>
-
+        <!-- Échec avec tentatives restantes -->
+        <div class="result-fail" *ngIf="!quizFinalReussi && peutReessayer">
+          <div class="result-emoji">😔</div>
+          <h2>Score insuffisant</h2>
+          <div class="result-score-circle fail">{{ quizFinalScore }}%</div>
+          <p>{{ quizFinalMessage }}</p>
+          <div class="tentatives-info warning">
+            <i class="ri-error-warning-line"></i>
+            Il vous reste <strong>{{ tentativesRestantes }}</strong>
+            tentative{{ tentativesRestantes > 1 ? 's' : '' }}.
+          </div>
+          <button class="btn-retry-final"
+                  (click)="fermerQuizFinal()"
+                  type="button">
+            <i class="ri-restart-line"></i>
+            Réessayer l'évaluation
+          </button>
         </div>
 
+        <!-- Échec sans tentatives -->
+        <div class="result-fail" *ngIf="!quizFinalReussi && !peutReessayer">
+          <div class="result-emoji">😞</div>
+          <h2>Tentatives épuisées</h2>
+          <div class="result-score-circle fail">{{ quizFinalScore }}%</div>
+          <p>{{ quizFinalMessage }}</p>
+          <div class="tentatives-info danger">
+            <i class="ri-close-circle-line"></i>
+            Vous avez utilisé toutes vos tentatives.
+          </div>
+          <button class="btn-close-final"
+                  (click)="fermerQuizFinal()"
+                  type="button">
+            <i class="ri-close-line"></i>
+            Fermer
+          </button>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -174,7 +190,7 @@
     </div>
   </div>
 
-  <!-- ── Header ───────────────────────────────────────────────── -->
+  <!-- ── Header ─────────────────────────────────────────────── -->
   <div class="player-header">
     <div class="player-title">
       <i class="ri-play-circle-line"></i>
@@ -198,20 +214,15 @@
 
     <div class="formation-complete-header"
          *ngIf="progression >= 100 && isPlaylist"
-         style="margin-left: 20px; display: flex; align-items: center;">
-      <!-- Bouton désactivé si tentatives épuisées -->
+         style="margin-left:20px;display:flex;align-items:center">
       <button class="btn-quiz-final-trigger"
               (click)="lancerQuizFinal()"
               type="button"
               [disabled]="tentativesUtilisees >= MAX_TENTATIVES"
-              [title]="tentativesUtilisees >= MAX_TENTATIVES
-                       ? 'Tentatives épuisées'
-                       : 'Passer l\'évaluation finale'"
-              style="margin: 0; padding: 6px 14px; background: #16a34a; color: #fff;
-                     border: none; border-radius: 6px; font-weight: 600; cursor: pointer;
-                     display: flex; align-items: center; gap: 6px;
-                     box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <i class="ri-medal-fill" style="font-size: 16px;"></i>
+              style="margin:0;padding:6px 14px;background:#16a34a;color:#fff;
+                     border:none;border-radius:6px;font-weight:600;cursor:pointer;
+                     display:flex;align-items:center;gap:6px">
+        <i class="ri-medal-fill" style="font-size:16px"></i>
         <ng-container *ngIf="tentativesUtilisees < MAX_TENTATIVES">
           Passer l'évaluation finale
         </ng-container>
@@ -242,7 +253,7 @@
              [class.active]="currentVideoId === v.videoId"
              [class.vue]="isVideoVue(v.videoId)"
              (click)="playVideo(v)">
-          <span class="idx">{{ i + 1 }}.</span>
+          <span class="idx">{{ i+1 }}.</span>
           <span class="item-title-small">{{ v.title }}</span>
           <i class="ri-check-line vue-check" *ngIf="isVideoVue(v.videoId)"></i>
         </div>
@@ -268,7 +279,6 @@
           <i class="ri-skip-right-line"></i> Vidéo suivante
         </button>
       </div>
-      <!-- Bouton quiz final si 100% -->
       <div class="formation-complete" *ngIf="progression >= 100">
         <i class="ri-trophy-line"></i>
         <span>Toutes les vidéos vues !</span>
@@ -316,7 +326,7 @@
     </div>
   </div>
 
-  <!-- ── Vidéo simple ────────────────────────────────────────── -->
+  <!-- ── Vidéo simple ─────────────────────────────────────────── -->
   <div class="player-full" *ngIf="!hasEditor() && !isPlaylist">
     <div class="video-wrapper-full">
       <div id="yt-player-div"></div>
@@ -327,5 +337,4 @@
     <i class="ri-lightbulb-line"></i>
     <span>Regardez chaque vidéo jusqu'à la fin — progression automatique !</span>
   </div>
-
 </div>

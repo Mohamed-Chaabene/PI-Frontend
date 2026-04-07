@@ -108,6 +108,19 @@
                     <span><i class="ri-folder-line"></i> {{ formation.categorie }}</span>
                     <span><i class="ri-time-line"></i> {{ formation.duree }}</span>
                   </div>
+                  <!-- Rating -->
+                  <div class="card-rating mt-2" *ngIf="ratings[formation.id]">
+                    <span style="color: #f1c40f; font-size: 1.1rem;">
+                      <ng-container *ngFor="let star of stars">
+                        <i class="ri-star-fill" *ngIf="ratings[formation.id].moyenne >= star"></i>
+                        <i class="ri-star-half-line" *ngIf="ratings[formation.id].moyenne >= star - 0.5 && ratings[formation.id].moyenne < star"></i>
+                        <i class="ri-star-line" *ngIf="ratings[formation.id].moyenne < star - 0.5"></i>
+                      </ng-container>
+                    </span>
+                    <span class="text-muted ms-2" style="font-size: 0.9rem; color: #6c757d;">
+                      {{ ratings[formation.id].moyenne | number:'1.1-1' }} ({{ ratings[formation.id].total }})
+                    </span>
+                  </div>
                 </div>
                 <div class="card-footer">
                   <span class="niveau-badge" [ngClass]="getNiveauClass(formation.niveau)">{{ formation.niveau }}</span>
@@ -195,6 +208,19 @@
                   <div class="card-meta">
                     <span><i class="ri-folder-line"></i> {{ formation.categorie }}</span>
                     <span><i class="ri-time-line"></i> {{ formation.duree }}</span>
+                  </div>
+                  <!-- Rating -->
+                  <div class="card-rating mt-2" *ngIf="ratings[formation.id]">
+                    <span style="color: #f1c40f; font-size: 1.1rem;">
+                      <ng-container *ngFor="let star of stars">
+                        <i class="ri-star-fill" *ngIf="ratings[formation.id].moyenne >= star"></i>
+                        <i class="ri-star-half-line" *ngIf="ratings[formation.id].moyenne >= star - 0.5 && ratings[formation.id].moyenne < star"></i>
+                        <i class="ri-star-line" *ngIf="ratings[formation.id].moyenne < star - 0.5"></i>
+                      </ng-container>
+                    </span>
+                    <span class="text-muted ms-2" style="font-size: 0.9rem; color: #6c757d;">
+                      {{ ratings[formation.id].moyenne | number:'1.1-1' }} ({{ ratings[formation.id].total }})
+                    </span>
                   </div>
                 </div>
                 <div class="card-footer">

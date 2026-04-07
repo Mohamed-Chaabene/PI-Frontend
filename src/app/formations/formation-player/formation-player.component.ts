@@ -1,5 +1,5 @@
 import {
-  Component, Input, OnInit, OnDestroy, AfterViewInit, inject
+  Component, Input, OnInit, OnDestroy, AfterViewInit, inject, NgZone
 } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
@@ -26,6 +26,7 @@ export class FormationPlayerComponent
   private sanitizer        = inject(DomSanitizer);
   private formationService = inject(FormationService);
   private http             = inject(HttpClient);
+  private ngZone           = inject(NgZone);
 
   safeStackBlitzUrl: SafeResourceUrl | null = null;
   isPlaylist      = false;
@@ -34,53 +35,42 @@ export class FormationPlayerComponent
   currentVideo:   YoutubeVideo | null = null;
   currentIndex    = 0;
 
-  // ── Progression ────────────────────────────────────────────────
+  // ── Progression ───────────────────────────────────────────────
   videosVues   = new Set<string>();
   progression  = 0;
   showConfetti = false;
 
-  // ── Quiz final ─────────────────────────────────────────────────
-  showQuizFinal    = false;
-  quizFinalLoading = false;
-  quizFinalQuestions: any[] = [];
-  quizFinalAnswers:   number[] = [];
-  quizFinalSubmitted = false;
-  quizFinalScore     = 0;
-  quizFinalReussi    = false;
-  quizFinalMessage   = '';
-  certificatId:      number | null = null;
+  // ── Quiz final ────────────────────────────────────────────────
+  showQuizFinal       = false;
+  quizFinalLoading    = false;
+  quizFinalQuestions: any[]     = [];
+  quizFinalAnswers:   number[]  = [];
+  quizFinalSubmitted  = false;
+  quizFinalScore      = 0;
+  quizFinalReussi     = false;
+  quizFinalMessage    = '';
+  certificatId:       number | null = null;
 
-  // ── Tentatives (max 2) ─────────────────────────────────────────
+  // ── Tentatives ────────────────────────────────────────────────
   tentativesUtilisees = 0;
   readonly MAX_TENTATIVES = 2;
 
-  private get quizStorageKey(): string {
-    return `quiz_tentatives_${this.inscriptionId}`;
-  }
+  // ── Anti-triche ───────────────────────────────────────────────
+  quizBloque         = false;
+  quizBloqueMessage  = '';
+  // Compteur de changements d'onglet pendant le quiz
+  private visibilityChanges    = 0;
+  private readonly MAX_VISIBILITY_CHANGES = 1;
+  // Listeners à déconnecter
+  private visibilityListener:  (() => void) | null = null;
+  private copyListener:        ((e: Event) => void) | null = null;
+  private pasteListener:       ((e: Event) => void) | null = null;
+  private cutListener:         ((e: Event) => void) | null = null;
+  private contextMenuListener: ((e: Event) => void) | null = null;
+  private keydownListener:     ((e: KeyboardEvent) => void) | null = null;
+  private blurListener:        (() => void) | null = null;
 
-  private chargerTentatives(): void {
-    const saved = localStorage.getItem(this.quizStorageKey);
-    this.tentativesUtilisees = saved ? Number(saved) : 0;
-  }
-
-  private sauvegarderTentatives(): void {
-    localStorage.setItem(this.quizStorageKey,
-      String(this.tentativesUtilisees));
-  }
-
-  get tentativesRestantes(): number {
-    return this.MAX_TENTATIVES - this.tentativesUtilisees;
-  }
-
-  get peutReessayer(): boolean {
-    return this.tentativesRestantes > 0;
-  }
-
-  get answeredQuestionsCount(): number {
-    return this.quizFinalAnswers.filter(a => a !== -1).length;
-  }
-
-  // ── YouTube IFrame ─────────────────────────────────────────────
+  // ── YouTube IFrame ────────────────────────────────────────────
   private ytPlayer:    any = null;
   private playerReady      = false;
 
@@ -101,6 +91,26 @@ export class FormationPlayerComponent
     'Mobile':        'https://stackblitz.com/fork/web?embed=1&hideNavigation=1&theme=dark&file=index.html',
   };
 
+  // ── Getters ───────────────────────────────────────────────────
+  private get quizStorageKey(): string {
+    return `quiz_tentatives_${this.inscriptionId}`;
+  }
+
+  get tentativesRestantes(): number {
+    return Math.max(0, this.MAX_TENTATIVES - this.tentativesUtilisees);
+  }
+
+  get peutReessayer(): boolean {
+    return this.tentativesRestantes > 0 && !this.quizFinalReussi;
+  }
+
+  get answeredQuestionsCount(): number {
+    return this.quizFinalAnswers.filter(a => a !== -1).length;
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // Lifecycle
+  // ══════════════════════════════════════════════════════════════
   ngOnInit(): void {
     if (!this.candidatId)
       this.candidatId = Number(localStorage.getItem('candidatId')) || null;
@@ -109,7 +119,6 @@ export class FormationPlayerComponent
       this.inscriptionId = s ? Number(s) : null;
     }
 
-    // Charger le nombre de tentatives sauvegardé
     this.chargerTentatives();
 
     if (this.hasEditor()) {
@@ -135,7 +144,159 @@ export class FormationPlayerComponent
   }
 
   ngAfterViewInit(): void {}
-  ngOnDestroy(): void { this.destroyPlayer(); }
+
+  ngOnDestroy(): void {
+    this.destroyPlayer();
+    this.retirerProtectionAntiTriche();
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // Gestion tentatives
+  // ══════════════════════════════════════════════════════════════
+  private chargerTentatives(): void {
+    const saved = localStorage.getItem(this.quizStorageKey);
+    this.tentativesUtilisees = saved ? Number(saved) : 0;
+  }
+
+  private sauvegarderTentatives(): void {
+    localStorage.setItem(
+      this.quizStorageKey, String(this.tentativesUtilisees));
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // ANTI-TRICHE — Activation/Désactivation
+  // ══════════════════════════════════════════════════════════════
+
+  private activerProtectionAntiTriche(): void {
+    this.visibilityChanges = 0;
+
+    // 1. Bloquer copier / coller / couper
+    this.copyListener = (e: Event) => {
+      e.preventDefault();
+      this.afficherAvertissement('La copie est désactivée pendant le quiz.');
+    };
+    this.pasteListener = (e: Event) => {
+      e.preventDefault();
+      this.afficherAvertissement('Le collage est désactivé pendant le quiz.');
+    };
+    this.cutListener = (e: Event) => {
+      e.preventDefault();
+    };
+    this.contextMenuListener = (e: Event) => {
+      e.preventDefault(); // Désactiver le clic droit
+    };
+
+    document.addEventListener('copy',        this.copyListener);
+    document.addEventListener('paste',       this.pasteListener);
+    document.addEventListener('cut',         this.cutListener);
+    document.addEventListener('contextmenu', this.contextMenuListener);
+
+    // 2. Bloquer Ctrl+C / Ctrl+V / Ctrl+A / F12 / Ctrl+Shift+I
+    this.keydownListener = (e: KeyboardEvent) => {
+      const ctrl = e.ctrlKey || e.metaKey;
+      if (ctrl && ['c','v','a','x','u'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        this.afficherAvertissement('Les raccourcis clavier sont désactivés.');
+      }
+      if (e.key === 'F12' ||
+          (ctrl && e.shiftKey && ['i','j'].includes(e.key.toLowerCase()))) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('keydown', this.keydownListener);
+
+    // 3. Détecter changement d'onglet / minimisation
+    this.visibilityListener = () => {
+      if (document.hidden && this.showQuizFinal && !this.quizFinalSubmitted) {
+        this.ngZone.run(() => {
+          this.visibilityChanges++;
+          if (this.visibilityChanges > this.MAX_VISIBILITY_CHANGES) {
+            this.bloquerQuizPourTriche(
+              'Vous avez quitté la fenêtre.');
+          } else {
+            this.afficherAvertissement(
+              `⚠️ Attention ! Changement de fenêtre détecté. ` +
+              `Encore ${this.MAX_VISIBILITY_CHANGES - this.visibilityChanges + 1} ` +
+              `fois et la tentative sera annulée.`
+            );
+          }
+        });
+      }
+    };
+    document.addEventListener('visibilitychange', this.visibilityListener);
+
+    // 4. Détecter perte de focus (alt+tab, autre app)
+    this.blurListener = () => {
+      if (this.showQuizFinal && !this.quizFinalSubmitted) {
+        this.ngZone.run(() => {
+          this.visibilityChanges++;
+          if (this.visibilityChanges > this.MAX_VISIBILITY_CHANGES) {
+            this.bloquerQuizPourTriche(
+              'Vous avez quitté la fenêtre pendant le quiz.');
+          }
+        });
+      }
+    };
+    window.addEventListener('blur', this.blurListener);
+  }
+
+  private retirerProtectionAntiTriche(): void {
+    if (this.copyListener)
+      document.removeEventListener('copy',        this.copyListener);
+    if (this.pasteListener)
+      document.removeEventListener('paste',       this.pasteListener);
+    if (this.cutListener)
+      document.removeEventListener('cut',         this.cutListener);
+    if (this.contextMenuListener)
+      document.removeEventListener('contextmenu', this.contextMenuListener);
+    if (this.keydownListener)
+      document.removeEventListener('keydown',     this.keydownListener);
+    if (this.visibilityListener)
+      document.removeEventListener('visibilitychange', this.visibilityListener);
+    if (this.blurListener)
+      window.removeEventListener('blur',          this.blurListener);
+
+    this.copyListener        = null;
+    this.pasteListener       = null;
+    this.cutListener         = null;
+    this.contextMenuListener = null;
+    this.keydownListener     = null;
+    this.visibilityListener  = null;
+    this.blurListener        = null;
+  }
+
+  // ── Bloquer définitivement la tentative pour triche ──────────
+  private bloquerQuizPourTriche(raison: string): void {
+    if (this.quizBloque) return; // déjà bloqué
+
+    this.quizBloque        = true;
+    this.quizBloqueMessage = raison;
+    this.retirerProtectionAntiTriche();
+
+    // Consommer la tentative côté backend + localStorage
+    this.tentativesUtilisees++;
+    this.sauvegarderTentatives();
+
+    // Soumettre un score 0 pour marquer la tentative comme utilisée
+    if (this.inscriptionId) {
+      this.http.post<any>(
+        `${this.base}/video-progression/quiz-final/soumettre`, {
+          inscriptionId: this.inscriptionId,
+          score:         0
+        }
+      ).subscribe();
+    }
+  }
+
+  // ── Avertissement non bloquant ────────────────────────────────
+  avertissementMessage = '';
+  showAvertissement    = false;
+
+  private afficherAvertissement(msg: string): void {
+    this.avertissementMessage = msg;
+    this.showAvertissement    = true;
+    setTimeout(() => { this.showAvertissement = false; }, 3000);
+  }
 
   // ══════════════════════════════════════════════════════════════
   // YouTube IFrame API
@@ -163,7 +324,9 @@ export class FormationPlayerComponent
       playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
       events: {
         onReady:       () => { this.playerReady = true; },
-        onStateChange: (e: any) => { if (e.data === 0) this.onVideoEnded(); }
+        onStateChange: (e: any) => {
+          if (e.data === 0) this.onVideoEnded();
+        }
       }
     });
   }
@@ -236,7 +399,6 @@ export class FormationPlayerComponent
       this.videosVues.add(video.videoId);
       this.recalculerLocal(); return;
     }
-
     this.http.post<any>(`${this.base}/video-progression/video-vue`, {
       inscriptionId: this.inscriptionId,
       candidatId:    this.candidatId,
@@ -247,8 +409,6 @@ export class FormationPlayerComponent
       next: (resp) => {
         this.videosVues.add(video.videoId);
         this.progression = resp.progression;
-        console.log(`✅ ${video.title} terminée — ${this.progression}%`);
-
         if (resp.formationTerminee || this.progression >= 100) {
           setTimeout(() => this.lancerQuizFinal(), 1500);
         }
@@ -263,9 +423,8 @@ export class FormationPlayerComponent
   private recalculerLocal(): void {
     const t = this.playlistVideos.length || 1;
     this.progression = Math.round(this.videosVues.size / t * 100);
-    if (this.progression >= 100) {
+    if (this.progression >= 100)
       setTimeout(() => this.lancerQuizFinal(), 1500);
-    }
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -273,16 +432,21 @@ export class FormationPlayerComponent
   // ══════════════════════════════════════════════════════════════
   lancerQuizFinal(): void {
     if (!this.inscriptionId) return;
+    if (this.tentativesUtilisees >= this.MAX_TENTATIVES) return;
 
-    // Bloquer si toutes les tentatives sont épuisées
-    if (this.tentativesUtilisees >= this.MAX_TENTATIVES) {
-      alert('Vous avez atteint le nombre maximum de tentatives (2).');
-      return;
-    }
-
-    this.showQuizFinal      = true;
-    this.quizFinalLoading   = true;
+    // Reset état
+    this.quizBloque        = false;
+    this.quizBloqueMessage = '';
+    this.visibilityChanges = 0;
+    this.showConfetti      = false;
+    this.showQuizFinal     = true;
+    this.quizFinalLoading  = true;
     this.quizFinalSubmitted = false;
+    this.quizFinalReussi   = false;
+    this.certificatId      = null;
+
+    // ✅ Activer la protection anti-triche DÈS l'ouverture du quiz
+    this.activerProtectionAntiTriche();
 
     this.http.post<any>(
       `${this.base}/video-progression/quiz-final/generer`, {
@@ -304,22 +468,25 @@ export class FormationPlayerComponent
   }
 
   selectFinalAnswer(qi: number, ai: number): void {
-    if (this.quizFinalSubmitted) return;
+    if (this.quizFinalSubmitted || this.quizBloque) return;
     this.quizFinalAnswers = [...this.quizFinalAnswers];
     this.quizFinalAnswers[qi] = ai;
   }
 
   submitQuizFinal(): void {
+    if (this.quizBloque || this.quizFinalSubmitted) return;
     if (this.quizFinalAnswers.some(a => a === -1)) {
-      alert('Veuillez répondre à toutes les questions.'); return;
+      this.afficherAvertissement(
+        'Veuillez répondre à toutes les questions avant de soumettre.');
+      return;
     }
     if (!this.inscriptionId) return;
 
-    // Incrémenter le compteur de tentatives et sauvegarder
+    // Incrémenter tentatives
     this.tentativesUtilisees++;
     this.sauvegarderTentatives();
 
-    // Calculer le score
+    // Calculer score
     let correct = 0;
     this.quizFinalQuestions.forEach((q: any, i: number) => {
       if (this.quizFinalAnswers[i] === q.correctIndex) correct++;
@@ -327,6 +494,9 @@ export class FormationPlayerComponent
     const score = Math.round(
       correct / this.quizFinalQuestions.length * 100);
     this.quizFinalScore = score;
+
+    // ✅ Retirer protection après soumission
+    this.retirerProtectionAntiTriche();
 
     this.http.post<any>(
       `${this.base}/video-progression/quiz-final/soumettre`, {
@@ -339,14 +509,11 @@ export class FormationPlayerComponent
         this.quizFinalReussi    = resp.reussi;
         this.quizFinalMessage   = resp.message;
 
-        if (resp.reussi && resp.certificatGenere) {
+        if (resp.reussi) {
           this.http.post<any>(
-            `${this.base}/certificats/generer/${this.inscriptionId}`,
-            {}
+            `${this.base}/certificats/generer/${this.inscriptionId}`, {}
           ).subscribe({
-            next: (cert) => {
-              this.certificatId = cert.id;
-            }
+            next: (cert) => { this.certificatId = cert.id; }
           });
         }
       }
@@ -356,24 +523,16 @@ export class FormationPlayerComponent
   telechargerCertificat(): void {
     if (!this.certificatId) return;
     window.open(
-      `${this.base}/certificats/${this.certificatId}/telecharger`,
-      '_blank'
-    );
+      `${this.base}/certificats/${this.certificatId}/telecharger`, '_blank');
   }
 
   fermerQuizFinal(): void {
-    // Si réussi → ne pas fermer (laisser l'utilisateur télécharger son certificat)
     if (this.quizFinalReussi) return;
-
-    // Si échoué et encore des tentatives → permettre de réessayer
-    if (this.peutReessayer) {
-      this.showQuizFinal      = false;
-      this.quizFinalSubmitted = false;
-      this.quizFinalAnswers   = [];
-    } else {
-      // Plus de tentatives → fermer définitivement
-      this.showQuizFinal = false;
-    }
+    this.retirerProtectionAntiTriche();
+    this.showQuizFinal      = false;
+    this.quizFinalSubmitted = false;
+    this.quizFinalAnswers   = [];
+    this.quizBloque         = false;
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -406,6 +565,4 @@ export class FormationPlayerComponent
     if (this.progression >= 50)  return '#0965A4';
     return '#f59e0b';
   }
-
-
 }
