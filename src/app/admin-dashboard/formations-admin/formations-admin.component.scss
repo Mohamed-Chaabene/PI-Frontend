@@ -1,15 +1,15 @@
 // ─── Variables ────────────────────────────────────────────────────────────────
-$primary:       #0965A4;
-$primary-light: #E6F1FB;
-$primary-dark:  #074d82;
-$text-main:     #1a1a2e;
+$primary:       #667eea;
+$primary-light: #e0e7ff;
+$primary-dark:  #764ba2;
+$text-main:     #374151;
 $text-muted:    #6b7280;
 $text-light:    #9ca3af;
 $border:        #e5e7eb;
 $bg-page:       #f8fafc;
 $bg-card:       #ffffff;
 $radius-card:   16px;
-$shadow-card:   0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+$shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
 $amber:         #f77205;
 $amber-lt:      #FAEEDA;
 $amber-dk:      #e4762c;
@@ -47,8 +47,8 @@ $amber-dk:      #e4762c;
       align-items: center;
       gap: 8px;
       padding: 12px 22px;
-      background: #6b7280;
-      color: #fff;
+      background: #f3f4f6;
+      color: #6b7280;
       border: none;
       border-radius: 10px;
       font-size: 0.9rem;
@@ -58,7 +58,7 @@ $amber-dk:      #e4762c;
       transition: background 0.2s, transform 0.15s;
 
       i { font-size: 16px; }
-      &:hover { background: #4b5563; transform: translateY(-1px); color: #fff; }
+      &:hover { background: #e5e7eb; transform: translateY(-1px); color: $text-main; }
     }
 
     .add-btn {
@@ -66,7 +66,7 @@ $amber-dk:      #e4762c;
       align-items: center;
       gap: 8px;
       padding: 12px 22px;
-      background: $primary;
+      background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
       color: #fff;
       border: none;
       border-radius: 10px;
@@ -74,10 +74,14 @@ $amber-dk:      #e4762c;
       font-weight: 600;
       text-decoration: none;
       cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
+      transition: transform 0.15s, box-shadow 0.2s;
 
       i { font-size: 16px; }
-      &:hover { background: $primary-dark; transform: translateY(-1px); color: #fff; }
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        color: #fff;
+      }
     }
   }
 
@@ -93,7 +97,7 @@ $amber-dk:      #e4762c;
 
   .stat-card {
     background: $bg-card;
-    border: 1px solid $border;
+    border: none;
     border-radius: $radius-card;
     padding: 20px;
     display: flex;
@@ -108,7 +112,7 @@ $amber-dk:      #e4762c;
       font-size: 20px; flex-shrink: 0;
 
       &.green  { background: #EAF3DE; }
-      &.blue   { background: #E6F1FB; }
+      &.blue   { background: $primary-light; }
       &.purple { background: #EEEDFE; }
       &.amber  { background: #FAEEDA; }
       &.gray   { background: #F1EFE8; }
@@ -138,7 +142,7 @@ $amber-dk:      #e4762c;
     gap: 4px;
     margin-bottom: 20px;
     background: $bg-card;
-    border: 1px solid $border;
+    border: none;
     border-radius: 12px;
     padding: 4px;
     width: fit-content;
@@ -162,9 +166,9 @@ $amber-dk:      #e4762c;
     i { font-size: 15px; }
 
     &.active {
-      background: $primary;
+      background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
       color: #fff;
-      box-shadow: 0 2px 8px rgba($primary, 0.3);
+      box-shadow: 0 2px 8px rgba($primary, 0.35);
     }
 
     &.archive-tab.active {
@@ -200,16 +204,17 @@ $amber-dk:      #e4762c;
   // ── Table card ─────────────────────────────────────────────────────────
   .table-card {
     background: $bg-card;
-    border: 1px solid $border;
+    border: none;
     border-radius: $radius-card;
     box-shadow: $shadow-card;
     overflow: hidden;
+    margin-bottom: 24px;
 
     &.archive-table {
-      border-color: rgba($amber-dk, 0.3);
+      border: 1px solid rgba($amber-dk, 0.3);
     }
 
-    // ── Header bleu (identique participants) ───────────────────────────
+    // ── Header gradient violet ─────────────────────────────────────────
     .table-card-header {
       padding: 20px 24px;
       border-bottom: none;
@@ -218,11 +223,10 @@ $amber-dk:      #e4762c;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 10px;
-      background: linear-gradient(135deg, $primary 0%, #1a7cc4 100%);
+      background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
       position: relative;
       overflow: hidden;
 
-      // Cercles decoratifs
       &::before {
         content: '';
         position: absolute;
@@ -255,8 +259,6 @@ $amber-dk:      #e4762c;
 
         i { font-size: 17px; opacity: 0.85; }
       }
-
-      // Override pour la table archives (header ambre)
     }
 
     // Header ambre pour la table archives
@@ -335,7 +337,6 @@ $amber-dk:      #e4762c;
         &:last-child { border-bottom: none; }
         &:hover { background: $bg-page; }
 
-        // Ligne archivee
         &.archived-row {
           opacity: 0.78;
           background: rgba($amber-lt, 0.25);
@@ -358,13 +359,13 @@ $amber-dk:      #e4762c;
         }
 
         .formation-title-link {
-          color: #667eea;
+          color: $primary;
           text-decoration: none;
           font-weight: 600;
-          transition: color 0.3s ease;
+          transition: color 0.2s ease;
 
           &:hover {
-            color: #5568d3;
+            color: $primary-dark;
             text-decoration: underline;
           }
         }
@@ -383,7 +384,7 @@ $amber-dk:      #e4762c;
     &.tag-green  { background: #EAF3DE; color: #1a5c0a; }
     &.tag-amber  { background: #FAEEDA; color: #f77205; }
     &.tag-gray   { background: #F1EFE8; color: #5F5E5A; }
-    &.tag-blue   { background: #E6F1FB; color: #0C447C; }
+    &.tag-blue   { background: $primary-light; color: $primary-dark; }
     &.tag-purple { background: #EEEDFE; color: #3C3489; }
   }
 
@@ -421,9 +422,9 @@ $amber-dk:      #e4762c;
     }
 
     &.btn-edit {
-      color: #185FA5;
-      border-color: rgba(#185FA5, 0.3);
-      &:hover { background: #E6F1FB; border-color: #185FA5; }
+      color: $primary-dark;
+      border-color: rgba($primary-dark, 0.3);
+      &:hover { background: $primary-light; border-color: $primary-dark; }
     }
 
     &.btn-archive {

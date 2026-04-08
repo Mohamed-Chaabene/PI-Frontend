@@ -51,17 +51,20 @@ export class FormationPlayerComponent
   quizFinalMessage    = '';
   certificatId:       number | null = null;
 
+  // ✅ Seuil pour obtenir le certificat
+  readonly SEUIL_CERTIFICAT = 70;
+
   // ── Tentatives ────────────────────────────────────────────────
   tentativesUtilisees = 0;
   readonly MAX_TENTATIVES = 2;
 
-  // ── Anti-triche ───────────────────────────────────────────────
+  // ── Anti-triche et Temps ─────────────────────────────────────
   quizBloque         = false;
   quizBloqueMessage  = '';
-  // Compteur de changements d'onglet pendant le quiz
+  quizTimerRestant   = 300; // 5 minutes en secondes
+  private timerInterval: any = null;
   private visibilityChanges    = 0;
   private readonly MAX_VISIBILITY_CHANGES = 1;
-  // Listeners à déconnecter
   private visibilityListener:  (() => void) | null = null;
   private copyListener:        ((e: Event) => void) | null = null;
   private pasteListener:       ((e: Event) => void) | null = null;
@@ -108,6 +111,12 @@ export class FormationPlayerComponent
     return this.quizFinalAnswers.filter(a => a !== -1).length;
   }
 
+  get formattedTimer(): string {
+    const m = Math.floor(this.quizTimerRestant / 60);
+    const s = this.quizTimerRestant % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
   // ══════════════════════════════════════════════════════════════
   // Lifecycle
   // ══════════════════════════════════════════════════════════════
@@ -148,6 +157,7 @@ export class FormationPlayerComponent
   ngOnDestroy(): void {
     this.destroyPlayer();
     this.retirerProtectionAntiTriche();
+    this.arreterTimer();
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -164,13 +174,11 @@ export class FormationPlayerComponent
   }
 
   // ══════════════════════════════════════════════════════════════
-  // ANTI-TRICHE — Activation/Désactivation
+  // ANTI-TRICHE
   // ══════════════════════════════════════════════════════════════
-
   private activerProtectionAntiTriche(): void {
     this.visibilityChanges = 0;
 
-    // 1. Bloquer copier / coller / couper
     this.copyListener = (e: Event) => {
       e.preventDefault();
       this.afficherAvertissement('La copie est désactivée pendant le quiz.');
@@ -179,19 +187,14 @@ export class FormationPlayerComponent
       e.preventDefault();
       this.afficherAvertissement('Le collage est désactivé pendant le quiz.');
     };
-    this.cutListener = (e: Event) => {
-      e.preventDefault();
-    };
-    this.contextMenuListener = (e: Event) => {
-      e.preventDefault(); // Désactiver le clic droit
-    };
+    this.cutListener = (e: Event) => { e.preventDefault(); };
+    this.contextMenuListener = (e: Event) => { e.preventDefault(); };
 
     document.addEventListener('copy',        this.copyListener);
     document.addEventListener('paste',       this.pasteListener);
     document.addEventListener('cut',         this.cutListener);
     document.addEventListener('contextmenu', this.contextMenuListener);
 
-    // 2. Bloquer Ctrl+C / Ctrl+V / Ctrl+A / F12 / Ctrl+Shift+I
     this.keydownListener = (e: KeyboardEvent) => {
       const ctrl = e.ctrlKey || e.metaKey;
       if (ctrl && ['c','v','a','x','u'].includes(e.key.toLowerCase())) {
@@ -205,14 +208,12 @@ export class FormationPlayerComponent
     };
     document.addEventListener('keydown', this.keydownListener);
 
-    // 3. Détecter changement d'onglet / minimisation
     this.visibilityListener = () => {
       if (document.hidden && this.showQuizFinal && !this.quizFinalSubmitted) {
         this.ngZone.run(() => {
           this.visibilityChanges++;
           if (this.visibilityChanges > this.MAX_VISIBILITY_CHANGES) {
-            this.bloquerQuizPourTriche(
-              'Vous avez quitté la fenêtre.');
+            this.bloquerQuizPourTriche('Vous avez quitté la fenêtre.');
           } else {
             this.afficherAvertissement(
               `⚠️ Attention ! Changement de fenêtre détecté. ` +
@@ -225,7 +226,6 @@ export class FormationPlayerComponent
     };
     document.addEventListener('visibilitychange', this.visibilityListener);
 
-    // 4. Détecter perte de focus (alt+tab, autre app)
     this.blurListener = () => {
       if (this.showQuizFinal && !this.quizFinalSubmitted) {
         this.ngZone.run(() => {
@@ -265,30 +265,24 @@ export class FormationPlayerComponent
     this.blurListener        = null;
   }
 
-  // ── Bloquer définitivement la tentative pour triche ──────────
   private bloquerQuizPourTriche(raison: string): void {
-    if (this.quizBloque) return; // déjà bloqué
-
+    if (this.quizBloque) return;
     this.quizBloque        = true;
     this.quizBloqueMessage = raison;
     this.retirerProtectionAntiTriche();
-
-    // Consommer la tentative côté backend + localStorage
     this.tentativesUtilisees++;
     this.sauvegarderTentatives();
 
-    // Soumettre un score 0 pour marquer la tentative comme utilisée
     if (this.inscriptionId) {
       this.http.post<any>(
         `${this.base}/video-progression/quiz-final/soumettre`, {
           inscriptionId: this.inscriptionId,
-          score:         0
+          score: 0
         }
       ).subscribe();
     }
   }
 
-  // ── Avertissement non bloquant ────────────────────────────────
   avertissementMessage = '';
   showAvertissement    = false;
 
@@ -409,6 +403,7 @@ export class FormationPlayerComponent
       next: (resp) => {
         this.videosVues.add(video.videoId);
         this.progression = resp.progression;
+        // ✅ FIX : lancer le quiz à 100% mais PAS le certificat
         if (resp.formationTerminee || this.progression >= 100) {
           setTimeout(() => this.lancerQuizFinal(), 1500);
         }
@@ -423,6 +418,7 @@ export class FormationPlayerComponent
   private recalculerLocal(): void {
     const t = this.playlistVideos.length || 1;
     this.progression = Math.round(this.videosVues.size / t * 100);
+    // ✅ FIX : lancer le quiz, pas le certificat directement
     if (this.progression >= 100)
       setTimeout(() => this.lancerQuizFinal(), 1500);
   }
@@ -434,7 +430,6 @@ export class FormationPlayerComponent
     if (!this.inscriptionId) return;
     if (this.tentativesUtilisees >= this.MAX_TENTATIVES) return;
 
-    // Reset état
     this.quizBloque        = false;
     this.quizBloqueMessage = '';
     this.visibilityChanges = 0;
@@ -445,7 +440,6 @@ export class FormationPlayerComponent
     this.quizFinalReussi   = false;
     this.certificatId      = null;
 
-    // ✅ Activer la protection anti-triche DÈS l'ouverture du quiz
     this.activerProtectionAntiTriche();
 
     this.http.post<any>(
@@ -462,6 +456,9 @@ export class FormationPlayerComponent
         this.quizFinalAnswers   =
           new Array(this.quizFinalQuestions.length).fill(-1);
         this.quizFinalLoading   = false;
+        
+        this.quizTimerRestant = 300; 
+        this.demarrerTimer();
       },
       error: () => { this.quizFinalLoading = false; }
     });
@@ -473,16 +470,16 @@ export class FormationPlayerComponent
     this.quizFinalAnswers[qi] = ai;
   }
 
-  submitQuizFinal(): void {
+  submitQuizFinal(force: boolean = false): void {
     if (this.quizBloque || this.quizFinalSubmitted) return;
-    if (this.quizFinalAnswers.some(a => a === -1)) {
+    if (!force && this.quizFinalAnswers.some(a => a === -1)) {
       this.afficherAvertissement(
         'Veuillez répondre à toutes les questions avant de soumettre.');
       return;
     }
     if (!this.inscriptionId) return;
 
-    // Incrémenter tentatives
+    this.arreterTimer();
     this.tentativesUtilisees++;
     this.sauvegarderTentatives();
 
@@ -495,7 +492,6 @@ export class FormationPlayerComponent
       correct / this.quizFinalQuestions.length * 100);
     this.quizFinalScore = score;
 
-    // ✅ Retirer protection après soumission
     this.retirerProtectionAntiTriche();
 
     this.http.post<any>(
@@ -509,12 +505,24 @@ export class FormationPlayerComponent
         this.quizFinalReussi    = resp.reussi;
         this.quizFinalMessage   = resp.message;
 
-        if (resp.reussi) {
+        // ✅ FIX PRINCIPAL : certificat seulement si score >= 70%
+        if (resp.reussi && score >= this.SEUIL_CERTIFICAT) {
+          this.showConfetti = true;
+          setTimeout(() => { this.showConfetti = false; }, 4000);
+
           this.http.post<any>(
             `${this.base}/certificats/generer/${this.inscriptionId}`, {}
           ).subscribe({
-            next: (cert) => { this.certificatId = cert.id; }
+            next: (cert) => { this.certificatId = cert.id; },
+            error: () => {}
           });
+        } else if (!resp.reussi) {
+          // ✅ Score insuffisant : message clair
+          this.quizFinalMessage =
+            `Score obtenu : ${score}% — Minimum requis : ${this.SEUIL_CERTIFICAT}%. ` +
+            (this.peutReessayer
+              ? `Il vous reste ${this.tentativesRestantes} tentative(s).`
+              : `Vous avez épuisé toutes vos tentatives.`);
         }
       }
     });
@@ -528,11 +536,33 @@ export class FormationPlayerComponent
 
   fermerQuizFinal(): void {
     if (this.quizFinalReussi) return;
+    this.arreterTimer();
     this.retirerProtectionAntiTriche();
     this.showQuizFinal      = false;
     this.quizFinalSubmitted = false;
     this.quizFinalAnswers   = [];
     this.quizBloque         = false;
+  }
+
+  private demarrerTimer(): void {
+    this.arreterTimer();
+    this.timerInterval = setInterval(() => {
+      this.ngZone.run(() => {
+        this.quizTimerRestant--;
+        if (this.quizTimerRestant <= 0) {
+          this.arreterTimer();
+          this.afficherAvertissement('Temps écoulé ! Soumission automatique.');
+          this.submitQuizFinal(true);
+        }
+      });
+    }, 1000);
+  }
+
+  private arreterTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
   }
 
   // ══════════════════════════════════════════════════════════════

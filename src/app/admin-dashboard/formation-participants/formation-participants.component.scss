@@ -1,15 +1,15 @@
 // ─── Variables ────────────────────────────────────────────────────────────────
-$primary:       #0965A4;
-$primary-light: #E6F1FB;
-$primary-dark:  #0965A4;
-$text-main:     #1a1a2e;
+$primary:       #667eea;
+$primary-light: #e0e7ff;
+$primary-dark:  #764ba2;
+$text-main:     #374151;
 $text-muted:    #6b7280;
 $text-light:    #9ca3af;
 $border:        #e5e7eb;
 $bg-page:       #f8fafc;
 $bg-card:       #ffffff;
 $radius-card:   16px;
-$shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+$shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
 
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -33,7 +33,7 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
 
   .stat-card {
     background: $bg-card;
-    border: 1px solid $border;
+    border: none;
     border-radius: $radius-card;
     padding: 20px;
     display: flex;
@@ -51,7 +51,7 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
       font-size: 20px;
       flex-shrink: 0;
 
-      &.blue   { background: #E6F1FB; }
+      &.blue   { background: $primary-light; }
       &.green  { background: #EAF3DE; }
       &.amber  { background: #FAEEDA; }
       &.red    { background: #FCEBEB; }
@@ -78,7 +78,7 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
   // ─── Table card ───────────────────────────────────────────────────────────
   .table-card {
     background: $bg-card;
-    border: 1px solid $border;
+    border: none;
     border-radius: $radius-card;
     box-shadow: $shadow-card;
     overflow: hidden;
@@ -91,7 +91,7 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
       justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
-      background: linear-gradient(135deg, $primary 0%, #1a7cc4 100%);
+      background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
       position: relative;
       overflow: hidden;
 
@@ -253,9 +253,7 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
           opacity: 0.7;
           transition: opacity 0.2s;
 
-          &:hover {
-            opacity: 1;
-          }
+          &:hover { opacity: 1; }
         }
       }
     }
@@ -278,7 +276,7 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
 
           .progress-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, $primary, #1a7cc4);
+            background: linear-gradient(90deg, $primary, $primary-dark);
             border-radius: 10px;
             transition: width 0.4s ease;
           }
@@ -304,7 +302,7 @@ $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
     font-weight: 600;
 
     &.tag-green { background: #EAF3DE; color: #1a5c0a; }
-    &.tag-blue  { background: #E6F1FB; color: #0C447C; }
+    &.tag-blue  { background: $primary-light; color: $primary-dark; }
     &.tag-amber { background: #FAEEDA; color: #633806; }
   }
 

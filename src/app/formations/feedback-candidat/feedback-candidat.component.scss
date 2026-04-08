@@ -478,4 +478,67 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   }
 
   span { line-height: 1.5; }
+  // ── Champs invalides ──────────────────────────────────────────────
+.form-control.is-invalid {
+  border-color: #dc2626 !important;
+  background-image: none;
+
+  &:focus { box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15); }
+}
+
+// ── Messages d'erreur ─────────────────────────────────────────────
+.invalid-feedback,
+.invalid-feedback-inline {
+  display: block;
+  color: #dc2626;
+  font-size: 0.78rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  &::before {
+    content: '⚠';
+    font-size: 11px;
+  }
+}
+
+// ── Alerte erreur globale ─────────────────────────────────────────
+.alert-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+
+  i { font-size: 16px; }
+}
+
+// ── Label required ────────────────────────────────────────────────
+.form-label.required::after {
+  content: ' *';
+  color: #dc2626;
+  font-weight: 700;
+}
+
+// ── Compteur caractères ───────────────────────────────────────────
+.char-counter {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-align: right;
+  margin-top: 4px;
+
+  &.warning { color: #d97706; }
+  &.danger  { color: #dc2626; font-weight: 600; }
+}
+
+// ── Champ valide ──────────────────────────────────────────────────
+.form-control.ng-valid.ng-dirty:not([value=""]) {
+  border-color: #16a34a;
+}
 }

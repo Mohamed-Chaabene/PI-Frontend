@@ -72,6 +72,10 @@
                   [class.warning]="tentativesUtilisees === 1">
               Tentative {{ tentativesUtilisees + 1 }} / {{ MAX_TENTATIVES }}
             </span>
+            <span>•</span>
+            <span class="timer-badge" [ngStyle]="{'color': quizTimerRestant <= 60 ? '#ef4444' : 'inherit', 'font-weight': 'bold'}">
+              <i class="ri-timer-line"></i> {{ formattedTimer }}
+            </span>
           </div>
 
           <!-- Avertissement anti-triche -->
@@ -282,18 +286,6 @@
       <div class="formation-complete" *ngIf="progression >= 100">
         <i class="ri-trophy-line"></i>
         <span>Toutes les vidéos vues !</span>
-        <button class="btn-quiz-final-trigger"
-                (click)="lancerQuizFinal()"
-                type="button"
-                [disabled]="tentativesUtilisees >= MAX_TENTATIVES">
-          <i class="ri-medal-line"></i>
-          <ng-container *ngIf="tentativesUtilisees < MAX_TENTATIVES">
-            Passer l'évaluation finale
-          </ng-container>
-          <ng-container *ngIf="tentativesUtilisees >= MAX_TENTATIVES">
-            Tentatives épuisées
-          </ng-container>
-        </button>
       </div>
     </div>
 

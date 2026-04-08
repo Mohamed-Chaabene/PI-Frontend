@@ -5,7 +5,6 @@ import { Formation } from '../models/formation.model';
 import { Inscription, InscriptionCreatePayload } from '../models/inscription.model';
 import { Certificat } from '../models/certificat.model';
 
-// ✅ Payload amélioré avec lienExterne et playlistId
 export interface FormationCreatePayload {
   titre: string;
   categorie: string;
@@ -15,24 +14,23 @@ export interface FormationCreatePayload {
   niveau: string;
   lienExterne?: string;
   youtubeId?: string;
-  playlistId?: string;      // ✅ Ajout playlistId
+  playlistId?: string;
   hasEditor?: boolean;
   stackBlitzUrl?: string;
-  writtenUrl?: string;        
+  writtenUrl?: string;
 }
-// ✅ Update flexible
+
 export type FormationUpdatePayload = Partial<FormationCreatePayload>;
 
 @Injectable({ providedIn: 'root' })
 export class FormationService {
 
-  // ✅ Base URL optimisée
   private readonly base = 'http://localhost:8080/api/formations';
-  private readonly api = 'http://localhost:8080/api';
+  private readonly api  = 'http://localhost:8080/api';
 
   constructor(private http: HttpClient) {}
 
-  // ── Public ────────────────────────────────────────────────────────────────
+  // ── Public ────────────────────────────────────────────────────
   getAllFormations(): Observable<Formation[]> {
     return this.http.get<Formation[]>(this.base);
   }
@@ -53,7 +51,7 @@ export class FormationService {
     return this.http.get<Formation[]>(`${this.base}/categorie/${categorie}`);
   }
 
-  // ── Admin ────────────────────────────────────────────────────────────────
+  // ── Admin ─────────────────────────────────────────────────────
   getAllFormationsAdmin(): Observable<Formation[]> {
     return this.http.get<Formation[]>(`${this.base}/admin/all`);
   }
@@ -74,7 +72,6 @@ export class FormationService {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 
-  // ✅ Archiver / Désarchiver
   archiverFormation(id: number): Observable<Formation> {
     return this.http.put<Formation>(`${this.base}/${id}/archiver`, {});
   }
@@ -83,39 +80,53 @@ export class FormationService {
     return this.http.put<Formation>(`${this.base}/${id}/desarchiver`, {});
   }
 
-  // ── Inscriptions ─────────────────────────────────────────────────────────
+  // ── Inscriptions ──────────────────────────────────────────────
   inscrire(candidatId: number, formationId: number): Observable<Inscription> {
     const payload: InscriptionCreatePayload = {
-      candidat: { id: candidatId },
+      candidat:  { id: candidatId },
       formation: { id: formationId }
     };
     return this.http.post<Inscription>(`${this.api}/inscriptions`, payload);
   }
 
+  // ✅ FIX : envoie aussi statut "Terminé" quand progression >= 100
   updateProgression(inscriptionId: number, progression: number): Observable<Inscription> {
-    return this.http.put<Inscription>(`${this.api}/inscriptions/${inscriptionId}`, { progression });
+    const body: any = { progression };
+    if (progression >= 100) {
+      body.statut = 'Terminé';
+    }
+    return this.http.put<Inscription>(
+      `${this.api}/inscriptions/${inscriptionId}`, body
+    );
   }
 
   getMesInscriptions(candidatId: number): Observable<Inscription[]> {
-    return this.http.get<Inscription[]>(`${this.api}/inscriptions/candidat/${candidatId}`);
+    return this.http.get<Inscription[]>(
+      `${this.api}/inscriptions/candidat/${candidatId}`
+    );
   }
 
   getInscriptionsByFormation(formationId: number): Observable<Inscription[]> {
-    return this.http.get<Inscription[]>(`${this.api}/inscriptions/formation/${formationId}`);
+    return this.http.get<Inscription[]>(
+      `${this.api}/inscriptions/formation/${formationId}`
+    );
   }
 
-  // ── Certificats ─────────────────────────────────────────────────────────
+  // ── Certificats ───────────────────────────────────────────────
   getMesCertificats(candidatId: number): Observable<Certificat[]> {
-    return this.http.get<Certificat[]>(`${this.api}/certificats/candidat/${candidatId}`);
+    return this.http.get<Certificat[]>(
+      `${this.api}/certificats/candidat/${candidatId}`
+    );
   }
 
   telechargerCertificat(certificatId: number): Observable<Blob> {
-    return this.http.get(`${this.api}/certificats/${certificatId}/telecharger`, {
-      responseType: 'blob'
-    });
+    return this.http.get(
+      `${this.api}/certificats/${certificatId}/telecharger`,
+      { responseType: 'blob' }
+    );
   }
 
-  // ── Candidat ────────────────────────────────────────────────────────────
+  // ── Candidat ──────────────────────────────────────────────────
   getCandidatByEmail(email: string): Observable<{ id: number }> {
     return this.http.get<{ id: number }>(
       `${this.api}/candidats/email/${encodeURIComponent(email)}`

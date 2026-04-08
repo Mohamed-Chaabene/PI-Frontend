@@ -1,14 +1,15 @@
-$primary:      #0965A4;
-$primary-lt:   #E1F5EE;
-$primary-dk:   #074d82;
-$text-main:    #1a1a2e;
+// ─── Variables ────────────────────────────────────────────────────────────────
+$primary:      #667eea;
+$primary-lt:   #e0e7ff;
+$primary-dk:   #764ba2;
+$text-main:    #374151;
 $text-muted:   #6b7280;
 $text-light:   #9ca3af;
 $border:       #e5e7eb;
 $bg-card:      #ffffff;
 $bg-page:      #f8fafc;
 $radius:       16px;
-$shadow:       0 2px 12px rgba(0,0,0,0.06);
+$shadow:       0 25px 60px rgba(0, 0, 0, 0.2);
 
 .feedback-admin-area {
   background: $bg-page;
@@ -18,7 +19,7 @@ $shadow:       0 2px 12px rgba(0,0,0,0.06);
   // ── Bannière stats ─────────────────────────────────────────────────────
   .stats-banner {
     background: $bg-card;
-    border: 1px solid $border;
+    border: none;
     border-radius: $radius;
     padding: 28px 32px;
     margin-bottom: 28px;
@@ -93,7 +94,7 @@ $shadow:       0 2px 12px rgba(0,0,0,0.06);
 
         .dist-fill {
           height: 100%;
-          background: $primary;
+          background: linear-gradient(90deg, $primary, $primary-dk);
           border-radius: 4px;
           transition: width 0.4s ease;
         }
@@ -116,11 +117,12 @@ $shadow:       0 2px 12px rgba(0,0,0,0.06);
 
     .stat-card {
       background: $bg-page;
-      border: 1px solid $border;
+      border: none;
       border-radius: 10px;
       padding: 12px 18px;
       text-align: center;
       min-width: 110px;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
 
       .stat-val {
         font-size: 1.3rem;
@@ -165,16 +167,16 @@ $shadow:       0 2px 12px rgba(0,0,0,0.06);
       align-items: center;
       gap: 6px;
       padding: 9px 16px;
-      border: 1px solid $border;
+      border: none;
       border-radius: 9px;
-      background: $bg-card;
+      background: #f3f4f6;
       color: $text-muted;
       font-size: 0.875rem;
-      font-weight: 500;
+      font-weight: 600;
       text-decoration: none;
       transition: all 0.18s;
 
-      &:hover { background: $bg-page; color: $text-main; border-color: darken($border, 8%); }
+      &:hover { background: #e5e7eb; color: $text-main; }
       i { font-size: 14px; }
     }
   }
@@ -188,13 +190,16 @@ $shadow:       0 2px 12px rgba(0,0,0,0.06);
 
   .feedback-card {
     background: $bg-card;
-    border: 1px solid $border;
+    border: none;
     border-radius: 12px;
     padding: 20px 24px;
     box-shadow: $shadow;
-    transition: border-color 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
 
-    &:hover { border-color: rgba($primary, 0.2); }
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.22);
+    }
 
     .feedback-card-header {
       display: flex;
@@ -261,7 +266,7 @@ $shadow:       0 2px 12px rgba(0,0,0,0.06);
       padding: 12px 14px;
       background: $bg-page;
       border-radius: 8px;
-      border-left: 3px solid rgba($primary, 0.3);
+      border-left: 3px solid rgba($primary, 0.4);
     }
 
     .feedback-footer {
@@ -298,7 +303,7 @@ $shadow:       0 2px 12px rgba(0,0,0,0.06);
     font-size: 0.75rem;
     font-weight: 600;
 
-    &.tag-green { background: #EAF3DE; color: #0965A4; }
+    &.tag-green { background: $primary-lt; color: $primary-dk; }
     &.tag-amber { background: #FAEEDA; color: #633806; }
     &.tag-red   { background: #FCEBEB; color: #A32D2D; }
   }

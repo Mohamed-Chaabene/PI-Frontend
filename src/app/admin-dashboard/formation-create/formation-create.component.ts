@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
@@ -25,6 +25,10 @@ export class FormationCreateComponent {
   suggestionSelected = false;
   suggestions: FormationSuggestion[] = [];
 
+  // ✅ Erreurs serveur retournées par le backend
+  serverErrors: Record<string, string> = {};
+  serverErrorMessage = '';
+
   private titreSubject = new Subject<string>();
 
   constructor() {
@@ -46,19 +50,57 @@ export class FormationCreateComponent {
   }
 
   form = this.fb.nonNullable.group({
-    titre:         ['', [Validators.required, Validators.minLength(3)]],
-    categorie:     ['', Validators.required],
-    plateforme:    ['YouTube', Validators.required],
-    statut:        ['Disponible', Validators.required],
-    duree:         ['', Validators.required],
-    niveau:        ['Débutant', Validators.required],
-    lienExterne:   [''],
-    playlistId:    [''],
-    youtubeId:     [''],
+    titre: ['', [
+      Validators.required,
+      Validators.minLength(3),
+      Validators.maxLength(150)
+    ]],
+    categorie: ['', [
+      Validators.required
+    ]],
+    plateforme: ['YouTube', [
+      Validators.required
+    ]],
+    statut: ['Disponible', [
+      Validators.required,
+      Validators.pattern('(Disponible|Archivée|Bientôt)')
+    ]],
+    duree: ['', [
+      Validators.required,
+      Validators.minLength(1),
+      Validators.maxLength(50)
+    ]],
+    niveau: ['Débutant', [
+      Validators.required,
+      Validators.pattern('(Débutant|Intermédiaire|Avancé|Expert)')
+    ]],
+    lienExterne: ['', [
+      Validators.maxLength(500),
+      Validators.pattern(
+        /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-./?%&=]*)?$|^$/
+      )
+    ]],
+    playlistId: ['', [
+      Validators.maxLength(100)
+    ]],
+    youtubeId: ['', [
+      Validators.maxLength(100)
+    ]],
     hasEditor:     [false],
-    stackBlitzUrl: [''],
-    writtenUrl:    ['']   // vide = recherche automatique au moment de la lecture
-  });
+    stackBlitzUrl: ['', [Validators.maxLength(500)]],
+    writtenUrl:    ['', [Validators.maxLength(500)]]
+  }, { validators: this.atLeastOneContentValidator });
+
+  // ✅ Validateur custom : au moins playlistId OU youtubeId OU lienExterne
+  atLeastOneContentValidator(group: AbstractControl) {
+    const playlist = group.get('playlistId')?.value;
+    const youtube  = group.get('youtubeId')?.value;
+    const lien     = group.get('lienExterne')?.value;
+    if (!playlist && !youtube && !lien) {
+      return { noContent: true };
+    }
+    return null;
+  }
 
   readonly stackBlitzTemplates = [
     { label: '-- Aucun --',    value: '' },
@@ -78,8 +120,33 @@ export class FormationCreateComponent {
       value: 'https://stackblitz.com/fork/vue?embed=1&hideNavigation=1&theme=dark&file=src/App.vue' },
   ];
 
+  // ── Helpers d'accès aux contrôles ─────────────────────────────
+  get f() { return this.form.controls; }
+
+  hasError(field: string): boolean {
+    const ctrl = this.form.get(field);
+    return !!(ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched));
+  }
+
+  getError(field: string): string {
+    // Erreur serveur en priorité
+    if (this.serverErrors[field]) return this.serverErrors[field];
+
+    const ctrl = this.form.get(field);
+    if (!ctrl || !ctrl.errors) return '';
+    const e = ctrl.errors;
+
+    if (e['required'])   return 'Ce champ est obligatoire.';
+    if (e['minlength'])  return `Minimum ${e['minlength'].requiredLength} caractères.`;
+    if (e['maxlength'])  return `Maximum ${e['maxlength'].requiredLength} caractères.`;
+    if (e['pattern'])    return 'Valeur invalide.';
+    return 'Valeur invalide.';
+  }
+
+  // ── Logique existante ─────────────────────────────────────────
   onTitreChange(value: string): void {
     this.suggestionSelected = false;
+    this.serverErrors = {};
     if (value.length < 3) {
       this.suggestions = [];
       this.loading     = false;
@@ -126,13 +193,31 @@ export class FormationCreateComponent {
   }
 
   submit(): void {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    this.form.markAllAsTouched();
+    this.serverErrors      = {};
+    this.serverErrorMessage = '';
+
+    if (this.form.invalid) return;
+
     this.saving = true;
     this.formationService.createFormation(
       this.form.getRawValue() as FormationCreatePayload
     ).subscribe({
-      next:  () => this.router.navigate(['/admin-dashboard/formations']),
-      error: () => { this.saving = false; }
+      next: () => {
+        this.saving = false;
+        this.router.navigate(['/admin-dashboard/formations']);
+      },
+      error: (err) => {
+        this.saving = false;
+        // ✅ Récupérer les erreurs de validation du backend
+        if (err.status === 400 && err.error?.errors) {
+          this.serverErrors = err.error.errors;
+          this.serverErrorMessage = 'Veuillez corriger les erreurs ci-dessous.';
+        } else {
+          this.serverErrorMessage = err.error?.message
+            || 'Une erreur est survenue. Veuillez réessayer.';
+        }
+      }
     });
   }
 

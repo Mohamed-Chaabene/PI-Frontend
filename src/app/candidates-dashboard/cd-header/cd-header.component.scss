@@ -125,48 +125,47 @@
             }
         }
 
+        /* ✅ MODIFIÉ : décalé vers la droite, ne cache plus le menu Candidates */
         .header-actions {
             position: absolute;
-            left: 50%;
+            left: 55%;
             top: 50%;
             transform: translate(-50%, -50%);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 16px;
-            width: 40%;
-            max-width: 1200px;
+            width: 30%;
+            max-width: 500px;
             padding: 0;
 
             .search-container {
                 position: relative;
                 width: 100%;
-                max-width: 1200px;
-                margin: 0;
 
                 input {
                     width: 100%;
-                    min-width: 400px;
-                    padding: 16px 56px 16px 70px;
+                    min-width: 0;
+                    padding: 12px 48px 12px 56px;
                     border: 1px solid #d1d5db;
                     border-radius: 999px;
                     background-color: #f8fafc;
                     color: var(--bodyColor);
-                    font-size: 15px;
+                    font-size: 14px;
                     transition: border-color 0.2s ease, box-shadow 0.2s ease;
                 }
 
                 .search-icon {
                     position: absolute;
-                    left: 20px;
+                    left: 16px;
                     top: 50%;
                     transform: translateY(-50%);
                     color: #eb6f23 !important;
-                    font-size: 20px;
+                    font-size: 18px;
                     background: rgba(235, 111, 35, 0.12);
                     border-radius: 50%;
-                    width: 40px;
-                    height: 40px;
+                    width: 36px;
+                    height: 36px;
                     display: inline-flex;
                     align-items: center;
                     justify-content: center;
@@ -409,8 +408,6 @@
                 border: 2px solid white;
             }
 
-            // ==================== NOTIFICATION PANEL ====================
-            
             .notification-container {
                 position: relative;
             }
@@ -586,7 +583,6 @@
                     }
                 }
 
-                // Highlight animation for newly arrived notifications
                 &.new-notification {
                     animation: highlightNew 1s ease-out;
 
@@ -645,7 +641,6 @@
                 }
             }
 
-            // Animation
             @keyframes slideDown {
                 from {
                     opacity: 0;
@@ -758,62 +753,62 @@
             }
         }
 
-            .actions-group {
+        .actions-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: auto;
+
+            .icon-btn {
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                border: none;
+                background-color: #f8fafc;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--headingColor);
+                cursor: pointer;
+                position: relative;
+                transition: background-color 0.2s ease, transform 0.2s ease;
+            }
+
+            .icon-btn:hover {
+                background-color: #eff6ff;
+                transform: translateY(-1px);
+            }
+
+            .badge {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                min-width: 18px;
+                height: 18px;
+                border-radius: 999px;
+                background: var(--primaryColor);
+                color: white;
+                font-size: 11px;
+                line-height: 18px;
+                text-align: center;
+                padding: 0 4px;
+            }
+
+            .profile-avatar {
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                background-color: #eef2ff;
                 display: flex;
                 align-items: center;
-                gap: 12px;
-                margin-left: auto;
-
-                .icon-btn {
-                    width: 44px;
-                    height: 44px;
-                    border-radius: 50%;
-                    border: none;
-                    background-color: #f8fafc;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: var(--headingColor);
-                    cursor: pointer;
-                    position: relative;
-                    transition: background-color 0.2s ease, transform 0.2s ease;
-                }
-
-                .icon-btn:hover {
-                    background-color: #eff6ff;
-                    transform: translateY(-1px);
-                }
-
-                .badge {
-                    position: absolute;
-                    top: 8px;
-                    right: 8px;
-                    min-width: 18px;
-                    height: 18px;
-                    border-radius: 999px;
-                    background: var(--primaryColor);
-                    color: white;
-                    font-size: 11px;
-                    line-height: 18px;
-                    text-align: center;
-                    padding: 0 4px;
-                }
-
-                .profile-avatar {
-                    width: 44px;
-                    height: 44px;
-                    border-radius: 50%;
-                    background-color: #eef2ff;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: var(--primaryColor);
-                    font-size: 16px;
-                    font-weight: 700;
-                }
+                justify-content: center;
+                color: var(--primaryColor);
+                font-size: 16px;
+                font-weight: 700;
             }
         }
     }
+}
 
 @media only screen and (max-width: 991px) {
     .navbar-area {
