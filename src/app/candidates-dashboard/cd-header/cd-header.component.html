@@ -142,6 +142,7 @@
                                  (click)="markNotificationAsRead(notif.id)">
                                 <div class="notification-icon">
                                     <i class="ri-user-follow-line" *ngIf="notif.type === 'follow'"></i>
+                                    <i class="ri-briefcase-line" *ngIf="notif.type === 'new_job_posted'"></i>
                                     <i class="ri-mail-line" *ngIf="notif.type === 'message'"></i>
                                 </div>
                                 <div class="notification-content">

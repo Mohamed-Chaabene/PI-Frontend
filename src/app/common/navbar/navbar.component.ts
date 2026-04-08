@@ -60,6 +60,10 @@ export class NavbarComponent implements OnInit {
         motDePasse: ''
     };
 
+    forgotPasswordData = {
+        phone: ''
+    };
+
     private resetAuthForms() {
         this.registerData = {
             nom: '',
@@ -78,8 +82,10 @@ export class NavbarComponent implements OnInit {
             descriptionProjet: ''
         };
         this.loginData = { email: '', motDePasse: '' };
+        this.forgotPasswordData = { phone: '' };
         this.registerRole = 'ROLE_CANDIDAT';
         this.currentInnerTab = 'candidat';
+        this.currentTab = 'tab1';
     }
 
     constructor(
@@ -424,6 +430,27 @@ export class NavbarComponent implements OnInit {
         if (normalized.includes('ADMIN')) return 'ADMIN';
 
         return normalized[0] || '';
+    }
+
+    // ─── Reset Password ────────────────────────────────────────────────────────
+    resetPassword() {
+        if (!this.forgotPasswordData.phone) {
+            alert('Veuillez entrer votre numéro de téléphone.');
+            return;
+        }
+
+        // Call API to send new temporary password to phone
+        this.apiService.resetPassword(this.forgotPasswordData.phone).subscribe(
+            response => {
+                alert('Nouveau mot de passe temporaire envoyé à votre numéro de téléphone! Vérifiez vos SMS.');
+                this.forgotPasswordData = { phone: '' };
+                this.currentTab = 'tab1';
+            },
+            error => {
+                const serverMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
+                alert(`Erreur lors de la réinitialisation (${error.status || '?'}): ${serverMessage}`);
+            }
+        );
     }
 
     private normalizeRole(role?: string): string {
