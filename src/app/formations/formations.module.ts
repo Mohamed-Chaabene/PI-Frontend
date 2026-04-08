@@ -16,7 +16,7 @@ import { FormationPlayerComponent } from './formation-player/formation-player.co
 import { SafePipe } from './pipes/safe.pipe';
 import { FormationEcriteComponent } from './formation-ecrite/formation-ecrite.component';
 import { FormationVideoComponent } from './formation-video/formation-video.component';
-
+import { ChatbotFormationComponent } from './chatbot-formation/chatbot-formation.component';
 
 
 @NgModule({
@@ -30,8 +30,8 @@ import { FormationVideoComponent } from './formation-video/formation-video.compo
     FormationPlayerComponent,
     SafePipe,
     FormationEcriteComponent,
-    FormationVideoComponent
-
+    FormationVideoComponent,
+    ChatbotFormationComponent
   ],
   imports: [
     CommonModule,

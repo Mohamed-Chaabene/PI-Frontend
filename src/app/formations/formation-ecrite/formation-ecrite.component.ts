@@ -14,6 +14,7 @@ import { Formation } from '../models/formation.model';
 export class FormationEcriteComponent implements OnInit {
   formation!:   Formation;
   loading     = true;
+  candidatId: number | null = null;
   safeHtml:   SafeHtml | null = null;
   sourceLabel = '';
   docResults: any[] = [];
@@ -29,6 +30,7 @@ export class FormationEcriteComponent implements OnInit {
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.candidatId = Number(localStorage.getItem('candidatId')) || null;
     this.formationService.getFormationById(id).subscribe({
       next: (f) => { this.formation = f; this.loadContent(f); },
       error: ()  => { this.loading = false; }

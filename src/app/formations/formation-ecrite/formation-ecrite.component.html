@@ -14,22 +14,17 @@
 
   <div class="ecrite-body">
 
-    <!-- Chargement -->
     <div class="text-center py-5" *ngIf="loading">
       <div class="loading-spinner" style="margin:0 auto"></div>
       <p class="text-muted mt-3">{{ sourceLabel || 'Chargement...' }}</p>
     </div>
 
     <ng-container *ngIf="!loading">
-
-      <!-- Sous-barre -->
       <div class="ecrite-subbar">
         <div class="ecrite-tab active">
           <i class="ri-book-read-line"></i>
           {{ sourceLabel || 'Documentation' }}
         </div>
-
-        <!-- Onglets autres sources -->
         <button
           *ngFor="let r of docResults; let i = index"
           class="ecrite-source-btn"
@@ -40,9 +35,19 @@
         </button>
       </div>
 
-      <!-- Contenu dans l'app -->
-      <div class="ecrite-content" [innerHTML]="safeHtml" (click)="onProxyLinkClick($event)"></div>
-
+      <div class="ecrite-content"
+           [innerHTML]="safeHtml"
+           (click)="onProxyLinkClick($event)">
+      </div>
     </ng-container>
   </div>
+
+  <!-- ✅ Chatbot IA -->
+  <app-chatbot-formation
+    *ngIf="formation"
+    [formation]="formation"
+    [candidatId]="candidatId"
+    context="ecrite">
+  </app-chatbot-formation>
+
 </div>
