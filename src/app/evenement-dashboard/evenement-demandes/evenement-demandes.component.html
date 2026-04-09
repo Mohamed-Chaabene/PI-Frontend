@@ -1,76 +1,106 @@
-<!-- Title -->
-<div class="breadcrumb-title">
-    <h1 class="mb-0 fw-semibold">Demandes de participation</h1>
-</div>
-
-<!-- Loading -->
-<div *ngIf="isLoading" class="text-center py-4">
-    <p>Chargement...</p>
-</div>
-
-<!-- Liste des demandes -->
-<div class="jove-card" *ngIf="!isLoading">
-    <h3 class="title">
-        Demandes en attente
-        <span class="badge ms-2" style="background:#f9a825; color:white; padding:4px 10px; border-radius:20px; font-size:14px;">
-            {{ demandes.length }}
-        </span>
-    </h3>
-
-    <!-- Vide -->
-    <div class="text-center py-4" *ngIf="demandes.length === 0">
-        <i class="ri-inbox-line" style="font-size:40px; color:#ccc;"></i>
-        <p>Aucune demande en attente</p>
+<!-- Page Banner -->
+<div class="page-banner-area">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 col-md-12">
+                <h1>Demandes de participation</h1>
+            </div>
+            <div class="col-lg-4 col-md-12">
+                <ul class="ps-0 mb-0 list-unstyled">
+                    <li class="d-inline-block position-relative">
+                        <a routerLink="/">Accueil</a>
+                    </li>
+                    <li class="d-inline-block position-relative">
+                        <a routerLink="/evenements">Événements</a>
+                    </li>
+                    <li class="d-inline-block position-relative">
+                        Demandes
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
+</div>
 
-    <!-- Liste -->
-    <div class="row jobs-applied-recently">
-        <div class="col-xxl-12" *ngFor="let d of demandes">
-            <div class="single-job-box">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <div class="d-sm-flex align-items-center">
-                        <div class="image">
-                            <i class="ri-user-line"
-                               style="font-size:30px; color:var(--primaryColor); position:absolute; top:50%; left:50%; transform:translate(-50%,-50%)">
-                            </i>
+<!-- Demandes Area -->
+<div class="demandes-area ptb-100">
+    <div class="container">
+
+        <!-- Loading -->
+        <div class="text-center py-5" *ngIf="isLoading">
+            <p class="text-muted">Chargement...</p>
+        </div>
+
+        <div *ngIf="!isLoading">
+            <div class="section-box">
+
+                <!-- Header -->
+                <div class="section-box-header">
+                    <h3>
+                        Demandes en attente
+                        <span class="count-badge pending">{{ demandes.length }}</span>
+                    </h3>
+                </div>
+
+                <!-- Empty state -->
+                <div class="empty-state text-center" *ngIf="demandes.length === 0">
+                    <i class="ri-inbox-line"></i>
+                    <h4>Aucune demande en attente</h4>
+                    <p>Les nouvelles demandes de participation apparaîtront ici.</p>
+                </div>
+
+                <!-- Liste -->
+                <div class="demandes-list" *ngIf="demandes.length > 0">
+                    <div class="demande-item" *ngFor="let d of demandes">
+
+                        <!-- Ligne principale -->
+                        <div class="demande-main d-sm-flex align-items-center justify-content-between">
+
+                            <div class="d-sm-flex align-items-center">
+                                <div class="candidat-avatar">
+                                    <i class="ri-user-line"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h4 class="fw-semibold mb-1">{{ d.nomCandidat }}</h4>
+                                    <span class="event-name d-block">
+                                        <i class="ri-calendar-event-line"></i>
+                                        {{ d.titreEvenement }}
+                                    </span>
+                                    <span class="statut-attente d-block">
+                                        {{ d.statut }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="demande-actions d-flex align-items-center gap-2">
+                                <button class="btn-accepter" (click)="accepter(d.id)">
+                                    <i class="ri-check-line"></i> Accepter
+                                </button>
+                                <button class="btn-refuser" (click)="refuser(d.id)">
+                                    <i class="ri-close-line"></i> Refuser
+                                </button>
+                            </div>
                         </div>
-                        <div class="content">
-                            <h3 class="fw-semibold">{{ d.nomCandidat }}</h3>
-                            <span class="location d-block">
-                                <i class="ri-calendar-event-line"></i>
+
+                        <!-- Footer infos -->
+                        <div class="demande-footer d-sm-flex align-items-center justify-content-between">
+                            <span>
+                                <span class="fw-semibold">Date inscription :</span>
+                                {{ formatDate(d.dateInscription) }}
+                            </span>
+                            <span>
+                                <span class="fw-semibold">Événement :</span>
                                 {{ d.titreEvenement }}
                             </span>
-                            <span class="job-type d-block">
+                            <span>
+                                <span class="fw-semibold">Statut :</span>
                                 {{ d.statut }}
                             </span>
                         </div>
-                    </div>
 
-                    <!-- Boutons accepter/refuser -->
-                    <div class="custom-info d-sm-flex align-items-center gap-2">
-                        <button class="btn-accepter" (click)="accepter(d.id)">
-                            <i class="ri-check-line"></i> Accepter
-                        </button>
-                        <button class="btn-refuser" (click)="refuser(d.id)">
-                            <i class="ri-close-line"></i> Refuser
-                        </button>
                     </div>
                 </div>
 
-                <div class="info d-sm-flex align-items-center justify-content-between">
-                    <span class="created d-block">
-                        <span class="fw-semibold">Date inscription:</span>
-                       {{ formatDate(d.dateInscription) }}
-                    </span>
-                    <span class="salary d-block">
-                        <span class="fw-semibold">Événement:</span>
-                        <span>{{ d.titreEvenement }}</span>
-                    </span>
-                    <span class="deadline d-block">
-                        <span class="fw-semibold">Statut:</span>
-                        {{ d.statut }}
-                    </span>
-                </div>
             </div>
         </div>
     </div>

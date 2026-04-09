@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ParticipationService {
-    private apiUrl = 'http://localhost:8081/api/participations';
+    private apiUrl = 'http://localhost:8080/api/participations';
 
     constructor(private http: HttpClient) {}
 
@@ -48,8 +48,14 @@ export class ParticipationService {
     //  Stats candidat
     getStatsByCandidat(candidatId: number): Observable<any> {
     return this.http.get<any>(
-        `http://localhost:8081/api/participations/stats/candidat/${candidatId}`
+        `http://localhost:8080/api/participations/stats/candidat/${candidatId}`
     );
+
+    
+    
+}
+getQRCode(id: number): Observable<string> {
+  return this.http.get(`/api/participations/${id}/qrcode`, { responseType: 'text' });
 }
 
 }

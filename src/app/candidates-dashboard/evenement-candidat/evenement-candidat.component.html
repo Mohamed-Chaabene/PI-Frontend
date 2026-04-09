@@ -1,102 +1,325 @@
-<!--  UN SEUL titre avec bouton Mes Participations -->
-<div class="breadcrumb-title d-flex align-items-center justify-content-between mb-4">
-    <h1 class="mb-0 fw-semibold">Événements disponibles</h1>
-    <a routerLink="/candidates-dashboard/ma-calendar"
-   class="btn-calendrier">
-    <i class="ri-calendar-2-line"></i> Calendrier
-    </a>
-    <a routerLink="/candidates-dashboard/mes-participations"
-       class="btn-mes-participations position-relative">
-        <i class="ri-calendar-check-line"></i> Mes Participations
-        <!--  Badge rouge si confirmations -->
-        <span class="notif-badge" *ngIf="participationsConfirmees.length > 0">
-            {{ participationsConfirmees.length }}
-        </span>
-    </a>
-</div>
+<div class="evenement-candidat-wrapper">
+    <div class="container-fluid px-4">
 
-<!-- Barre de recherche -->
-<form class="jobs-search-form">
-    <div class="row mx-0 align-items-center">
-        <div class="col-8 px-0">
-            <div class="form-group position-relative">
-                <i class="ri-search-line"></i>
-                <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Rechercher un événement..."
-                    [ngModel]="searchTerm"
-                    (ngModelChange)="onSearch($event)"
-                    name="search"
-                >
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <span class="hero-badge">
+                        <i class="ri-calendar-event-line"></i>
+                        Espace Candidat
+                    </span>
+                    <h1>Événements disponibles</h1>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <a routerLink="/candidates-dashboard/ma-calendar" class="btn-action-hero btn-calendrier-hero">
+                    <i class="ri-calendar-2-line"></i>
+                    <span>Calendrier</span>
+                </a>
+                <a routerLink="/candidates-dashboard/mes-participations"
+                   class="btn-action-hero btn-participations-hero position-relative">
+                    <i class="ri-calendar-check-line"></i>
+                    <span>Mes Participations</span>
+                    <span class="notif-badge" *ngIf="participationsConfirmees.length > 0">
+                        {{ participationsConfirmees.length }}
+                    </span>
+                </a>
             </div>
         </div>
-        <div class="col-4 px-0">
-            <button type="button" class="default-btn" (click)="onSearch(searchTerm)">
-                <i class="ri-search-line"></i> Rechercher
-            </button>
+
+        <!-- Barre de recherche -->
+        <div class="search-section">
+            <form class="search-form">
+                <div class="search-input-wrapper">
+                    <i class="ri-search-line search-icon"></i>
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder="Rechercher un événement par titre, lieu ou type..."
+                        [ngModel]="searchTerm"
+                        (ngModelChange)="onSearch($event)"
+                        name="search">
+                    <button type="button" class="search-btn" (click)="onSearch(searchTerm)">
+                        <i class="ri-search-line"></i>
+                        <span>Rechercher</span>
+                    </button>
+                </div>
+            </form>
         </div>
-    </div>
-</form>
 
-<!-- Loading -->
-<div *ngIf="isLoading" class="text-center py-4">
-    <p>Chargement...</p>
-</div>
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-container">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <p>Chargement des événements...</p>
+            </div>
+        </div>
 
-<!-- Liste -->
-<div class="row" *ngIf="!isLoading">
-    <div class="col-lg-6 col-md-6" *ngFor="let evenement of filteredEvenements">
-        <div class="single-job-box">
-            <div class="d-sm-flex align-items-center justify-content-between">
-                <div class="d-sm-flex align-items-center">
-                    <div class="company-logo">
-                        <i class="ri-calendar-event-line"
-                           style="font-size: 35px; color: var(--primaryColor); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                        </i>
+        <!-- Liste événements -->
+        <div class="evenements-grid" *ngIf="!isLoading">
+
+            <!-- Empty State -->
+            <div class="empty-state-modern" *ngIf="filteredEvenements.length === 0">
+                <div class="empty-illustration">
+                    <i class="ri-calendar-event-line"></i>
+                </div>
+                <h3>Aucun événement trouvé</h3>
+                <p>Essayez de modifier votre recherche ou revenez plus tard.</p>
+            </div>
+
+            <!-- Cards événements -->
+            <div class="evenement-card" *ngFor="let evenement of filteredEvenements">
+
+                <div class="card-header">
+                    <div class="event-icon-wrapper">
+                        <i class="ri-calendar-event-line"></i>
                     </div>
-                    <div class="content">
-                        <h3 class="fw-semibold">{{ evenement.titre }}</h3>
-                        <span class="location d-block">
-                            <i class="ri-map-pin-line"></i> {{ evenement.lieu }}
-                        </span>
-                        <span class="job-type d-block">{{ evenement.type }}</span>
+                    <div class="event-info">
+                        <h3>{{ evenement.titre }}</h3>
+                        <span class="event-type-badge">{{ evenement.type }}</span>
+                    </div>
+                    <div class="event-status-area">
+
+                        <!-- CONFIRME -->
+                        <div class="status-indicator accepted"
+                             *ngIf="getStatutEvenement(evenement.id) === 'CONFIRME'">
+                            <span class="status-dot"></span>
+                            <span>Inscrit</span>
+                        </div>
+
+                        <!-- EN_ATTENTE -->
+                        <div class="status-indicator pending"
+                             *ngIf="getStatutEvenement(evenement.id) === 'EN_ATTENTE'">
+                            <span class="status-dot"></span>
+                            <span>En attente</span>
+                        </div>
+
+                        <!-- REFUSE -->
+                        <div class="status-indicator rejected"
+                             *ngIf="getStatutEvenement(evenement.id) === 'REFUSE'">
+                            <span class="status-dot"></span>
+                            <span>Refusé</span>
+                        </div>
+
                     </div>
                 </div>
-                <div class="apply-btn">
-                    <!-- ✅ Demande déjà envoyée -->
-                    <button class="default-btn demande-envoyee"
-                            *ngIf="aDejaDemandeA(evenement.id)"
-                            disabled>
-                        <i class="ri-check-line"></i> Demande envoyée
+
+                <div class="card-body">
+                    <div class="info-row">
+                        <i class="ri-map-pin-line"></i>
+                        <span>{{ evenement.lieu }}</span>
+                    </div>
+                    <div class="info-row">
+                        <i class="ri-calendar-line"></i>
+                        <span>{{ formatDate(evenement.date) }}</span>
+                    </div>
+                    <div class="info-row">
+                        <i class="ri-price-tag-3-line"></i>
+                        <span>{{ evenement.type }}</span>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <!-- Voir avis -->
+                    <button class="btn-avis" (click)="ouvrirDetail(evenement)">
+                        <i class="ri-information-line"></i>
+                        <span>Voir les avis</span>
                     </button>
-                    <!-- ✅ Pas encore demandé -->
-                    <button class="default-btn"
+
+                    <!-- Déjà inscrit -->
+                    <button class="btn-card btn-inscrit"
+                            *ngIf="getStatutEvenement(evenement.id) === 'CONFIRME'"
+                            disabled>
+                        <i class="ri-check-double-line"></i>
+                        <span>Déjà inscrit</span>
+                    </button>
+
+                    <!-- EN_ATTENTE + annuler -->
+                    <div class="btn-attente-group"
+                         *ngIf="getStatutEvenement(evenement.id) === 'EN_ATTENTE'">
+                        <button class="btn-card btn-attente" disabled>
+                            <i class="ri-time-line"></i>
+                            <span>Demande envoyée</span>
+                        </button>
+                        <button class="btn-icon-annuler"
+                                (click)="annulerParticipation(evenement.id)"
+                                title="Annuler la demande">
+                            <i class="ri-close-line"></i>
+                        </button>
+                    </div>
+
+                    <!-- Refusé -->
+                    <button class="btn-card btn-refuse"
+                            *ngIf="getStatutEvenement(evenement.id) === 'REFUSE'"
+                            disabled>
+                        <i class="ri-close-line"></i>
+                        <span>Refusé</span>
+                    </button>
+
+                    <!-- Participer -->
+                    <button class="btn-card btn-participer"
                             *ngIf="!aDejaDemandeA(evenement.id)"
                             (click)="participer(evenement.id)">
-                        <i class="ri-user-add-line"></i> Participer
+                        <i class="ri-user-add-line"></i>
+                        <span>Participer</span>
                     </button>
                 </div>
-            </div>
-            <div class="info d-sm-flex align-items-center justify-content-between">
-                <span class="salary d-block">
-                    <span class="fw-semibold">Type:</span>
-                    <span>{{ evenement.type }}</span>
-                </span>
-                <span class="created d-block">
-                    <span class="fw-semibold">Date:</span>
-                    {{ formatDate(evenement.date) }}
-                </span>
-                <span class="deadline d-block">
-                    <span class="fw-semibold">Lieu:</span>
-                    {{ evenement.lieu }}
-                </span>
+
             </div>
         </div>
-    </div>
 
-    <!-- Vide -->
-    <div class="col-12" *ngIf="filteredEvenements.length === 0">
-        <p class="text-center py-4">Aucun événement trouvé.</p>
+    </div>
+</div>
+
+<!-- ==================== POPUP DÉTAIL + RÉPUTATION ==================== -->
+<div class="modal-overlay" *ngIf="popupDetailOuvert" (click)="fermerDetail()">
+    <div class="modal-container modal-reputation" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+            <div class="header-left">
+                <div class="header-icon">
+                    <i class="ri-star-line"></i>
+                </div>
+                <div class="header-text">
+                    <h3>{{ evenementSelectionne?.titre }}</h3>
+                    <p>Avis & réputation de l'organisateur</p>
+                </div>
+            </div>
+            <button class="modal-close" (click)="fermerDetail()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+
+            <!-- Infos événement -->
+            <div class="event-meta-strip">
+                <span class="meta-item">
+                    <i class="ri-map-pin-line"></i>
+                    {{ evenementSelectionne?.lieu }}
+                </span>
+                <span class="meta-item">
+                    <i class="ri-calendar-line"></i>
+                    {{ formatDate(evenementSelectionne?.date) }}
+                </span>
+                <span class="meta-item">
+                    <i class="ri-user-line"></i>
+                    {{ evenementSelectionne?.nomOrganisateur }}
+                </span>
+            </div>
+
+            <!-- Loading réputation -->
+            <div class="loading-container" *ngIf="loadingReputation" style="padding: 2rem;">
+                <div class="loading-spinner">
+                    <div class="spinner-ring"></div>
+                    <p>Chargement des avis...</p>
+                </div>
+            </div>
+
+            <!-- Réputation -->
+            <div class="reputation-sections" *ngIf="!loadingReputation && reputationData">
+
+                <!-- Niveau 1 — Global -->
+                <div class="rep-card">
+                    <div class="rep-card-header">
+                        <div class="rep-icon-wrapper global">
+                            <i class="ri-user-star-line"></i>
+                        </div>
+                        <div class="rep-card-title">
+                            <h4>Réputation globale</h4>
+                            <p>Tous les événements de cet organisateur</p>
+                        </div>
+                    </div>
+                    <div class="rep-card-body">
+                        <span class="rep-badge" [class]="getBadgeClass(reputationData.badgeReputation)">
+                            {{ getBadgeLabel(reputationData.badgeReputation) }}
+                        </span>
+                        <span class="rep-score" *ngIf="reputationData.totalFeedbacks > 0">
+                            <i class="ri-star-fill"></i>
+                            {{ reputationData.noteMoyenneGlobale }}/5
+                            <span class="rep-count">{{ reputationData.totalFeedbacks }} avis</span>
+                        </span>
+                        <span class="rep-score muted" *ngIf="reputationData.totalFeedbacks === 0">
+                            Aucun avis encore
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Niveau 2 — Par type -->
+                <div class="rep-card">
+                    <div class="rep-card-header">
+                        <div class="rep-icon-wrapper type">
+                            <i class="ri-bookmark-line"></i>
+                        </div>
+                        <div class="rep-card-title">
+                            <h4>Événements "{{ evenementSelectionne?.type }}"</h4>
+                            <p>Performance sur ce type d'événement</p>
+                        </div>
+                    </div>
+                    <div class="rep-card-body">
+                        <span class="rep-badge" [class]="getBadgeClass(reputationData.badgeType)">
+                            {{ getBadgeLabel(reputationData.badgeType) }}
+                        </span>
+                        <span class="rep-score" *ngIf="reputationData.totalFeedbacksParType > 0">
+                            <i class="ri-star-fill"></i>
+                            {{ reputationData.noteMoyenneParType }}/5
+                            <span class="rep-count">{{ reputationData.totalFeedbacksParType }} avis</span>
+                        </span>
+                        <span class="rep-score muted" *ngIf="reputationData.totalFeedbacksParType === 0">
+                            Premier événement de ce type
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Niveau 3 — Par titre -->
+                <div class="rep-card" *ngIf="reputationData.noteMoyenneTitrePasse > 0">
+                    <div class="rep-card-header">
+                        <div class="rep-icon-wrapper history">
+                            <i class="ri-history-line"></i>
+                        </div>
+                        <div class="rep-card-title">
+                            <h4>Éditions précédentes</h4>
+                            <p>"{{ evenementSelectionne?.titre }}"</p>
+                        </div>
+                    </div>
+                    <div class="rep-card-body">
+                        <span class="rep-badge" [class]="getBadgeClass(reputationData.badgeTitre)">
+                            {{ getBadgeLabel(reputationData.badgeTitre) }}
+                        </span>
+                        <span class="rep-score">
+                            <i class="ri-star-fill"></i>
+                            {{ reputationData.noteMoyenneTitrePasse }}/5
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Erreur -->
+            <div class="empty-state-modern" *ngIf="!loadingReputation && !reputationData"
+                 style="padding: 2rem;">
+                <div class="empty-illustration" style="width:3rem;height:3rem;">
+                    <i class="ri-chat-3-line" style="font-size:1.5rem;"></i>
+                </div>
+                <h3 style="font-size:1rem;">Impossible de charger les avis</h3>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="fermerDetail()">Fermer</button>
+            <button class="btn-card btn-attente"
+                    *ngIf="aDejaDemandeA(evenementSelectionne?.id)"
+                    disabled>
+                <i class="ri-check-line"></i>
+                <span>Demande envoyée</span>
+            </button>
+            <button class="btn-card btn-participer"
+                    *ngIf="!aDejaDemandeA(evenementSelectionne?.id)"
+                    (click)="participer(evenementSelectionne?.id); fermerDetail()">
+                <i class="ri-user-add-line"></i>
+                <span>Participer</span>
+            </button>
+        </div>
+
     </div>
 </div>
