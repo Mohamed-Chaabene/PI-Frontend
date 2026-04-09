@@ -10,6 +10,7 @@
             </div>
 
             <ul class="navbar-nav">
+                <!-- Formations -->
                 <li class="nav-item">
                     <button type="button" class="dropdown-toggle nav-link" (click)="toggleDropdown('formations')">
                         Formations
@@ -20,24 +21,11 @@
                                 Liste des formations
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a routerLink="/formations/mes-formations" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                Mes formations
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a routerLink="/formations/admin" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                Gérer les formations
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a routerLink="/formations/admin/create" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                Ajouter une formation
-                            </a>
-                        </li>
+                        
                     </ul>
                 </li>
 
+                <!-- Candidates -->
                 <li class="nav-item">
                     <button type="button" class="dropdown-toggle nav-link" (click)="toggleDropdown('candidates')">
                         Candidates
@@ -67,6 +55,7 @@
                 </li>
             </ul>
 
+            <!-- Search -->
             <div class="header-actions">
                 <div class="search-container">
                     <i class="ri-search-line search-icon"></i>
@@ -106,8 +95,8 @@
                                     <span class="result-email">{{ user.email }}</span>
                                 </div>
                                 <div class="result-actions">
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         class="follow-btn"
                                         [class.followed]="isUserFollowed(user.id)"
                                         (click)="followUser(user); $event.stopPropagation()">
@@ -121,6 +110,7 @@
                 </div>
             </div>
 
+            <!-- Notifications + Profile -->
             <div class="header-right">
                 <div class="notification-container">
                     <button type="button" class="notification-btn" (click)="toggleNotificationPanel()" [class.active]="showNotificationPanel">
@@ -145,7 +135,8 @@
                             </div>
 
                             <!-- Notification Items -->
-                            <div class="notification-item" *ngFor="let notif of notifications; let i = index" 
+                            <div class="notification-item"
+                                 *ngFor="let notif of notifications; let i = index"
                                  [class.unread]="!notif.isRead"
                                  [class.new-notification]="i === 0 && !notif.isRead"
                                  (click)="markNotificationAsRead(notif.id)">

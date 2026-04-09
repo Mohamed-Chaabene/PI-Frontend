@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Formation } from '../models/formation.model';
 import { FormationService } from '../services/formation.service';
 
@@ -12,19 +12,31 @@ import { FormationService } from '../services/formation.service';
 export class FormationDetailComponent implements OnInit {
   formation!: Formation;
   loading     = false;
-  inscrit     = false;       // ✅ sera mis à true si déjà inscrit en base
+  inscrit     = false;
   inscribing  = false;
   candidatId: number | null = null;
+  inscriptionId: number | null = null;
   isAdmin     = false;
+  returnUrl   = '/formations';
+
+  // ── Modal ─────────────────────────────────────────────────────────
+  showAccessModal = false;
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private formationService: FormationService
   ) {}
 
   ngOnInit(): void {
     const role = (localStorage.getItem('userRole') || '').toUpperCase().replace('ROLE_', '');
     this.isAdmin = role === 'ADMIN';
+
+    this.route.queryParams.subscribe(params => {
+      if (params['from'] === 'dashboard') {
+        this.returnUrl = '/candidates-dashboard/mes-formations';
+      }
+    });
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.loading = true;
@@ -42,44 +54,80 @@ export class FormationDetailComponent implements OnInit {
     }
   }
 
-  // ── Vérifier si déjà inscrit ──────────────────────────────────────────────
+  // ── Vérifier si déjà inscrit ──────────────────────────────────────
   private verifierInscription(formationId: number): void {
     if (!this.candidatId) return;
-
     this.formationService.getMesInscriptions(this.candidatId).subscribe({
       next: (inscriptions) => {
-        // ✅ Inscrit = une inscription existe pour cette formation (peu importe le statut)
         this.inscrit = inscriptions.some(i => i.formation?.id === formationId);
       },
       error: () => {}
     });
   }
 
-  // ── S'inscrire ────────────────────────────────────────────────────────────
-  sInscrire(): void {
-    if (this.isAdmin || this.inscrit) return;
+  // ── S'inscrire ────────────────────────────────────────────────────
+sInscrire(): void {
+  if (!this.candidatId || !this.formation?.id) return;
 
-    if (!this.candidatId) {
-      this.resolveCandidatId(() => this.sInscrire());
-      return;
-    }
+  this.formationService.inscrire(
+    this.candidatId, this.formation.id
+  ).subscribe({
+    next: (inscription) => {
+      // ✅ Stocker inscriptionId pour le player de progression
+      localStorage.setItem(
+        'inscription_' + this.formation.id,
+        String(inscription.id)
+      );
 
-    this.inscribing = true;
-    this.formationService.inscrire(this.candidatId, this.formation.id).subscribe({
-      next: () => {
-        this.inscrit    = true;   // ✅ cache le bouton immédiatement
-        this.inscribing = false;
-      },
-      error: () => { this.inscribing = false; }
-    });
+      // Mettre à jour l'état local
+      this.inscrit       = true;
+      this.inscriptionId = inscription.id;
+
+      console.log('✅ Inscrit, inscriptionId:', inscription.id);
+    },
+    error: (err) => console.error('Erreur inscription:', err)
+  });
+}
+
+  // ── Modal accès ───────────────────────────────────────────────────
+openAccessModal(): void  { this.showAccessModal = true; }
+closeAccessModal(): void { this.showAccessModal = false; }
+
+choisirVideo(): void {
+  this.showAccessModal = false;
+  this.router.navigate(['/formations', this.formation.id, 'video']);
+}
+
+choisirFormationEcrite(): void {
+  this.showAccessModal = false;
+  this.router.navigate(['/formations', this.formation.id, 'ecrite']);
+}
+  // ── URLs utiles ───────────────────────────────────────────────────
+  getWrittenUrl(): string {
+    const map: Record<string, string> = {
+      'Frontend':      'https://www.w3schools.com/html/',
+      'Backend':       'https://www.w3schools.com/python/',
+      'Data':          'https://www.w3schools.com/python/',
+      'IA':            'https://www.w3schools.com/python/',
+      'DevOps':        'https://www.w3schools.com/whatis/',
+      'Design':        'https://www.w3schools.com/css/',
+      'Développement': 'https://www.w3schools.com/java/',
+    };
+    return map[this.formation?.categorie] ?? 'https://www.w3schools.com/';
   }
 
-  // ── Helpers visuels ───────────────────────────────────────────────────────
+  getYoutubeUrl(): string {
+    return this.formation?.youtubeId
+      ? `https://www.youtube.com/watch?v=${this.formation.youtubeId}`
+      : `https://www.youtube.com/results?search_query=${encodeURIComponent(this.formation?.titre ?? '')}`;
+  }
+
+  // ── Helpers visuels ───────────────────────────────────────────────
   getCatClass(categorie: string): string {
     const map: Record<string, string> = {
-      'Développement': 'cat-dev',  'Frontend':  'cat-frontend',
-      'Backend':       'cat-backend', 'IA':     'cat-ia',
-      'Data':          'cat-data',    'Design': 'cat-design',
+      'Développement': 'cat-dev',    'Frontend': 'cat-frontend',
+      'Backend':       'cat-backend', 'IA':      'cat-ia',
+      'Data':          'cat-data',    'Design':  'cat-design',
       'DevOps':        'cat-devops'
     };
     return map[categorie] || 'cat-default';
@@ -102,7 +150,7 @@ export class FormationDetailComponent implements OnInit {
     return map[niveau] || 'badge-blue';
   }
 
-  // ── Résolution candidatId depuis JWT ──────────────────────────────────────
+  // ── Résolution candidatId ─────────────────────────────────────────
   private resolveCandidatId(onResolved?: () => void): void {
     const cached = Number(localStorage.getItem('candidatId'));
     if (!Number.isNaN(cached) && cached > 0) {
@@ -110,7 +158,6 @@ export class FormationDetailComponent implements OnInit {
       onResolved?.();
       return;
     }
-
     const token = localStorage.getItem('token');
     if (token) {
       try {
@@ -124,11 +171,9 @@ export class FormationDetailComponent implements OnInit {
         }
       } catch {}
     }
-
     const email = localStorage.getItem('userName') || '';
     const role  = (localStorage.getItem('userRole') || '').toUpperCase().replace(/^ROLE_/, '');
     if (!email || role !== 'CANDIDAT') return;
-
     this.formationService.getCandidatByEmail(email).subscribe({
       next: (candidat) => {
         if (candidat?.id) {
@@ -140,4 +185,5 @@ export class FormationDetailComponent implements OnInit {
       error: () => {}
     });
   }
+  
 }

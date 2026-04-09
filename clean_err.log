@@ -1,0 +1,432 @@
+- Generating browser application bundles (phase: setup)...
+✔ Browser application bundle generation complete.
+✔ Browser application bundle generation complete.
+
+./src/app/admin-dashboard/feedback-admin/feedback-admin.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 176, column 71 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/feedback-admin/feedback-admin.component.scss:176:71:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+176 |       &:hover { background: $bg-page; color: $text-main; border-color: darken($border, 8%); }
+
+
+src\app\admin-dashboard\feedback-admin\feedback-admin.component.scss 177:72  root stylesheet
+
+
+./src/app/admin-dashboard/feedback-admin/feedback-admin.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 176, column 71 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/feedback-admin/feedback-admin.component.scss:176:71:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -8.7931034483%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+176 |       &:hover { background: $bg-page; color: $text-main; border-color: darken($border, 8%); }
+
+
+src\app\admin-dashboard\feedback-admin\feedback-admin.component.scss 177:72  root stylesheet
+
+
+./src/app/admin-dashboard/formation-create/formation-create.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 230, column 22 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formation-create/formation-create.component.scss:230:22:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+230 |         border-color: darken($border, 8%);
+
+
+src\app\admin-dashboard\formation-create\formation-create.component.scss 231:23  root stylesheet
+
+
+./src/app/admin-dashboard/formation-create/formation-create.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 230, column 22 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formation-create/formation-create.component.scss:230:22:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -8.7931034483%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+230 |         border-color: darken($border, 8%);
+
+
+src\app\admin-dashboard\formation-create\formation-create.component.scss 231:23  root stylesheet
+
+
+./src/app/admin-dashboard/formation-create/formation-create.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 251, column 20 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formation-create/formation-create.component.scss:251:20:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+251 |         background: darken($primary, 6%);
+
+
+src\app\admin-dashboard\formation-create\formation-create.component.scss 252:21  root stylesheet
+
+
+./src/app/admin-dashboard/formation-create/formation-create.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 251, column 20 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formation-create/formation-create.component.scss:251:20:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -17.6878612717%)
+color.adjust($color, $lightness: -6%)
+
+More info: https://sass-lang.com/d/color-functions
+
+251 |         background: darken($primary, 6%);
+
+
+src\app\admin-dashboard\formation-create\formation-create.component.scss 252:21  root stylesheet
+
+
+./src/app/admin-dashboard/formation-edit/formation-edit.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 230, column 22 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formation-edit/formation-edit.component.scss:230:22:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+230 |         border-color: darken($border, 8%);
+
+
+src\app\admin-dashboard\formation-edit\formation-edit.component.scss 231:23  root stylesheet
+
+
+./src/app/admin-dashboard/formation-edit/formation-edit.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 230, column 22 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formation-edit/formation-edit.component.scss:230:22:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -8.7931034483%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+230 |         border-color: darken($border, 8%);
+
+
+src\app\admin-dashboard\formation-edit\formation-edit.component.scss 231:23  root stylesheet
+
+
+./src/app/admin-dashboard/formation-edit/formation-edit.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 251, column 20 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formation-edit/formation-edit.component.scss:251:20:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+251 |         background: darken($primary, 6%);
+
+
+src\app\admin-dashboard\formation-edit\formation-edit.component.scss 252:21  root stylesheet
+
+
+./src/app/admin-dashboard/formation-edit/formation-edit.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 251, column 20 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formation-edit/formation-edit.component.scss:251:20:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -17.6878612717%)
+color.adjust($color, $lightness: -6%)
+
+More info: https://sass-lang.com/d/color-functions
+
+251 |         background: darken($primary, 6%);
+
+
+src\app\admin-dashboard\formation-edit\formation-edit.component.scss 252:21  root stylesheet
+
+
+./src/app/admin-dashboard/formation-list/formation-list.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 428, column 28 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formation-list/formation-list.component.scss:428:28:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+428 |       &:hover { background: darken($primary-light, 4%); border-color: $primary; }
+
+
+src\app\admin-dashboard\formation-list\formation-list.component.scss 429:29  root stylesheet
+
+
+./src/app/admin-dashboard/formation-list/formation-list.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 428, column 28 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formation-list/formation-list.component.scss:428:28:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -4.2411642412%)
+color.adjust($color, $lightness: -4%)
+
+More info: https://sass-lang.com/d/color-functions
+
+428 |       &:hover { background: darken($primary-light, 4%); border-color: $primary; }
+
+
+src\app\admin-dashboard\formation-list\formation-list.component.scss 429:29  root stylesheet
+
+
+./src/app/admin-dashboard/formations-admin/formations-admin.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 428, column 28 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formations-admin/formations-admin.component.scss:428:28:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+428 |       &:hover { background: darken($primary-light, 4%); border-color: $primary; }
+
+
+src\app\admin-dashboard\formations-admin\formations-admin.component.scss 429:29  root stylesheet
+
+
+./src/app/admin-dashboard/formations-admin/formations-admin.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 428, column 28 of file:///C:/Users/User/PI-Frontend/src/app/admin-dashboard/formations-admin/formations-admin.component.scss:428:28:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -4.2411642412%)
+color.adjust($color, $lightness: -4%)
+
+More info: https://sass-lang.com/d/color-functions
+
+428 |       &:hover { background: darken($primary-light, 4%); border-color: $primary; }
+
+
+src\app\admin-dashboard\formations-admin\formations-admin.component.scss 429:29  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 48, column 20 of file:///C:/Users/User/PI-Frontend/src/app/candidates-dashboard/cd-documents/cd-documents.component.scss:48:20:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+48 |         background: darken($primary, 8%);
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 49:21  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 48, column 20 of file:///C:/Users/User/PI-Frontend/src/app/candidates-dashboard/cd-documents/cd-documents.component.scss:48:20:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -12.6315789474%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+48 |         background: darken($primary, 8%);
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 49:21  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 405, column 32 of file:///C:/Users/User/PI-Frontend/src/app/candidates-dashboard/cd-documents/cd-documents.component.scss:405:32:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+405 |                     background: darken($primary, 8%);
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 406:33  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 405, column 32 of file:///C:/Users/User/PI-Frontend/src/app/candidates-dashboard/cd-documents/cd-documents.component.scss:405:32:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -12.6315789474%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+405 |                     background: darken($primary, 8%);
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 406:33  root stylesheet
+
+
+./src/app/formations/mes-formations/mes-formations.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 164, column 20 of file:///C:/Users/User/PI-Frontend/src/app/formations/mes-formations/mes-formations.component.scss:164:20:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+164 |         background: darken($primary, 6%);
+
+
+src\app\formations\mes-formations\mes-formations.component.scss 165:21  root stylesheet
+
+
+./src/app/formations/mes-formations/mes-formations.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 164, column 20 of file:///C:/Users/User/PI-Frontend/src/app/formations/mes-formations/mes-formations.component.scss:164:20:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -17.6878612717%)
+color.adjust($color, $lightness: -6%)
+
+More info: https://sass-lang.com/d/color-functions
+
+164 |         background: darken($primary, 6%);
+
+
+src\app\formations\mes-formations\mes-formations.component.scss 165:21  root stylesheet
+
+
+./src/app/formations/mes-formations/mes-formations.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 418, column 22 of file:///C:/Users/User/PI-Frontend/src/app/formations/mes-formations/mes-formations.component.scss:418:22:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+418 |           background: darken($primary, 6%);
+
+
+src\app\formations\mes-formations\mes-formations.component.scss 419:23  root stylesheet
+
+
+./src/app/formations/mes-formations/mes-formations.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 418, column 22 of file:///C:/Users/User/PI-Frontend/src/app/formations/mes-formations/mes-formations.component.scss:418:22:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -17.6878612717%)
+color.adjust($color, $lightness: -6%)
+
+More info: https://sass-lang.com/d/color-functions
+
+418 |           background: darken($primary, 6%);
+
+
+src\app\formations\mes-formations\mes-formations.component.scss 419:23  root stylesheet
+
+
+./src/app/pages/categories-page/categories-page.component.scss?ngResource - Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 0, column 8 of file:///C:/Users/User/PI-Frontend/src/app/pages/categories-page/categories-page.component.scss:0:8:
+Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+0 | @import "../../common/categories/categories.component.scss";
+
+src\app\pages\categories-page\categories-page.component.scss 1:9  root stylesheet
+
+
+Warning: src/app/formations/formation-detail/formation-detail.component.html:6:47 - warning NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.
+
+6       <div class="col-lg-8"><h1>{{ formation?.titre || 'Formation' }}</h1></div>
+                                                ~~~~~
+
+  src/app/formations/formation-detail/formation-detail.component.ts:9:16
+    9   templateUrl: './formation-detail.component.html',
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Warning occurs in the template of component FormationDetailComponent.
+
+
+Warning: src/app/pages/candidate-entretiens-page/candidate-entretiens-page.component.ts:23:27 - warning NG8113: RouterLink is not used within the template of CandidateEntretiensPageComponent
+
+23   imports: [CommonModule, RouterLink, SharedModule],
+                             ~~~~~~~~~~
+
+
+Warning: src/app/pages/public-test-pass-page/public-test-pass-page.component.ts:28:40 - warning NG8113: RouterLink is not used within the template of PublicTestPassPageComponent
+
+28   imports: [CommonModule, FormsModule, RouterLink, SharedModule],
+                                          ~~~~~~~~~~
+
+
+
+
+Error: src/app/admin-dashboard/formation-list/formation-list.component.html:107:37 - error NG8002: Can't bind to 'ngClass' since it isn't a known property of 'span'.
+
+107               <td><span class="tag" [ngClass]="getNiveauTag(f.niveau)">{{ f.niveau }}</span></td>
+                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  src/app/admin-dashboard/formation-list/formation-list.component.ts:8:16
+    8   templateUrl: './formation-list.component.html',
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Error occurs in the template of component FormationListComponent.
+
+
+Error: src/app/admin-dashboard/formation-list/formation-list.component.html:108:37 - error NG8002: Can't bind to 'ngClass' since it isn't a known property of 'span'.
+
+108               <td><span class="tag" [ngClass]="getStatutTag(f.statut)">{{ f.statut }}</span></td>
+                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  src/app/admin-dashboard/formation-list/formation-list.component.ts:8:16
+    8   templateUrl: './formation-list.component.html',
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Error occurs in the template of component FormationListComponent.
+
+
+Error: src/app/admin-dashboard/formation-list/formation-list.component.html:111:20 - error NG8002: Can't bind to 'routerLink' since it isn't a known property of 'a'.
+
+111                 <a [routerLink]="['/admin-dashboard/formations', f.id, 'participants']" class="action-btn btn-view">
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  src/app/admin-dashboard/formation-list/formation-list.component.ts:8:16
+    8   templateUrl: './formation-list.component.html',
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Error occurs in the template of component FormationListComponent.
+
+
+Error: src/app/admin-dashboard/formation-list/formation-list.component.html:114:20 - error NG8002: Can't bind to 'routerLink' since it isn't a known property of 'a'.
+
+114                 <a [routerLink]="['/admin-dashboard/formations', f.id, 'feedbacks']" class="action-btn btn-feedback">
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  src/app/admin-dashboard/formation-list/formation-list.component.ts:8:16
+    8   templateUrl: './formation-list.component.html',
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Error occurs in the template of component FormationListComponent.
+
+
+Error: src/app/admin-dashboard/formation-list/formation-list.component.html:117:20 - error NG8002: Can't bind to 'routerLink' since it isn't a known property of 'a'.
+
+117                 <a [routerLink]="['/admin-dashboard/formations/edit', f.id]" class="action-btn btn-edit">
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  src/app/admin-dashboard/formation-list/formation-list.component.ts:8:16
+    8   templateUrl: './formation-list.component.html',
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Error occurs in the template of component FormationListComponent.
+
+
+Error: src/app/admin-dashboard/formation-list/formation-list.component.html:181:37 - error NG8002: Can't bind to 'ngClass' since it isn't a known property of 'span'.
+
+181               <td><span class="tag" [ngClass]="getNiveauTag(f.niveau)">{{ f.niveau }}</span></td>
+                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  src/app/admin-dashboard/formation-list/formation-list.component.ts:8:16
+    8   templateUrl: './formation-list.component.html',
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Error occurs in the template of component FormationListComponent.
+
+
+Error: src/app/admin-dashboard/formation-list/formation-list.component.html:194:20 - error NG8002: Can't bind to 'routerLink' since it isn't a known property of 'a'.
+
+194                 <a [routerLink]="['/admin-dashboard/formations/edit', f.id]" class="action-btn btn-edit">
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  src/app/admin-dashboard/formation-list/formation-list.component.ts:8:16
+    8   templateUrl: './formation-list.component.html',
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Error occurs in the template of component FormationListComponent.
+
+
+Error: src/app/formations/formations.module.ts:15:42 - error TS2307: Cannot find module './admin/formations-admin/formations-admin.component' or its corresponding type declarations.
+
+15 import { FormationsAdminComponent } from './admin/formations-admin/formations-admin.component';
+                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+

@@ -11,7 +11,7 @@ import { NgxScrollTopModule } from 'ngx-scrolltop';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { AuthInterceptor } from './auth.interceptor';
 import { SharedModule } from './shared/shared.module';
-import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
+import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';
 // ADMIN
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { AdHeaderComponent } from './admin-dashboard/ad-header/ad-header.component';
@@ -21,7 +21,11 @@ import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboar
 import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
 import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
 import { EntretienListComponent } from './admin-dashboard/entretien-list/entretien-list.component';
-import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
+import { FormationsAdminComponent } from './admin-dashboard/formations-admin/formations-admin.component';
+import { FormationCreateComponent } from './admin-dashboard/formation-create/formation-create.component';
+import { FormationEditComponent } from './admin-dashboard/formation-edit/formation-edit.component';
+import { FormationParticipantsComponent } from './admin-dashboard/formation-participants/formation-participants.component';
+import { FeedbackAdminComponent } from './admin-dashboard/feedback-admin/feedback-admin.component';
 import { CandidatureListComponent } from './admin-dashboard/candidature-list/candidature-list.component';
 import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-admin/evenement-list-admin.component';
 import { routes } from './app.routes';
@@ -63,7 +67,7 @@ import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/c
 import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
 import { CdMessageMailboxComponent } from './candidates-dashboard/cd-message-mailbox/cd-message-mailbox.component';
 import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-password/cd-change-password.component';
-
+import { MesFormationsComponent } from './candidates-dashboard/mes-formations/mes-formations.component';
 // Shared components are in SharedModule now
 
 // More common
@@ -141,6 +145,7 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         CdAlertJobsComponent,
         CdMessageMailboxComponent,
         CdChangePasswordComponent,
+        MesFormationsComponent,
         BlogSidebarComponent,
         PricingComponent,
         JobsSidebarComponent,
@@ -156,11 +161,11 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         RdMessagesMailboxComponent,
         RdProfileComponent,
         RdChangePasswordComponent,
-        CdDocumentsComponent, 
+        CdDocumentsComponent,
         EvenementDashboardComponent,
         EvenementSidebarComponent,
         EvenementFormComponent,
-        EvenementListComponent, 
+        EvenementListComponent,
         EvenementEditComponent,
         EvenementDetailComponent,
         EvenementHeaderComponent,
@@ -172,12 +177,13 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         PartenaireListComponent,
         OffreListComponent,
         EntretienListComponent,
-        FormationListComponent,
+        FormationsAdminComponent,
+        FormationCreateComponent,
+        FormationEditComponent,
+        FormationParticipantsComponent,
+        FeedbackAdminComponent,
         CandidatureListComponent,
         EvenementListAdminComponent,
-        AdHeaderComponent,  
-        AdSidebarComponent, 
-        AdFooterComponent,
     ],
     imports: [
         BrowserModule,
@@ -191,7 +197,6 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         NgApexchartsModule,
         NgxScrollTopModule,
         GoogleMapsModule
-        
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
