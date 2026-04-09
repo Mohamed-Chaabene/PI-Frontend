@@ -21,7 +21,7 @@ import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboar
 import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
 import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
 import { EntretienListComponent } from './admin-dashboard/entretien-list/entretien-list.component';
-import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
+
 import { CandidatureListComponent } from './admin-dashboard/candidature-list/candidature-list.component';
 import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-admin/evenement-list-admin.component';
 import { routes } from './app.routes';
@@ -71,12 +71,11 @@ import { MaCalendarComponent } from './candidates-dashboard/evenement-candidat/m
 
 // More common
 import { BlogSidebarComponent } from './common/blog-sidebar/blog-sidebar.component';
-import { TalentedExpertsComponent } from './common/talented-experts/talented-experts.component';
-import { PartnersComponent } from './common/partners/partners.component';
+
 import { PricingComponent } from './common/pricing/pricing.component';
-import { LeadingCompanyComponent } from './common/leading-company/leading-company.component';
+
 import { JobsSidebarComponent } from './common/jobs-sidebar/jobs-sidebar.component';
-import { AboutUsComponent } from './common/about-us/about-us.component';
+
 
 // Dashboard components
 import { CdSidebarComponent } from './candidates-dashboard/cd-sidebar/cd-sidebar.component';
@@ -110,7 +109,14 @@ import { EvenementDemandesComponent } from './evenement-dashboard/evenement-dema
 import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { EvenementFeedbacksComponent } from './evenement-dashboard/evenement-feedback/evenement-feedbacks.component';
-
+import { FeedbackAdminComponent } from './admin-dashboard/feedback-admin/feedback-admin.component';
+import { FormationsAdminComponent } from './admin-dashboard/formations-admin/formations-admin.component';
+import { FormationCreateComponent } from './admin-dashboard/formation-create/formation-create.component';
+import { FormationEditComponent } from './admin-dashboard/formation-edit/formation-edit.component';
+import { FormationParticipantsComponent } from './admin-dashboard/formation-participants/formation-participants.component';
+import { CdMessageMailboxComponent } from './candidates-dashboard/cd-message-mailbox/cd-message-mailbox.component';
+import { MesFormationsComponent } from './candidates-dashboard/mes-formations/mes-formations.component';
+import { RdMessagesMailboxComponent } from './recruiter-dashboard/rd-messages-mailbox/rd-messages-mailbox.component';
 
 // Banner components are now in SharedModule
 // participations
@@ -184,7 +190,7 @@ import { EvenementFeedbacksComponent } from './evenement-dashboard/evenement-fee
         PartenaireListComponent,
         OffreListComponent,
         EntretienListComponent,
-        FormationListComponent,
+    
         CandidatureListComponent,
         EvenementListAdminComponent,
         AdHeaderComponent,  
@@ -195,7 +201,16 @@ import { EvenementFeedbacksComponent } from './evenement-dashboard/evenement-fee
         MesParticipationsComponent,
         EvenementCalendrierComponent,
         MaCalendarComponent,
-        EvenementFeedbacksComponent 
+        EvenementFeedbacksComponent,
+        FeedbackAdminComponent,
+FormationsAdminComponent,
+FormationCreateComponent,
+FormationEditComponent,
+FormationParticipantsComponent,
+CdMessageMailboxComponent,
+MesFormationsComponent,
+RdMessagesMailboxComponent,
+        
         
         
     ],
@@ -212,13 +227,17 @@ import { EvenementFeedbacksComponent } from './evenement-dashboard/evenement-fee
         NgxScrollTopModule,
         GoogleMapsModule,
         FullCalendarModule,
+        SharedModule
+        
         
         
         
         
     ],
     providers: [
-        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+        { provide: LOCALE_ID, useValue: 'fr' },  // ← AJOUTER
+    DatePipe, 
         
     ],
     bootstrap: [App],
