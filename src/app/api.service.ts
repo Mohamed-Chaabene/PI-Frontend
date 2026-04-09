@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
 
-  private apiUrl = 'http://localhost:8080/api'; // URL de votre backend Spring Boot
-
+  // Use relative URL so Angular dev proxy can forward to Spring Boot and avoid CORS issues.
+  private apiUrl = '/api';
+  private mlUrl = 'http://localhost:8000'; 
   constructor(private http: HttpClient) { }
 
   // Exemple de méthode GET
@@ -26,6 +27,17 @@ export class ApiService {
   // CRUD utilisateurs (Admin)
   getUsers(): Observable<any> {
     return this.http.get(`${this.apiUrl}/users`);
+  }
+
+  getUsersByName(name: string): Observable<any[]> {
+    const query = encodeURIComponent(name?.trim() || '');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    headers = headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers = headers.set('Pragma', 'no-cache');
+    const timestamp = Date.now();
+    const url = `${this.apiUrl}/users/search?name=${query}&t=${timestamp}`;
+    console.log('🌐 Calling API search endpoint:', url);
+    return this.http.get<any[]>(url, { headers });
   }
 
   // Candidats (pour lier un entretien à un candidat)
@@ -74,6 +86,12 @@ export class ApiService {
   login(credentials: any): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post(`${this.apiUrl}/auth/login`, credentials, { headers });
+  }
+
+  // Reset Password
+  resetPassword(phone: string): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(`${this.apiUrl}/auth/reset-password`, { phone }, { headers });
   }
 
   // Entretiens (Interviews)
@@ -270,6 +288,40 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/candidats`, candidateData, { headers });
   }
 
+  // ==================== FOLLOW FEATURE ====================
+
+  followUser(userToFollowId: number, token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/follows/${userToFollowId}/follow`, {}, { headers });
+  }
+
+  unfollowUser(userToUnfollowId: number, token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/follows/${userToUnfollowId}/unfollow`, {}, { headers });
+  }
+
+  getFollowers(userId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/follows/${userId}/followers`);
+  }
+
+  isFollowing(userIdToCheck: number, token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/follows/${userIdToCheck}/is-following`, { headers });
+  }
+
+  getFollowersCount(userId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/follows/${userId}/followers-count`);
+  }
+
   updateCandidate(id: number, candidateData: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -409,7 +461,12 @@ export class ApiService {
 
   // Récupérer toutes les candidatures (pour recruteur)
   getAllCandidaturesForRecruteur(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/candidatures/recruteur/toutes`);
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get<any[]>(`${this.apiUrl}/candidatures/admin/toutes`, { headers });
   }
 
   // Récupérer les statistiques pour recruteur
@@ -465,6 +522,78 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/offres-emploi`, { headers });
   }
 
+  getOffreEmploiById(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const primaryUrl = `${this.apiUrl}/offres-emploi/${id}`;
+    const altUrl = `${this.apiUrl}/offres/${id}`;
+
+    return this.http.get(primaryUrl, { headers }).pipe(
+      catchError((firstError) => {
+        const shouldTryAltEndpoint = firstError?.status === 404 || firstError?.status === 405 || firstError?.status === 500;
+
+        if (shouldTryAltEndpoint) {
+          return this.http.get(altUrl, { headers }).pipe(
+            catchError(() => {
+              // Last fallback: fetch list and resolve the item client-side.
+              return this.http.get<any[]>(`${this.apiUrl}/offres-emploi`, { headers }).pipe(
+                map((offres) => {
+                  const matched = (offres || []).find((item: any) => Number(item?.id) === Number(id));
+                  if (!matched) {
+                    throw firstError;
+                  }
+                  return matched;
+                })
+              );
+            })
+          );
+        }
+
+        return throwError(() => firstError);
+      })
+    );
+  }
+
+  getMesOffresEmploi(): Observable<any[]> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get<any[]>(`${this.apiUrl}/offres-emploi/mes-offres`, { headers });
+  }
+
+  creerOffreEmploi(data: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/offres-emploi`, data, { headers });
+  }
+
+  modifierOffreEmploi(id: number, data: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.put(`${this.apiUrl}/offres-emploi/${id}`, data, { headers });
+  }
+
+  supprimerOffreEmploi(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.delete(`${this.apiUrl}/offres-emploi/${id}`, { headers });
+  }
+
   // Newsletter
   subscribeNewsletter(email: string): Observable<any> {
     const token = localStorage.getItem('token');
@@ -477,50 +606,60 @@ export class ApiService {
 
   // ==================== DOCUMENTS CRUD ====================
 
-  getAllDocuments(): Observable<any> {
+  // Récupérer UNIQUEMENT les documents du candidat connecté (et non tous les documents)
+getMesDocuments(): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+        headers = headers.set('Authorization', `Bearer ${token}`);
     }
+    // ✅ /documents suffit — le backend filtre par candidat via le token JWT
     return this.http.get(`${this.apiUrl}/documents`, { headers });
-  }
+}
 
-  getDocumentById(id: number): Observable<any> {
+// Récupérer un document par son ID (avec vérification d'appartenance)
+getDocumentById(id: number): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+        headers = headers.set('Authorization', `Bearer ${token}`);
     }
+    // ✅ Ce endpoint vérifie que le document appartient au candidat connecté
     return this.http.get(`${this.apiUrl}/documents/${id}`, { headers });
-  }
+}
 
-  creerDocument(data: any): Observable<any> {
+// Créer un document (automatiquement lié au candidat connecté)
+creerDocument(data: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+        headers = headers.set('Authorization', `Bearer ${token}`);
     }
+    // ✅ Inchangé - le backend lie automatiquement au candidat connecté
     return this.http.post(`${this.apiUrl}/documents`, data, { headers });
-  }
+}
 
-  modifierDocument(id: number, data: any): Observable<any> {
+// Modifier un document (vérifie que le document appartient au candidat)
+modifierDocument(id: number, data: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+        headers = headers.set('Authorization', `Bearer ${token}`);
     }
+    // ✅ Inchangé - le backend vérifie l'appartenance avant modification
     return this.http.put(`${this.apiUrl}/documents/${id}`, data, { headers });
-  }
+}
 
-  supprimerDocument(id: number): Observable<any> {
+// Supprimer un document (vérifie que le document appartient au candidat)
+supprimerDocument(id: number): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+        headers = headers.set('Authorization', `Bearer ${token}`);
     }
+    // ✅ Inchangé - le backend vérifie l'appartenance avant suppression
     return this.http.delete(`${this.apiUrl}/documents/${id}`, { headers });
-  }
+}
 
   quickApply(candidatureData: any): Observable<any> {
     const token = localStorage.getItem('token');
@@ -530,47 +669,15 @@ export class ApiService {
     }
     return this.http.post(`${this.apiUrl}/candidatures/quick-apply`, candidatureData, { headers });
   }
-
-  // ==================== FONCTIONNALITÉS AVANCÉES ====================
-
-getStatistiquesAvancees(): Observable<any> {
+  // Envoyer un email de notification pour une candidature
+  envoyerEmailCandidature(emailData: any): Observable<any> {
     const token = localStorage.getItem('token');
-    let headers = new HttpHeaders();
-    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.apiUrl}/candidatures/avancee/statistiques`, { headers });
-}
-
-getTauxReussite(): Observable<any> {
-    const token = localStorage.getItem('token');
-    let headers = new HttpHeaders();
-    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.apiUrl}/candidatures/avancee/taux-reussite`, { headers });
-}
-
-getSuggestions(candidatureId: number): Observable<any> {
-    const token = localStorage.getItem('token');
-    let headers = new HttpHeaders();
-    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.apiUrl}/candidatures/avancee/suggestions/${candidatureId}`, { headers });
-}
-
-getPrediction(): Observable<any> {
-    const token = localStorage.getItem('token');
-    let headers = new HttpHeaders();
-    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.apiUrl}/candidatures/avancee/prediction`, { headers });
-}
-
-getRelances(): Observable<any> {
-    const token = localStorage.getItem('token');
-    let headers = new HttpHeaders();
-    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.apiUrl}/candidatures/avancee/relances`, { headers });
-}
-
-
-
-
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/candidatures/send-email`, emailData, { headers });
+  }
 
   // Envoyer un message entre utilisateur connecté et destinataire
   sendMessage(messageData: any): Observable<any> {
@@ -669,6 +776,75 @@ getRelances(): Observable<any> {
     }
     return this.http.post(`${this.apiUrl}/notifications/delete-all`, {}, { headers });
   }
+
+// ==================== FONCTIONNALITÉS AVANCÉES ====================
+
+// 1. Gamification
+getGamification(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/gamification`);
+}
+
+// 2. Smart Match
+getSmartMatch(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/smart-match`);
+}
+
+// 3. Radar Compétences
+getRadarCompetences(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/radar-competences`);
+}
+
+// 4. Taux de réussite
+getTauxReussite(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/taux-reussite`);
+}
+
+// 5. Statistiques par mois
+getStatsParMois(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/stats-par-mois`);
+}
+
+// 6. Prédiction IA
+getPredictionSucces(cvContent: string, historique: any[]): Observable<any> {
+    return this.http.post(`${this.mlUrl}/prediction/succes`, {
+        cv_content: cvContent,
+        historique_candidatures: historique
+    });
+}
+
+// 7. Relances
+getRelances(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/relances`);
+}
+
+// 8. Timeline
+getTimeline(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/timeline`);
+}
+
+// ==================== ANALYSE CV ====================
+
+ analyserCV(documentId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/cv-analyse/analyser/${documentId}`, {});
+  }
+
+  // ============ OPTIMISATION CV ============
+  optimiserCV(documentId: number, offreEmploi: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/cv-analyse/optimiser/${documentId}`, { offreEmploi });
+  }
+
+
+
+
+
+//  CHATBOT
+chatWithML(message: string, cvContent: string): Observable<any> {
+    // Appel direct au serveur FastAPI sur le port 8000
+    return this.http.post('http://localhost:8000/chat/ml', { 
+        message: message, 
+        cv_content: cvContent 
+    });
+}
 
 
 

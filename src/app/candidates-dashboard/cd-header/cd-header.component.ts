@@ -459,4 +459,3 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         }, 0);
     }
 }
-
