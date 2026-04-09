@@ -3,7 +3,7 @@ import { ApiService } from '../../api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 interface EntretienForm {
   titre: string;
@@ -42,8 +42,16 @@ export class RdInterviews implements OnInit {
   currentUser: any;
   currentUserId: number | null = null;
   typesEntretien = ['TECHNIQUE', 'RH', 'MANAGERIAL', 'FINAL', 'PRESELECTION', 'TEST'];
+  private pendingCandidaturePrefill: {
+    candidatId: number | null;
+    nomComplet: string;
+    email: string;
+    poste: string;
+  } | null = null;
+  private candidateEmailForInterview: string | null = null;
+  private candidateNameForInterview: string | null = null;
 
-  constructor(private apiService: ApiService, private router: Router) {}
+  constructor(private apiService: ApiService, private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
     if (!this.isRecruteurSession()) {
@@ -53,9 +61,62 @@ export class RdInterviews implements OnInit {
     }
 
     this.getCurrentUser();
+    this.preparePrefillFromRoute();
     this.loadEntretiens();
     this.loadCandidats();
     this.loadDomaines();
+  }
+
+  private preparePrefillFromRoute(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      if (params.get('createFromCandidature') !== '1') {
+        return;
+      }
+
+      const rawCandidatId = Number(params.get('candidatId'));
+      this.pendingCandidaturePrefill = {
+        candidatId: Number.isFinite(rawCandidatId) && rawCandidatId > 0 ? rawCandidatId : null,
+        nomComplet: params.get('nomComplet') || '',
+        email: params.get('email') || '',
+        poste: params.get('poste') || ''
+      };
+
+      this.showCreateForm = true;
+      this.applyCandidaturePrefillIfPossible();
+    });
+  }
+
+  private applyCandidaturePrefillIfPossible(): void {
+    if (!this.pendingCandidaturePrefill) {
+      return;
+    }
+
+    const prefill = this.pendingCandidaturePrefill;
+    let resolvedCandidatId = prefill.candidatId;
+
+    if (!resolvedCandidatId && prefill.email && this.candidats.length > 0) {
+      const found = this.candidats.find((c: any) =>
+        (c?.email || '').toLowerCase() === prefill.email.toLowerCase()
+      );
+      if (found?.id) {
+        resolvedCandidatId = found.id;
+      }
+    }
+
+    const candidatLabel = prefill.nomComplet || prefill.email || 'ce candidat';
+    const posteLabel = prefill.poste || 'ce poste';
+
+    // Store candidate email and name for later email notification
+    this.candidateEmailForInterview = prefill.email || null;
+    this.candidateNameForInterview = prefill.nomComplet || null;
+
+    this.newEntretien = {
+      ...this.newEntretien,
+      titre: this.newEntretien.titre || `Entretien - ${posteLabel}`,
+      description: this.newEntretien.description || `Entretien suite a la candidature de ${candidatLabel} pour ${posteLabel}.`,
+      type: this.newEntretien.type || 'TECHNIQUE',
+      candidatId: resolvedCandidatId
+    };
   }
 
   private isRecruteurSession(): boolean {
@@ -129,11 +190,13 @@ export class RdInterviews implements OnInit {
           const arrayValue = Object.values(data).find((v: any) => Array.isArray(v));
           if (arrayValue) {
             this.candidats = arrayValue as any[];
+            this.applyCandidaturePrefillIfPossible();
             return;
           }
         }
         
         this.candidats = Array.isArray(data) ? data : [];
+        this.applyCandidaturePrefillIfPossible();
       },
       error: (error: any) => {
         console.error('❌ Erreur chargement candidats:', error);
@@ -231,10 +294,17 @@ export class RdInterviews implements OnInit {
   private submitCreateEntretien(payload: any, recruteurId: number, hasRetried: boolean): void {
     this.apiService.createEntretien(payload, recruteurId).subscribe({
       next: (response) => {
-        alert('Entretien créé avec succès! Redirection vers l\'ajout de questions...');
+        const interviewLink = this.buildInterviewLink(response);
+
+        alert(`Entretien créé avec succès!\n\nLien de l'entretien: ${interviewLink}\n\nRedirection vers l'ajout de questions...`);
         this.entretiens.push(response);
+        
+        // Send confirmation email to candidate
+        this.sendInterviewConfirmationEmail(response, interviewLink);
+
         this.resetForm();
         this.showCreateForm = false;
+        
         this.router.navigate(['/recruiter-dashboard/interviews/add-questions', response.id]);
       },
       error: (error) => {
@@ -278,6 +348,71 @@ export class RdInterviews implements OnInit {
     });
   }
 
+  private buildInterviewLink(entretien: any): string {
+    const origin = window.location.origin;
+    const type = String(entretien?.type || entretien?.categorie || '').toUpperCase();
+    const entretienId = Number(entretien?.id);
+
+    if (type === 'TEST' && Number.isFinite(entretienId) && entretienId > 0) {
+      return `${origin}/entretiens/test/${entretienId}`;
+    }
+
+    // For non-test interviews, candidate accesses interview list after authentication.
+    return `${origin}/candidate-entretiens`;
+  }
+
+  private sendInterviewConfirmationEmail(entretien: any, interviewLink: string): void {
+    // If we don't have a candidate email, try to get it from the candidats list
+    let candidateEmail = this.candidateEmailForInterview;
+    let candidateName = this.candidateNameForInterview;
+
+    if (!candidateEmail && entretien.candidatId) {
+      const candidate = this.candidats.find((c: any) => c.id === entretien.candidatId);
+      if (candidate) {
+        candidateEmail = candidate.email || null;
+        candidateName = candidate.nomComplet || candidate.nom || null;
+      }
+    }
+
+    if (!candidateEmail) {
+      console.warn('⚠ Email du candidat non disponible - Email de confirmation non envoyé');
+      return;
+    }
+    
+    const emailData = {
+      receiverEmail: candidateEmail,
+      receiverName: candidateName || 'Candidat',
+      subject: 'Félicitations - Entretien confirmé!',
+      contenu: `Chère ${candidateName || 'Candidat'},
+
+Bonne nouvelle! Votre candidature a été acceptée et nous aimerions vous conviter à un entretien.
+
+Détails de l'entretien:
+- Titre: ${entretien.titre}
+- Type: ${entretien.type}
+- Description: ${entretien.description}
+${entretien.dateEntretien ? `- Date: ${new Date(entretien.dateEntretien).toLocaleDateString('fr-FR')}` : ''}
+
+Veuillez consulter votre tableau de bord ou cliquer sur le lien ci-dessous pour plus de détails et pour confirmer votre disponibilité.
+
+Lien: ${interviewLink}
+
+Cordialement,
+L'équipe de recrutement`,
+      type: 'ENTRETIEN'
+    };
+
+    this.apiService.sendMessage(emailData).subscribe({
+      next: () => {
+        console.log('✅ Message d\'entretien envoyé avec succès au candidat');
+      },
+      error: (err) => {
+        console.error('❌ Erreur lors de l\'envoi du message d\'entretien:', err);
+        // Don't show alert as it's not critical - the interview is already created
+      }
+    });
+  }
+
   private resetForm(): void {
     this.newEntretien = {
       titre: '',
@@ -289,6 +424,8 @@ export class RdInterviews implements OnInit {
       photo: '',
       seuilReussite: 70
     };
+    this.candidateEmailForInterview = null;
+    this.candidateNameForInterview = null;
   }
 
   completeEntretien(id: number): void {

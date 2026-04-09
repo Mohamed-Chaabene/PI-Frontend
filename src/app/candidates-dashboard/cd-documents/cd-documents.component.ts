@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../api.service';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+// Import Observable pour le return type
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'app-cd-documents',
@@ -15,98 +16,65 @@ export class CdDocumentsComponent implements OnInit {
     documents: any[] = [];
     isLoading = true;
     errorMessage = '';
-    
+
     // Modals
     showCreateModal = false;
     showEditModal = false;
     showViewModal = false;
-    
+    showPreviewModal: boolean = false;
+    showAnalyseCVModal: boolean = false;
+    showOptimiseModal: boolean = false;
+
     // États
     isCreating = false;
     isUpdating = false;
-    
+    isAnalysing: boolean = false;
+    isOptimising: boolean = false;
+
     selectedDocument: any = null;
     editingDocument: any = null;
-    selectedDocumentSrcdoc: SafeHtml | string = '';
-    editCvSkillsText: string = '';
-    editCvData = {
-        prenom: '',
+
+    // Aperçu du document généré
+    generatedDocument: {
+        nom: string;
+        type: string;
+        contenu: string;
+    } | null = null;
+
+    // Snapshot sauvegardé avant reset
+    savedCvData: any = null;
+    savedSelectedType: string = 'CV';
+    savedLettreData: any = null;
+    savedPortfolioData: any = null;
+    savedAutreData: any = null;
+
+    // Type de document
+    selectedType: string = 'CV';
+    types = ['CV', 'LETTRE_DE_MOTIVATION', 'PORTFOLIO', 'AUTRE'];
+
+    // ==================== FORMULAIRE CV ====================
+    cvData = {
         nom: '',
+        prenom: '',
         titre: '',
         email: '',
         telephone: '',
         adresse: '',
-        profil: '',
-        competences: [] as string[]
-    };
-    
-
-    // ==================== APERÇU DU DOCUMENT GÉNÉRÉ ====================
-showPreviewModal: boolean = false;
-generatedDocument: {
-    nom: string;
-    type: string;
-    contenu: string;
-} | null = null;
-previewDocumentSrcdoc: SafeHtml | string = '';
-
-    // Type de document sélectionné pour le formulaire
-    selectedType: string = 'CV';
-    types = ['CV', 'LETTRE_DE_MOTIVATION', 'PORTFOLIO', 'AUTRE'];
-    
-    // ==================== FORMULAIRE CV ====================
-    // Ajoute ces variables avec les autres dans cvData
-cvData = {
-    nom: '',
-    prenom: '',
-    titre: '',
-    email: '',
-    telephone: '',
-    adresse: '',
-    dateNaissance: '',
-    photo: '',           // contiendra le Base64
-    photoName: '',       // nom du fichier (optionnel)
-    experiences: [] as any[],
-    formations: [] as any[],
-    competences: [] as string[],
-    langues: [] as any[],
-    centresInteret: [] as string[],
-    profil: ''
-};
-
-// ====================== NOUVELLES MÉTHODES ======================
-
-// Méthode appelée quand l'utilisateur sélectionne une photo
-onPhotoSelected(event: any): void {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Vérifier que c'est bien une image
-    if (!file.type.startsWith('image/')) {
-        alert("Veuillez sélectionner une image (JPG, PNG, etc.)");
-        return;
-    }
-
-    const reader = new FileReader();
-    
-    reader.onload = (e: any) => {
-        // Convertir l'image en Base64
-        this.cvData.photo = e.target.result;        // Base64 complet (data:image/...)
-        this.cvData.photoName = file.name;
+        dateNaissance: '',
+        photo: '',
+        photoName: '',
+        experiences: [] as any[],
+        formations: [] as any[],
+        competences: [] as string[],
+        langues: [] as any[],
+        centresInteret: [] as string[],
+        profil: ''
     };
 
-    reader.readAsDataURL(file);
-}
-    
-    // Formulaire expérience
     newExperience = { poste: '', entreprise: '', periode: '', description: '' };
-    
-    // Formulaire formation
     newFormation = { diplome: '', institution: '', annee: '', description: '' };
-    
-    // Formulaire langue
     newLangue = { langue: '', niveau: '' };
-    
+
     // ==================== FORMULAIRE LETTRE ====================
     lettreData = {
         entreprise: '',
@@ -115,7 +83,7 @@ onPhotoSelected(event: any): void {
         prenom: '',
         nom: ''
     };
-    
+
     // ==================== FORMULAIRE PORTFOLIO ====================
     portfolioData = {
         titre: '',
@@ -125,36 +93,42 @@ onPhotoSelected(event: any): void {
         annee: ''
     };
     newTechnologie = '';
-    
+
     // ==================== FORMULAIRE AUTRE ====================
     autreData = {
         titre: '',
         contenu: ''
     };
 
-    constructor(
-        private apiService: ApiService,
-        private sanitizer: DomSanitizer
-    ) {}
+    // ==================== ANALYSE / OPTIMISATION ====================
+    analyseResult: any = null;
+    optimisationResult: any = null;
+    offreEmploiInput: string = '';
+    documentEnCours: any = null;
+
+    // URL de l'API ML
+    private readonly ML_API_URL = 'http://localhost:8000';
+
+    constructor(private apiService: ApiService) {}
 
     ngOnInit(): void {
         this.loadDocuments();
     }
 
-    loadDocuments(): void {
-        this.isLoading = true;
-        this.apiService.getAllDocuments().subscribe({
-            next: (data) => {
-                this.documents = data;
-                this.isLoading = false;
-            },
-            error: (err) => {
-                console.error('Erreur:', err);
-                this.errorMessage = 'Erreur de chargement';
-                this.isLoading = false;
-            }
-        });
-    }
+ loadDocuments(): void {
+    this.isLoading = true;
+    this.apiService.getMesDocuments().subscribe({  // ✅ getMesDocuments, pas getAllDocuments
+        next: (data) => {
+            this.documents = data;
+            this.isLoading = false;
+        },
+        error: (err) => {
+            console.error('Erreur chargement documents:', err);
+            this.errorMessage = 'Erreur de chargement';
+            this.isLoading = false;
+        }
+    });
+}
 
     // ==================== CHANGEMENT DE TYPE ====================
     onTypeChange(type: string): void {
@@ -174,49 +148,46 @@ onPhotoSelected(event: any): void {
     }
 
     resetForms(): void {
-    // Reset CV
-    this.cvData = {
-        nom: '',
-        prenom: '',
-        titre: '',
-        email: '',
-        telephone: '',
-        adresse: '',
-        dateNaissance: '',
-        photo: '',           // Important : vider l'image Base64
-        photoName: '',       // Important : vider le nom du fichier
-        experiences: [],
-        formations: [],
-        competences: [],
-        langues: [],
-        centresInteret: [],
-        profil: ''
-    };
+        this.cvData = {
+            nom: '',
+            prenom: '',
+            titre: '',
+            email: '',
+            telephone: '',
+            adresse: '',
+            dateNaissance: '',
+            photo: '',
+            photoName: '',
+            experiences: [],
+            formations: [],
+            competences: [],
+            langues: [],
+            centresInteret: [],
+            profil: ''
+        };
+        this.newExperience = { poste: '', entreprise: '', periode: '', description: '' };
+        this.newFormation = { diplome: '', institution: '', annee: '', description: '' };
+        this.newLangue = { langue: '', niveau: '' };
+        this.lettreData = { entreprise: '', poste: '', message: '', prenom: '', nom: '' };
+        this.portfolioData = { titre: '', description: '', technologies: [], lien: '', annee: '' };
+        this.autreData = { titre: '', contenu: '' };
+    }
 
-    // Reset Lettre
-    this.lettreData = { 
-        entreprise: '', 
-        poste: '', 
-        message: '', 
-        prenom: '', 
-        nom: '' 
-    };
-
-    // Reset Portfolio
-    this.portfolioData = { 
-        titre: '', 
-        description: '', 
-        technologies: [], 
-        lien: '', 
-        annee: '' 
-    };
-
-    // Reset Autre
-    this.autreData = { 
-        titre: '', 
-        contenu: '' 
-    };
-}
+    // ==================== PHOTO ====================
+    onPhotoSelected(event: any): void {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert("Veuillez sélectionner une image (JPG, PNG, etc.)");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+            this.cvData.photo = e.target.result;
+            this.cvData.photoName = file.name;
+        };
+        reader.readAsDataURL(file);
+    }
 
     // ==================== GESTION CV ====================
     addExperience(): void {
@@ -274,558 +245,124 @@ onPhotoSelected(event: any): void {
 
     // ==================== GESTION PORTFOLIO ====================
     addTechnologie(tech: string): void {
-    if (tech && tech.trim()) {
-        this.portfolioData.technologies.push(tech.trim());
-    }
-}
-
-removeTechnologie(index: number): void {
-    this.portfolioData.technologies.splice(index, 1);
-}
-
-
-    // ==================== GÉNÉRATION AVEC IA (SIMULÉE) ====================
-    genererAIConstenu(): string {
-        switch(this.selectedType) {
-            case 'CV':
-                return this.genererCV();
-            case 'LETTRE_DE_MOTIVATION':
-                return this.genererLettre();
-            case 'PORTFOLIO':
-                return this.genererPortfolio();
-            default:
-                return this.autreData.contenu;
+        if (tech && tech.trim()) {
+            this.portfolioData.technologies.push(tech.trim());
         }
     }
 
-  genererCV(): string {
-    const fullName = `${this.cvData.prenom || ''} ${this.cvData.nom || ''}`.trim() || 'Votre Nom';
-    const titre = this.cvData.titre || 'Ingénieur Informatique';
-    const email = this.cvData.email || '';
-    const telephone = this.cvData.telephone || '';
-    const adresse = this.cvData.adresse || '';
-
-    const experiencesHTML = this.cvData.experiences.map(exp => `
-        <div class="experience">
-            <div class="experience-header">
-                <div>
-                    <strong>${exp.poste}</strong><br>
-                    <span class="company">${exp.entreprise}</span>
-                </div>
-                <span class="period">${exp.periode || ''}</span>
-            </div>
-            <p>${exp.description || 'Description de l\'expérience.'}</p>
-        </div>
-    `).join('');
-
-    const formationsHTML = this.cvData.formations.map(formation => `
-        <div class="education">
-            <div class="education-header">
-                <strong>${formation.diplome}</strong><br>
-                <span class="institution">${formation.institution}</span>
-            </div>
-            <span class="period">${formation.annee || ''}</span>
-            <p>${formation.description || ''}</p>
-        </div>
-    `).join('');
-
-    const competencesHTML = this.cvData.competences.map(skill => 
-        `<li>${skill}</li>`
-    ).join('');
-
-    const languesHTML = this.cvData.langues.map(l => 
-        `<li><strong>${l.langue}</strong> - ${l.niveau}</li>`
-    ).join('');
-
-    return `
-        <!DOCTYPE html>
-        <html lang="fr">
-        <head>
-            <meta charset="UTF-8">
-            <title>CV - ${fullName}</title>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Arial:wght@400;600;700&display=swap');
-
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-
-                body {
-                    font-family: 'Arial', sans-serif;
-                    background: #f4f4f4;
-                    padding: 30px;
-                    line-height: 1.5;
-                }
-
-                .cv {
-                    max-width: 950px;
-                    margin: 0 auto;
-                    background: white;
-                    box-shadow: 0 0 20px rgba(0,0,0,0.15);
-                    display: grid;
-                    grid-template-columns: 280px 1fr;
-                    min-height: 1100px;
-                }
-
-                /* ==================== COLONNE GAUCHE ==================== */
-                .left-column {
-                    background: #1e2a44;
-                    color: white;
-                    padding: 40px 25px;
-                }
-
-                .photo {
-                    width: 170px;
-                    height: 170px;
-                    border-radius: 50%;
-                    object-fit: cover;
-                    border: 6px solid #ffffff;
-                    margin-bottom: 25px;
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-                }
-
-                .left-column h1 {
-                    font-size: 26px;
-                    margin-bottom: 5px;
-                }
-
-                .left-column .title {
-                    font-size: 15px;
-                    color: #a0c4ff;
-                    margin-bottom: 25px;
-                }
-
-                .left-column .contact-info {
-                    margin-bottom: 35px;
-                    font-size: 13.5px;
-                }
-
-                .left-column .contact-info p {
-                    margin-bottom: 8px;
-                }
-
-                .left-column h2 {
-                    font-size: 16px;
-                    text-transform: uppercase;
-                    border-bottom: 2px solid #4a6da7;
-                    padding-bottom: 8px;
-                    margin-bottom: 15px;
-                    color: #a0c4ff;
-                }
-
-                .skills-list, .languages-list {
-                    list-style: none;
-                }
-
-                .skills-list li, .languages-list li {
-                    margin-bottom: 10px;
-                    font-size: 14px;
-                }
-
-                /* ==================== COLONNE DROITE ==================== */
-                .right-column {
-                    padding: 45px 40px;
-                    background: white;
-                }
-
-                .right-column h2 {
-                    font-size: 18px;
-                    color: #1e2a44;
-                    border-bottom: 3px solid #1e2a44;
-                    padding-bottom: 8px;
-                    margin-bottom: 20px;
-                }
-
-                .summary {
-                    font-size: 14.5px;
-                    margin-bottom: 35px;
-                    color: #333;
-                }
-
-                .experience, .education {
-                    margin-bottom: 28px;
-                }
-
-                .experience-header, .education-header {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 8px;
-                }
-
-                .experience-header strong, .education-header strong {
-                    font-size: 16px;
-                }
-
-                .company, .institution {
-                    color: #1e2a44;
-                    font-weight: 600;
-                }
-
-                .period {
-                    color: #555;
-                    font-size: 13.5px;
-                }
-
-                .description {
-                    font-size: 14px;
-                    color: #444;
-                    margin-top: 6px;
-                }
-
-                @media print {
-                    body { background: white; padding: 0; }
-                    .cv { box-shadow: none; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="cv">
-                <!-- Colonne Gauche -->
-                <div class="left-column">
-                    ${this.cvData.photo ? 
-                        `<img src="${this.cvData.photo}" alt="Photo" class="photo">` : 
-                        `<div style="width:170px;height:170px;background:#334466;border-radius:50%;margin-bottom:25px;"></div>`
-                    }
-
-                    <h1>${fullName}</h1>
-                    <div class="title">${titre}</div>
-
-                    <div class="contact-info">
-                        ${email ? `<p>✉️ ${email}</p>` : ''}
-                        ${telephone ? `<p>📱 ${telephone}</p>` : ''}
-                        ${adresse ? `<p>📍 ${adresse}</p>` : ''}
-                    </div>
-
-                    <h2>Compétences</h2>
-                    <ul class="skills-list">
-                        ${competencesHTML || '<li>Aucune compétence ajoutée</li>'}
-                    </ul>
-
-                    <h2>Langues</h2>
-                    <ul class="languages-list">
-                        ${languesHTML || '<li>Aucune langue renseignée</li>'}
-                    </ul>
-                </div>
-
-                <!-- Colonne Droite -->
-                <div class="right-column">
-                    <h2>Summary</h2>
-                    <p class="summary">
-                        ${this.cvData.profil || 'Professionnel motivé avec une solide expérience en développement et une forte capacité d\'adaptation.'}
-                    </p>
-
-                    <h2>Expérience Professionnelle</h2>
-                    ${experiencesHTML || '<p>Aucune expérience renseignée.</p>'}
-
-                    <h2>Formation</h2>
-                    ${formationsHTML || '<p>Aucune formation renseignée.</p>'}
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
-}
-
-    genererLettre(): string {
-    const date = new Date().toLocaleDateString('fr-FR');
-    const nomComplet = `${this.lettreData.prenom} ${this.lettreData.nom}`.trim() || 'Candidat';
-    
-    return `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Lettre de motivation - ${this.lettreData.entreprise}</title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body {
-                    font-family: 'Segoe UI', 'Poppins', Arial, sans-serif;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    padding: 40px;
-                }
-                .letter-container {
-                    max-width: 800px;
-                    margin: 0 auto;
-                }
-                .letter {
-                    background: white;
-                    border-radius: 24px;
-                    padding: 48px;
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-                }
-                .header {
-                    text-align: right;
-                    margin-bottom: 48px;
-                    padding-bottom: 24px;
-                    border-bottom: 2px solid #e2e8f0;
-                }
-                .header .name {
-                    font-size: 20px;
-                    font-weight: 600;
-                    color: #2d3748;
-                }
-                .header .date {
-                    color: #718096;
-                    margin-top: 8px;
-                }
-                .content p {
-                    margin-bottom: 20px;
-                    line-height: 1.6;
-                    color: #4a5568;
-                }
-                .subject {
-                    font-weight: 600;
-                    color: #667eea;
-                    margin-bottom: 24px;
-                    font-size: 18px;
-                }
-                .signature {
-                    margin-top: 48px;
-                    padding-top: 24px;
-                    border-top: 1px solid #e2e8f0;
-                }
-                @media print {
-                    body { background: white; padding: 0; }
-                    .letter { box-shadow: none; padding: 20px; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="letter-container">
-                <div class="letter">
-                    <div class="header">
-                        <div class="name">${nomComplet}</div>
-                        <div class="date">${date}</div>
-                    </div>
-                    <div class="content">
-                        <div class="subject">Objet : Candidature pour le poste de ${this.lettreData.poste}</div>
-                        <p>Madame, Monsieur,</p>
-                        <p>${this.lettreData.message || `Je me permets de vous adresser ma candidature pour le poste de ${this.lettreData.poste} au sein de votre entreprise ${this.lettreData.entreprise}. Passionné par ce domaine, je suis convaincu de pouvoir contribuer activement au développement de vos projets.`}</p>
-                        <p>Je me tiens à votre disposition pour un entretien afin de vous exposer plus en détail ma motivation et mes compétences.</p>
-                        <p>Dans l'attente de votre retour, je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.</p>
-                    </div>
-                    <div class="signature">
-                        <p>${nomComplet}</p>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
-}
-   genererPortfolio(): string {
-    const technologiesHTML = this.portfolioData.technologies.map(tech => 
-        `<span class="tech-tag">${tech}</span>`
-    ).join('');
-
-    const projectLink = this.portfolioData.lien 
-        ? `<a href="${this.portfolioData.lien}" target="_blank" class="project-btn">
-             Voir le projet en ligne →
-           </a>` 
-        : '';
-
-    return `
-        <!DOCTYPE html>
-        <html lang="fr">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Portfolio - ${this.portfolioData.titre || 'Mon Projet'}</title>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-
-                body {
-                    font-family: 'Inter', system_ui, sans-serif;
-                    background: #0f172a;
-                    padding: 40px 20px;
-                    color: #e2e8f0;
-                }
-
-                .portfolio {
-                    max-width: 980px;
-                    margin: 0 auto;
-                    background: white;
-                    border-radius: 24px;
-                    overflow: hidden;
-                    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
-                }
-
-                /* Header */
-                .header {
-                    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-                    padding: 90px 70px 70px;
-                    text-align: center;
-                    color: white;
-                }
-
-                .header h1 {
-                    font-family: 'Space Grotesk', sans-serif;
-                    font-size: 48px;
-                    font-weight: 700;
-                    margin-bottom: 12px;
-                    letter-spacing: -1px;
-                }
-
-                .header .year {
-                    font-size: 20px;
-                    font-weight: 500;
-                    opacity: 0.9;
-                }
-
-                /* Content */
-                .content {
-                    padding: 70px 80px;
-                    color: #1e2937;
-                }
-
-                .section-title {
-                    font-size: 22px;
-                    font-weight: 700;
-                    color: #0f172a;
-                    margin-bottom: 12px;
-                    position: relative;
-                }
-
-                .section-title::after {
-                    content: '';
-                    position: absolute;
-                    bottom: -6px;
-                    left: 0;
-                    width: 60px;
-                    height: 4px;
-                    background: #6366f1;
-                    border-radius: 4px;
-                }
-
-                .description {
-                    font-size: 17.5px;
-                    line-height: 1.85;
-                    color: #334155;
-                    margin-bottom: 55px;
-                }
-
-                .technologies {
-                    margin-bottom: 60px;
-                }
-
-                .tech-tags {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 14px;
-                }
-
-                .tech-tag {
-                    background: #f1f5f9;
-                    color: #1e40af;
-                    padding: 12px 24px;
-                    border-radius: 9999px;
-                    font-size: 15.5px;
-                    font-weight: 500;
-                    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-                }
-
-                .project-btn {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 12px;
-                    background: #6366f1;
-                    color: white;
-                    padding: 16px 36px;
-                    border-radius: 9999px;
-                    font-size: 16.5px;
-                    font-weight: 600;
-                    text-decoration: none;
-                    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
-                    transition: all 0.3s ease;
-                }
-
-                .project-btn:hover {
-                    background: #4f46e5;
-                    transform: translateY(-4px);
-                    box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
-                }
-
-                .footer {
-                    text-align: center;
-                    padding: 40px 0;
-                    color: #64748b;
-                    font-size: 14px;
-                    border-top: 1px solid #e2e8f0;
-                }
-
-                @media (max-width: 768px) {
-                    .header { padding: 60px 30px 50px; }
-                    .content { padding: 50px 30px; }
-                    .header h1 { font-size: 36px; }
-                }
-
-                @media print {
-                    body { background: white; padding: 0; }
-                    .portfolio { box-shadow: none; border-radius: 0; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="portfolio">
-                <!-- Header -->
-                <div class="header">
-                    <h1>${this.portfolioData.titre || 'Nom du Projet'}</h1>
-                    ${this.portfolioData.annee ? `<div class="year">${this.portfolioData.annee}</div>` : ''}
-                </div>
-
-                <!-- Content -->
-                <div class="content">
-                    <div class="section-title">Description du projet</div>
-                    <p class="description">
-                        ${this.portfolioData.description || 'Description détaillée du projet non renseignée.'}
-                    </p>
-
-                    <div class="technologies">
-                        <div class="section-title">Technologies utilisées</div>
-                        <div class="tech-tags">
-                            ${technologiesHTML || '<p>Aucune technologie renseignée.</p>'}
-                        </div>
-                    </div>
-
-                    ${projectLink}
-                </div>
-
-                <div class="footer">
-                    Portfolio généré avec l'application "Mes Documents"
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
-}
-    // ==================== CRÉATION ====================
- createDocument(): void {
-    const contenu = this.genererAIConstenu();
-    const nom = this.getNomDocument();
-
-    if (!nom) {
-        alert('Veuillez remplir les informations nécessaires');
-        return;
+    removeTechnologie(index: number): void {
+        this.portfolioData.technologies.splice(index, 1);
     }
 
-    this.generatedDocument = {
-        nom: nom,
-        type: this.selectedType,
-        contenu: contenu
-    };
-    this.previewDocumentSrcdoc = this.toTrustedHtml(contenu);
+    // ==================== CRÉATION ====================
+    createDocument(): void {
+        // Auto-save champs en cours si non encore ajoutés
+        if (this.selectedType === 'CV') {
+            if (this.newExperience.poste && this.newExperience.entreprise) {
+                this.addExperience();
+            }
+            if (this.newFormation.diplome && this.newFormation.institution) {
+                this.addFormation();
+            }
+            if (this.newLangue.langue && this.newLangue.niveau) {
+                this.addLangue();
+            }
+        }
 
-    this.closeCreateModal();
-    this.showPreviewModal = true;
-}
+        // Snapshot COMPLET de toutes les données avant reset
+        this.savedCvData = JSON.parse(JSON.stringify(this.cvData));
+        this.savedSelectedType = this.selectedType;
+        this.savedLettreData = JSON.parse(JSON.stringify(this.lettreData));
+        this.savedPortfolioData = JSON.parse(JSON.stringify(this.portfolioData));
+        this.savedAutreData = JSON.parse(JSON.stringify(this.autreData));
+
+        const contenu = this.genererAIConstenu();
+        const nom = this.getNomDocument();
+
+        if (!nom) {
+            alert('Veuillez remplir les informations nécessaires');
+            return;
+        }
+
+        this.generatedDocument = {
+            nom: nom,
+            type: this.selectedType,
+            contenu: contenu
+        };
+
+        this.closeCreateModal();
+        this.showPreviewModal = true;
+    }
+
+    // ==================== SAUVEGARDE ====================
+    saveGeneratedDocument(): void {
+        if (!this.generatedDocument) {
+            alert("Aucun document à sauvegarder");
+            return;
+        }
+
+        this.isCreating = true;
+
+        const cv = this.savedCvData || this.cvData;
+        const type = this.savedSelectedType || this.selectedType;
+
+        let dataToSend: any = {
+            nom: this.generatedDocument.nom,
+            type: this.generatedDocument.type,
+            contenu: this.generatedDocument.contenu,
+            template: this.getTemplateName(),
+            compatibleATS: true,
+            ajouterPhoto: type === 'CV' && !!cv.photo,
+        };
+
+        if (type === 'CV') {
+            dataToSend = {
+                ...dataToSend,
+                prenom: cv.prenom || null,
+                titre: cv.titre || null,
+                email: cv.email || null,
+                telephone: cv.telephone || null,
+                adresse: cv.adresse || null,
+                profil: cv.profil || null,
+                photoName: cv.photoName || null,
+                competences: JSON.stringify(cv.competences || []),
+                langues: JSON.stringify(cv.langues || []),
+                centresInteret: JSON.stringify(cv.centresInteret || []),
+                experiences: JSON.stringify(cv.experiences || []),
+                formations: JSON.stringify(cv.formations || []),
+            };
+        }
+
+        console.log('Data envoyée au backend:', dataToSend);
+
+        this.apiService.creerDocument(dataToSend).subscribe({
+            next: (savedDocument) => {
+                console.log('Document sauvegardé:', savedDocument);
+                this.closePreviewModal();
+                this.loadDocuments();
+                this.isCreating = false;
+                this.savedCvData = null;
+                this.savedLettreData = null;
+                this.savedPortfolioData = null;
+                this.savedAutreData = null;
+                alert('Document sauvegardé avec succès !');
+            },
+            error: (err) => {
+                console.error('Erreur lors de la sauvegarde:', err);
+                alert('Erreur lors de la sauvegarde du document.');
+                this.isCreating = false;
+            }
+        });
+    }
+
+    closePreviewModal(): void {
+        this.showPreviewModal = false;
+        this.generatedDocument = null;
+        this.savedCvData = null;
+        this.savedLettreData = null;
+        this.savedPortfolioData = null;
+        this.savedAutreData = null;
+    }
 
     getNomDocument(): string {
         switch(this.selectedType) {
@@ -849,115 +386,246 @@ removeTechnologie(index: number): void {
         }
     }
 
-    getTemplateNameByType(type: string): string {
-        switch(this.normalizeDocumentType(type)) {
-            case 'CV': return 'CV_Professionnel';
-            case 'LETTRE_DE_MOTIVATION': return 'Lettre_Standard';
-            case 'PORTFOLIO': return 'Portfolio_Moderne';
-            default: return 'Standard';
+    // ==================== GÉNÉRATION HTML ====================
+    genererAIConstenu(): string {
+        switch(this.selectedType) {
+            case 'CV': return this.genererCV();
+            case 'LETTRE_DE_MOTIVATION': return this.genererLettre();
+            case 'PORTFOLIO': return this.genererPortfolio();
+            default: return this.autreData.contenu;
         }
+    }
+
+    genererCV(): string {
+        const fullName = `${this.cvData.prenom || ''} ${this.cvData.nom || ''}`.trim() || 'Votre Nom';
+        const titre = this.cvData.titre || 'Ingénieur Informatique';
+        const email = this.cvData.email || '';
+        const telephone = this.cvData.telephone || '';
+        const adresse = this.cvData.adresse || '';
+
+        const experiencesHTML = this.cvData.experiences.map(exp => `
+            <div class="experience">
+                <div class="experience-header">
+                    <div>
+                        <strong>${exp.poste}</strong><br>
+                        <span class="company">${exp.entreprise}</span>
+                    </div>
+                    <span class="period">${exp.periode || ''}</span>
+                </div>
+                <p>${exp.description || ''}</p>
+            </div>
+        `).join('');
+
+        const formationsHTML = this.cvData.formations.map(formation => `
+            <div class="education">
+                <div class="education-header">
+                    <div>
+                        <strong>${formation.diplome}</strong><br>
+                        <span class="institution">${formation.institution}</span>
+                    </div>
+                    <span class="period">${formation.annee || ''}</span>
+                </div>
+                <p>${formation.description || ''}</p>
+            </div>
+        `).join('');
+
+        const competencesHTML = this.cvData.competences.map(skill =>
+            `<li>${skill}</li>`
+        ).join('');
+
+        const languesHTML = this.cvData.langues.map(l =>
+            `<li><strong>${l.langue}</strong> - ${l.niveau}</li>`
+        ).join('');
+
+        const centresHTML = this.cvData.centresInteret.map(c =>
+            `<li>${c}</li>`
+        ).join('');
+
+        return `
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="UTF-8">
+                <title>CV - ${fullName}</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 30px; line-height: 1.5; }
+                    .cv { max-width: 950px; margin: 0 auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.15); display: grid; grid-template-columns: 280px 1fr; min-height: 1100px; }
+                    .left-column { background: #1e2a44; color: white; padding: 40px 25px; }
+                    .photo { width: 170px; height: 170px; border-radius: 50%; object-fit: cover; border: 6px solid #ffffff; margin-bottom: 25px; }
+                    .left-column h1 { font-size: 26px; margin-bottom: 5px; }
+                    .left-column .title { font-size: 15px; color: #a0c4ff; margin-bottom: 25px; }
+                    .left-column .contact-info { margin-bottom: 35px; font-size: 13.5px; }
+                    .left-column .contact-info p { margin-bottom: 8px; }
+                    .left-column h2 { font-size: 16px; text-transform: uppercase; border-bottom: 2px solid #4a6da7; padding-bottom: 8px; margin-bottom: 15px; color: #a0c4ff; }
+                    .skills-list, .languages-list, .interests-list { list-style: none; }
+                    .skills-list li, .languages-list li, .interests-list li { margin-bottom: 10px; font-size: 14px; }
+                    .right-column { padding: 45px 40px; background: white; }
+                    .right-column h2 { font-size: 18px; color: #1e2a44; border-bottom: 3px solid #1e2a44; padding-bottom: 8px; margin-bottom: 20px; }
+                    .summary { font-size: 14.5px; margin-bottom: 35px; color: #333; }
+                    .experience, .education { margin-bottom: 28px; }
+                    .experience-header, .education-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+                    .company, .institution { color: #1e2a44; font-weight: 600; }
+                    .period { color: #555; font-size: 13.5px; }
+                    @media print { body { background: white; padding: 0; } .cv { box-shadow: none; } }
+                </style>
+            </head>
+            <body>
+                <div class="cv">
+                    <div class="left-column">
+                        ${this.cvData.photo ?
+                            `<img src="${this.cvData.photo}" alt="Photo" class="photo">` :
+                            `<div style="width:170px;height:170px;background:#334466;border-radius:50%;margin-bottom:25px;"></div>`
+                        }
+                        <h1>${fullName}</h1>
+                        <div class="title">${titre}</div>
+                        <div class="contact-info">
+                            ${email ? `<p>✉️ ${email}</p>` : ''}
+                            ${telephone ? `<p>📱 ${telephone}</p>` : ''}
+                            ${adresse ? `<p>📍 ${adresse}</p>` : ''}
+                        </div>
+                        <h2>Compétences</h2>
+                        <ul class="skills-list">
+                            ${competencesHTML || '<li>Aucune compétence ajoutée</li>'}
+                        </ul>
+                        <h2>Langues</h2>
+                        <ul class="languages-list">
+                            ${languesHTML || '<li>Aucune langue renseignée</li>'}
+                        </ul>
+                        ${centresHTML ? `<h2>Centres d'intérêt</h2><ul class="interests-list">${centresHTML}</ul>` : ''}
+                    </div>
+                    <div class="right-column">
+                        <h2>Profil</h2>
+                        <p class="summary">${this.cvData.profil || 'Professionnel motivé avec une solide expérience en développement et une forte capacité d\'adaptation.'}</p>
+                        <h2>Expérience Professionnelle</h2>
+                        ${experiencesHTML || '<p>Aucune expérience renseignée.</p>'}
+                        <h2>Formation</h2>
+                        ${formationsHTML || '<p>Aucune formation renseignée.</p>'}
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+    }
+
+    genererLettre(): string {
+        const date = new Date().toLocaleDateString('fr-FR');
+        const nomComplet = `${this.lettreData.prenom} ${this.lettreData.nom}`.trim() || 'Candidat';
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Lettre de motivation - ${this.lettreData.entreprise}</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; }
+                    .letter { max-width: 800px; margin: 0 auto; background: white; border-radius: 24px; padding: 48px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+                    .header { text-align: right; margin-bottom: 48px; padding-bottom: 24px; border-bottom: 2px solid #e2e8f0; }
+                    .header .name { font-size: 20px; font-weight: 600; color: #2d3748; }
+                    .header .date { color: #718096; margin-top: 8px; }
+                    .content p { margin-bottom: 20px; line-height: 1.6; color: #4a5568; }
+                    .subject { font-weight: 600; color: #667eea; margin-bottom: 24px; font-size: 18px; }
+                    .signature { margin-top: 48px; padding-top: 24px; border-top: 1px solid #e2e8f0; }
+                    @media print { body { background: white; padding: 0; } .letter { box-shadow: none; } }
+                </style>
+            </head>
+            <body>
+                <div class="letter">
+                    <div class="header">
+                        <div class="name">${nomComplet}</div>
+                        <div class="date">${date}</div>
+                    </div>
+                    <div class="content">
+                        <div class="subject">Objet : Candidature pour le poste de ${this.lettreData.poste}</div>
+                        <p>Madame, Monsieur,</p>
+                        <p>${this.lettreData.message || `Je me permets de vous adresser ma candidature pour le poste de ${this.lettreData.poste} au sein de votre entreprise ${this.lettreData.entreprise}.`}</p>
+                        <p>Je me tiens à votre disposition pour un entretien afin de vous exposer plus en détail ma motivation et mes compétences.</p>
+                        <p>Dans l'attente de votre retour, je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.</p>
+                    </div>
+                    <div class="signature"><p>${nomComplet}</p></div>
+                </div>
+            </body>
+            </html>
+        `;
+    }
+
+    genererPortfolio(): string {
+        const technologiesHTML = this.portfolioData.technologies.map(tech =>
+            `<span class="tech-tag">${tech}</span>`
+        ).join('');
+        const projectLink = this.portfolioData.lien
+            ? `<a href="${this.portfolioData.lien}" target="_blank" class="project-btn">Voir le projet en ligne →</a>`
+            : '';
+        return `
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="UTF-8">
+                <title>Portfolio - ${this.portfolioData.titre || 'Mon Projet'}</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Inter', sans-serif; background: #0f172a; padding: 40px 20px; }
+                    .portfolio { max-width: 980px; margin: 0 auto; background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.25); }
+                    .header { background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); padding: 90px 70px 70px; text-align: center; color: white; }
+                    .header h1 { font-size: 48px; font-weight: 700; margin-bottom: 12px; }
+                    .content { padding: 70px 80px; color: #1e2937; }
+                    .section-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; color: #0f172a; }
+                    .description { font-size: 17px; line-height: 1.85; color: #334155; margin-bottom: 55px; }
+                    .tech-tags { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 40px; }
+                    .tech-tag { background: #f1f5f9; color: #1e40af; padding: 12px 24px; border-radius: 9999px; font-size: 15px; font-weight: 500; }
+                    .project-btn { display: inline-block; background: #6366f1; color: white; padding: 16px 36px; border-radius: 9999px; font-size: 16px; font-weight: 600; text-decoration: none; }
+                    @media print { body { background: white; padding: 0; } .portfolio { box-shadow: none; } }
+                </style>
+            </head>
+            <body>
+                <div class="portfolio">
+                    <div class="header">
+                        <h1>${this.portfolioData.titre || 'Mon Projet'}</h1>
+                        ${this.portfolioData.annee ? `<div style="font-size:20px;opacity:0.9;">${this.portfolioData.annee}</div>` : ''}
+                    </div>
+                    <div class="content">
+                        <div class="section-title">Description du projet</div>
+                        <p class="description">${this.portfolioData.description || 'Description non renseignée.'}</p>
+                        <div class="section-title">Technologies utilisées</div>
+                        <div class="tech-tags">${technologiesHTML || '<p>Aucune technologie renseignée.</p>'}</div>
+                        ${projectLink}
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
     }
 
     // ==================== READ ====================
     viewDocument(doc: any): void {
         this.selectedDocument = doc;
-        this.selectedDocumentSrcdoc = this.toTrustedHtml(doc?.contenu || '');
         this.showViewModal = true;
     }
 
     closeViewModal(): void {
         this.showViewModal = false;
         this.selectedDocument = null;
-        this.selectedDocumentSrcdoc = '';
     }
 
     // ==================== UPDATE ====================
     openEditModal(doc: any): void {
-        const normalizedType = this.normalizeDocumentType(doc?.type);
-        this.editingDocument = {
-            ...doc,
-            nom: doc?.nom || '',
-            type: normalizedType,
-            contenu: doc?.contenu || '',
-            template: doc?.template || this.getTemplateNameByType(normalizedType)
-        };
-
-        if (this.isCvType(this.editingDocument.type)) {
-            this.populateCvEditDataFromHtml(this.editingDocument.contenu || '');
-        }
+        this.editingDocument = { ...doc };
         this.showEditModal = true;
     }
 
     closeEditModal(): void {
         this.showEditModal = false;
         this.editingDocument = null;
-        this.editCvSkillsText = '';
     }
 
     updateDocument(): void {
-        const normalizedType = this.normalizeDocumentType(this.editingDocument?.type);
-        this.editingDocument.type = normalizedType;
-
-        if (!(this.editingDocument?.nom || '').trim()) {
-            alert('Le nom du document est obligatoire.');
+        if (!this.editingDocument.nom || !this.editingDocument.contenu) {
+            alert('Veuillez remplir les informations');
             return;
         }
-
-        if (!this.isCvType(normalizedType) && !(this.editingDocument?.contenu || '').trim()) {
-            alert('Veuillez remplir le contenu du document.');
-            return;
-        }
-
-        if (this.isCvType(normalizedType)) {
-            const normalizedPrenom = this.normalizeCvNamePart(this.editCvData.prenom);
-            const normalizedNom = this.normalizeCvNamePart(this.editCvData.nom);
-
-            if (!normalizedPrenom || !normalizedNom) {
-                alert("Le prénom et le nom du CV doivent contenir uniquement des lettres, espaces, tirets ou apostrophes.");
-                return;
-            }
-
-            this.editCvData.competences = (this.editCvSkillsText || '')
-                .split(',')
-                .map((s: string) => s.trim())
-                .filter((s: string) => s.length > 0);
-
-            const backup = { ...this.cvData };
-            this.cvData = {
-                ...this.cvData,
-                prenom: normalizedPrenom,
-                nom: normalizedNom,
-                titre: this.editCvData.titre,
-                email: this.editCvData.email,
-                telephone: this.editCvData.telephone,
-                adresse: this.editCvData.adresse,
-                profil: this.editCvData.profil,
-                competences: [...this.editCvData.competences],
-                experiences: [],
-                formations: [],
-                langues: [],
-                centresInteret: [],
-                photo: '',
-                photoName: ''
-            };
-            this.editingDocument.contenu = this.genererCV();
-            this.cvData = backup;
-        }
-
-        const payload = {
-            nom: (this.editingDocument.nom || '').trim(),
-            type: normalizedType,
-            contenu: this.compactHtmlForStorage((this.editingDocument.contenu || '').trim()),
-            template: (this.editingDocument.template || this.getTemplateNameByType(normalizedType) || 'Standard').trim()
-        };
-
-        if (!payload.nom || !payload.contenu) {
-            alert('Le nom et le contenu sont obligatoires.');
-            return;
-        }
-        
         this.isUpdating = true;
-        this.apiService.modifierDocument(this.editingDocument.id, payload).subscribe({
+        this.apiService.modifierDocument(this.editingDocument.id, this.editingDocument).subscribe({
             next: () => {
                 this.closeEditModal();
                 this.loadDocuments();
@@ -970,66 +638,6 @@ removeTechnologie(index: number): void {
                 this.isUpdating = false;
             }
         });
-    }
-
-    private populateCvEditDataFromHtml(html: string): void {
-        const content = html || '';
-        const fullName = this.extractMatch(content, /<h1>([\s\S]*?)<\/h1>/i);
-        const parts = fullName.split(/\s+/).filter(Boolean);
-        const prenom = parts.length > 0 ? parts[0] : '';
-        const nom = parts.length > 1 ? parts.slice(1).join(' ') : '';
-
-        const titre = this.extractMatch(content, /class="title">([\s\S]*?)<\/div>/i);
-        const email = this.extractMatch(content, /✉️\s*([^<\n\r]+)/i);
-        const telephone = this.extractMatch(content, /📱\s*([^<\n\r]+)/i);
-        const adresse = this.extractMatch(content, /📍\s*([^<\n\r]+)/i);
-        const profil = this.extractMatch(content, /<p class="summary">([\s\S]*?)<\/p>/i);
-
-        const skillsBlock = this.extractMatch(content, /<ul class="skills-list">([\s\S]*?)<\/ul>/i);
-        const skills: string[] = [];
-        const liRegex = /<li>([\s\S]*?)<\/li>/gi;
-        let liMatch: RegExpExecArray | null;
-        while ((liMatch = liRegex.exec(skillsBlock)) !== null) {
-            const skill = this.stripHtml(liMatch[1]);
-            if (skill && !/aucune compétence/i.test(skill)) {
-                skills.push(skill);
-            }
-        }
-
-        this.editCvData = {
-            prenom,
-            nom,
-            titre,
-            email,
-            telephone,
-            adresse,
-            profil,
-            competences: skills
-        };
-        this.editCvSkillsText = skills.join(', ');
-    }
-
-    private extractMatch(source: string, regex: RegExp): string {
-        const match = source.match(regex);
-        return this.stripHtml(match?.[1] || match?.[0] || '');
-    }
-
-    private stripHtml(value: string): string {
-        return (value || '')
-            .replace(/<[^>]+>/g, ' ')
-            .replace(/&nbsp;/gi, ' ')
-            .replace(/&amp;/gi, '&')
-            .replace(/&lt;/gi, '<')
-            .replace(/&gt;/gi, '>')
-            .replace(/\s+/g, ' ')
-            .trim();
-    }
-
-    private normalizeCvNamePart(value: string): string {
-        return (value || '')
-            .replace(/[^a-zA-ZÀ-ÿ\s'\-]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
     }
 
     // ==================== DELETE ====================
@@ -1058,34 +666,144 @@ removeTechnologie(index: number): void {
         }
     }
 
+    // ==================== ANALYSE CV (API ML) ====================
+    ouvrirAnalyseCV(doc: any): void {
+        if (doc.type !== 'CV') {
+            alert('L\'analyse est disponible uniquement pour les CVs');
+            return;
+        }
+        
+        this.documentEnCours = doc;
+        this.analyseResult = null;
+        this.isAnalysing = true;
+        this.showAnalyseCVModal = true;
+
+        // Appel direct à l'API ML Python
+        this.analyserAvecML(doc.contenu).subscribe({
+            next: (data) => {
+                this.analyseResult = data;
+                this.isAnalysing = false;
+                console.log('Résultat ML:', data);
+            },
+            error: (err) => {
+                console.error('Erreur API ML:', err);
+                this.isAnalysing = false;
+                
+                // Fallback: utiliser l'ancienne méthode Spring Boot
+                this.apiService.analyserCV(doc.id).subscribe({
+                    next: (data) => {
+                        this.analyseResult = data;
+                        this.isAnalysing = false;
+                    },
+                    error: (err2) => {
+                        console.error('Erreur fallback:', err2);
+                        alert('Erreur lors de l\'analyse du CV');
+                        this.isAnalysing = false;
+                    }
+                });
+            }
+        });
+    }
+
+    analyserAvecML(cvContent: string) {
+        // Utiliser fetch directement pour appeler l'API Python
+        return new Observable<any>(observer => {
+            fetch(`${this.ML_API_URL}/analyze`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ cv_content: cvContent })
+            })
+            .then(response => response.json())
+            .then(data => {
+                observer.next(data);
+                observer.complete();
+            })
+            .catch(error => observer.error(error));
+        });
+    }
+
+    optimiserAvecML(cvContent: string, jobOffer: string) {
+        return new Observable<any>(observer => {
+            fetch(`${this.ML_API_URL}/optimize`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    cv_content: cvContent,
+                    job_offer: jobOffer 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                observer.next(data);
+                observer.complete();
+            })
+            .catch(error => observer.error(error));
+        });
+    }
+
+    ouvrirOptimisation(doc: any): void {
+        if (doc.type !== 'CV') {
+            alert('L\'optimisation est disponible uniquement pour les CVs');
+            return;
+        }
+        
+        this.documentEnCours = doc;
+        this.optimisationResult = null;
+        this.offreEmploiInput = '';
+        this.showOptimiseModal = true;
+    }
+
+    lancerOptimisation(): void {
+        if (!this.offreEmploiInput.trim()) {
+            alert('Veuillez coller une offre d\'emploi');
+            return;
+        }
+        
+        this.isOptimising = true;
+        
+        // Appel direct à l'API ML Python
+        this.optimiserAvecML(this.documentEnCours.contenu, this.offreEmploiInput).subscribe({
+            next: (data) => {
+                this.optimisationResult = data;
+                this.isOptimising = false;
+                console.log('Résultat optimisation ML:', data);
+            },
+            error: (err) => {
+                console.error('Erreur API ML:', err);
+                this.isOptimising = false;
+                
+                // Fallback: utiliser l'ancienne méthode Spring Boot
+                this.apiService.optimiserCV(this.documentEnCours.id, this.offreEmploiInput).subscribe({
+                    next: (data) => {
+                        this.optimisationResult = data;
+                        this.isOptimising = false;
+                    },
+                    error: (err2) => {
+                        console.error('Erreur fallback:', err2);
+                        alert('Erreur lors de l\'optimisation');
+                        this.isOptimising = false;
+                    }
+                });
+            }
+        });
+    }
+
     // ==================== UTILITAIRES ====================
-    normalizeDocumentType(type: string): string {
-        const raw = (type || '').toString().trim().toUpperCase();
-
-        if (raw === 'CV') return 'CV';
-        if (raw === 'LETTRE_DE_MOTIVATION' || raw.includes('LETTRE')) return 'LETTRE_DE_MOTIVATION';
-        if (raw === 'PORTFOLIO') return 'PORTFOLIO';
-        if (raw === 'AUTRE' || raw === 'OTHER') return 'AUTRE';
-
-        return 'AUTRE';
-    }
-
-    isCvType(type: string): boolean {
-        return this.normalizeDocumentType(type) === 'CV';
-    }
-
     getTypeLabel(type: string): string {
-        switch(this.normalizeDocumentType(type)) {
+        switch(type) {
             case 'CV': return 'CV';
             case 'LETTRE_DE_MOTIVATION': return 'Lettre de motivation';
             case 'PORTFOLIO': return 'Portfolio';
-            case 'AUTRE': return 'Autre';
-            default: return 'Autre';
+            default: return type;
         }
     }
 
     getTypeIcon(type: string): string {
-        switch(this.normalizeDocumentType(type)) {
+        switch(type) {
             case 'CV': return 'ri-file-pdf-line';
             case 'LETTRE_DE_MOTIVATION': return 'ri-mail-line';
             case 'PORTFOLIO': return 'ri-folder-image-line';
@@ -1094,12 +812,24 @@ removeTechnologie(index: number): void {
     }
 
     getTypeColor(type: string): string {
-        switch(this.normalizeDocumentType(type)) {
+        switch(type) {
             case 'CV': return '#e74c3c';
             case 'LETTRE_DE_MOTIVATION': return '#3498db';
             case 'PORTFOLIO': return '#9b59b6';
             default: return '#95a5a6';
         }
+    }
+
+    getScoreColor(score: number): string {
+        if (score >= 70) return '#10b981';
+        if (score >= 40) return '#f59e0b';
+        return '#ef4444';
+    }
+
+    getScoreLabel(score: number): string {
+        if (score >= 70) return 'Excellent';
+        if (score >= 40) return 'Moyen';
+        return 'À améliorer';
     }
 
     getWordCount(text: string): number {
@@ -1113,67 +843,6 @@ removeTechnologie(index: number): void {
     }
 
 
-
-    saveGeneratedDocument(): void {
-    if (!this.generatedDocument) {
-        alert("Aucun document à sauvegarder");
-        return;
-    }
-
-        const nom = (this.generatedDocument.nom || '').trim();
-        const contenu = (this.generatedDocument.contenu || '').trim();
-        const type = this.normalizeDocumentType(this.generatedDocument.type || this.selectedType || 'AUTRE');
-        const template = (this.getTemplateNameByType(type) || 'Standard').trim();
-
-        if (!nom || !contenu) {
-            alert('Le nom et le contenu du document sont obligatoires.');
-            return;
-        }
-
-    this.isCreating = true;   // On réutilise isCreating pour le bouton "Sauvegarde..."
-
-    const dataToSend: any = {
-            nom,
-            type,
-            contenu: this.compactHtmlForStorage(contenu),
-            template
-    };
-
-    this.apiService.creerDocument(dataToSend).subscribe({
-        next: (savedDocument) => {
-            console.log('Document sauvegardé avec succès:', savedDocument);
-            
-            this.closePreviewModal();
-            this.loadDocuments();           // Recharger la liste
-            this.isCreating = false;
-            
-            alert('Document sauvegardé avec succès !');
-        },
-        error: (err) => {
-            console.error('Erreur lors de la sauvegarde:', err);
-            alert('Erreur lors de la sauvegarde du document. Veuillez réessayer.');
-            this.isCreating = false;
-        }
-    });
+    
 }
 
-closePreviewModal(): void {
-    this.showPreviewModal = false;
-    this.generatedDocument = null;
-    this.previewDocumentSrcdoc = '';
-}
-
-    private toTrustedHtml(content: string): SafeHtml {
-        return this.sanitizer.bypassSecurityTrustHtml(content || '');
-    }
-
-    private compactHtmlForStorage(content: string): string {
-        return (content || '')
-            .replace(/<!--[\s\S]*?-->/g, '')
-            .replace(/>\s+</g, '><')
-            .replace(/[\t ]{2,}/g, ' ')
-            .trim();
-    }
-
-
-}

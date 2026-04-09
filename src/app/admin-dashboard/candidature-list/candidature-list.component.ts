@@ -31,8 +31,11 @@ export class CandidatureListComponent implements OnInit {
                 this.applyFilter();
                 this.isLoading = false;
             },
-            error: () => {
-                this.errorMessage = 'Impossible de charger la liste des candidatures.';
+            error: (err) => {
+                console.error('Erreur chargement candidatures:', err);
+                this.errorMessage = err?.status === 403
+                    ? 'Accès refusé à la liste des candidatures.'
+                    : 'Impossible de charger la liste des candidatures.';
                 this.isLoading = false;
             }
         });

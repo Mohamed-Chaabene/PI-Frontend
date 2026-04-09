@@ -68,12 +68,16 @@
                 },
                 "serve": {
                     "builder": "@angular/build:dev-server",
+                    "options": {
+                        "proxyConfig": "src/proxy.conf.json"
+                    },
                     "configurations": {
                         "production": {
                             "buildTarget": "jove:build:production"
                         },
                         "development": {
-                            "buildTarget": "jove:build:development"
+                            "buildTarget": "jove:build:development",
+                            "proxyConfig": "proxy.conf.json"
                         }
                     },
                     "defaultConfiguration": "development"

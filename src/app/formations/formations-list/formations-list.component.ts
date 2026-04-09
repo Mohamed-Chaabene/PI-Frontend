@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Formation } from '../models/formation.model';
 import { FormationService } from '../services/formation.service';
+import { FeedbackService } from '../services/feedback.service';
 
 @Component({
   selector: 'app-formations-list',
@@ -16,8 +17,13 @@ export class FormationsListComponent implements OnInit {
   filters = ['Toutes', 'Débutant', 'Intermédiaire', 'Avancé', 'Expert'];
   loading = false;
   isAdmin = false;
+  ratings: { [formationId: number]: { moyenne: number, total: number } } = {};
+  stars = [1, 2, 3, 4, 5];
 
-  constructor(private formationService: FormationService) {}
+  constructor(
+    private formationService: FormationService,
+    private feedbackService: FeedbackService
+  ) {}
 
   ngOnInit(): void {
     const role = (localStorage.getItem('userRole') || '').toUpperCase().replace('ROLE_', '');
@@ -34,8 +40,22 @@ export class FormationsListComponent implements OnInit {
         this.formations = data.filter(f => f.statut !== 'Archivée');
         this.filtered   = [...this.formations];
         this.loading    = false;
+        this.loadRatings();
       },
       error: () => this.loading = false
+    });
+  }
+
+  private loadRatings(): void {
+    this.formations.forEach(f => {
+      this.feedbackService.getStats(f.id).subscribe({
+        next: (stats) => {
+          this.ratings[f.id] = stats;
+        },
+        error: () => {
+          this.ratings[f.id] = { moyenne: 0, total: 0 };
+        }
+      });
     });
   }
 
