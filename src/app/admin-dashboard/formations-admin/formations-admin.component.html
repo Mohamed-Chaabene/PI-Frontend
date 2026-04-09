@@ -74,6 +74,34 @@
       </button>
     </div>
 
+    <!-- ══ Filtres ════════════════════════════════════════════════════════════ -->
+    <div class="filters-card">
+      <div class="search-input-wrapper">
+        <i class="ri-search-line"></i>
+        <input type="text" class="form-control" placeholder="Rechercher par titre ou catégorie..." [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()">
+      </div>
+      
+      <div class="filter-select-wrapper">
+        <i class="ri-bar-chart-2-line"></i>
+        <select class="form-select" [(ngModel)]="filterNiveau" (ngModelChange)="onFilterChange()">
+          <option value="">Tous les niveaux</option>
+          <option value="Débutant">Débutant</option>
+          <option value="Intermédiaire">Intermédiaire</option>
+          <option value="Avancé">Avancé</option>
+          <option value="Expert">Expert</option>
+        </select>
+      </div>
+
+      <div class="filter-select-wrapper" *ngIf="activeTab === 'actives'">
+        <i class="ri-calendar-event-line"></i>
+        <select class="form-select" [(ngModel)]="filterStatut" (ngModelChange)="onFilterChange()">
+          <option value="">Tous les statuts</option>
+          <option value="Disponible">Disponible</option>
+          <option value="Bientôt">Bientôt</option>
+        </select>
+      </div>
+    </div>
+
     <!-- ══ TABLE : Formations actives ════════════════════════════════════════ -->
     <div class="table-card" *ngIf="activeTab === 'actives'">
       <div class="table-card-header">
@@ -85,11 +113,11 @@
 
       <div class="empty-state" *ngIf="loading">Chargement...</div>
 
-      <div class="empty-state" *ngIf="!loading && actives.length === 0">
-        Aucune formation active. Ajoutez une formation ou désarchivez-en une.
+      <div class="empty-state" *ngIf="!loading && filteredFormations.length === 0">
+        Aucune formation trouvée.
       </div>
 
-      <div class="table-responsive" *ngIf="!loading && actives.length">
+      <div class="table-responsive" *ngIf="!loading && filteredFormations.length">
         <table>
           <thead>
             <tr>
@@ -102,7 +130,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let f of actives">
+            <tr *ngFor="let f of paginatedFormations">
               <td class="td-title">
                 <span class="formation-title">{{ f.titre }}</span>
               </td>
@@ -144,6 +172,13 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Pagination Actives -->
+      <div class="pagination-area" *ngIf="totalPages > 1">
+        <button class="page-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"><i class="ri-arrow-left-s-line"></i> Précédent</button>
+        <button *ngFor="let p of getPageNumbers()" class="page-btn" [class.active]="p === currentPage" (click)="changePage(p)">{{ p }}</button>
+        <button class="page-btn" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">Suivant <i class="ri-arrow-right-s-line"></i></button>
+      </div>
     </div>
 
     <!-- ══ TABLE : Formations archivées ══════════════════════════════════════ -->
@@ -161,12 +196,12 @@
 
       <div class="empty-state" *ngIf="loading">Chargement...</div>
 
-      <div class="empty-state archive-empty" *ngIf="!loading && archivees.length === 0">
+      <div class="empty-state archive-empty" *ngIf="!loading && filteredFormations.length === 0">
         <i class="ri-archive-line" style="font-size:40px;opacity:0.3;display:block;margin-bottom:12px"></i>
-        Aucune formation archivée.
+        Aucune formation archivée trouvée.
       </div>
 
-      <div class="table-responsive" *ngIf="!loading && archivees.length">
+      <div class="table-responsive" *ngIf="!loading && filteredFormations.length">
         <table>
           <thead>
             <tr>
@@ -178,7 +213,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let f of archivees" class="archived-row">
+            <tr *ngFor="let f of paginatedFormations" class="archived-row">
               <td class="td-title td-archived">
                 <span class="formation-title">{{ f.titre }}</span>
               </td>
@@ -212,6 +247,13 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Pagination Archivées -->
+      <div class="pagination-area" *ngIf="totalPages > 1">
+        <button class="page-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"><i class="ri-arrow-left-s-line"></i> Précédent</button>
+        <button *ngFor="let p of getPageNumbers()" class="page-btn" [class.active]="p === currentPage" (click)="changePage(p)">{{ p }}</button>
+        <button class="page-btn" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">Suivant <i class="ri-arrow-right-s-line"></i></button>
       </div>
     </div>
 

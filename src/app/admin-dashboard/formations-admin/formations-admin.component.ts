@@ -20,6 +20,47 @@ export class FormationsAdminComponent implements OnInit {
   archivingId:  number | null = null;
   activeTab: 'actives' | 'archivees' = 'actives';
 
+  // ── Filtres et Pagination ─────────────────────────────────────────────────
+  searchTerm: string = '';
+  filterNiveau: string = '';
+  filterStatut: string = '';
+  currentPage: number = 1;
+  pageSize: number = 5;
+
+  get filteredFormations(): Formation[] {
+    const list = this.activeTab === 'actives' ? this.actives : this.archivees;
+    return list.filter(f => {
+      const matchSearch = f.titre.toLowerCase().includes(this.searchTerm.toLowerCase()) || f.categorie.toLowerCase().includes(this.searchTerm.toLowerCase());
+      const matchNiv = this.filterNiveau ? f.niveau === this.filterNiveau : true;
+      const matchStatut = this.filterStatut ? f.statut === this.filterStatut : true;
+      return matchSearch && matchNiv && matchStatut;
+    });
+  }
+
+  get paginatedFormations(): Formation[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredFormations.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredFormations.length / this.pageSize);
+  }
+
+  getPageNumbers(): number[] {
+    const total = this.totalPages;
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  onFilterChange(): void {
+    this.currentPage = 1;
+  }
+
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.refresh();
@@ -32,6 +73,13 @@ export class FormationsAdminComponent implements OnInit {
         this.actives   = data.filter(f => f.statut !== 'Archivée');
         this.archivees = data.filter(f => f.statut === 'Archivée');
         this.loading   = false;
+        
+        // Ajuster la page courante si elle dépasse le nouveau nombre de pages
+        if (this.currentPage > this.totalPages && this.totalPages > 0) {
+          this.currentPage = this.totalPages;
+        } else if (this.totalPages === 0) {
+          this.currentPage = 1;
+        }
       },
       error: () => { this.loading = false; }
     });
@@ -91,5 +139,9 @@ export class FormationsAdminComponent implements OnInit {
 
   setTab(tab: 'actives' | 'archivees'): void {
     this.activeTab = tab;
+    this.searchTerm = '';
+    this.filterNiveau = '';
+    this.filterStatut = '';
+    this.currentPage = 1;
   }
 }
