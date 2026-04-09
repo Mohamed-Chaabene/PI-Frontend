@@ -1,20 +1,26 @@
-import { Component, inject } from '@angular/core';
-import { FormBuilder, Validators, AbstractControl } from '@angular/forms';
+import { Component, OnInit, inject } from '@angular/core';
+import {
+  FormBuilder, Validators, AbstractControl
+} from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
-import { FormationService, FormationCreatePayload }
-  from '../../formations/services/formation.service';
+import {
+  Subject, debounceTime, distinctUntilChanged, switchMap
+} from 'rxjs';
+import {
+  FormationService, FormationCreatePayload
+} from '../../formations/services/formation.service';
 import { FormationSuggestion }
   from '../../formations/models/formation.model';
 
 @Component({
-  selector: 'app-formation-create',
-  standalone: false,
+  selector:    'app-formation-create',
+  standalone:  false,
   templateUrl: './formation-create.component.html',
-  styleUrls: ['./formation-create.component.scss']
+  styleUrls:   ['./formation-create.component.scss']
 })
-export class FormationCreateComponent {
+export class FormationCreateComponent implements OnInit {
+
   private fb               = inject(FormBuilder);
   private formationService = inject(FormationService);
   private router           = inject(Router);
@@ -25,28 +31,29 @@ export class FormationCreateComponent {
   suggestionSelected = false;
   suggestions: FormationSuggestion[] = [];
 
-  // ✅ Erreurs serveur retournées par le backend
   serverErrors: Record<string, string> = {};
   serverErrorMessage = '';
 
   private titreSubject = new Subject<string>();
 
-  constructor() {
-    this.titreSubject.pipe(
-      debounceTime(600),
-      distinctUntilChanged(),
-      switchMap(titre => {
-        this.loading     = true;
-        this.suggestions = [];
-        return this.http.get<FormationSuggestion[]>(
-          `http://localhost:8080/api/suggestions/formations` +
-          `?titre=${encodeURIComponent(titre)}`
-        );
-      })
-    ).subscribe({
-      next: (data) => { this.suggestions = data; this.loading = false; },
-      error: ()    => { this.suggestions = [];   this.loading = false; }
-    });
+  // ── Validateur custom ─────────────────────────────────────────
+  // ✅ Contenu requis SEULEMENT si statut = "Disponible"
+  static atLeastOneContentValidator(
+      group: AbstractControl
+  ): Record<string, boolean> | null {
+    const statut   = group.get('statut')?.value;
+    const playlist = group.get('playlistId')?.value?.trim();
+    const youtube  = group.get('youtubeId')?.value?.trim();
+    const lien     = group.get('lienExterne')?.value?.trim();
+
+    // Statut "Bientôt" → aucun contenu requis
+    if (statut === 'Bientôt') return null;
+
+    // Statut "Disponible" → au moins un contenu
+    if (!playlist && !youtube && !lien) {
+      return { noContent: true };
+    }
+    return null;
   }
 
   form = this.fb.nonNullable.group({
@@ -55,13 +62,9 @@ export class FormationCreateComponent {
       Validators.minLength(3),
       Validators.maxLength(150)
     ]],
-    categorie: ['', [
-      Validators.required
-    ]],
-    plateforme: ['YouTube', [
-      Validators.required
-    ]],
-    statut: ['Disponible', [
+    categorie: ['', [Validators.required]],
+    plateforme: ['YouTube', [Validators.required]],
+    statut:    ['Disponible', [
       Validators.required,
       Validators.pattern('(Disponible|Archivée|Bientôt)')
     ]],
@@ -80,30 +83,17 @@ export class FormationCreateComponent {
         /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-./?%&=]*)?$|^$/
       )
     ]],
-    playlistId: ['', [
-      Validators.maxLength(100)
-    ]],
-    youtubeId: ['', [
-      Validators.maxLength(100)
-    ]],
+    playlistId:    ['', [Validators.maxLength(100)]],
+    youtubeId:     ['', [Validators.maxLength(100)]],
     hasEditor:     [false],
     stackBlitzUrl: ['', [Validators.maxLength(500)]],
     writtenUrl:    ['', [Validators.maxLength(500)]]
-  }, { validators: this.atLeastOneContentValidator });
-
-  // ✅ Validateur custom : au moins playlistId OU youtubeId OU lienExterne
-  atLeastOneContentValidator(group: AbstractControl) {
-    const playlist = group.get('playlistId')?.value;
-    const youtube  = group.get('youtubeId')?.value;
-    const lien     = group.get('lienExterne')?.value;
-    if (!playlist && !youtube && !lien) {
-      return { noContent: true };
-    }
-    return null;
-  }
+  }, {
+    validators: FormationCreateComponent.atLeastOneContentValidator
+  });
 
   readonly stackBlitzTemplates = [
-    { label: '-- Aucun --',    value: '' },
+    { label: '-- Aucun --',   value: '' },
     { label: 'React',
       value: 'https://stackblitz.com/fork/react?embed=1&hideNavigation=1&theme=dark&file=src/App.jsx' },
     { label: 'Angular',
@@ -120,33 +110,59 @@ export class FormationCreateComponent {
       value: 'https://stackblitz.com/fork/vue?embed=1&hideNavigation=1&theme=dark&file=src/App.vue' },
   ];
 
-  // ── Helpers d'accès aux contrôles ─────────────────────────────
+  constructor() {
+    this.titreSubject.pipe(
+      debounceTime(600),
+      distinctUntilChanged(),
+      switchMap(titre => {
+        this.loading     = true;
+        this.suggestions = [];
+        return this.http.get<FormationSuggestion[]>(
+          `http://localhost:8080/api/suggestions/formations`
+          + `?titre=${encodeURIComponent(titre)}`
+        );
+      })
+    ).subscribe({
+      next:  (data) => { this.suggestions = data; this.loading = false; },
+      error: ()     => { this.suggestions = [];   this.loading = false; }
+    });
+  }
+
+  ngOnInit(): void {
+    // ✅ Re-déclencher la validation quand le statut change
+    this.form.get('statut')?.valueChanges.subscribe(() => {
+      this.form.updateValueAndValidity();
+      // Effacer l'erreur serveur globale si elle concernait le contenu
+      if (this.serverErrorMessage.includes('contenu')) {
+        this.serverErrorMessage = '';
+      }
+    });
+  }
+
+  // ── Helpers erreurs ────────────────────────────────────────────
   get f() { return this.form.controls; }
 
   hasError(field: string): boolean {
     const ctrl = this.form.get(field);
-    return !!(ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched));
+    return !!(ctrl?.invalid && (ctrl.dirty || ctrl.touched));
   }
 
   getError(field: string): string {
-    // Erreur serveur en priorité
     if (this.serverErrors[field]) return this.serverErrors[field];
-
     const ctrl = this.form.get(field);
-    if (!ctrl || !ctrl.errors) return '';
+    if (!ctrl?.errors) return '';
     const e = ctrl.errors;
-
-    if (e['required'])   return 'Ce champ est obligatoire.';
-    if (e['minlength'])  return `Minimum ${e['minlength'].requiredLength} caractères.`;
-    if (e['maxlength'])  return `Maximum ${e['maxlength'].requiredLength} caractères.`;
-    if (e['pattern'])    return 'Valeur invalide.';
+    if (e['required'])  return 'Ce champ est obligatoire.';
+    if (e['minlength']) return `Minimum ${e['minlength'].requiredLength} caractères.`;
+    if (e['maxlength']) return `Maximum ${e['maxlength'].requiredLength} caractères.`;
+    if (e['pattern'])   return 'Valeur invalide.';
     return 'Valeur invalide.';
   }
 
-  // ── Logique existante ─────────────────────────────────────────
+  // ── Suggestions ────────────────────────────────────────────────
   onTitreChange(value: string): void {
     this.suggestionSelected = false;
-    this.serverErrors = {};
+    this.serverErrors       = {};
     if (value.length < 3) {
       this.suggestions = [];
       this.loading     = false;
@@ -192,12 +208,28 @@ export class FormationCreateComponent {
     });
   }
 
+  // ── Soumission ──────────────────────────────────────────────────
   submit(): void {
     this.form.markAllAsTouched();
-    this.serverErrors      = {};
+    this.serverErrors       = {};
     this.serverErrorMessage = '';
 
-    if (this.form.invalid) return;
+    // ✅ Si statut "Bientôt" → ignorer l'erreur noContent
+    const statut = this.form.get('statut')?.value;
+    const formErrors = this.form.errors;
+
+    if (this.form.invalid) {
+      // Vérifier si la seule erreur est noContent avec statut Bientôt
+      const onlyNoContent = formErrors
+        && Object.keys(formErrors).length === 1
+        && formErrors['noContent'];
+
+      if (onlyNoContent && statut === 'Bientôt') {
+        // Pas d'erreur bloquante — on peut continuer
+      } else {
+        return;
+      }
+    }
 
     this.saving = true;
     this.formationService.createFormation(
@@ -209,9 +241,8 @@ export class FormationCreateComponent {
       },
       error: (err) => {
         this.saving = false;
-        // ✅ Récupérer les erreurs de validation du backend
         if (err.status === 400 && err.error?.errors) {
-          this.serverErrors = err.error.errors;
+          this.serverErrors       = err.error.errors;
           this.serverErrorMessage = 'Veuillez corriger les erreurs ci-dessous.';
         } else {
           this.serverErrorMessage = err.error?.message
