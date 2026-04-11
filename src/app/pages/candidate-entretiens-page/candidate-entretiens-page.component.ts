@@ -11,9 +11,17 @@ interface CandidateEntretien {
   description?: string;
   type?: string;
   categorie?: string;
+  mode?: string;
+  modeEntretien?: string;
   domaine?: string;
   dateEntretien?: string;
   photo?: string;
+  lien?: string;
+  lienEntretien?: string;
+  interviewLink?: string;
+  meetingLink?: string;
+  videoUrl?: string;
+  joinUrl?: string;
   completed?: boolean;
 }
 
@@ -295,6 +303,10 @@ export class CandidateEntretiensPageComponent {
       return 'Disponible le jour de l entretien';
     }
 
+    if (this.isVideoEntretien(item)) {
+      return 'Rejoindre l entretien video';
+    }
+
     return 'Passer l\'entretien';
   }
 
@@ -302,7 +314,30 @@ export class CandidateEntretiensPageComponent {
     if (this.isPassButtonDisabled(item)) {
       return;
     }
-    this.router.navigate(['/entretiens/test', item.id]);
+
+    if (this.isVideoEntretien(item)) {
+      this.router.navigate(['/entretiens/video', item.id]);
+      return;
+    }
+
+    this.apiService.getQuestionsByEntretien(item.id).subscribe({
+      next: (questions: any) => {
+        const hasQuestions = Array.isArray(questions) && questions.length > 0;
+        if (!hasQuestions) {
+          alert('Cet entretien ne contient pas encore de questions. Si c\'est un entretien video, utilisez le lien de reunion envoye par le recruteur.');
+          return;
+        }
+        this.router.navigate(['/entretiens/test', item.id]);
+      },
+      error: () => {
+        this.router.navigate(['/entretiens/test', item.id]);
+      }
+    });
+  }
+
+  private isVideoEntretien(item: CandidateEntretien): boolean {
+    const mode = String(item?.mode || item?.modeEntretien || '').toUpperCase();
+    return mode === 'VIDEO';
   }
 
   trackByEntretien(index: number, item: CandidateEntretien): number {

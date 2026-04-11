@@ -1,0 +1,62 @@
+.video-room-area {
+  background: #f5f7fb;
+
+  .video-room-head {
+    margin-bottom: 20px;
+
+    h2 {
+      margin-bottom: 6px;
+      font-size: 34px;
+      font-weight: 700;
+    }
+
+    p {
+      margin-bottom: 0;
+      color: #5b6576;
+    }
+  }
+
+  .state-box {
+    border: 1px solid #d7deeb;
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px;
+
+    &.error {
+      border-color: #f0b4b4;
+      background: #fff8f8;
+    }
+
+    .actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+    }
+  }
+
+  .room-shell {
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(9, 30, 66, 0.12);
+    background: #101828;
+  }
+
+  .room-frame {
+    width: 100%;
+    height: 75vh;
+    min-height: 520px;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .video-room-area {
+    .video-room-head h2 {
+      font-size: 26px;
+    }
+
+    .room-frame {
+      height: 68vh;
+      min-height: 430px;
+    }
+  }
+}

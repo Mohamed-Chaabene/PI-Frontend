@@ -50,6 +50,7 @@ import { RdAddQuestions } from './recruiter-dashboard/rd-add-questions/rd-add-qu
 import { RdCandidaturesListComponent } from './recruiter-dashboard/rd-candidatures-list/rd-candidatures-list.component';
 import { PublicTestPassPageComponent } from './pages/public-test-pass-page/public-test-pass-page.component';
 import { CandidateEntretiensPageComponent } from './pages/candidate-entretiens-page/candidate-entretiens-page.component';
+import { VideoInterviewRoomPageComponent } from './pages/video-interview-room-page/video-interview-room-page.component';
 import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
 import { EvenementDashboardComponent } from './evenement-dashboard/evenement-dashboard.component';
 import { EvenementTemplateComponent } from './evenement-dashboard/evenement-template/evenement-template.component';
@@ -85,6 +86,7 @@ export const routes: Routes = [
     {path: 'candidate-details/:id', component: CandidateDetailsPageComponent},
     {path: 'candidate-details', component: CandidateDetailsPageComponent, pathMatch: 'full'},
     {path: 'candidate-entretiens', component: CandidateEntretiensPageComponent},
+    {path: 'entretiens/video/:id', component: VideoInterviewRoomPageComponent},
     {path: 'employers', component: EmployersPageComponent},
     {path: 'employer-details', component: EmployerDetailsPageComponent},
     {path: 'faq', component: FaqPageComponent},

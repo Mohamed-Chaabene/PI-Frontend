@@ -90,6 +90,26 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/entretiens/candidat/${candidatId}`);
   }
 
+  getEntretiensByRecruteur(recruteurId: number): Observable<any[]> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const primaryUrl = `${this.apiUrl}/entretiens/recruteur/${recruteurId}`;
+    const fallbackUrl = `${this.apiUrl}/recruteurs/${recruteurId}/entretiens`;
+
+    return this.http.get<any[]>(primaryUrl, { headers }).pipe(
+      catchError((firstError) => {
+        if (firstError?.status === 404 || firstError?.status === 405) {
+          return this.http.get<any[]>(fallbackUrl, { headers });
+        }
+        return throwError(() => firstError);
+      })
+    );
+  }
+
   getEntretien(id: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/entretiens/${id}`);
   }
@@ -158,6 +178,11 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/questions/entretien/${entretienId}`);
   }
 
+  generateAiQuestionSuggestions(entretienId: number, payload: any): Observable<any[]> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post<any[]>(`${this.apiUrl}/questions/entretien/${entretienId}/ai-generate`, payload, { headers });
+  }
+
   createQuestion(question: any): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const token = localStorage.getItem('token');
@@ -221,11 +246,15 @@ export class ApiService {
 
   // Resultats
   getResultat(entretienId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/resultats/entretien/${entretienId}`);
+    return this.http.get(`${this.apiUrl}/entretiens/${entretienId}/resultat`);
   }
 
-  submitEntretienResponses(entretienId: number, score: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/entretiens/${entretienId}/submit-responses`, { score });
+  submitEntretienResponses(entretienId: number, score: number, rapport?: string): Observable<any> {
+    const payload: any = { score };
+    if (rapport && rapport.trim()) {
+      payload.rapport = rapport.trim();
+    }
+    return this.http.post(`${this.apiUrl}/entretiens/${entretienId}/submit-responses`, payload);
   }
 
   // Domaines
@@ -416,6 +445,15 @@ export class ApiService {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get<any[]>(`${this.apiUrl}/candidatures/admin/toutes`, { headers });
+  }
+
+  getCandidaturesByOffre(offreId: number): Observable<any[]> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get<any[]>(`${this.apiUrl}/candidatures/offre/${offreId}`, { headers });
   }
 
   // Récupérer les statistiques pour recruteur

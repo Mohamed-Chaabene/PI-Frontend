@@ -9,11 +9,15 @@ interface EntretienForm {
   titre: string;
   description: string;
   type: string;
+  mode: string;
+  meetingLink: string;
   domaine: string;
   dateEntretien: string;
   candidatId: number | null;
+  offreId: number | null;
   photo: string;
   seuilReussite: number | null;
+  dureeMinutes: number | null;
 }
 
 @Component({
@@ -24,29 +28,47 @@ interface EntretienForm {
 })
 export class RdInterviews implements OnInit {
   entretiens: any[] = [];
+  searchTerm = '';
+  filterType = 'TOUS';
+  filterDomaine = 'TOUS';
+  filterStatus = 'TOUS';
   selectedEntretienDetails: any | null = null;
   showEntretienDetailsModal = false;
   candidats: any[] = [];
+  candidaturesOffre: any[] = [];
+  selectedOffreLabel = '';
   newEntretien: EntretienForm = {
     titre: '',
     description: '',
     type: '',
+    mode: 'QUESTIONS',
+    meetingLink: '',
     domaine: '',
     dateEntretien: '',
     candidatId: null,
+    offreId: null,
     photo: '',
-    seuilReussite: 70
+    seuilReussite: 70,
+    dureeMinutes: 30
   };
   showCreateForm = false;
   editingEntretien: any = null;
   currentUser: any;
   currentUserId: number | null = null;
   typesEntretien = ['TECHNIQUE', 'RH', 'MANAGERIAL', 'FINAL', 'PRESELECTION', 'TEST'];
+  modesEntretien = ['QUESTIONS', 'VIDEO'];
   private pendingCandidaturePrefill: {
     candidatId: number | null;
     nomComplet: string;
     email: string;
     poste: string;
+  } | null = null;
+  private pendingJobPrefill: {
+    offreId: number | null;
+    poste: string;
+    description: string;
+    localisation: string;
+    contrat: string;
   } | null = null;
   private candidateEmailForInterview: string | null = null;
   private candidateNameForInterview: string | null = null;
@@ -67,8 +89,67 @@ export class RdInterviews implements OnInit {
     this.loadDomaines();
   }
 
+  get filteredEntretiens(): any[] {
+    const term = this.normalizeForSearch(this.searchTerm);
+
+    return this.entretiens.filter((item: any) => {
+      const matchesText = !term || [
+        item?.titre,
+        item?.description,
+        item?.type,
+        item?.domaine,
+        this.getCandidateName(item?.candidatId)
+      ].some((value) => this.normalizeForSearch(value).includes(term));
+
+      const itemType = String(item?.type || item?.categorie || '').toUpperCase();
+      const itemDomaine = String(item?.domaine || '').toUpperCase();
+      const itemStatus = item?.completed ? 'TERMINE' : 'EN_COURS';
+
+      const matchesType = this.filterType === 'TOUS' || itemType === this.filterType;
+      const matchesDomaine = this.filterDomaine === 'TOUS' || itemDomaine === this.filterDomaine;
+      const matchesStatus = this.filterStatus === 'TOUS' || itemStatus === this.filterStatus;
+
+      return matchesText && matchesType && matchesDomaine && matchesStatus;
+    });
+  }
+
+  get domaineFilterOptions(): string[] {
+    const set = new Set<string>();
+    this.entretiens.forEach((item: any) => {
+      const domaine = String(item?.domaine || '').toUpperCase().trim();
+      if (domaine) {
+        set.add(domaine);
+      }
+    });
+    return ['TOUS', ...Array.from(set).sort()];
+  }
+
+  private normalizeForSearch(value: any): string {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+
   private preparePrefillFromRoute(): void {
     this.route.queryParamMap.subscribe((params) => {
+      if (params.get('createFromJob') === '1') {
+        const rawOffreId = Number(params.get('offreId'));
+        this.pendingJobPrefill = {
+          offreId: Number.isFinite(rawOffreId) && rawOffreId > 0 ? rawOffreId : null,
+          poste: params.get('poste') || '',
+          description: params.get('description') || '',
+          localisation: params.get('localisation') || '',
+          contrat: params.get('contrat') || ''
+        };
+
+        this.showCreateForm = true;
+        this.applyJobPrefillIfPossible();
+        return;
+      }
+
       if (params.get('createFromCandidature') !== '1') {
         return;
       }
@@ -83,6 +164,42 @@ export class RdInterviews implements OnInit {
 
       this.showCreateForm = true;
       this.applyCandidaturePrefillIfPossible();
+    });
+  }
+
+  private applyJobPrefillIfPossible(): void {
+    if (!this.pendingJobPrefill) {
+      return;
+    }
+
+    const prefill = this.pendingJobPrefill;
+    const posteLabel = prefill.poste || 'ce poste';
+    const contratLabel = prefill.contrat || 'non specifie';
+    const localisationLabel = prefill.localisation || 'non specifiee';
+
+    this.newEntretien = {
+      ...this.newEntretien,
+      titre: this.newEntretien.titre || `Entretien - ${posteLabel}`,
+      description: this.newEntretien.description || `Entretien lie a l'offre ${posteLabel}. Contrat: ${contratLabel}. Localisation: ${localisationLabel}.\n\n${prefill.description || ''}`,
+      type: this.newEntretien.type || 'TECHNIQUE',
+      offreId: prefill.offreId
+    };
+
+    if (prefill.offreId) {
+      this.selectedOffreLabel = posteLabel;
+      this.loadCandidaturesForOffre(prefill.offreId);
+    }
+  }
+
+  loadCandidaturesForOffre(offreId: number): void {
+    this.apiService.getCandidaturesByOffre(offreId).subscribe({
+      next: (data) => {
+        this.candidaturesOffre = Array.isArray(data) ? data : [];
+      },
+      error: (error: any) => {
+        console.error('❌ Erreur chargement candidatures de l\'offre:', error);
+        this.candidaturesOffre = [];
+      }
     });
   }
 
@@ -264,10 +381,13 @@ export class RdInterviews implements OnInit {
     const payload: any = {
       titre: this.newEntretien.titre,
       description: this.newEntretien.description,
+      mode: this.newEntretien.mode,
+      meetingLink: this.newEntretien.mode === 'VIDEO' ? (this.newEntretien.meetingLink || null) : null,
       domaine: this.newEntretien.domaine,
       categorie: this.newEntretien.type,
       type: this.newEntretien.type,
       dateEntretien: this.newEntretien.dateEntretien,
+      dureeMinutes: this.newEntretien.dureeMinutes ?? 30,
       photo: this.newEntretien.photo || null,
     };
     if (isTest) {
@@ -276,7 +396,9 @@ export class RdInterviews implements OnInit {
       payload.seuilReussite = this.newEntretien.seuilReussite ?? 70;
     }
 
-    if (this.newEntretien.candidatId !== null && this.newEntretien.candidatId !== undefined) {
+    if (this.newEntretien.offreId !== null && this.newEntretien.offreId !== undefined) {
+      payload.offreId = this.newEntretien.offreId;
+    } else if (this.newEntretien.candidatId !== null && this.newEntretien.candidatId !== undefined) {
       payload.candidatId = this.newEntretien.candidatId;
     }
 
@@ -294,9 +416,16 @@ export class RdInterviews implements OnInit {
   private submitCreateEntretien(payload: any, recruteurId: number, hasRetried: boolean): void {
     this.apiService.createEntretien(payload, recruteurId).subscribe({
       next: (response) => {
-        const interviewLink = this.buildInterviewLink(response);
+        const interviewLink = this.buildInterviewLink(response, payload);
+        const createdMode = String(
+          response?.mode || response?.modeEntretien || payload?.mode || this.newEntretien.mode || ''
+        ).toUpperCase();
 
-        alert(`Entretien créé avec succès!\n\nLien de l'entretien: ${interviewLink}\n\nRedirection vers l'ajout de questions...`);
+        const postCreateMessage = createdMode === 'VIDEO'
+          ? 'Redirection vers la liste des entretiens...'
+          : 'Redirection vers l\'ajout de questions...';
+
+        alert(`Entretien créé avec succès!\n\nLien de l'entretien: ${interviewLink}\n\n${postCreateMessage}`);
         this.entretiens.push(response);
         
         // Send confirmation email to candidate
@@ -305,7 +434,12 @@ export class RdInterviews implements OnInit {
         this.resetForm();
         this.showCreateForm = false;
         
-        this.router.navigate(['/recruiter-dashboard/interviews/add-questions', response.id]);
+        if (createdMode === 'VIDEO') {
+          alert('Entretien vidéo créé avec succès. Le candidat pourra rejoindre l’entretien depuis son tableau de bord.');
+          this.router.navigate(['/recruiter-dashboard/interviews']);
+        } else {
+          this.router.navigate(['/recruiter-dashboard/interviews/add-questions', response.id]);
+        }
       },
       error: (error) => {
         console.error('❌ Erreur complète:', error);
@@ -348,10 +482,20 @@ export class RdInterviews implements OnInit {
     });
   }
 
-  private buildInterviewLink(entretien: any): string {
+  private buildInterviewLink(entretien: any, fallback?: any): string {
     const origin = window.location.origin;
     const type = String(entretien?.type || entretien?.categorie || '').toUpperCase();
+    const mode = String(entretien?.mode || entretien?.modeEntretien || fallback?.mode || '').toUpperCase();
+    const meetingLink = this.resolveMeetingLink(entretien, fallback);
     const entretienId = Number(entretien?.id);
+
+    if (mode === 'VIDEO' && Number.isFinite(entretienId) && entretienId > 0) {
+      return `${origin}/entretiens/video/${entretienId}`;
+    }
+
+    if (mode === 'VIDEO' && meetingLink) {
+      return meetingLink;
+    }
 
     if (type === 'TEST' && Number.isFinite(entretienId) && entretienId > 0) {
       return `${origin}/entretiens/test/${entretienId}`;
@@ -362,6 +506,46 @@ export class RdInterviews implements OnInit {
   }
 
   private sendInterviewConfirmationEmail(entretien: any, interviewLink: string): void {
+    if (entretien?.offreId) {
+      const applicants = this.candidaturesOffre.length > 0 ? this.candidaturesOffre : [];
+
+      applicants.forEach((candidature: any) => {
+        const candidateEmail = candidature?.email;
+        if (!candidateEmail) {
+          return;
+        }
+
+        const candidateName = candidature?.nomComplet || candidature?.candidatNom || 'Candidat';
+        const sharedEmailData = {
+          receiverEmail: candidateEmail,
+          receiverName: candidateName,
+          subject: 'Entretien programmé pour votre candidature',
+          contenu: `Bonjour ${candidateName},
+
+Un entretien a été programmé pour l'offre "${entretien.offreTitre || entretien.titre || 'Offre'}".
+
+Détails de l'entretien:
+- Titre: ${entretien.titre}
+- Type: ${entretien.type}
+- Description: ${entretien.description}
+${entretien.dateEntretien ? `- Date: ${new Date(entretien.dateEntretien).toLocaleDateString('fr-FR')}` : ''}
+
+Vous pouvez consulter votre tableau de bord candidat pour accéder à cet entretien.
+
+Cordialement,
+L'équipe de recrutement`,
+          type: 'ENTRETIEN'
+        };
+
+        this.apiService.sendMessage(sharedEmailData).subscribe({
+          next: () => console.log('✅ Message d\'entretien envoyé à', candidateEmail),
+          error: (err) => console.error('❌ Erreur envoi message entretien partagé:', err)
+        });
+      });
+
+      return;
+    }
+
     // If we don't have a candidate email, try to get it from the candidats list
     let candidateEmail = this.candidateEmailForInterview;
     let candidateName = this.candidateNameForInterview;
@@ -418,14 +602,20 @@ L'équipe de recrutement`,
       titre: '',
       description: '',
       type: '',
+      mode: 'QUESTIONS',
+      meetingLink: '',
       domaine: '',
       dateEntretien: '',
       candidatId: null,
+      offreId: null,
       photo: '',
-      seuilReussite: 70
+      seuilReussite: 70,
+      dureeMinutes: 30
     };
     this.candidateEmailForInterview = null;
     this.candidateNameForInterview = null;
+    this.candidaturesOffre = [];
+    this.selectedOffreLabel = '';
   }
 
   completeEntretien(id: number): void {
@@ -441,7 +631,10 @@ L'équipe de recrutement`,
   viewResult(id: number): void {
     this.apiService.getResultat(id).subscribe({
       next: (result: any) => {
-        alert(`Score: ${result.score}%, Decision: ${result.decision}`);
+        const scoreText = result?.score != null ? `${result.score}%` : 'N/A';
+        const decisionText = result?.decision || 'N/A';
+        const reportText = result?.commentaire ? `\n\nRapport candidat:\n${result.commentaire}` : '';
+        alert(`Score: ${scoreText}, Decision: ${decisionText}${reportText}`);
       },
       error: (error: any) => console.error('Error getting result', error)
     });
@@ -502,6 +695,9 @@ L'équipe de recrutement`,
 
   editEntretien(entretien: any): void {
     this.editingEntretien = { ...entretien };
+    if (!this.editingEntretien.dureeMinutes) {
+      this.editingEntretien.dureeMinutes = 30;
+    }
     // Convertir la date pour l'input datetime-local
     if (this.editingEntretien.dateEntretien) {
       this.editingEntretien.dateEntretien = this.formatDateForInput(this.editingEntretien.dateEntretien);
@@ -523,19 +719,27 @@ L'équipe de recrutement`,
     }
 
     const isTestUpdate = (entretien.type || '').toUpperCase() === 'TEST';
+    const updatedMode = String(entretien.mode || entretien.modeEntretien || 'QUESTIONS').toUpperCase();
     const updatedData: any = {
       titre: entretien.titre,
       description: entretien.description,
       domaine: entretien.domaine,
       type: entretien.type?.toUpperCase(),
       categorie: entretien.type?.toUpperCase(),
+      mode: updatedMode,
+      meetingLink: updatedMode === 'VIDEO' ? this.resolveMeetingLink(entretien) : null,
       dateEntretien: entretien.dateEntretien,
+      dureeMinutes: Number(entretien.dureeMinutes ?? 30),
       photo: entretien.photo || null,
     };
     updatedData.seuilReussite = isTestUpdate ? null : (entretien.seuilReussite ?? 70);
 
     if (entretien.candidatId) {
       updatedData.candidatId = entretien.candidatId;
+    }
+
+    if (entretien.offreId) {
+      updatedData.offreId = entretien.offreId;
     }
 
     console.log('📤 updateEntretien payload:', updatedData);
@@ -589,17 +793,50 @@ L'équipe de recrutement`,
       return false;
     }
 
+    if (!this.newEntretien.dateEntretien || this.newEntretien.dateEntretien.trim() === '') {
+      alert('La date et heure de l\'entretien sont obligatoires.');
+      return false;
+    }
+
+    const duree = Number(this.newEntretien.dureeMinutes);
+    if (!Number.isFinite(duree) || duree < 1 || duree > 300) {
+      alert('La duree de l\'entretien doit etre entre 1 et 300 minutes.');
+      return false;
+    }
+
+    if (this.newEntretien.mode == null || this.newEntretien.mode.trim() === '') {
+      alert("Le mode de l'entretien est obligatoire.");
+      return false;
+    }
+
+    if (this.newEntretien.mode === 'VIDEO') {
+      const link = (this.newEntretien.meetingLink || '').trim();
+      if (!link) {
+        alert('Le lien de réunion est obligatoire pour un entretien vidéo.');
+        return false;
+      }
+      if (!/^https?:\/\//i.test(link)) {
+        alert('Le lien de réunion doit commencer par http:// ou https://');
+        return false;
+      }
+    }
+
     if (this.newEntretien.domaine == null || this.newEntretien.domaine.trim() === '') {
       alert('Le domaine est obligatoire.');
       return false;
     }
 
-    if (this.newEntretien.type !== 'TEST') {
+    if (this.newEntretien.type !== 'TEST' && !this.newEntretien.offreId) {
       const s = this.newEntretien.seuilReussite;
       if (s == null || s < 0 || s > 100) {
         alert('Le seuil de réussite doit être entre 0 et 100.');
         return false;
       }
+    }
+
+    if (this.newEntretien.type !== 'TEST' && !this.newEntretien.offreId && (this.newEntretien.candidatId == null || this.newEntretien.candidatId <= 0)) {
+      alert('Sélectionnez un candidat ou une offre pour cet entretien.');
+      return false;
     }
 
     return true;
@@ -626,10 +863,9 @@ L'équipe de recrutement`,
       return false;
     }
 
-    const selectedDate = new Date(entretien.dateEntretien);
-    const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000);
-    if (selectedDate <= oneHourFromNow) {
-      alert('La date de l\'entretien doit être au moins 1 heure dans le futur.');
+    const duree = Number(entretien.dureeMinutes);
+    if (!Number.isFinite(duree) || duree < 1 || duree > 300) {
+      alert('La duree de l\'entretien doit etre entre 1 et 300 minutes.');
       return false;
     }
 
@@ -638,7 +874,20 @@ L'équipe de recrutement`,
       return false;
     }
 
-    if (entretien.type !== 'TEST' && !entretien.candidatId) {
+    const mode = String(entretien.mode || entretien.modeEntretien || 'QUESTIONS').toUpperCase();
+    if (mode === 'VIDEO') {
+      const link = this.resolveMeetingLink(entretien);
+      if (!link) {
+        alert('Le lien de réunion est obligatoire pour un entretien vidéo.');
+        return false;
+      }
+      if (!/^https?:\/\//i.test(link)) {
+        alert('Le lien de réunion doit commencer par http:// ou https://');
+        return false;
+      }
+    }
+
+    if (entretien.type !== 'TEST' && !entretien.candidatId && !entretien.offreId) {
       alert('Un candidat doit être sélectionné pour ce type d\'entretien.');
       return false;
     }
@@ -665,6 +914,26 @@ L'équipe de recrutement`,
   getCandidateName(candidatId: number): string {
     const candidat = this.candidats.find(c => c.id === candidatId);
     return candidat ? `${candidat.nom} ${candidat.prenom}` : 'Candidat inconnu';
+  }
+
+  private resolveMeetingLink(primary: any, fallback?: any): string {
+    return String(
+      primary?.meetingLink || primary?.lienEntretien || primary?.videoUrl ||
+      fallback?.meetingLink || fallback?.lienEntretien || ''
+    ).trim();
+  }
+
+  generateMeetingLinkForCreate(): void {
+    const slug = `jobmatch-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    this.newEntretien.meetingLink = `https://meet.jit.si/${slug}`;
+  }
+
+  generateMeetingLinkForEdit(): void {
+    if (!this.editingEntretien) {
+      return;
+    }
+    const slug = `jobmatch-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    this.editingEntretien.meetingLink = `https://meet.jit.si/${slug}`;
   }
 
   // Méthodes pour la gestion des questions

@@ -217,10 +217,158 @@
   color: #11613c;
   padding: 12px;
 
+  .result-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .result-pill {
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+
+    &.ok {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid rgba(22, 101, 52, 0.25);
+    }
+
+    &.ko {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid rgba(153, 27, 27, 0.25);
+    }
+  }
+
+  .result-score {
+    color: #1f3550;
+    font-weight: 700;
+  }
+
+  &.pass-state {
+    border-color: rgba(22, 101, 52, 0.34);
+    background: #f0fdf4;
+    color: #166534;
+  }
+
+  &.fail-state {
+    border-color: rgba(153, 27, 27, 0.34);
+    background: #fef2f2;
+    color: #991b1b;
+  }
+
   &.error-state {
     border-color: rgba(220, 38, 38, 0.3);
     background: #fef2f2;
     color: #b42323;
+  }
+}
+
+.report-dashboard {
+  margin-top: 12px;
+  border: 1px solid rgba(9, 101, 164, 0.2);
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+}
+
+.report-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+
+  h3 {
+    margin: 0;
+    color: #074d82;
+    font-size: 1.05rem;
+  }
+}
+
+.report-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.metric-card {
+  border: 1px solid #d8e7f7;
+  border-radius: 10px;
+  background: #f8fbff;
+  padding: 10px;
+
+  span {
+    display: block;
+    color: #4e6e90;
+    font-size: 0.8rem;
+  }
+
+  strong {
+    color: #1f3550;
+    font-size: 1rem;
+  }
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.report-card {
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid transparent;
+
+  h4 {
+    margin: 0 0 8px;
+    font-size: 0.95rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 18px;
+    color: #2b3f56;
+  }
+
+  p {
+    margin: 0;
+    color: #4e6e90;
+  }
+
+  &.success {
+    background: #f0fdf4;
+    border-color: rgba(22, 101, 52, 0.28);
+
+    h4 {
+      color: #166534;
+    }
+  }
+
+  &.danger {
+    background: #fef2f2;
+    border-color: rgba(153, 27, 27, 0.28);
+
+    h4 {
+      color: #991b1b;
+    }
+  }
+
+  &.recommendation {
+    background: #eff6ff;
+    border-color: rgba(29, 78, 216, 0.28);
+
+    h4 {
+      color: #1d4ed8;
+    }
   }
 }
 
@@ -235,5 +383,10 @@
   .exam-guard {
     width: 100%;
     justify-content: center;
+  }
+
+  .report-metrics,
+  .report-grid {
+    grid-template-columns: 1fr;
   }
 }

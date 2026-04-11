@@ -97,6 +97,44 @@
                     border-color: var(--matchy-blue-dark);
                 }
             }
+
+            .decision-metric {
+                height: 100%;
+                border: 1px solid #e6edf5;
+                border-radius: 10px;
+                padding: 14px 16px;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+
+                span {
+                    font-size: 0.8rem;
+                    color: var(--matchy-blue-light);
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                }
+
+                strong {
+                    font-size: 1.15rem;
+                    color: var(--matchy-blue-dark);
+                }
+            }
+
+            .decision-metric-highlight {
+                border-color: rgba(245, 124, 0, 0.25);
+                background: linear-gradient(180deg, rgba(245, 124, 0, 0.08) 0%, rgba(255, 255, 255, 1) 100%);
+            }
+
+            .decision-table {
+                thead th {
+                    white-space: nowrap;
+                }
+
+                tbody td {
+                    vertical-align: top;
+                }
+            }
         }
     }
 }
