@@ -54,13 +54,10 @@ export class EvenementCandidatComponent implements OnInit {
 
         this.chargerMesParticipations();
 
-        // Rafraîchit toutes les 15 secondes
         setInterval(() => {
             this.chargerMesParticipations();
         }, 15000);
     }
-
-    // ── Popup détail + réputation ─────────────────────────────────────────────
 
     ouvrirDetail(evenement: any): void {
         this.evenementSelectionne = evenement;
@@ -118,17 +115,12 @@ export class EvenementCandidatComponent implements OnInit {
         return badge;
     }
 
-    // ── Participations ────────────────────────────────────────────────────────
-
     chargerMesParticipations() {
         if (!this.candidatId) return;
 
         this.participationService.getByCandidat(this.candidatId).subscribe({
             next: (data) => {
-                // ← stocke les données complètes — c'était manquant
                 this.mesParticipations = data;
-
-                // Remet à zéro avant de remplir
                 this.demandesEnvoyees.clear();
                 this.participationsStatuts.clear();
 
@@ -137,7 +129,6 @@ export class EvenementCandidatComponent implements OnInit {
                     this.participationsStatuts.set(p.evenementId, p.statut);
                 });
 
-                // Force la détection de changements
                 this.demandesEnvoyees = new Set(this.demandesEnvoyees);
             },
             error: (err) => console.error('Erreur:', err)
@@ -161,7 +152,6 @@ export class EvenementCandidatComponent implements OnInit {
                 this.demandesEnvoyees.add(evenementId);
                 this.participationsStatuts.set(evenementId, 'EN_ATTENTE');
                 this.demandesEnvoyees = new Set(this.demandesEnvoyees);
-                // Recharge pour avoir l'ID de participation
                 this.chargerMesParticipations();
             },
             error: (err) => {
@@ -221,6 +211,8 @@ export class EvenementCandidatComponent implements OnInit {
         if (!value) return '-';
         const date = new Date(value);
         if (isNaN(date.getTime())) return String(value);
-        return date.toLocaleDateString('fr-FR');
+        const heureVide = date.getHours() === 0 && date.getMinutes() === 0;
+        const datePart = date.toLocaleDateString('fr-FR');
+        return heureVide ? datePart : `${datePart} à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
     }
 }

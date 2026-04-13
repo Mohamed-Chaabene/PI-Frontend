@@ -11,13 +11,10 @@ import { FeedbackEventService } from '../../services/feedbackevent-service';
     styleUrls: ['./evenement-detail.component.scss']
 })
 export class EvenementDetailComponent implements OnInit {
-
     evenement: any = {};
     participations: any[] = [];
     loading = true;
     error = false;
-
-    // ← feedbacks
     feedbacks: any[] = [];
     noteMoyenne: number = 0;
     totalFeedbacks: number = 0;
@@ -25,7 +22,7 @@ export class EvenementDetailComponent implements OnInit {
     constructor(
         private service: EvenementService,
         private participationService: ParticipationService,
-        private feedbackService: FeedbackEventService, // ← ajouté
+        private feedbackService: FeedbackEventService,
         private route: ActivatedRoute,
         private router: Router
     ) {}
@@ -50,7 +47,6 @@ export class EvenementDetailComponent implements OnInit {
             error: (err) => console.error('Erreur participations:', err)
         });
 
-        // ← charge les feedbacks et la note moyenne
         this.feedbackService.getByEvenement(id).subscribe({
             next: (data) => {
                 this.feedbacks = data;
@@ -65,7 +61,6 @@ export class EvenementDetailComponent implements OnInit {
         });
     }
 
-    // Retourne les étoiles sous forme de tableau
     getEtoiles(note: number): number[] {
         return Array(5).fill(0).map((_, i) => i + 1);
     }
@@ -74,7 +69,8 @@ export class EvenementDetailComponent implements OnInit {
         if (!value) return '-';
         const date = new Date(value);
         if (isNaN(date.getTime())) return String(value);
-        return date.toLocaleDateString('fr-FR');
+        // ← affiche date + heure pour les feedbacks et participations
+        return date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     }
 
     retour() {

@@ -12,17 +12,16 @@ import { jwtDecode } from 'jwt-decode';
 export class EvenementListComponent implements OnInit {
 
     evenements: any[] = [];
-    evenementsFiltres: any[] = []; //  liste filtrée
-    lieux: string[] = [];          //  liste des lieux uniques
+    evenementsFiltres: any[] = [];
+    lieux: string[] = [];
     loading = true;
     error = false;
     organisateurId!: number;
 
-     //  Champs de recherche
     searchTitre = '';
     searchLieu = '';
-    sortByDate = '';   // ✅ proche / loin
-    sortByAjout = '';  
+    sortByDate = '';
+    sortByAjout = '';
 
     constructor(
         private service: EvenementService,
@@ -30,23 +29,17 @@ export class EvenementListComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        //  Récupère l'ID depuis le token
         const token = localStorage.getItem('token');
         if (token) {
             const decoded: any = jwtDecode(token);
             this.organisateurId = decoded?.id;
-            
         }
 
-    
-        
-
-        //  Charge uniquement ses événements
         this.service.getByOrganisateur(this.organisateurId).subscribe({
             next: (data) => {
                 this.evenements = data;
-                this.evenementsFiltres = data; //  initialise la liste filtrée
-                this.lieux = [...new Set(data.map((e: any) => e.lieu))]; //  lieux uniques
+                this.evenementsFiltres = data;
+                this.lieux = [...new Set(data.map((e: any) => e.lieu))];
                 this.loading = false;
                 console.log('Mes événements:', data);
             },
@@ -61,61 +54,58 @@ export class EvenementListComponent implements OnInit {
     modifier(id: number) {
         this.router.navigate(['/evenement-dashboard/modifier', id]);
     }
-    
+
     voir(id: number) {
-    this.router.navigate(['/evenement-dashboard/detail', id]);
-}
+        this.router.navigate(['/evenement-dashboard/detail', id]);
+    }
 
     supprimer(id: number) {
         if (confirm('Voulez-vous supprimer cet événement ?')) {
             this.service.annuler(id).subscribe({
                 next: () => {
                     this.evenements = this.evenements.filter(e => e.id !== id);
+                    this.evenementsFiltres = this.evenementsFiltres.filter(e => e.id !== id); // ← fix : met à jour aussi la liste filtrée
                 },
                 error: (err) => console.error('Erreur:', err)
             });
         }
     }
 
-   rechercher() {
-    this.evenementsFiltres = this.evenements.filter(e => {
-        const matchTitre = !this.searchTitre || 
-            e.titre.toLowerCase().includes(this.searchTitre.toLowerCase());
-        const matchLieu = !this.searchLieu || 
-            e.lieu === this.searchLieu;
-        return matchTitre && matchLieu;
-    });
-    
-}
+    rechercher() {
+        this.evenementsFiltres = this.evenements.filter(e => {
+            const matchTitre = !this.searchTitre ||
+                e.titre.toLowerCase().includes(this.searchTitre.toLowerCase());
+            const matchLieu = !this.searchLieu ||
+                e.lieu === this.searchLieu;
+            return matchTitre && matchLieu;
+        });
+    }
 
     trier() {
-    let liste = [...this.evenementsFiltres];
+        let liste = [...this.evenementsFiltres];
 
-    // ✅ Tri par date de l'événement
-    if (this.sortByDate === 'proche') {
-        const now = new Date().getTime();
-        liste.sort((a, b) => {
-            const diffA = Math.abs(new Date(a.date).getTime() - now);
-            const diffB = Math.abs(new Date(b.date).getTime() - now);
-            return diffA - diffB; // plus proche en premier
-        });
-    } else if (this.sortByDate === 'loin') {
-        const now = new Date().getTime();
-        liste.sort((a, b) => {
-            const diffA = Math.abs(new Date(a.date).getTime() - now);
-            const diffB = Math.abs(new Date(b.date).getTime() - now);
-            return diffB - diffA; // plus loin en premier
-        });
+        if (this.sortByDate === 'proche') {
+            const now = new Date().getTime();
+            liste.sort((a, b) => {
+                const diffA = Math.abs(new Date(a.dateHeure).getTime() - now); // ← date → dateHeure
+                const diffB = Math.abs(new Date(b.dateHeure).getTime() - now); // ← date → dateHeure
+                return diffA - diffB;
+            });
+        } else if (this.sortByDate === 'loin') {
+            const now = new Date().getTime();
+            liste.sort((a, b) => {
+                const diffA = Math.abs(new Date(a.dateHeure).getTime() - now); // ← date → dateHeure
+                const diffB = Math.abs(new Date(b.dateHeure).getTime() - now); // ← date → dateHeure
+                return diffB - diffA;
+            });
+        }
+
+        if (this.sortByAjout === 'recent') {
+            liste.sort((a, b) => b.id - a.id);
+        } else if (this.sortByAjout === 'ancien') {
+            liste.sort((a, b) => a.id - b.id);
+        }
+
+        this.evenementsFiltres = liste;
     }
-
-    // ✅ Tri par date d'ajout (id — plus grand = plus récent)
-    if (this.sortByAjout === 'recent') {
-        liste.sort((a, b) => b.id - a.id);
-    } else if (this.sortByAjout === 'ancien') {
-        liste.sort((a, b) => a.id - b.id);
-    }
-
-    this.evenementsFiltres = liste;
-}
-
 }

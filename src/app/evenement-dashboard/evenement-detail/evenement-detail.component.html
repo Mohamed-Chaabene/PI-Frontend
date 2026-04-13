@@ -62,10 +62,10 @@
                                 <span class="d-block">Lieu</span>
                                 <strong>{{ evenement.lieu }}</strong>
                             </li>
-                            <li class="position-relative">
+                           <li class="position-relative">
                                 <i class="ri-calendar-line"></i>
-                                <span class="d-block">Date</span>
-                                <strong>{{ evenement.date | date:'dd MMMM yyyy' }}</strong>
+                                <span class="d-block">Date et heure</span>
+                                <strong>{{ evenement.dateHeure | date:'dd MMMM yyyy HH:mm' }}</strong>
                             </li>
                             <li class="position-relative">
                                 <i class="ri-bookmark-line"></i>
@@ -196,9 +196,9 @@
                                     <span class="fw-medium">Lieu :</span>
                                     {{ evenement.lieu }}
                                 </li>
-                                <li>
+                              <li>
                                     <span class="fw-medium">Date :</span>
-                                    {{ evenement.date | date:'dd/MM/yyyy' }}
+                                    {{ evenement.dateHeure | date:'dd/MM/yyyy HH:mm' }}
                                 </li>
                                 <li>
                                     <span class="fw-medium">Participants :</span>

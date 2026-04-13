@@ -10,7 +10,6 @@ import { EvenementService } from '../../services/evenement-service';
     styleUrls: ['./evenement-edit.component.scss']
 })
 export class EvenementEditComponent implements OnInit {
-
     evenement: any = {};
     success = false;
     error = false;
@@ -23,23 +22,28 @@ export class EvenementEditComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        // ✅ Récupère l'ID depuis l'URL
         this.id = Number(this.route.snapshot.paramMap.get('id'));
-
-        // ✅ Charge l'événement existant
         this.service.getById(this.id).subscribe({
             next: (data) => {
                 this.evenement = data;
+                // ⚠️ datetime-local attend "yyyy-MM-ddTHH:mm", on coupe les secondes
+                if (data.dateHeure) {
+                    this.evenement.dateHeure = data.dateHeure.substring(0, 16); // ← nouveau
+                }
             },
-            error: (err) => {
-                console.error('Erreur chargement:', err);
-            }
+            error: (err) => console.error('Erreur chargement:', err)
         });
     }
 
     modifier(form: NgForm) {
         if (form.valid) {
-            this.service.modifier(this.id, this.evenement).subscribe({
+            // ⚠️ Ajoute ':00' pour les secondes attendues par Spring
+            const payload = {
+                ...this.evenement,
+                dateHeure: this.evenement.dateHeure + ':00' // ← nouveau
+            };
+
+            this.service.modifier(this.id, payload).subscribe({ // ← payload au lieu de this.evenement
                 next: (res) => {
                     console.log('Événement modifié ✅', res);
                     this.success = true;

@@ -112,7 +112,7 @@
                     </div>
                     <div class="info-row">
                         <i class="ri-calendar-line"></i>
-                        <span>{{ formatDate(evenement.date) }}</span>
+                        <span>{{ formatDate(evenement.dateHeure) }}</span>  <!-- ← date → dateHeure -->
                     </div>
                     <div class="info-row">
                         <i class="ri-price-tag-3-line"></i>
@@ -199,7 +199,7 @@
                 </span>
                 <span class="meta-item">
                     <i class="ri-calendar-line"></i>
-                    {{ formatDate(evenementSelectionne?.date) }}
+                    {{ formatDate(evenementSelectionne?.dateHeure) }}  <!-- ← date → dateHeure -->
                 </span>
                 <span class="meta-item">
                     <i class="ri-user-line"></i>
