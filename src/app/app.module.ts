@@ -21,7 +21,6 @@ import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboar
 import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
 import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
 import { EntretienListComponent } from './admin-dashboard/entretien-list/entretien-list.component';
-import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
 import { CandidatureListComponent } from './admin-dashboard/candidature-list/candidature-list.component';
 import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-admin/evenement-list-admin.component';
 import { routes } from './app.routes';
@@ -71,12 +70,12 @@ import { MaCalendarComponent } from './candidates-dashboard/evenement-candidat/m
 
 // More common
 import { BlogSidebarComponent } from './common/blog-sidebar/blog-sidebar.component';
-import { TalentedExpertsComponent } from './common/talented-experts/talented-experts.component';
-import { PartnersComponent } from './common/partners/partners.component';
+
+
 import { PricingComponent } from './common/pricing/pricing.component';
-import { LeadingCompanyComponent } from './common/leading-company/leading-company.component';
+
 import { JobsSidebarComponent } from './common/jobs-sidebar/jobs-sidebar.component';
-import { AboutUsComponent } from './common/about-us/about-us.component';
+
 
 // Dashboard components
 import { CdSidebarComponent } from './candidates-dashboard/cd-sidebar/cd-sidebar.component';
@@ -184,7 +183,6 @@ import { EvenementFeedbacksComponent } from './evenement-dashboard/evenement-fee
         PartenaireListComponent,
         OffreListComponent,
         EntretienListComponent,
-        FormationListComponent,
         CandidatureListComponent,
         EvenementListAdminComponent,
         AdHeaderComponent,  
@@ -212,6 +210,7 @@ import { EvenementFeedbacksComponent } from './evenement-dashboard/evenement-fee
         NgxScrollTopModule,
         GoogleMapsModule,
         FullCalendarModule,
+        SharedModule
         
         
         
