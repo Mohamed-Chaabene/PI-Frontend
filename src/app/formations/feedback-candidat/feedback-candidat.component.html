@@ -1,6 +1,6 @@
 <div class="feedback-section">
 
-  <!-- ══ Header ══════════════════════════════════════════════════════════ -->
+  <!-- Header -->
   <div class="feedback-header">
     <div class="feedback-header-left">
       <h3 class="feedback-title">
@@ -17,37 +17,36 @@
       </div>
     </div>
 
-    <!-- ✅ Bouton "Donner mon avis" — visible SEULEMENT si formation Terminée -->
+    <!-- Bouton "Donner mon avis" -->
     <button
       *ngIf="peutDonnerFeedback && !showForm"
       type="button"
       class="add-feedback-btn"
-      (click)="openCreate()"
-    >
+      (click)="openCreate()">
       <i class="ri-add-line"></i> Donner mon avis
     </button>
   </div>
 
-  <!-- ══ Message succès ═══════════════════════════════════════════════════ -->
+  <!-- Message succès -->
   <div class="alert-success" *ngIf="successMsg">
     <i class="ri-checkbox-circle-line"></i> {{ successMsg }}
   </div>
 
-  <!-- ✅ Message si inscrit mais pas encore terminé ═══════════════════════ -->
+  <!-- Message : doit terminer la formation -->
   <div class="info-terminer" *ngIf="isCandidat && !aTermine && !checkingTermine && !myFeedback">
     <i class="ri-lock-line"></i>
-    <span>
-      Terminez cette formation (progression 100%) pour pouvoir laisser un avis.
-    </span>
+    <span>Terminez cette formation pour pouvoir laisser un avis.</span>
   </div>
 
-  <!-- ══ Formulaire ════════════════════════════════════════════════════════ -->
+  <!-- Formulaire de création / modification d'avis -->
   <div class="feedback-form-card" *ngIf="showForm && isCandidat && aTermine">
+
     <h4 class="form-title">{{ editing ? 'Modifier mon avis' : 'Partager mon expérience' }}</h4>
 
     <form [formGroup]="form" (ngSubmit)="submit()">
 
-      <div class="stars-input-group">
+      <!-- Note (étoiles) avec validation -->
+      <div class="stars-group">
         <label class="form-label">Ma note <span class="required">*</span></label>
         <div class="stars-row">
           <span
@@ -59,33 +58,64 @@
           >★</span>
           <span class="note-label" *ngIf="form.value.note > 0">{{ noteLabel }}</span>
         </div>
+        <!-- ✅ SUPPRIMÉ : l'erreur note n'est plus ici -->
       </div>
 
+      <!-- Commentaire avec validation -->
       <div class="form-group">
         <label class="form-label">Commentaire <span class="required">*</span></label>
         <textarea
-          class="form-textarea"
+          class="form-control"
+          [class.is-invalid]="hasError('commentaire')"
           formControlName="commentaire"
           rows="4"
           placeholder="Partagez votre expérience : contenu, qualité, points forts..."
-        ></textarea>
-        <div class="char-count">{{ form.value.commentaire?.length || 0 }} / 1000</div>
+          maxlength="100">
+        </textarea>
+
+        <div class="char-counter"
+             [class.warning]="commentaireRestant < 100"
+             [class.danger]="commentaireRestant < 20">
+          {{ commentaireRestant }} caractères restants
+        </div>
+
+        <!-- Erreur commentaire -->
+        <div class="invalid-feedback" *ngIf="hasError('commentaire')">
+          {{ getError('commentaire') }}
+        </div>
       </div>
 
-      <div class="alert-error" *ngIf="errorMsg">
-        <i class="ri-error-warning-line"></i> {{ errorMsg }}
-      </div>
+     <!-- Erreur globale : note + autres erreurs serveur -->
+<div class="alert-error" 
+     *ngIf="errorMsg || (form.get('note')?.invalid && form.get('note')?.dirty && form.value.note < 1)">
+  <i class="ri-error-warning-line"></i>
+  <span *ngIf="form.get('note')?.invalid && form.get('note')?.dirty && form.value.note < 1">
+    Veuillez sélectionner une note.
+  </span>
+  <span *ngIf="errorMsg && !(form.get('note')?.invalid && form.get('note')?.dirty && form.value.note < 1)">
+    {{ errorMsg }}
+  </span>
+</div>
 
+      <!-- Actions du formulaire -->
       <div class="form-actions">
-        <button type="button" class="btn-cancel" (click)="cancelForm()">Annuler</button>
-        <button type="submit" class="btn-submit" [disabled]="saving">
+        <button type="button" class="btn-cancel" (click)="cancelForm()">
+          Annuler
+        </button>
+        <button
+          type="submit"
+          class="btn-submit"
+          [disabled]="saving">
+          <i class="ri-loader-4-line spin" *ngIf="saving"></i>
+          <i class="ri-send-plane-line" *ngIf="!saving"></i>
           {{ saving ? 'Enregistrement...' : (editing ? 'Mettre à jour' : 'Publier mon avis') }}
         </button>
       </div>
+
     </form>
   </div>
 
-  <!-- ══ Mon feedback (avec actions) ══════════════════════════════════════ -->
+  <!-- Mon propre feedback (en mode lecture) -->
   <div class="my-feedback-card" *ngIf="myFeedback && !showForm">
     <div class="my-feedback-header">
       <div class="my-badge"><i class="ri-user-line"></i> Mon avis</div>
@@ -110,12 +140,12 @@
     </div>
   </div>
 
-  <!-- ══ Chargement ════════════════════════════════════════════════════════ -->
+  <!-- Chargement -->
   <div class="loading-state" *ngIf="loading">
     <span class="text-muted">Chargement des avis...</span>
   </div>
 
-  <!-- ══ Liste des feedbacks ════════════════════════════════════════════════ -->
+  <!-- Liste des feedbacks -->
   <div class="feedbacks-list" *ngIf="!loading">
 
     <div class="empty-feedbacks" *ngIf="feedbacks.length === 0">

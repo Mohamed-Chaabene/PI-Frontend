@@ -12,41 +12,80 @@ $bg-card:       #ffffff;
 $radius-card:   16px;
 $radius-pill:   50px;
 $shadow-card:   0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
-$shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+$shadow-hover:  0 8px 24px rgba(9, 101, 164, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
 
 // ─── Page background ──────────────────────────────────────────────────────────
 .formations-area {
   background: $bg-page;
   padding-top: 0 !important;
 
-  // ─── Hero banner (Style C) ─────────────────────────────────────────────────
+  // ─── Hero unique fusionné ──────────────────────────────────────────────────
   .formations-hero {
-    background: linear-gradient(135deg, $primary 0%, $accent 60%, #85B7EB 100%);
-    border-radius: 0 0 32px 32px;
-    padding: 48px 0 56px;
+    background: linear-gradient(135deg, #0965A4 0%, #1a7cc4 55%, #85B7EB 100%);
+    border-radius: 0 0 36px 36px;
+    padding: 28px 0 56px;
     margin-bottom: 40px;
     position: relative;
     overflow: hidden;
 
+    // Reflets décoratifs
     &::before {
       content: '';
       position: absolute;
       top: -60px; right: -60px;
-      width: 260px; height: 260px;
+      width: 280px; height: 280px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.06);
+      background: rgba(255, 255, 255, 0.07);
+      pointer-events: none;
     }
     &::after {
       content: '';
       position: absolute;
       bottom: -80px; left: -40px;
-      width: 320px; height: 320px;
+      width: 340px; height: 340px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.04);
+      background: rgba(255, 255, 255, 0.04);
+      pointer-events: none;
     }
 
+    // ── Fil d'Ariane intégré dans le hero ─────────────────────────────────
+    .hero-breadcrumb {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+      li {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.75);
+
+        a {
+          color: #ffffff;
+          text-decoration: none;
+          font-weight: 500;
+          transition: opacity 0.2s;
+
+          &:hover { opacity: 0.75; }
+        }
+
+        &:not(:last-child)::after {
+          content: '/';
+          margin: 0 8px;
+          color: rgba(255, 255, 255, 0.45);
+        }
+
+        &:last-child {
+          color: #0965A4;
+          font-weight: 600;
+        }
+      }
+    }
+
+    // ── Contenu principal ──────────────────────────────────────────────────
     .hero-content {
-      position: relative; z-index: 1;
+      position: relative;
+      z-index: 1;
     }
 
     .hero-title {
@@ -59,10 +98,11 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
 
     .hero-subtitle {
       font-size: 1rem;
-      color: rgba(255,255,255,0.82);
+      color: rgba(255, 255, 255, 0.82);
       margin-bottom: 0;
     }
 
+    // Stats à droite
     .hero-stats {
       display: flex;
       gap: 32px;
@@ -72,6 +112,11 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
 
     .hero-stat {
       text-align: center;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 16px 24px;
+      backdrop-filter: blur(4px);
 
       .stat-value {
         font-size: 2rem;
@@ -83,13 +128,14 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
 
       .stat-label {
         font-size: 0.78rem;
-        color: rgba(255,255,255,0.75);
-        margin-top: 4px;
+        color: rgba(255, 255, 255, 0.75);
+        margin-top: 6px;
         display: block;
+        font-weight: 500;
       }
     }
 
-    // Barre de recherche intégrée dans le hero
+    // Barre de recherche
     .hero-search {
       margin-top: 28px;
       display: flex;
@@ -113,13 +159,15 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
           border: none;
           border-radius: 12px;
           font-size: 0.95rem;
-          background: rgba(255,255,255,0.95);
+          background: rgba(255, 255, 255, 0.97);
           color: $text-main;
           outline: none;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
           transition: box-shadow 0.2s;
 
           &:focus {
-            box-shadow: 0 0 0 3px rgba(255,255,255,0.4);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5),
+                        0 4px 16px rgba(0, 0, 0, 0.12);
           }
 
           &::placeholder { color: $text-light; }
@@ -128,23 +176,27 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
 
       .search-btn {
         padding: 14px 28px;
-        background: $primary-dark;
+        background: rgba(255, 255, 255, 0.18);
         color: #fff;
-        border: none;
+        border: 1.5px solid rgba(255, 255, 255, 0.45);
         border-radius: 12px;
         font-size: 0.95rem;
         font-weight: 600;
         cursor: pointer;
         transition: background 0.2s, transform 0.15s;
         white-space: nowrap;
+        backdrop-filter: blur(4px);
 
-        &:hover { background: #0965A4; transform: translateY(-1px); }
+        &:hover {
+          background: rgba(255, 255, 255, 0.28);
+          transform: translateY(-1px);
+        }
         &:active { transform: translateY(0); }
       }
     }
   }
 
-  // ─── Filtres chips (Style C) ───────────────────────────────────────────────
+  // ─── Filtres chips ─────────────────────────────────────────────────────────
   .formations-filters {
     display: flex;
     flex-wrap: wrap;
@@ -177,7 +229,7 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
     }
   }
 
-  // ─── Cards formations (Style A) ────────────────────────────────────────────
+  // ─── Cards formations ──────────────────────────────────────────────────────
   .formation-card {
     background: $bg-card;
     border: 1px solid $border;
@@ -195,7 +247,6 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
       border-color: rgba($primary, 0.25);
     }
 
-    // Bandeau coloré en haut de la card
     .card-top-banner {
       height: 100px;
       display: flex;
@@ -203,21 +254,22 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
       justify-content: center;
       position: relative;
 
-      &.cat-dev     { background: linear-gradient(135deg, #5388c1, #85B7EB); }
-      &.cat-frontend { background: linear-gradient(135deg, #5388c1, #85B7EB); }
-      &.cat-backend  { background: linear-gradient(135deg, #5388c1, #85B7EB); }
-      &.cat-ia       { background: linear-gradient(135deg, #5388c1, #85B7EB); }
-      &.cat-data     { background: linear-gradient(135deg, #5388c1, #85B7EB); }
-      &.cat-design   { background: linear-gradient(135deg, #5388c1, #85B7EB); }
-      &.cat-devops   { background: linear-gradient(135deg, #5388c1, #85B7EB); }
-      &.cat-default  { background: linear-gradient(135deg, #5388c1, #85B7EB); }
+      &.cat-dev,
+      &.cat-frontend,
+      &.cat-backend,
+      &.cat-ia,
+      &.cat-data,
+      &.cat-design,
+      &.cat-devops,
+      &.cat-default {
+        background: linear-gradient(135deg, #5388c1, #85B7EB);
+      }
 
       .cat-emoji {
         font-size: 36px;
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
       }
 
-      // Badge statut en haut à droite
       .statut-badge {
         position: absolute;
         top: 10px; right: 10px;
@@ -306,8 +358,10 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
     }
   }
 
-  // ─── Sidebar (Style B + A) ─────────────────────────────────────────────────
+  // ─── Sidebar ───────────────────────────────────────────────────────────────
   .sidebar-area {
+    position: sticky;
+    top: 24px;
 
     .sidebar-card {
       background: $bg-card;
@@ -332,7 +386,10 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
       }
 
       .sidebar-btn {
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
         width: 100%;
         padding: 12px 16px;
         border-radius: 10px;
@@ -344,11 +401,14 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
         transition: all 0.2s;
         margin-bottom: 10px;
 
+        &:last-child { margin-bottom: 0; }
+        i { font-size: 16px; }
+
         &.btn-primary {
           background: $primary;
           color: #fff;
           border: none;
-          &:hover { background: $primary-dark; transform: translateY(-1px); }
+          &:hover { background: darken($primary, 6%); transform: translateY(-1px); color: #fff; }
         }
 
         &.btn-outline {
@@ -357,12 +417,9 @@ $shadow-hover:  0 8px 24px rgba(15, 110, 86, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06
           border: 1.5px solid $primary;
           &:hover { background: $primary-light; }
         }
-
-        &:last-child { margin-bottom: 0; }
       }
     }
 
-    // Stats pour admin (Style B)
     .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;

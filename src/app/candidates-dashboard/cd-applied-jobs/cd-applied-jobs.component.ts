@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 
 @Component({
@@ -33,6 +33,9 @@ export class CdAppliedJobsComponent implements OnInit {
     vuesRecruteurs: number = 0;
     
     newCandidature = {
+        offreId: null as number | null,
+        poste: '',
+        entreprise: '',
         nomComplet: '',
         email: '',
         telephone: '',
@@ -122,10 +125,91 @@ export class CdAppliedJobsComponent implements OnInit {
     
     searchEntreprise: string = '';
 
-    constructor(private apiService: ApiService, private router: Router) {}
+
+
+    // Fonctionnalités avancées - Variables
+niveau: string = 'Débutant';
+pointsTotal: number = 0;
+niveauProgress: number = 0;
+niveauSuivant: string = '';
+pointsPourNiveauSuivant: number = 0;
+badges: any[] = [];
+
+matchScores: any[] = [];
+radarData: any[] = [];
+competencesUtilisateur: string[] = [];
+
+tempsMoyenReponse: number = 8;
+tauxReussiteCalcule: number = 0;
+candidaturesParMois: any[] = [];
+
+predictionData: any = null;
+
+relancesData: any[] = [];
+
+assistantMessages: { role: string; content: string }[] = [];
+assistantInput: string = '';
+isAssistantTyping: boolean = false;
+
+timelineItems: any[] = [];
+
+// Variables pour les modales avancées
+showGamificationModal: boolean = false;
+showSmartMatchModal: boolean = false;
+showRadarModal: boolean = false;
+showStatsModal: boolean = false;
+showPredictionModal: boolean = false;
+showRelancesModal: boolean = false;
+showAssistantModal: boolean = false;
+showTimelineModal: boolean = false;
+
+
+// ==================== TAGS ====================
+availableTags = ['Prioritaire', 'Remote', 'Startup', 'Stage', 'Tech', 'Finance', 'Urgent'];
+candidatureTags: { [id: number]: string[] } = {};
+activeTagFilter: string[] = [];
+showTagMenu: number | null = null;
+
+// ==================== NOTES ====================
+candidatureNotes: { [id: number]: string } = {};
+showNoteModal: number | null = null;
+currentNote: string = '';
+
+// ==================== RAPPELS ====================
+rappels: any[] = [];
+
+// ==================== DOUBLONS ====================
+doublons: any[] = [];
+showDoublonsModal: boolean = false;
+
+
+navigateToDocuments(): void {
+    this.showAssistantModal = false;
+    this.router.navigate(['/candidates-dashboard/documents']);
+}
+
+@ViewChild('chatMessages') chatMessages!: ElementRef;
+
+    constructor(private apiService: ApiService, private router: Router, private route: ActivatedRoute) {}
 
     ngOnInit(): void {
         this.loadData();
+        this.handleLinkedOfferFormOpen();
+    }
+
+    private handleLinkedOfferFormOpen(): void {
+        this.route.queryParamMap.subscribe((params) => {
+            if (params.get('openForm') !== '1') {
+                return;
+            }
+
+            const rawOffreId = Number(params.get('offreId'));
+            const offreId = Number.isFinite(rawOffreId) && rawOffreId > 0 ? rawOffreId : null;
+            const offreTitre = params.get('offreTitre') || '';
+            const entreprise = params.get('entreprise') || '';
+
+            this.openCreateModal({ offreId, offreTitre, entreprise });
+        });
     }
 
     
@@ -608,31 +692,44 @@ addAlertStyles(): void {
     // ==================== CHARGEMENT DES DONNÉES ====================
     
     loadData(): void {
-        this.isLoading = true;
-        
-        this.apiService.getMesCandidatures().subscribe({
-            next: (data) => {
-                console.log('📊 Données reçues:', data);
-                this.candidatures = Array.isArray(data) ? data : (data ? [data] : []);
-                this.isLoading = false;
-                this.calculateStats();
-                this.calculerStatsPersonnelles();
-                this.chargerAlertes();
-            },
-            error: (err) => {
-                console.error('Erreur chargement:', err);
-                this.errorMessage = 'Erreur de chargement';
-                this.isLoading = false;
-            }
-        });
+    this.isLoading = true;
+    
+    this.apiService.getMesCandidatures().subscribe({
+        next: (data) => {
+            console.log('📊 Données reçues:', data);
+            this.candidatures = Array.isArray(data) ? data : (data ? [data] : []);
+            this.isLoading = false;
+            this.calculateStats();
+            this.calculerStatsPersonnelles();
+            this.chargerAlertes();
+             this.chargerPrediction();
+            this.chargerDonneesLocales();
+            this.calculerRappels();
+            this.detecterDoublons();
+            // ==================== AJOUTE CES APPELS ICI ====================
+            this.chargerGamification();
+            this.chargerSmartMatch();
+            this.chargerRadar();
+            this.chargerStatistiquesAvancees();
+            this.chargerPrediction();
+            this.chargerRelances();
+            this.chargerTimeline();
+            // ===============================================================
+        },
+        error: (err) => {
+            console.error('Erreur chargement:', err);
+            this.errorMessage = 'Erreur de chargement';
+            this.isLoading = false;
+        }
+    });
 
-        this.apiService.getStatsCandidatures().subscribe({
-            next: (data) => {
-                if (data) this.stats = data;
-            },
-            error: () => {}
-        });
-    }
+    this.apiService.getStatsCandidatures().subscribe({
+        next: (data) => {
+            if (data) this.stats = data;
+        },
+        error: () => {}
+    });
+}
 
     calculateStats(): void {
         this.stats.total = this.candidatures.length;
@@ -644,8 +741,11 @@ addAlertStyles(): void {
     
     // ==================== CREATE ====================
 
-openCreateModal(): void {
+openCreateModal(prefill?: { offreId?: number | null; offreTitre?: string; entreprise?: string }): void {
     this.newCandidature = {
+        offreId: prefill?.offreId ?? null,
+        poste: prefill?.offreTitre || '',
+        entreprise: prefill?.entreprise || '',
         nomComplet: '',
         email: '',
         telephone: '',
@@ -698,6 +798,9 @@ createCandidature(): void {
 
     
     const dataToSend = {
+        offreId: this.newCandidature.offreId,
+        poste: this.newCandidature.poste,
+        entreprise: this.newCandidature.entreprise,
         nomComplet: this.newCandidature.nomComplet,
         email: this.newCandidature.email,
         telephone: this.newCandidature.telephone,
@@ -1245,4 +1348,932 @@ ${nom}
         });
     }
     
+
+
+
+// 1. GAMIFICATION
+ouvrirGamification(): void {
+    this.chargerGamification();
+    this.showGamificationModal = true;
+}
+
+chargerGamification(): void {
+    this.apiService.getGamification().subscribe({
+        next: (data: any) => {
+            this.niveau = data.niveau;
+            this.pointsTotal = data.points;
+            this.niveauProgress = data.niveauProgress;
+            this.niveauSuivant = data.niveauSuivant;
+            this.pointsPourNiveauSuivant = data.pointsPourNiveauSuivant;
+            this.badges = data.badges;
+        },
+        error: (err) => console.error('Erreur chargement gamification:', err)
+    });
+}
+
+// 2. SMART MATCH
+ouvrirSmartMatch(): void {
+    this.chargerSmartMatch();
+    this.showSmartMatchModal = true;
+}
+
+chargerSmartMatch(): void {
+    this.apiService.getSmartMatch().subscribe({
+        next: (data: any) => {
+            this.matchScores = data.map((item: any) => ({
+                offre: {
+                    titre: item.titrOffre,
+                    entreprise: item.entreprise,
+                    location: item.localisation
+                },
+                score: item.score,
+                label: item.label,
+                couleur: item.score >= 70 ? '#10b981' : item.score >= 40 ? '#f59e0b' : '#ef4444'
+            }));
+        },
+        error: (err) => console.error('Erreur chargement smart match:', err)
+    });
+}
+
+getTouteMesCompetences(): string[] {
+    const competencesSet = new Set<string>();
+    this.candidatures.forEach(c => {
+        if (c.competences) {
+            c.competences.split(',').forEach((skill: string) => {
+                competencesSet.add(skill.trim());
+            });
+        }
+    });
+    return Array.from(competencesSet);
+}
+
+// 3. RADAR COMPÉTENCES
+ouvrirRadar(): void {
+    this.chargerRadar();
+    this.showRadarModal = true;
+}
+
+chargerRadar(): void {
+    this.apiService.getRadarCompetences().subscribe({
+        next: (data: any) => {
+            this.radarData = data.radarData;
+            this.competencesUtilisateur = data.competences || [];
+        },
+        error: (err) => console.error('Erreur chargement radar:', err)
+    });
+}
+
+// 4. STATISTIQUES
+ouvrirStatistiques(): void {
+    this.chargerStatistiquesAvancees();
+    this.showStatsModal = true;
+}
+
+chargerStatistiquesAvancees(): void {
+    // Taux de réussite
+    this.apiService.getTauxReussite().subscribe({
+        next: (data: any) => {
+            this.tauxReussiteCalcule = data.tauxReussite;
+        },
+        error: (err) => console.error('Erreur taux réussite:', err)
+    });
+
+    // Statistiques par mois
+    this.apiService.getStatsParMois().subscribe({
+        next: (data: any) => {
+            this.candidaturesParMois = data;
+        },
+        error: (err) => console.error('Erreur stats mois:', err)
+    });
+
+    // Calcul du temps moyen de réponse (simulé)
+    this.calculerTempsMoyenReponse();
+}
+
+calculerTempsMoyenReponse(): void {
+    const candidaturesAvecReponse = this.candidatures.filter(c => 
+        c.statut === 'ACCEPTEE' || c.statut === 'REFUSEE'
+    );
+    if (candidaturesAvecReponse.length > 0) {
+        // Simulation - à adapter selon vos données réelles
+        this.tempsMoyenReponse = Math.floor(Math.random() * 15) + 5;
+    }
+}
+
+// 5. PRÉDICTION IA
+ouvrirPrediction(): void {
+    this.chargerPrediction();
+    this.showPredictionModal = true;
+}
+
+chargerPrediction(): void {
+    // 1. Récupérer le contenu du CV
+    const cvContent = this.getCvContentForChat();
+    
+    // 2. Préparer l'historique des candidatures
+    const historique = this.candidatures.map(c => ({
+        statut: c.statut,
+        dateEnvoi: c.dateEnvoi,
+        poste: c.poste || c.offreTitre,
+        entreprise: c.entreprise
+    }));
+    
+    // 3. Appeler l'API ML avec les données
+    this.apiService.getPredictionSucces(cvContent, historique).subscribe({
+        next: (data: any) => {
+            this.predictionData = {
+                probabilite: data.probabilite,
+                meilleurMoment: data.meilleurMoment,
+                pointsForts: data.pointsForts,
+                pointsAmeliorer: data.pointsAmeliorer,
+                conseilsSpecifiques: data.conseilsSpecifiques || [],
+                couleur: data.couleur || (data.probabilite >= 70 ? '#10b981' : data.probabilite >= 40 ? '#f59e0b' : '#ef4444')
+            };
+        },
+        error: (err) => {
+            console.error('Erreur chargement prédiction:', err);
+            // Fallback en cas d'erreur
+            this.predictionData = {
+                probabilite: 25,
+                meilleurMoment: "Créez d'abord votre CV et postulez à des offres",
+                pointsForts: ["Commencez votre recherche"],
+                pointsAmeliorer: ["Créez votre CV", "Ajoutez vos compétences", "Postulez à des offres"],
+                conseilsSpecifiques: ["Créez votre CV dans Mes Documents"],
+                couleur: '#ef4444'
+            };
+        }
+    });
+}
+
+// 6. RELANCES
+ouvrirRelances(): void {
+    this.chargerRelances();
+    this.showRelancesModal = true;
+}
+
+chargerRelances(): void {
+    this.apiService.getRelances().subscribe({
+        next: (data: any) => {
+            this.relancesData = data;
+        },
+        error: (err) => console.error('Erreur chargement relances:', err)
+    });
+}
+
+copierRelance(message: string): void {
+    navigator.clipboard.writeText(message).then(() => {
+        this.showMessage('Message copié dans le presse-papier !', 'success');
+    });
+}
+
+// 7. ASSISTANT IA
+ouvrirAssistant(): void {
+    this.assistantMessages = [
+        { 
+            role: 'assistant', 
+            content: `<div style="font-family: inherit; line-height: 1.6;">
+                <strong>✨ Salut ! Moi c'est CareerBot, votre assistant carrière intelligent ! 🚀</strong><br><br>
+                Je suis là pour booster votre recherche d'emploi. Voici ce que je peux faire :<br><br>
+                
+                <strong>🎯 Carrière & Stratégie</strong><br>
+                • Analyser votre profil et vous donner un score<br>
+                • Identifier vos points forts et axes d'amélioration<br>
+                • Stratégie de recherche d'emploi personnalisée<br><br>
+                
+                <strong>📄 Documents professionnels</strong><br>
+                • Générer un CV professionnel<br>
+                • Rédiger une lettre de motivation percutante<br>
+                • Créer votre portfolio<br><br>
+                
+                <strong>🎤 Préparation entretien</strong><br>
+                • Questions fréquentes par métier<br>
+                • Technique STAR expliquée<br>
+                • Conseils de présentation<br><br>
+                
+                <strong>💡 Conseil du jour :</strong> Les candidats qui personnalisent leur CV pour chaque offre ont <strong>3x plus de chances</strong> d'être rappelés !<br><br>
+                
+                Alors, par où on commence ? 😊
+            </div>`
+        }
+    ];
+    this.assistantInput = '';
+    this.showAssistantModal = true;
+    setTimeout(() => this.scrollChatToBottom(), 100);
+}
+
+envoyerMessageAssistant(): void {
+    if (!this.assistantInput.trim()) return;
+
+    const userMessage = this.assistantInput.trim();
+    this.assistantMessages.push({ role: 'user', content: userMessage });
+    this.assistantInput = '';
+    this.isAssistantTyping = true;
+    this.scrollChatToBottom();
+
+    // Détection des documents (optionnelle, maintenant gérée par le ML)
+    if (this.detecterIntentionDocument(userMessage)) {
+        this.isAssistantTyping = false;
+        this.scrollChatToBottom();
+        return;
+    }
+
+    // Appel au ML
+    const cvContent = this.getCvContentForChat();
+    
+    this.apiService.chatWithML(userMessage, cvContent).subscribe({
+        next: (data) => {
+            // La réponse HTML du ML
+            this.assistantMessages.push({
+                role: 'assistant',
+                content: data.response  // ← Contient le HTML avec le lien
+            });
+            this.isAssistantTyping = false;
+            this.scrollChatToBottom();
+        },
+        error: (err) => {
+            console.error('❌ Erreur ML:', err);
+            // Fallback uniquement si ML indisponible
+            const reponse = this.genererReponseAssistant(userMessage);
+            this.assistantMessages.push({
+                role: 'assistant',
+                content: reponse
+            });
+            this.isAssistantTyping = false;
+            this.scrollChatToBottom();
+        }
+    });
+}
+
+
+// ✅ Détecte les intentions liées aux documents
+detecterIntentionDocument(message: string): boolean {
+    const msg = message.toLowerCase();
+
+    const motsClesCV = [
+    'générer cv', 'generer cv', 'créer cv', 'creer cv',
+    'faire un cv', 'nouveau cv', 'créer mon cv', 'creer mon cv',
+    'générer mon cv', 'generer mon cv', 'cv professionnel',
+    'faire mon cv', 'construire cv', 'rédiger cv', 'rediger cv',
+    'gérer cv', 'gerer cv',        
+    'créer un cv', 'creer un cv', 
+    'mon cv', 'faire cv'           
+];
+
+    const motsClesLettre = [
+        'lettre de motivation', 'lettre motivation',
+        'générer lettre', 'generer lettre', 'créer lettre', 'creer lettre',
+        'faire une lettre', 'rédiger lettre', 'rediger lettre',
+        'lettre candidature', 'motivation letter'
+    ];
+
+    const motsClesPortfolio = [
+        'portfolio', 'générer portfolio', 'generer portfolio',
+        'créer portfolio', 'creer portfolio', 'faire portfolio'
+    ];
+
+    const motsClesDocument = [
+        'générer document', 'generer document', 'créer document',
+        'creer document', 'nouveau document', 'mes documents'
+    ];
+
+    const estCV = motsClesCV.some(mot => msg.includes(mot));
+    const estLettre = motsClesLettre.some(mot => msg.includes(mot));
+    const estPortfolio = motsClesPortfolio.some(mot => msg.includes(mot));
+    const estDocument = motsClesDocument.some(mot => msg.includes(mot));
+
+
+    
+    // Si l'utilisateur parle de CV
+      if (estCV) {
+        this.assistantMessages.push({
+            role: 'assistant',
+            content: `<div style="font-family: inherit;">
+                <strong>📄 Gestion de votre CV</strong><br><br>
+                Voici où vous pouvez gérer votre CV :<br><br>
+                <a href="/candidates-dashboard/documents" 
+                   style="color: #6366F1; text-decoration: underline; cursor: pointer;">
+                   🔗 Accéder à Mes Documents
+                </a><br><br>
+                <strong>Dans cette section, vous pourrez :</strong><br>
+                • 📝 Créer et modifier votre CV professionnel<br>
+                • 📤 Télécharger votre CV au format PDF<br>
+                • 👁️ Visualiser votre CV<br>
+                • 🔄 Mettre à jour vos informations<br><br>
+                ✨ <strong>Conseil :</strong> Un CV bien structuré augmente vos chances d'être contacté de 40% !
+            </div>`
+        });
+        
+        // Gérer la navigation avec Router
+        setTimeout(() => {
+            const link = document.querySelector('.chat-messages a');
+            if (link) {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showAssistantModal = false;
+                    this.router.navigate(['/candidates-dashboard/documents']);
+                });
+            }
+        }, 100);
+        
+        setTimeout(() => this.scrollChatToBottom(), 100);
+        return true;
+    }
+    
+    return false;
+
+
+    // Si l'utilisateur parle de lettre de motivation
+    if (estLettre) {
+        this.assistantMessages.push({
+            role: 'assistant',
+            content: `✉️ **Gestion de vos lettres de motivation**\n\nVoici où vous pouvez gérer vos lettres :\n\n🔗 **[Accéder à Mes Documents →](/candidates-dashboard/documents)**\n\nDans cette section, vous pourrez :\n• ✨ Générer une lettre personnalisée avec l'IA\n• 🏢 Adapter votre lettre à chaque entreprise\n• 📥 Télécharger vos lettres au format PDF\n• 📝 Créer plusieurs versions différentes\n\n💡 **Astuce :** Personnalisez chaque lettre pour multiplier vos chances par 3 !`
+        });
+        setTimeout(() => this.scrollChatToBottom(), 100);
+        return true;
+    }
+
+    // Si l'utilisateur parle de portfolio
+    if (estPortfolio) {
+        this.assistantMessages.push({
+            role: 'assistant',
+            content: `🗂️ **Gestion de votre Portfolio**\n\nVoici où vous pouvez gérer votre portfolio :\n\n🔗 **[Accéder à Mes Documents →](/candidates-dashboard/documents)**\n\nDans cette section, vous pourrez :\n• 🚀 Présenter vos meilleurs projets\n• 🛠️ Lister vos compétences et technologies\n• 🔗 Ajouter des liens vers vos réalisations\n• 📸 Intégrer des captures d'écran\n\n🎯 **Pro-tip :** Un portfolio bien présenté double vos chances en design/tech !`
+        });
+        setTimeout(() => this.scrollChatToBottom(), 100);
+        return true;
+    }
+
+    // Si l'utilisateur parle de documents en général
+    if (estDocument) {
+        this.assistantMessages.push({
+            role: 'assistant',
+            content: `📁 **Gestion de vos documents**\n\nVoici votre espace documentaire :\n\n🔗 **[Accéder à Mes Documents →](/candidates-dashboard/documents)**\n\nVous y trouverez :\n• 📄 **CV professionnel** - Créez et gérez votre CV\n• ✉️ **Lettres de motivation** - Générez avec l'IA\n• 🗂️ **Portfolio** - Présentez vos projets\n• 📝 **Autres documents** - Certificats, diplômes\n\n✨ **À découvrir :** L'IA peut vous aider à créer des documents percutants !`
+        });
+        setTimeout(() => this.scrollChatToBottom(), 100);
+        return true;
+    }
+
+    return false;
+}
+
+// ✅ Nouvelle méthode pour récupérer le CV
+getCvContentForChat(): string {
+    // Chercher dans les candidatures si un CV HTML est disponible
+    if (this.candidatures && this.candidatures.length > 0) {
+        const candidatureAvecCV = this.candidatures.find(c => c.document?.contenu);
+        if (candidatureAvecCV?.document?.contenu) {
+            return candidatureAvecCV.document.contenu;
+        }
+    }
+    // Fallback : CV en localStorage
+    return localStorage.getItem('cvUrl') || '';
+}
+
+genererReponseAssistant(message: string): string {
+    const msg = message.toLowerCase();
+
+    if (this.detecterIntentionDocument(message)) {
+        return '';
+    }
+
+
+    
+//BONJOUR
+    if (msg.includes('bonjour') || msg.includes('salut') || 
+        msg.includes('hello') || msg.includes('hey') || msg.includes('coucou')) {
+        const heures = new Date().getHours();
+        const salutation = heures < 12 ? 'Bonne matinée' : heures < 18 ? 'Bon après-midi' : 'Bonne soirée';
+        return `<div style="font-family: inherit; line-height: 1.6;">
+            <strong>${salutation} !</strong> Je suis CareerBot, votre assistant carrière. Que puis-je faire pour vous ?<br><br>
+            <strong>📄 Générer un CV ou une lettre de motivation</strong><br>
+            <strong>🎤 Préparer un entretien</strong><br>
+            <strong>💰 Négocier un salaire</strong><br>
+            <strong>📚 Trouver des formations</strong><br>
+            <strong>🔍 Stratégie de recherche d'emploi</strong>
+        </div>`;
+    }
+
+    // CV CONSEILS
+    if (msg.includes('cv') || msg.includes('curriculum')) {
+        return `<div style="font-family: inherit; line-height: 1.6;">
+            <strong>📄 Votre CV, c'est votre carte de visite !</strong><br><br>
+            
+            <strong>🔥 Structure gagnante :</strong>
+            <ul>
+                <li>Titre accrocheur en haut</li>
+                <li>Résumé professionnel de 3 lignes</li>
+                <li>Expériences en ordre anti-chronologique</li>
+                <li>Compétences bien organisées</li>
+            </ul>
+            
+            <strong>⚡ Erreurs fatales à éviter :</strong>
+            <ul>
+                <li>Photo non professionnelle</li>
+                <li>Fautes d'orthographe</li>
+                <li>CV générique non adapté à l'offre</li>
+            </ul>
+            
+            <strong>🎯 Secret :</strong> Un recruteur passe 6 secondes sur un CV !<br><br>
+            
+            💡 <strong>Tapez "générer cv" pour créer le vôtre !</strong>
+        </div>`;
+    }
+
+    // ENTRETIEN
+    if (msg.includes('entretien') || msg.includes('interview') || msg.includes('recruteur')) {
+        return `<div style="font-family: inherit; line-height: 1.6;">
+            <strong>🎤 Mode préparation entretien active !</strong> 💪<br><br>
+            
+            <strong>📌 Règle des 3P :</strong> Préparer, Pratiquer, Performer !<br><br>
+            
+            <hr style="margin: 10px 0; border-color: #e5e7eb;">
+            
+            <strong>📚 Avant l'entretien :</strong>
+            <ul>
+                <li>Googlez l'entreprise + lisez leurs dernières actus</li>
+                <li>Préparez 5 exemples avec la méthode STAR</li>
+                <li>Dormez bien la veille !</li>
+            </ul>
+            
+            <hr style="margin: 10px 0; border-color: #e5e7eb;">
+            
+            <strong>🎯 Méthode STAR :</strong>
+            <ul>
+                <li><strong>S</strong>ituation : contexte</li>
+                <li><strong>T</strong>âche : votre rôle</li>
+                <li><strong>A</strong>ction : ce que vous avez fait</li>
+                <li><strong>R</strong>ésultat : impact chiffré</li>
+            </ul>
+            
+            <hr style="margin: 10px 0; border-color: #e5e7eb;">
+            
+            <strong>💬 Questions pièges :</strong>
+            <ul>
+                <li>"Parlez-moi de vous" → 2 min, parcours + valeur</li>
+                <li>"Votre défaut ?" → vrai défaut + comment vous le gérez</li>
+            </ul>
+            
+            <hr style="margin: 10px 0; border-color: #e5e7eb;">
+            
+            <strong>🤫 Secret :</strong> Posez des questions à la fin !
+        </div>`;
+    }
+
+    // LETTRE
+    if (msg.includes('lettre') || msg.includes('motivation') || msg.includes('cover')) {
+        return `<div style="font-family: inherit; line-height: 1.6;">
+            <strong>✉️ La lettre qui fait la différence !</strong><br><br>
+            
+            80% des lettres sont ennuyeuses. Soyez dans les 20% ! 🌟<br><br>
+            
+            <strong>📝 Structure (max 1 page) :</strong>
+            <ul>
+                <li><strong>Accroche :</strong> pas "Je me permets de..."<br>
+                Tentez : "Votre offre a retenu mon attention car..."</li>
+                <li><strong>Votre valeur :</strong> compétences + réalisation chiffrée</li>
+                <li><strong>Pourquoi EUX :</strong> montrez que vous connaissez l'entreprise</li>
+                <li><strong>Call to action :</strong> invitation à l'entretien</li>
+            </ul>
+            
+            <strong>⚠️ À bannir :</strong> "Je suis motivé et dynamique"<br>
+            <strong>✅ Ce qui marche :</strong> "J'ai augmenté les ventes de 30%"<br><br>
+            
+            💡 <strong>Tapez "générer lettre" pour créer la vôtre !</strong>
+        </div>`;
+    }
+
+    // SALAIRE
+    if (msg.includes('salaire') || msg.includes('remuneration') || 
+        msg.includes('negocier') || msg.includes('paye')) {
+        return `<div style="font-family: inherit; line-height: 1.6;">
+            <strong>💰 Négociation salariale</strong> — Ne laissez pas d'argent sur la table !<br><br>
+            
+            <strong>🎯 Règle d'or :</strong> Ne donnez jamais un chiffre en premier !<br><br>
+            
+            <strong>📊 Préparation :</strong>
+            <ul>
+                <li>Consultez Glassdoor, LinkedIn Salary, Indeed</li>
+                <li>Calculez votre valeur sur le marché</li>
+                <li>Visez 10-20% au-dessus de votre cible</li>
+            </ul>
+            
+            <strong>💬 Script qui fonctionne :</strong><br>
+            "Je suis ouvert à discuter. Quelle est la fourchette prévue ?"<br><br>
+            
+            <strong>🎁 N'oubliez pas le package complet :</strong><br>
+            Télétravail • Formation • RTT • Tickets resto<br><br>
+            
+            💡 <strong>Fun fact :</strong> 70% des employeurs s'attendent à une négociation !
+        </div>`;
+    }
+
+    // FORMATION
+    if (msg.includes('formation') || msg.includes('apprendre') || 
+        msg.includes('cours') || msg.includes('certification') || msg.includes('competence')) {
+        return `<div style="font-family: inherit; line-height: 1.6;">
+            <strong>📚 Boostez vos compétences, boostez votre carrière !</strong><br><br>
+            
+            <strong>🔥 Compétences les plus recherchées en 2024 :</strong>
+            <ul>
+                <li>Intelligence Artificielle & Prompt Engineering</li>
+                <li>Data Analysis (Excel, Python, Power BI)</li>
+                <li>Cloud (AWS, Azure, GCP)</li>
+                <li>Cybersécurité</li>
+                <li>Langues (Anglais B2+ = +20% de salaire !)</li>
+            </ul>
+            
+            <strong>🆓 Plateformes gratuites :</strong>
+            <ul>
+                <li>YouTube, Coursera (audit gratuit), freeCodeCamp</li>
+            </ul>
+            
+            <strong>💳 Investissement utile :</strong>
+            <ul>
+                <li>Udemy (soldes à 9,99€), OpenClassrooms, LinkedIn Learning</li>
+            </ul>
+            
+            <strong>⏱️ Règle :</strong> 30 min/jour = une compétence solide en 1 an !
+        </div>`;
+    }
+
+    // RECONVERSION
+    if (msg.includes('reconversion') || msg.includes('changer') || 
+        msg.includes('nouveau metier') || msg.includes('orientation')) {
+        return `<div style="font-family: inherit; line-height: 1.6;">
+            <strong>🔄 Reconversion</strong> — Le courage de changer, c'est 50% du chemin !<br><br>
+            
+            60% des professionnels envisagent une reconversion. Vous n'êtes pas seul(e) !<br><br>
+            
+            <strong>🗺️ Roadmap en 5 étapes :</strong>
+            <ul>
+                <li>Bilan de compétences : ce que vous aimez / savez faire</li>
+                <li>Ciblez votre domaine : rencontrez des pros sur LinkedIn</li>
+                <li>Formez-vous : bootcamp (3-6 mois) ou formation longue</li>
+                <li>Construisez un portfolio : projets personnels</li>
+                <li>Réseautage actif : événements sectoriels</li>
+            </ul>
+            
+            <strong>🔥 Secteurs qui recrutent sans expérience :</strong><br>
+            Dev Web • Data • Cybersécurité • UX Design • Marketing Digital<br><br>
+            
+            Vers quel domaine souhaitez-vous vous orienter ?
+        </div>`;
+    }
+
+    // EMPLOI / RECHERCHE
+    if (msg.includes('emploi') || msg.includes('travail') || msg.includes('job') || 
+        msg.includes('offre') || msg.includes('trouver') || msg.includes('cherche')) {
+        return `<div style="font-family: inherit; line-height: 1.6;">
+            <strong>🔍 Stratégie de recherche d'emploi</strong> — Travaillez malin !<br><br>
+            
+            <strong>📊 La réalité du marché :</strong>
+            <ul>
+                <li>70-80% des emplois ne sont jamais publiés !</li>
+                <li>Le réseau représente 60% des recrutements</li>
+            </ul>
+            
+            <strong>🎯 Stratégie multicanal :</strong>
+            <ul>
+                <li><strong>20%</strong> Plateformes : LinkedIn, Indeed, Welcome to the Jungle</li>
+                <li><strong>50%</strong> Réseau : 5 connexions/jour dans votre secteur ⭐</li>
+                <li><strong>30%</strong> Candidatures spontanées : email personnalisé</li>
+            </ul>
+            
+            <strong>⚡ Hack :</strong> Candidatez le mardi ou mercredi matin.<br>
+            Les recruteurs sont plus réactifs ces jours-là !<br><br>
+            
+            Besoin d'aide pour optimiser votre profil LinkedIn ?
+        </div>`;
+    }
+
+    // STRESS / MOTIVATION
+    if (msg.includes('stress') || msg.includes('anxieux') || msg.includes('peur') || 
+        msg.includes('decourage') || msg.includes('difficile')) {
+        return `<div style="font-family: inherit; line-height: 1.6;">
+            <strong>💪 La recherche d'emploi, c'est un marathon, pas un sprint !</strong><br><br>
+            
+            Ce que vous ressentez est totalement normal. 🫂<br><br>
+            
+            <strong>🌟 Vérités réconfortantes :</strong>
+            <ul>
+                <li>La moyenne de recherche est de 3-6 mois</li>
+                <li>Un refus n'est pas un jugement sur vous</li>
+                <li>Les recruteurs cherchent du potentiel, pas la perfection</li>
+            </ul>
+            
+            <strong>⚡ Technique des petites victoires :</strong>
+            <ul>
+                <li>1 candidature + 1 contact LinkedIn + 1 article lu par jour</li>
+            </ul>
+            
+            <strong>🎯 Citation :</strong> "Le succès, c'est tomber 7 fois et se relever 8."<br><br>
+            
+            Je suis là pour vous aider à chaque étape. On attaque quoi ensemble ? 💪
+        </div>`;
+    }
+
+    // LINKEDIN
+    if (msg.includes('linkedin') || msg.includes('reseau') || msg.includes('profil')) {
+        return `<div style="font-family: inherit; line-height: 1.6;">
+            <strong>💼 LinkedIn</strong> — Votre vitrine professionnelle 24h/24 !<br><br>
+            
+            <strong>📊 Saviez-vous que :</strong>
+            <ul>
+                <li>87% des recruteurs utilisent LinkedIn</li>
+                <li>Un profil complet reçoit 40x plus d'opportunités</li>
+            </ul>
+            
+            <strong>🔑 Les 7 éléments d'un profil qui attire :</strong>
+            <ul>
+                <li>Photo pro : sourire, fond neutre</li>
+                <li>Titre : "Dev React | Open to work | Fintech"</li>
+                <li>Résumé : qui vous êtes, ce que vous faites</li>
+                <li>Expériences : avec résultats chiffrés !</li>
+                <li>Compétences : min 5, validées</li>
+                <li>Formations : diplômes + certifications</li>
+                <li>Activité : postez 1-2x/semaine</li>
+            </ul>
+            
+            <strong>⚡ Hack :</strong> Activez "Open to Work" visible recruteurs seulement !
+        </div>`;
+    }
+
+    // MERCI
+    if (msg.includes('merci') || msg.includes('super') || 
+        msg.includes('parfait') || msg.includes('genial')) {
+        return `<div style="font-family: inherit; line-height: 1.6;">
+            <strong>😊 Avec plaisir !</strong><br><br>
+            
+            C'est exactement pour ça que je suis là ! 🚀<br><br>
+            
+            <strong>N'oubliez pas :</strong>
+            <ul>
+                <li>✅ Chaque action compte, même petite</li>
+                <li>✅ La persévérance fait la différence</li>
+                <li>✅ Votre prochain employeur cherche quelqu'un comme vous !</li>
+            </ul>
+            
+            Avez-vous d'autres questions ? 💪
+        </div>`;
+    }
+
+    // FALLBACK
+    return `<div style="font-family: inherit; line-height: 1.6;">
+        <strong>🤔 Je suis spécialisé dans tout ce qui touche à votre carrière !</strong><br><br>
+        
+        <strong>📄 Documents :</strong> "générer cv", "lettre de motivation", "portfolio"<br>
+        <strong>🎤 Entretiens :</strong> "préparer entretien", "questions fréquentes"<br>
+        <strong>💰 Salaire :</strong> "négocier salaire", "combien demander"<br>
+        <strong>📚 Formation :</strong> "quoi apprendre", "meilleures formations"<br>
+        <strong>🔍 Emploi :</strong> "trouver un job", "stratégie recherche"<br>
+        <strong>💼 LinkedIn :</strong> "optimiser profil", "réseau professionnel"<br>
+        <strong>🔄 Reconversion :</strong> "changer de métier", "nouveau domaine"<br>
+        <strong>💪 Motivation :</strong> "je suis découragé", "conseils"<br><br>
+        
+        Posez-moi votre question ! 😊
+    </div>`;
+}
+
+
+
+scrollChatToBottom(): void {
+    if (this.chatMessages) {
+        setTimeout(() => {
+            this.chatMessages.nativeElement.scrollTop = this.chatMessages.nativeElement.scrollHeight;
+        }, 100);
+    }
+}
+
+// 8. CAREER TIMELINE
+ouvrirTimeline(): void {
+    this.chargerTimeline();
+    this.showTimelineModal = true;
+}
+
+chargerTimeline(): void {
+    this.apiService.getTimeline().subscribe({
+        next: (data: any) => {
+            this.timelineItems = data;
+        },
+        error: (err) => console.error('Erreur chargement timeline:', err)
+    });
+}
+
+getTimelineItems(): any[] {
+    return this.timelineItems;
+}
+
+// ==================== APPELER CES MÉTHODES DANS loadData() ====================
+// Ajoute ces appels à la fin de ta méthode loadData() existante :
+
+/*
+this.chargerGamification();
+this.chargerSmartMatch();
+this.chargerRadar();
+this.chargerStatistiquesAvancees();
+this.chargerPrediction();
+this.chargerRelances();
+this.chargerTimeline();
+*/
+
+// ==================== AJOUTER CES MÉTHODES DANS api.service.ts ====================
+// Tu dois aussi ajouter ces méthodes dans ton fichier api.service.ts :
+
+/*
+getGamification(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/gamification`);
+}
+
+getSmartMatch(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/smart-match`);
+}
+
+getRadarCompetences(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/radar-competences`);
+}
+
+getTauxReussite(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/taux-reussite`);
+}
+
+getStatsParMois(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/stats-par-mois`);
+}
+
+getPredictionSucces(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/prediction-succes`);
+}
+
+getRelances(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/relances`);
+}
+
+getTimeline(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/timeline`);
+}
+*/
+
+// ==================== INIT ====================
+chargerDonneesLocales(): void {
+    const tags = localStorage.getItem('candidatureTags');
+    const notes = localStorage.getItem('candidatureNotes');
+    if (tags) this.candidatureTags = JSON.parse(tags);
+    if (notes) this.candidatureNotes = JSON.parse(notes);
+}
+
+// ==================== TAGS ====================
+toggleTagMenu(id: number, event: Event): void {
+    event.stopPropagation();
+    this.showTagMenu = this.showTagMenu === id ? null : id;
+}
+
+toggleTag(candidatureId: number, tag: string): void {
+    if (!this.candidatureTags[candidatureId]) {
+        this.candidatureTags[candidatureId] = [];
+    }
+    const tags = this.candidatureTags[candidatureId];
+    const idx = tags.indexOf(tag);
+    if (idx === -1) {
+        tags.push(tag);
+    } else {
+        tags.splice(idx, 1);
+    }
+    localStorage.setItem('candidatureTags', JSON.stringify(this.candidatureTags));
+}
+
+hasTag(candidatureId: number, tag: string): boolean {
+    return (this.candidatureTags[candidatureId] || []).includes(tag);
+}
+
+getTagsForCandidature(candidatureId: number): string[] {
+    return this.candidatureTags[candidatureId] || [];
+}
+
+toggleTagFilter(tag: string): void {
+    const idx = this.activeTagFilter.indexOf(tag);
+    if (idx === -1) {
+        this.activeTagFilter.push(tag);
+    } else {
+        this.activeTagFilter.splice(idx, 1);
+    }
+}
+
+getCandidaturesFiltrees(): any[] {
+    if (this.activeTagFilter.length === 0) return this.candidatures;
+    return this.candidatures.filter(c =>
+        this.activeTagFilter.every(tag =>
+            (this.candidatureTags[c.id] || []).includes(tag)
+        )
+    );
+}
+
+getTagColor(tag: string): string {
+    const colors: { [key: string]: string } = {
+        'Prioritaire': '#ef4444',
+        'Remote': '#3b82f6',
+        'Startup': '#8b5cf6',
+        'Stage': '#f59e0b',
+        'Tech': '#10b981',
+        'Finance': '#06b6d4',
+        'Urgent': '#f97316'
+    };
+    return colors[tag] || '#6b7280';
+}
+
+// ==================== NOTES ====================
+ouvrirNote(candidature: any): void {
+    this.showNoteModal = candidature.id;
+    this.currentNote = this.candidatureNotes[candidature.id] || '';
+}
+
+sauvegarderNote(): void {
+    if (this.showNoteModal !== null) {
+        if (this.currentNote.trim()) {
+            this.candidatureNotes[this.showNoteModal] = this.currentNote.trim();
+        } else {
+            delete this.candidatureNotes[this.showNoteModal];
+        }
+        localStorage.setItem('candidatureNotes', JSON.stringify(this.candidatureNotes));
+        this.showNoteModal = null;
+        this.currentNote = '';
+    }
+}
+
+getNote(candidatureId: number): string {
+    return this.candidatureNotes[candidatureId] || '';
+}
+
+hasNote(candidatureId: number): boolean {
+    return !!this.candidatureNotes[candidatureId];
+}
+
+// ==================== RAPPELS ====================
+calculerRappels(): void {
+    const today = new Date();
+    this.rappels = this.candidatures
+        .filter(c => c.statut === 'EN_ATTENTE')
+        .map(c => {
+            const dateEnvoi = new Date(c.dateEnvoi);
+            const joursEcoules = Math.floor(
+                (today.getTime() - dateEnvoi.getTime()) / (1000 * 60 * 60 * 24)
+            );
+            return { ...c, joursEcoules };
+        })
+        .filter(c => c.joursEcoules >= 7)
+        .sort((a, b) => b.joursEcoules - a.joursEcoules);
+}
+
+getNiveauRappel(jours: number): string {
+    if (jours >= 21) return 'critique';
+    if (jours >= 14) return 'urgent';
+    return 'normal';
+}
+
+getNiveauRappelColor(jours: number): string {
+    if (jours >= 21) return '#ef4444';
+    if (jours >= 14) return '#f59e0b';
+    return '#3b82f6';
+}
+
+copierMessageRelance(candidature: any): void {
+    const msg = `Objet : Suivi de ma candidature — ${candidature.poste || candidature.offreTitre || 'Candidature spontanée'}
+
+Madame, Monsieur,
+
+Je me permets de revenir vers vous concernant ma candidature envoyée le ${this.formatDate(candidature.dateEnvoi)}.
+
+Toujours très intéressé(e) par ce poste, je reste disponible pour un entretien à votre convenance.
+
+Cordialement,
+${candidature.nomComplet}`;
+
+    navigator.clipboard.writeText(msg).then(() => {
+        this.showMessage('Message de relance copié dans le presse-papier !', 'success');
+    });
+}
+
+// ==================== DOUBLONS ====================
+detecterDoublons(): void {
+    const emailCount: { [email: string]: any[] } = {};
+
+    this.candidatures.forEach(c => {
+        const email = (c.email || '').toLowerCase().trim();
+        if (email) {
+            if (!emailCount[email]) emailCount[email] = [];
+            emailCount[email].push(c);
+        }
+    });
+
+    this.doublons = Object.values(emailCount)
+        .filter(group => group.length > 1);
+}
+
+ouvrirDoublons(): void {
+    this.detecterDoublons();
+    this.showDoublonsModal = true;
+}
+
+
+
+
+
 }

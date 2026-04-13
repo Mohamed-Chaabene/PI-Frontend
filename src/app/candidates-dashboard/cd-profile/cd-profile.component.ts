@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { jwtDecode } from 'jwt-decode';
 import { ApiService } from '../../api.service';
 import { CloudinaryService } from '../../services/cloudinary.service';
+import { ProfileUpdateService } from '../../services/profile-update.service';
 
 @Component({
     selector: 'app-cd-profile',
@@ -69,7 +70,8 @@ export class CdProfileComponent implements OnInit {
 
     constructor(
         private apiService: ApiService,
-        private cloudinaryService: CloudinaryService
+        private cloudinaryService: CloudinaryService,
+        private profileUpdateService: ProfileUpdateService
     ) {}
 
     ngOnInit() {
@@ -325,6 +327,7 @@ export class CdProfileComponent implements OnInit {
             this.apiService.updateCandidate(this.candidateData.id, { profile_picture_url: url }).subscribe({
                 next: () => {
                     this.isSaving = false;
+                    this.profileUpdateService.notifyProfilePictureUpdate(url);
                     this.successMessage = 'Profile picture saved successfully!';
                     setTimeout(() => this.successMessage = '', 3000);
                 },

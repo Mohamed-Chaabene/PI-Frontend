@@ -10,6 +10,79 @@ $bg-card:       #ffffff;
 $radius-card:   16px;
 $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
 
+// ── Page Banner (Header bleu) ───────────────────────────────────────────
+.page-banner-area {
+  background: linear-gradient(135deg, #5388c1, #85B7EB);
+  padding: 40px 0;
+  color: #fff;
+
+  .container {
+    .row {
+      .col-lg-8 {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        .back-btn-wrapper {
+          .voir-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: rgba(255, 255, 255, 0.25);
+              border-color: rgba(255, 255, 255, 0.5);
+              gap: 10px;
+            }
+
+            i {
+              font-size: 14px;
+              transition: transform 0.2s ease;
+            }
+
+            &:hover i {
+              transform: translateX(-2px);
+            }
+          }
+        }
+
+        h1 {
+          color: #fff;
+          font-size: 1.8rem;
+          font-weight: 700;
+          margin: 0;
+          flex: 1;
+        }
+      }
+
+      .col-lg-4 {
+        ul li a {
+          color: rgba(255, 255, 255, 0.8);
+          text-decoration: none;
+          font-weight: 500;
+
+          &:hover {
+            color: #fff;
+          }
+        }
+
+        ul li::before {
+          background: rgba(255, 255, 255, 0.5);
+        }
+      }
+    }
+  }
+}
+
 
 .formation-detail-area {
   background: $bg-page;
@@ -45,6 +118,32 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
 
   .detail-card-body {
     padding: 28px 32px;
+
+    .detail-back-btn-wrapper {
+      margin-bottom: 10px;
+
+      .voir-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: $primary-light;
+        border: 1px solid rgba($primary, 0.25);
+        border-radius: 8px;
+        color: $primary-dark;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s, transform 0.2s;
+
+        &:hover {
+          background: rgba($primary, 0.08);
+          transform: translateX(-1px);
+        }
+
+        i { font-size: 14px; }
+      }
+    }
 
     .detail-title {
       font-size: 1.65rem;
@@ -91,64 +190,68 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     border-top: 1px solid $border;
     display: flex;
     gap: 12px;
+    align-items: stretch;   // même hauteur pour tous les enfants
+    flex-wrap: nowrap;      // tout sur une seule ligne
+  }
+
+  // Mixin partagé — même gabarit pour les 3 boutons
+  %btn-shared {
+    display: inline-flex;
     align-items: center;
-    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 24px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s, color 0.2s;
   }
 
   // Bouton S'inscrire
   .btn-inscrire {
-    display: inline-flex;
-    align-items: center;
-    padding: 13px 32px;
+    @extend %btn-shared;
     background: $primary;
     color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.15s;
+    border: 1.5px solid $primary;
 
-    &:hover:not(:disabled) { background: $primary-dark; transform: translateY(-1px); }
+    &:hover:not(:disabled) { background: $primary-dark; border-color: $primary-dark; transform: translateY(-1px); }
     &:disabled { opacity: 0.65; cursor: not-allowed; }
+    i { font-size: 16px; }
   }
 
-  // ✅ Badge "Vous êtes inscrit" — remplace le bouton S'inscrire
+  // ✅ Badge "Vous êtes inscrit"
   .inscrit-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 24px;
+    @extend %btn-shared;
     background: $primary-light;
     border: 1.5px solid rgba($primary, 0.35);
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-weight: 700;
     color: $primary-dark;
 
-    i {
-      font-size: 20px;
-      color: $primary;
-    }
+    i { font-size: 18px; color: $primary; }
   }
 
-  // Bouton "Voir ma progression" affiché à côté du badge inscrit
+  // Bouton Accéder — plein, même style que btn-inscrire
+  .btn-acceder {
+    @extend %btn-shared;
+    background: $primary;
+    color: #fff;
+    border: 1.5px solid $primary;
+
+    &:hover { background: $primary-dark; border-color: $primary-dark; transform: translateY(-1px); color: #fff; }
+    i { font-size: 16px; }
+  }
+
+  // Bouton Voir ma progression — outline
   .btn-mes-formations {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 12px 20px;
+    @extend %btn-shared;
     background: transparent;
     color: $primary;
     border: 1.5px solid rgba($primary, 0.4);
-    border-radius: 10px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.2s;
 
     &:hover { background: $primary-light; color: $primary-dark; }
-    i { font-size: 15px; }
+    i { font-size: 16px; }
   }
 
   // Bouton Modifier (admin)
@@ -365,5 +468,155 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
         }
       }
     }
+  }
+
+  // ── Modal overlay ─────────────────────────────────────────────────────
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .modal-choice-card {
+    background: #fff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    overflow: hidden;
+  }
+
+  .modal-choice-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+
+    h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0;
+    }
+  }
+
+  .modal-close-btn {
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: #64748b;
+    transition: background 0.2s;
+
+    &:hover { background: #e2e8f0; }
+  }
+
+  .modal-choice-body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  // ── Carte choix ───────────────────────────────────────────────────
+  .choice-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: $primary;
+      background: $primary-light;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(9, 101, 164, 0.12);
+    }
+  }
+
+  .choice-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+
+    &.choice-icon-video {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    &.choice-icon-ecrite {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+  }
+
+  .choice-info {
+    flex: 1;
+
+    h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 4px;
+    }
+
+    p {
+      font-size: 13px;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+
+  .choice-arrow {
+    font-size: 20px;
+    color: #94a3b8;
+  }
+}
+
+// ── Page banner — même gradient que video/ecrite header ───────────
+.page-banner-area {
+  background: linear-gradient(135deg, #0965A4 0%, #85B7EB 60%, #85B7EB 100%) !important;
+  padding: 28px 0;
+
+  h1 {
+    color: #fff;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  ul li {
+    color: rgba(#fff, 0.75);
+    font-size: 0.875rem;
+
+    a {
+      color: rgba(#fff, 0.75);
+      text-decoration: none;
+      &:hover { color: #fff; }
+    }
+
+    // séparateur entre les items
+    &::after {
+      content: '/';
+      margin: 0 6px;
+      color: rgba(#fff, 0.4);
+    }
+    &:last-child::after { display: none; }
   }
 }
