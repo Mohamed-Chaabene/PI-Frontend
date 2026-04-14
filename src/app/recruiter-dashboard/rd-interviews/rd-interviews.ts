@@ -194,13 +194,68 @@ export class RdInterviews implements OnInit {
   loadCandidaturesForOffre(offreId: number): void {
     this.apiService.getCandidaturesByOffre(offreId).subscribe({
       next: (data) => {
-        this.candidaturesOffre = Array.isArray(data) ? data : [];
+        const direct = this.extractArrayPayload(data);
+        if (direct.length > 0) {
+          this.candidaturesOffre = direct.filter((c: any) => this.isAcceptedCandidature(c));
+          return;
+        }
+
+        // Fallback: certains endpoints renvoient vide/mal forme, on filtre la liste recruteur.
+        this.apiService.getAllCandidaturesForRecruteur().subscribe({
+          next: (allData) => {
+            const all = this.extractArrayPayload(allData);
+            this.candidaturesOffre = all.filter((c: any) => this.getOffreIdFromCandidature(c) === offreId && this.isAcceptedCandidature(c));
+          },
+          error: (fallbackError: any) => {
+            console.error('❌ Erreur fallback candidatures recruteur:', fallbackError);
+            this.candidaturesOffre = [];
+          }
+        });
       },
       error: (error: any) => {
         console.error('❌ Erreur chargement candidatures de l\'offre:', error);
-        this.candidaturesOffre = [];
+
+        // Fallback également en cas d'erreur API directe.
+        this.apiService.getAllCandidaturesForRecruteur().subscribe({
+          next: (allData) => {
+            const all = this.extractArrayPayload(allData);
+            this.candidaturesOffre = all.filter((c: any) => this.getOffreIdFromCandidature(c) === offreId && this.isAcceptedCandidature(c));
+          },
+          error: () => {
+            this.candidaturesOffre = [];
+          }
+        });
       }
     });
+  }
+
+  private extractArrayPayload(payload: any): any[] {
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const nestedArray = Object.values(payload).find((value: any) => Array.isArray(value));
+      return Array.isArray(nestedArray) ? nestedArray : [];
+    }
+
+    return [];
+  }
+
+  private getOffreIdFromCandidature(candidature: any): number {
+    const raw = candidature?.offreId ?? candidature?.idOffre ?? candidature?.offre?.id ?? candidature?.offreEmploi?.id;
+    const id = Number(raw);
+    return Number.isFinite(id) ? id : 0;
+  }
+
+  private isAcceptedCandidature(candidature: any): boolean {
+    const statut = String(candidature?.statut || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .trim();
+
+    return statut === 'ACCEPTEE' || statut === 'ACCEPTE' || statut === 'ACCEPTED';
   }
 
   private applyCandidaturePrefillIfPossible(): void {
@@ -371,7 +426,6 @@ export class RdInterviews implements OnInit {
   }
 
   createEntretien(): void {
-    // Validation côté frontend
     if (!this.validateEntretienForm()) {
       return;
     }
@@ -695,6 +749,11 @@ L'équipe de recrutement`,
 
   editEntretien(entretien: any): void {
     this.editingEntretien = { ...entretien };
+    this.editingEntretien.offreId = this.resolveOffreId(entretien);
+    this.editingEntretien.candidatId = this.resolveCandidatId(entretien);
+    if (this.editingEntretien.offreId) {
+      this.loadCandidaturesForOffre(this.editingEntretien.offreId);
+    }
     if (!this.editingEntretien.dureeMinutes) {
       this.editingEntretien.dureeMinutes = 30;
     }
@@ -720,6 +779,9 @@ L'équipe de recrutement`,
 
     const isTestUpdate = (entretien.type || '').toUpperCase() === 'TEST';
     const updatedMode = String(entretien.mode || entretien.modeEntretien || 'QUESTIONS').toUpperCase();
+    const resolvedOffreId = this.resolveOffreId(entretien);
+    const resolvedCandidatId = this.resolveCandidatId(entretien) || this.resolveAcceptedCandidatIdFromOffre(resolvedOffreId);
+    const submittedDate = this.normalizeUpdateDate(entretien.dateEntretien);
     const updatedData: any = {
       titre: entretien.titre,
       description: entretien.description,
@@ -728,18 +790,18 @@ L'équipe de recrutement`,
       categorie: entretien.type?.toUpperCase(),
       mode: updatedMode,
       meetingLink: updatedMode === 'VIDEO' ? this.resolveMeetingLink(entretien) : null,
-      dateEntretien: entretien.dateEntretien,
+      dateEntretien: submittedDate,
       dureeMinutes: Number(entretien.dureeMinutes ?? 30),
       photo: entretien.photo || null,
     };
     updatedData.seuilReussite = isTestUpdate ? null : (entretien.seuilReussite ?? 70);
 
-    if (entretien.candidatId) {
-      updatedData.candidatId = entretien.candidatId;
+    if (resolvedCandidatId) {
+      updatedData.candidatId = resolvedCandidatId;
     }
 
-    if (entretien.offreId) {
-      updatedData.offreId = entretien.offreId;
+    if (resolvedOffreId) {
+      updatedData.offreId = resolvedOffreId;
     }
 
     console.log('📤 updateEntretien payload:', updatedData);
@@ -751,6 +813,33 @@ L'équipe de recrutement`,
         this.loadEntretiens();
       },
       error: (error: any) => {
+        const backendMessage = String(error?.error?.message || error?.error || error?.message || '');
+        const dateRelatedFailure = error?.status === 400 && /date|futur|future/i.test(backendMessage);
+
+        if (dateRelatedFailure && !updatedData._retryWithFutureDate) {
+          const retryPayload = {
+            ...updatedData,
+            dateEntretien: this.ensureFutureDateForBackend(updatedData.dateEntretien),
+            _retryWithFutureDate: true
+          };
+
+          console.warn('⚠ Retraitement updateEntretien avec date future de secours:', retryPayload);
+          this.apiService.updateEntretien(entretien.id, retryPayload).subscribe({
+            next: () => {
+              alert('Entretien mis à jour avec succès!');
+              this.editingEntretien = null;
+              this.loadEntretiens();
+            },
+            error: (retryError: any) => {
+              console.error('Erreur mise à jour entretien:', retryError);
+              console.error('🔻 body:', retryError.error);
+              console.error('🔻 status:', retryError.status, retryError.statusText);
+              alert(`Erreur mise à jour entretien: ${retryError.error?.message || retryError.message || '500 interne'}`);
+            }
+          });
+          return;
+        }
+
         console.error('Erreur mise à jour entretien:', error);
         console.error('🔻 body:', error.error);
         console.error('🔻 status:', error.status, error.statusText);
@@ -834,11 +923,6 @@ L'équipe de recrutement`,
       }
     }
 
-    if (this.newEntretien.type !== 'TEST' && !this.newEntretien.offreId && (this.newEntretien.candidatId == null || this.newEntretien.candidatId <= 0)) {
-      alert('Sélectionnez un candidat ou une offre pour cet entretien.');
-      return false;
-    }
-
     return true;
   }
 
@@ -887,11 +971,6 @@ L'équipe de recrutement`,
       }
     }
 
-    if (entretien.type !== 'TEST' && !entretien.candidatId && !entretien.offreId) {
-      alert('Un candidat doit être sélectionné pour ce type d\'entretien.');
-      return false;
-    }
-
     if (entretien.type !== 'TEST') {
       const s = entretien.seuilReussite;
       if (s == null || s < 0 || s > 100) {
@@ -903,11 +982,63 @@ L'équipe de recrutement`,
     return true;
   }
 
+  private normalizeUpdateDate(value: string): string {
+    const trimmed = String(value || '').trim();
+    return trimmed;
+  }
+
+  private ensureFutureDateForBackend(value: string): string {
+    const parsed = new Date(value);
+    if (!Number.isFinite(parsed.getTime())) {
+      return new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    }
+
+    const minimumFuture = Date.now() + 5 * 60 * 1000;
+    if (parsed.getTime() <= minimumFuture) {
+      return new Date(minimumFuture).toISOString();
+    }
+
+    return parsed.toISOString();
+  }
+
+  private resolveOffreId(entretien: any): number | null {
+    const raw = entretien?.offreId ?? entretien?.offre?.id ?? entretien?.offreEmploi?.id ?? entretien?.offreEmploiId;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  private resolveCandidatId(entretien: any): number | null {
+    const raw = entretien?.candidatId ?? entretien?.candidat?.id;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  private resolveAcceptedCandidatIdFromOffre(offreId: number | null): number | null {
+    if (!offreId) {
+      return null;
+    }
+
+    const acceptedCandidate = this.candidaturesOffre.find((candidature: any) => this.isAcceptedCandidature(candidature));
+    const raw = acceptedCandidate?.candidatId ?? acceptedCandidate?.candidat?.id ?? acceptedCandidate?.idCandidat;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
   // Méthode utilitaire pour formater les dates
   formatDateForInput(dateString: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toISOString().slice(0, 16); // Format YYYY-MM-DDTHH:MM
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+
+    // Build datetime-local in local timezone (avoids UTC shift to past dates).
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
   // Méthode pour obtenir le nom du candidat

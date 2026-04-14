@@ -60,6 +60,10 @@ export class NavbarComponent implements OnInit {
         motDePasse: ''
     };
 
+    forgotPasswordData = {
+        phone: ''
+    };
+
     private resetAuthForms() {
         this.registerData = {
             nom: '',
@@ -78,8 +82,10 @@ export class NavbarComponent implements OnInit {
             descriptionProjet: ''
         };
         this.loginData = { email: '', motDePasse: '' };
+        this.forgotPasswordData = { phone: '' };
         this.registerRole = 'ROLE_CANDIDAT';
         this.currentInnerTab = 'candidat';
+        this.currentTab = 'tab1';
     }
 
     constructor(
@@ -109,10 +115,54 @@ export class NavbarComponent implements OnInit {
         const token = localStorage.getItem('token');
         const savedUserName = localStorage.getItem('userName');
         const savedUserRole = localStorage.getItem('userRole');
-        if (token && savedUserName) {
+        const hasValidToken = !!token && token !== 'undefined' && token !== 'null';
+
+        if (hasValidToken && !this.isTokenExpired(token!)) {
+            const fallbackRole = this.extractRoleFromToken(token!);
             this.isLoggedIn = true;
-            this.userName = savedUserName;
-            this.userRole = savedUserRole || 'CANDIDAT';
+            this.userName = savedUserName || this.extractNameFromToken(token!) || '';
+            this.userRole = savedUserRole || fallbackRole || 'CANDIDAT';
+            return;
+        }
+
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('recruteurId');
+        this.isLoggedIn = false;
+        this.userName = '';
+        this.userRole = '';
+    }
+
+    private isTokenExpired(token: string): boolean {
+        try {
+            const decoded: any = jwtDecode(token);
+            const exp = Number(decoded?.exp || 0);
+            if (!exp) {
+                return false;
+            }
+            return exp <= Math.floor(Date.now() / 1000);
+        } catch {
+            return true;
+        }
+    }
+
+    private extractRoleFromToken(token: string): string {
+        try {
+            const decoded: any = jwtDecode(token);
+            return String(decoded?.role || decoded?.roles || decoded?.authorities || '')
+                .toUpperCase()
+                .replace(/^ROLE_/, '');
+        } catch {
+            return '';
+        }
+    }
+
+    private extractNameFromToken(token: string): string {
+        try {
+            const decoded: any = jwtDecode(token);
+            return String(decoded?.name || decoded?.sub || decoded?.email || '').trim();
+        } catch {
+            return '';
         }
     }
 
@@ -212,6 +262,10 @@ export class NavbarComponent implements OnInit {
         this.apiService.login(this.loginData).subscribe(
             response => {
                 const token = typeof response === 'string' ? response : response.token;
+                if (!token || token === 'undefined' || token === 'null') {
+                    alert('Erreur de connexion: token invalide renvoye par le backend.');
+                    return;
+                }
                 localStorage.setItem('token', token);
 
                 let recruteurId: number | undefined;
@@ -234,13 +288,7 @@ export class NavbarComponent implements OnInit {
                     : undefined;
                 const role = this.getRoleFromDecodedToken(decoded, roleFromResponse);
                 const normalizedExtractedRole = this.normalizeRole(role);
-                const normalizedInferredRole = this.normalizeRole(this.inferRoleFromEmail(this.loginData.email));
-                const selectedRoleFromTab = this.currentInnerTab === 'organisateur' ? 'ORGANISATEUR' : '';
-                const roleFinal = selectedRoleFromTab === 'ORGANISATEUR'
-                    ? 'ORGANISATEUR'
-                    : (normalizedInferredRole === 'ORGANISATEUR'
-                        ? 'ORGANISATEUR'
-                        : (normalizedExtractedRole || normalizedInferredRole || 'CANDIDAT'));
+                const roleFinal = normalizedExtractedRole || 'CANDIDAT';
                 console.log('[AUTH DEBUG] roleFromResponse=', roleFromResponse);
                 console.log('[AUTH DEBUG] token.role=', decoded?.role, 'token.roles=', decoded?.roles, 'token.authorities=', decoded?.authorities);
                 console.log('[AUTH DEBUG] extractedRole=', role, 'roleFinal=', roleFinal);
@@ -424,6 +472,27 @@ export class NavbarComponent implements OnInit {
         if (normalized.includes('ADMIN')) return 'ADMIN';
 
         return normalized[0] || '';
+    }
+
+    // ─── Reset Password ────────────────────────────────────────────────────────
+    resetPassword() {
+        if (!this.forgotPasswordData.phone) {
+            alert('Veuillez entrer votre numéro de téléphone.');
+            return;
+        }
+
+        // Call API to send new temporary password to phone
+        this.apiService.resetPassword(this.forgotPasswordData.phone).subscribe(
+            response => {
+                alert('Nouveau mot de passe temporaire envoyé à votre numéro de téléphone! Vérifiez vos SMS.');
+                this.forgotPasswordData = { phone: '' };
+                this.currentTab = 'tab1';
+            },
+            error => {
+                const serverMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
+                alert(`Erreur lors de la réinitialisation (${error.status || '?'}): ${serverMessage}`);
+            }
+        );
     }
 
     private normalizeRole(role?: string): string {

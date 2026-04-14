@@ -44,4 +44,11 @@ getByOrganisateur(organisateurId: number): Observable<any[]> {
 annulerAdmin(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/admin/${id}`);
 }
+
+//  Récupère les statistiques par mois
+getStats(mois: number, annee: number, organisateurId: number): Observable<any> {
+    return this.http.get<any>(
+        `${this.apiUrl}/stats?mois=${mois}&annee=${annee}&organisateurId=${organisateurId}`
+    );
+}
 }

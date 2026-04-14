@@ -85,7 +85,7 @@ export class RdAddQuestions implements OnInit {
   chatMessages: ChatMessage[] = [
     {
       sender: 'assistant',
-      text: 'Bonjour. Je suis votre assistante IA. Decrivez le theme voulu ou cliquez sur Generer pour recevoir des questions.',
+      text: 'Bonjour. Je peux vous aider a generer des questions pertinentes pour cet entretien.',
       timestamp: new Date()
     }
   ];
@@ -95,8 +95,15 @@ export class RdAddQuestions implements OnInit {
     type: 'QCM',
     theme: '',
     nombre: 3,
-    temperature: 0.7
+    temperature: 0.4
   };
+  quickThemes = [
+    'SQL et optimisation des requetes',
+    'API REST Java Spring Boot',
+    'Angular TypeScript architecture',
+    'Tests unitaires et integration',
+    'Soft skills et communication'
+  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -586,6 +593,14 @@ export class RdAddQuestions implements OnInit {
     return normalized || 'QCM';
   }
 
+  private normalizeThemeForApi(theme: string): string {
+    const value = String(theme || '').trim();
+    if (!value) {
+      return 'Entretien technique';
+    }
+    return value;
+  }
+
   generateAiSuggestions(): void {
     this.aiError = '';
     this.isAiGenerating = true;
@@ -597,19 +612,19 @@ export class RdAddQuestions implements OnInit {
       categorie: String(this.aiForm.categorie || 'TECHNIQUE').trim().toUpperCase(),
       niveau: String(this.aiForm.niveau || 'INTERMEDIAIRE').trim().toUpperCase(),
       type: this.normalizeAiType(this.aiForm.type),
-      theme: String(this.aiForm.theme || '').trim(),
+      theme: this.normalizeThemeForApi(this.aiForm.theme),
       nombre: Number.isFinite(nombre) ? Math.max(1, Math.min(10, Math.trunc(nombre))) : 3,
-      temperature: Number.isFinite(temperature) ? Math.max(0.1, Math.min(1.5, temperature)) : 0.7
+      temperature: Number.isFinite(temperature) ? Math.max(0.1, Math.min(1.0, temperature)) : 0.4
     };
 
     this.apiService.generateAiQuestionSuggestions(this.entretienId, payload).subscribe({
       next: (data) => {
         this.aiSuggestions = Array.isArray(data) ? data : [];
         if (!this.aiSuggestions.length) {
-          this.aiError = 'Aucune suggestion IA reçue.';
+          this.aiError = 'Aucune suggestion IA recue.';
           this.addChatMessage('assistant', this.aiError);
         } else {
-          this.addChatMessage('assistant', `${this.aiSuggestions.length} proposition(s) generee(s). Selectionnez Utiliser cette proposition pour remplir le formulaire.`);
+          this.addChatMessage('assistant', `${this.aiSuggestions.length} proposition(s) generee(s). Cliquez sur Utiliser pour remplir le formulaire.`);
         }
         this.isAiGenerating = false;
       },
@@ -618,13 +633,7 @@ export class RdAddQuestions implements OnInit {
           ? error.error
           : (error?.error?.message || error?.error?.detail || error?.message || 'Erreur inconnue');
         const status = error?.status ?? '?';
-        if (status === 401 || status === 403) {
-          this.aiError = `Acces refuse (${status}). Verifiez que vous etes connecte en tant que recruteur et que le token JWT est present.`;
-        } else if (status === 400) {
-          this.aiError = `Requete invalide (400): ${backendMessage}`;
-        } else {
-          this.aiError = `Erreur IA (${status}): ${backendMessage}`;
-        }
+        this.aiError = `Erreur IA (${status}): ${backendMessage}`;
         this.aiSuggestions = [];
         this.isAiGenerating = false;
         this.addChatMessage('assistant', this.aiError);
@@ -673,6 +682,53 @@ export class RdAddQuestions implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  applyQuickPrompt(prompt: string): void {
+    const value = String(prompt || '').trim();
+    if (!value) {
+      return;
+    }
+    this.chatUserInput = value;
+    this.aiForm.theme = value;
+    this.isChatbotOpen = true;
+  }
+
+  private applyChatIntentToForm(message: string): void {
+    const normalized = String(message || '').toLowerCase();
+
+    const detectedNumber = normalized.match(/\b([1-9]|10)\b/);
+    if (detectedNumber) {
+      this.aiForm.nombre = Math.max(1, Math.min(10, Number(detectedNumber[1])));
+    }
+
+    if (normalized.includes('qcu') || normalized.includes('question unique')) {
+      this.aiForm.type = 'QCU';
+    } else if (normalized.includes('vrai faux') || normalized.includes('vf') || normalized.includes('vrai/faux')) {
+      this.aiForm.type = 'VRAI_FAUX';
+    } else if (normalized.includes('qcm') || normalized.includes('choix multiples')) {
+      this.aiForm.type = 'QCM';
+    }
+
+    if (normalized.includes('debutant') || normalized.includes('junior')) {
+      this.aiForm.niveau = 'DEBUTANT';
+    } else if (normalized.includes('intermediaire')) {
+      this.aiForm.niveau = 'INTERMEDIAIRE';
+    } else if (normalized.includes('avance') || normalized.includes('senior')) {
+      this.aiForm.niveau = 'AVANCE';
+    } else if (normalized.includes('expert')) {
+      this.aiForm.niveau = 'EXPERT';
+    }
+
+    if (normalized.includes('rh') || normalized.includes('recrutement') || normalized.includes('soft skill')) {
+      this.aiForm.categorie = 'RH';
+    } else if (normalized.includes('management') || normalized.includes('managerial') || normalized.includes('leadership')) {
+      this.aiForm.categorie = 'MANAGERIAL';
+    } else if (normalized.includes('test')) {
+      this.aiForm.categorie = 'TEST';
+    } else {
+      this.aiForm.categorie = 'TECHNIQUE';
+    }
+  }
+
   toggleChatbot(): void {
     this.isChatbotOpen = !this.isChatbotOpen;
   }
@@ -689,18 +745,10 @@ export class RdAddQuestions implements OnInit {
 
     this.addChatMessage('user', message);
     this.chatUserInput = '';
-
-    const normalized = message.toLowerCase();
-    const isGenerationIntent = normalized.includes('gen') || normalized.includes('question') || normalized.includes('proposition') || normalized.includes('ia');
-
-    if (isGenerationIntent) {
-      this.aiForm.theme = message;
-      this.addChatMessage('assistant', 'D accord. Je lance la generation selon votre demande.');
-      this.generateAiSuggestions();
-      return;
-    }
-
-    this.addChatMessage('assistant', 'Je peux generer des questions pour cet entretien. Decrivez un theme, par exemple: APIs REST Java niveau intermediaire, puis envoyez votre message.');
+    this.applyChatIntentToForm(message);
+    this.aiForm.theme = message;
+    this.addChatMessage('assistant', 'Analyse de votre demande en cours...');
+    this.generateAiSuggestions();
   }
 
   private addChatMessage(sender: 'assistant' | 'user', text: string): void {

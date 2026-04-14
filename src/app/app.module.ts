@@ -21,7 +21,7 @@ import { AdDashboardComponent } from './admin-dashboard/ad-dashboard/ad-dashboar
 import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
 import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.component';
 import { EntretienListComponent } from './admin-dashboard/entretien-list/entretien-list.component';
-import { FormationListComponent } from './admin-dashboard/formation-list/formation-list.component';
+
 import { CandidatureListComponent } from './admin-dashboard/candidature-list/candidature-list.component';
 import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-admin/evenement-list-admin.component';
 import { routes } from './app.routes';
@@ -61,19 +61,21 @@ import { CdProfileComponent } from './candidates-dashboard/cd-profile/cd-profile
 import { CdBookmarksComponent } from './candidates-dashboard/cd-bookmarks/cd-bookmarks.component';
 import { CdAppliedJobsComponent } from './candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component';
 import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
-import { CdMessageMailboxComponent } from './candidates-dashboard/cd-message-mailbox/cd-message-mailbox.component';
+import { CdMessageComponent } from './candidates-dashboard/cd-message/cd-message.component';
 import { CdChangePasswordComponent } from './candidates-dashboard/cd-change-password/cd-change-password.component';
+import { EvenementCandidatComponent } from './candidates-dashboard/evenement-candidat/evenement-candidat.component';
+import { MesParticipationsComponent } from './candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component';
+import { MaCalendarComponent } from './candidates-dashboard/evenement-candidat/ma-calendar/ma-calendar.component';
 
 // Shared components are in SharedModule now
 
 // More common
 import { BlogSidebarComponent } from './common/blog-sidebar/blog-sidebar.component';
-import { TalentedExpertsComponent } from './common/talented-experts/talented-experts.component';
-import { PartnersComponent } from './common/partners/partners.component';
+
 import { PricingComponent } from './common/pricing/pricing.component';
-import { LeadingCompanyComponent } from './common/leading-company/leading-company.component';
+
 import { JobsSidebarComponent } from './common/jobs-sidebar/jobs-sidebar.component';
-import { AboutUsComponent } from './common/about-us/about-us.component';
+
 
 // Dashboard components
 import { CdSidebarComponent } from './candidates-dashboard/cd-sidebar/cd-sidebar.component';
@@ -87,7 +89,7 @@ import { EdFooterComponent } from './employers-dashboard/ed-footer/ed-footer.com
 import { RdPostJobComponent } from './recruiter-dashboard/rd-post-job/rd-post-job.component';
 import { RdManageJobsComponent } from './recruiter-dashboard/rd-manage-jobs/rd-manage-jobs.component';
 import { RdApplicantsComponent } from './recruiter-dashboard/rd-applicants/rd-applicants.component';
-import { RdMessagesMailboxComponent } from './recruiter-dashboard/rd-messages-mailbox/rd-messages-mailbox.component';
+import { RdMessagesComponent } from './recruiter-dashboard/rd-messages/rd-messages.component';
 import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.component';
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 
@@ -103,7 +105,25 @@ import { LOCALE_ID } from '@angular/core';
 import localeFr from '@angular/common/locales/fr';
 import { registerLocaleData } from '@angular/common';
 import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header/evenement-header.component';
+import { EvenementDemandesComponent } from './evenement-dashboard/evenement-demandes/evenement-demandes.component';
+import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';
+import { FullCalendarModule } from '@fullcalendar/angular';
+import { EvenementFeedbacksComponent } from './evenement-dashboard/evenement-feedback/evenement-feedbacks.component';
+import { FeedbackAdminComponent } from './admin-dashboard/feedback-admin/feedback-admin.component';
+import { FormationsAdminComponent } from './admin-dashboard/formations-admin/formations-admin.component';
+import { FormationCreateComponent } from './admin-dashboard/formation-create/formation-create.component';
+import { FormationEditComponent } from './admin-dashboard/formation-edit/formation-edit.component';
+import { FormationParticipantsComponent } from './admin-dashboard/formation-participants/formation-participants.component';
+import { CdMessageMailboxComponent } from './candidates-dashboard/cd-message-mailbox/cd-message-mailbox.component';
+import { MesFormationsComponent } from './candidates-dashboard/mes-formations/mes-formations.component';
+import { RdMessagesMailboxComponent } from './recruiter-dashboard/rd-messages-mailbox/rd-messages-mailbox.component';
+
 // Banner components are now in SharedModule
+// participations
+
+registerLocaleData(localeFr);
+
+
 
 
 @NgModule({
@@ -139,7 +159,7 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         CdBookmarksComponent,
         CdAppliedJobsComponent,
         CdAlertJobsComponent,
-        CdMessageMailboxComponent,
+        CdMessageComponent,
         CdChangePasswordComponent,
         BlogSidebarComponent,
         PricingComponent,
@@ -153,7 +173,7 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         RdPostJobComponent,
         RdManageJobsComponent,
         RdApplicantsComponent,
-        RdMessagesMailboxComponent,
+        RdMessagesComponent,
         RdProfileComponent,
         RdChangePasswordComponent,
         CdDocumentsComponent, 
@@ -172,12 +192,29 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         PartenaireListComponent,
         OffreListComponent,
         EntretienListComponent,
-        FormationListComponent,
+    
         CandidatureListComponent,
         EvenementListAdminComponent,
         AdHeaderComponent,  
         AdSidebarComponent, 
         AdFooterComponent,
+        EvenementCandidatComponent,
+        EvenementDemandesComponent,
+        MesParticipationsComponent,
+        EvenementCalendrierComponent,
+        MaCalendarComponent,
+        EvenementFeedbacksComponent,
+        FeedbackAdminComponent,
+FormationsAdminComponent,
+FormationCreateComponent,
+FormationEditComponent,
+FormationParticipantsComponent,
+CdMessageMailboxComponent,
+MesFormationsComponent,
+RdMessagesMailboxComponent,
+        
+        
+        
     ],
     imports: [
         BrowserModule,
@@ -190,11 +227,20 @@ import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header
         CarouselModule,
         NgApexchartsModule,
         NgxScrollTopModule,
-        GoogleMapsModule
+        GoogleMapsModule,
+        FullCalendarModule,
+        SharedModule
+        
+        
+        
+        
         
     ],
     providers: [
-        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+        { provide: LOCALE_ID, useValue: 'fr' },  // ← AJOUTER
+    DatePipe, 
+        
     ],
     bootstrap: [App],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]

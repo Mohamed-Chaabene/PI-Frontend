@@ -92,11 +92,6 @@ export class PublicTestPassPageComponent {
     }
 
     this.entretienId = id;
-    if (this.hasAttemptedLocally()) {
-      this.loadError = 'Vous avez deja passe cet entretien. Une seconde tentative nest pas autorisee.';
-      this.loading = false;
-      return;
-    }
 
     this.loadEntretienDetailsAndGuard();
   }
@@ -107,17 +102,15 @@ export class PublicTestPassPageComponent {
         this.entretienDetails = data || null;
         this.requiredThresholdPercent = this.extractThresholdPercent(data);
         this.updateDurationFromEntretien(data);
-        if (this.isBackendMarkedCompleted(data)) {
+        if (this.isBlockingCompletionState(data)) {
           this.markAttemptedLocally();
           this.loadError = 'Vous avez deja passe cet entretien. Une seconde tentative nest pas autorisee.';
           this.loading = false;
           return;
         }
 
-        if (!this.isInterviewToday(data)) {
-          this.loadError = 'Cet entretien est accessible uniquement le jour prevu.';
-          this.loading = false;
-          return;
+        if (this.hasAttemptedLocally()) {
+          localStorage.removeItem(`${this.attemptStoragePrefix}${this.entretienId}`);
         }
 
         this.loadQuestions();
@@ -130,33 +123,26 @@ export class PublicTestPassPageComponent {
     });
   }
 
-  private extractInterviewDate(details: any): Date | null {
+  private isInterviewInFuture(details: any): boolean {
     const raw = details?.dateEntretien || details?.date || details?.scheduledAt;
     if (!raw) {
-      return null;
-    }
-    const parsed = new Date(raw);
-    if (!Number.isFinite(parsed.getTime())) {
-      return null;
-    }
-    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
-  }
-
-  private todayDateOnly(): Date {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  }
-
-  private isInterviewToday(details: any): boolean {
-    const interviewDay = this.extractInterviewDate(details);
-    if (!interviewDay) {
       return false;
     }
-    return interviewDay.getTime() === this.todayDateOnly().getTime();
+
+    const parsed = new Date(raw);
+    return Number.isFinite(parsed.getTime()) && parsed.getTime() > Date.now();
   }
 
   private isBackendMarkedCompleted(details: any): boolean {
     return details?.completed === true || details?.termine === true || details?.status === 'COMPLETED';
+  }
+
+  private isBlockingCompletionState(details: any): boolean {
+    if (this.isInterviewInFuture(details)) {
+      return false;
+    }
+
+    return this.isBackendMarkedCompleted(details);
   }
 
   private hasAttemptedLocally(): boolean {

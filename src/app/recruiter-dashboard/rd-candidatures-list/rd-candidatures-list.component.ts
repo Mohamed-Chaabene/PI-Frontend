@@ -1,8 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../../api.service';
 import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { ApiService } from '../../api.service';
+
+interface OffreCandidaturesGroup {
+  offre: any;
+  candidatures: any[];
+}
 
 @Component({
   selector: 'app-rd-candidatures-list',
@@ -12,21 +19,18 @@ import { Router } from '@angular/router';
   styleUrls: ['./rd-candidatures-list.component.scss']
 })
 export class RdCandidaturesListComponent implements OnInit {
-  candidatures: any[] = [];
-  filteredCandidatures: any[] = [];
+  offerGroups: OffreCandidaturesGroup[] = [];
+  filteredOfferGroups: OffreCandidaturesGroup[] = [];
   loading = false;
   selectedStatut = 'TOUS';
   searchTerm = '';
+  totalCandidatures = 0;
+  errorMessage = '';
   selectedCandidature: any = null;
+  selectedOffre: any = null;
   showDetailModal = false;
   
-  // Statuts disponibles
   statuts = ['TOUS', 'EN_ATTENTE', 'ACCEPTEE', 'REFUSEE'];
-  
-  // Pagination
-  pageSize = 10;
-  currentPage = 1;
-  totalCandidatures = 0;
 
   constructor(
     private apiService: ApiService,
@@ -37,19 +41,58 @@ export class RdCandidaturesListComponent implements OnInit {
     this.loadCandidatures();
   }
 
-  // Charger toutes les candidatures
+  // Charger les offres du recruteur et leurs candidatures associées
   loadCandidatures(): void {
     this.loading = true;
-    this.apiService.getAllCandidaturesForRecruteur().subscribe({
+    this.errorMessage = '';
+
+    this.apiService.getMesOffresEmploi().pipe(
+      catchError((error) => {
+        console.error('Erreur chargement offres recruteur:', error);
+        return this.apiService.getOffresEmploi();
+      })
+    ).subscribe({
       next: (data) => {
-        this.candidatures = data || [];
-        this.totalCandidatures = this.candidatures.length;
-        this.applyFilters();
-        this.loading = false;
+        const offres = Array.isArray(data) ? data : [];
+
+        if (offres.length === 0) {
+          this.offerGroups = [];
+          this.filteredOfferGroups = [];
+          this.totalCandidatures = 0;
+          this.loading = false;
+          return;
+        }
+
+        const requests = offres.map((offre: any) =>
+          this.apiService.getCandidaturesByOffre(Number(offre?.id)).pipe(
+            map((candidatures) => ({
+              offre,
+              candidatures: this.normalizeArrayPayload(candidatures)
+            })),
+            catchError((error) => {
+              console.error(`Erreur chargement candidatures pour l'offre ${offre?.id}:`, error);
+              return of({ offre, candidatures: [] });
+            })
+          )
+        );
+
+        forkJoin(requests).subscribe({
+          next: (groups) => {
+            this.offerGroups = groups || [];
+            this.totalCandidatures = this.offerGroups.reduce((sum, group) => sum + group.candidatures.length, 0);
+            this.applyFilters();
+            this.loading = false;
+          },
+          error: (err) => {
+            console.error('Erreur lors du chargement des candidatures par offre:', err);
+            this.errorMessage = 'Impossible de charger les candidatures.';
+            this.loading = false;
+          }
+        });
       },
       error: (err) => {
-        console.error('Erreur lors du chargement des candidatures:', err);
-        this.notifyError('Erreur lors du chargement des candidatures');
+        console.error('Erreur lors du chargement des offres:', err);
+        this.errorMessage = 'Impossible de charger vos offres.';
         this.loading = false;
       }
     });
@@ -57,175 +100,55 @@ export class RdCandidaturesListComponent implements OnInit {
 
   // Appliquer les filtres
   applyFilters(): void {
-    let filtered = this.candidatures;
+    const term = this.searchTerm.trim().toLowerCase();
 
-    // Filtrer par statut
-    if (this.selectedStatut !== 'TOUS') {
-      filtered = filtered.filter(c => c.statut === this.selectedStatut);
-    }
-
-    // Filtrer par recherche (nom, email, entreprise)
-    if (this.searchTerm.trim()) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(c =>
-        (c.nomComplet && c.nomComplet.toLowerCase().includes(term)) ||
-        (c.email && c.email.toLowerCase().includes(term)) ||
-        (c.entreprise && c.entreprise.toLowerCase().includes(term))
-      );
-    }
-
-    this.filteredCandidatures = filtered;
-  }
-
-  // Afficher les détails d'une candidature
-  showDetails(candidature: any): void {
-    this.selectedCandidature = candidature;
-    this.showDetailModal = true;
-  }
-
-  creerEntretienPourCandidat(candidature: any): void {
-    this.router.navigate(['/recruiter-dashboard/interviews'], {
-      queryParams: {
-        createFromCandidature: 1,
-        candidatureId: candidature?.id || '',
-        candidatId: candidature?.candidatId || '',
-        nomComplet: candidature?.nomComplet || '',
-        email: candidature?.email || '',
-        poste: candidature?.offreTitre || candidature?.poste || ''
-      }
-    });
-  }
-
-  // Fermer la modal des détails
-  closeDetailModal(): void {
-    this.showDetailModal = false;
-    this.selectedCandidature = null;
-  }
-
-  // Accepter une candidature
-  accepterCandidature(candidature: any): void {
-    if (confirm(`Êtes-vous sûr d'accepter la candidature de ${candidature.nomComplet}?`)) {
-      this.loading = true;
-      this.apiService.modifierStatutCandidature(candidature.id, 'ACCEPTEE').subscribe({
-        next: (response) => {
-          this.notifySuccess('Candidature acceptée avec succès');
-          // Envoyer l'email d'acceptation
-          this.envoyerEmailAcceptation(candidature);
-          // Rafraîchir la liste
-          this.loadCandidatures();
-        },
-        error: (err) => {
-          console.error('Erreur lors de l\'acceptation:', err);
-          this.notifyError('Erreur lors de l\'acceptation de la candidature');
-          this.loading = false;
+    this.filteredOfferGroups = this.offerGroups.map((group) => {
+      const candidatures = group.candidatures.filter((candidature: any) => {
+        const matchesStatut = this.selectedStatut === 'TOUS' || candidature?.statut === this.selectedStatut;
+        if (!matchesStatut) {
+          return false;
         }
-      });
-    }
-  }
 
-  // Rejeter une candidature
-  rejeterCandidature(candidature: any): void {
-    if (confirm(`Êtes-vous sûr de rejeter la candidature de ${candidature.nomComplet}?`)) {
-      this.loading = true;
-      this.apiService.modifierStatutCandidature(candidature.id, 'REFUSEE').subscribe({
-        next: (response) => {
-          this.notifySuccess('Candidature rejetée');
-          // Envoyer l'email de rejet
-          this.envoyerEmailRejet(candidature);
-          // Rafraîchir la liste
-          this.loadCandidatures();
-        },
-        error: (err) => {
-          console.error('Erreur lors du rejet:', err);
-          this.notifyError('Erreur lors du rejet de la candidature');
-          this.loading = false;
+        if (!term) {
+          return true;
         }
+
+        const candidate = this.getCandidateName(candidature).toLowerCase();
+        const email = String(candidature?.email || candidature?.candidat?.email || '').toLowerCase();
+        const title = this.getOfferTitle(group.offre).toLowerCase();
+        const company = this.getCompanyName(group.offre).toLowerCase();
+        const status = String(candidature?.statut || '').toLowerCase();
+
+        return candidate.includes(term) || email.includes(term) || title.includes(term) || company.includes(term) || status.includes(term);
       });
-    }
-  }
 
-  // Envoyer l'email d'acceptation
-  envoyerEmailAcceptation(candidature: any): void {
-    const emailData = {
-      to: candidature.email,
-      subject: 'Bonne nouvelle - Votre candidature a été acceptée!',
-      nomCandidat: candidature.nomComplet,
-      message: `Nous vous informons que votre candidature pour le poste a été acceptée.
-      
-Nous vous invitons à passer un entretien. Veuillez nous contacter pour fixer une date et heure qui vous convient.
-
-Cordialement,
-L'équipe de recrutement`,
-      candidatureId: candidature.id
-    };
-
-    this.apiService.envoyerEmailCandidature(emailData).subscribe({
-      next: () => {
-        this.notifySuccess('Email d\'acceptation envoyé au candidat');
-      },
-      error: (err) => {
-        console.error('Erreur lors de l\'envoi de l\'email:', err);
-        this.notifyWarning('Candidature acceptée mais l\'email n\'a pas pu être envoyé');
-      }
+      return {
+        ...group,
+        candidatures
+      };
     });
   }
 
-  // Envoyer l'email de rejet
-  envoyerEmailRejet(candidature: any): void {
-    const emailData = {
-      to: candidature.email,
-      subject: 'Retour sur votre candidature',
-      nomCandidat: candidature.nomComplet,
-      message: `Nous vous remercions de l'intérêt que vous portez à notre entreprise.
-
-Après examen attentif de votre dossier, nous regrettons de vous informer que nous ne pouvons pas vous retenir pour le poste en question.
-
-Nous vous encourageons à postuler à d'autres offres qui correspondraient mieux à votre profil.
-
-Cordialement,
-L'équipe de recrutement`,
-      candidatureId: candidature.id
-    };
-
-    this.apiService.envoyerEmailCandidature(emailData).subscribe({
-      next: () => {
-        this.notifySuccess('Email de rejet envoyé au candidat');
-      },
-      error: (err) => {
-        console.error('Erreur lors de l\'envoi de l\'email:', err);
-        this.notifyWarning('Candidature rejetée mais l\'email n\'a pas pu être envoyé');
-      }
-    });
+  getOfferTitle(offre: any): string {
+    return offre?.titre || offre?.title || offre?.poste || 'Offre sans titre';
   }
 
-  // Paginer
-  get paginatedCandidatures(): any[] {
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    return this.filteredCandidatures.slice(startIndex, startIndex + this.pageSize);
+  getCompanyName(offre: any): string {
+    return offre?.entreprise || offre?.company || offre?.recruteur?.entreprise || 'Entreprise';
   }
 
-  get totalPages(): number {
-    return Math.ceil(this.filteredCandidatures.length / this.pageSize);
+  getOfferLocation(offre: any): string {
+    return offre?.location || offre?.localisation || offre?.ville || 'Non renseignée';
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-    }
+  getOfferSalary(offre: any): string {
+    return offre?.salaire || offre?.salary || 'N/A';
   }
 
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
+  getCandidateName(candidature: any): string {
+    return candidature?.nomComplet || candidature?.candidat?.nom || candidature?.candidateName || candidature?.nomCandidat || '-';
   }
 
-  getDisplayEndCount(): number {
-    const end = this.currentPage * this.pageSize;
-    return end < this.filteredCandidatures.length ? end : this.filteredCandidatures.length;
-  }
-
-  // Obtenir le badge de statut
   getStatusBadge(statut: string): string {
     switch (statut) {
       case 'ACCEPTEE':
@@ -239,7 +162,6 @@ L'équipe de recrutement`,
     }
   }
 
-  // Obtenir le statut lisible
   getStatusLabel(statut: string): string {
     switch (statut) {
       case 'ACCEPTEE':
@@ -249,8 +171,95 @@ L'équipe de recrutement`,
       case 'EN_ATTENTE':
         return 'En attente';
       default:
-        return statut;
+        return statut || 'Inconnu';
     }
+  }
+
+  get visibleOfferCount(): number {
+    return this.filteredOfferGroups.length;
+  }
+
+  get visibleCandidatureCount(): number {
+    return this.filteredOfferGroups.reduce((sum, group) => sum + group.candidatures.length, 0);
+  }
+
+  openInterviewCreation(candidature: any, offre: any): void {
+    this.router.navigate(['/recruiter-dashboard/interviews'], {
+      queryParams: {
+        createFromCandidature: 1,
+        candidatureId: candidature?.id || '',
+        candidatId: candidature?.candidatId || candidature?.candidat?.id || '',
+        nomComplet: this.getCandidateName(candidature),
+        email: candidature?.email || candidature?.candidat?.email || '',
+        poste: this.getOfferTitle(offre),
+        offreId: offre?.id || ''
+      }
+    });
+  }
+
+  showDetails(candidature: any, offre: any): void {
+    this.selectedCandidature = candidature;
+    this.selectedOffre = offre;
+    this.showDetailModal = true;
+  }
+
+  closeDetailModal(): void {
+    this.showDetailModal = false;
+    this.selectedCandidature = null;
+    this.selectedOffre = null;
+  }
+
+  accepterCandidature(candidature: any): void {
+    if (!candidature?.id) {
+      return;
+    }
+
+    if (!confirm(`Accepter la candidature de ${this.getCandidateName(candidature)} ?`)) {
+      return;
+    }
+
+    this.updateCandidatureStatus(candidature.id, 'ACCEPTEE');
+  }
+
+  refuserCandidature(candidature: any): void {
+    if (!candidature?.id) {
+      return;
+    }
+
+    if (!confirm(`Refuser la candidature de ${this.getCandidateName(candidature)} ?`)) {
+      return;
+    }
+
+    this.updateCandidatureStatus(candidature.id, 'REFUSEE');
+  }
+
+  private updateCandidatureStatus(id: number, statut: string): void {
+    this.apiService.modifierStatutCandidature(id, statut).subscribe({
+      next: () => {
+        this.notifySuccess(`Candidature ${statut === 'ACCEPTEE' ? 'acceptée' : 'refusée'} avec succès`);
+        if (this.selectedCandidature?.id === id) {
+          this.closeDetailModal();
+        }
+        this.loadCandidatures();
+      },
+      error: (error) => {
+        console.error('Erreur mise à jour candidature:', error);
+        this.notifyError('Impossible de mettre à jour le statut de la candidature');
+      }
+    });
+  }
+
+  private normalizeArrayPayload(payload: any): any[] {
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const nestedArray = Object.values(payload).find((value: any) => Array.isArray(value));
+      return Array.isArray(nestedArray) ? nestedArray : [];
+    }
+
+    return [];
   }
 
   private notifySuccess(message: string): void {
@@ -259,9 +268,5 @@ L'équipe de recrutement`,
 
   private notifyError(message: string): void {
     console.error(message);
-  }
-
-  private notifyWarning(message: string): void {
-    console.warn(message);
   }
 }

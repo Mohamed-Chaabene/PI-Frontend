@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 @Injectable({
@@ -10,8 +10,20 @@ export class ApiService {
 
   // Use relative URL so Angular dev proxy can forward to Spring Boot and avoid CORS issues.
   private apiUrl = '/api';
-
+  private mlUrl = 'http://localhost:8000';
+  private mlAvailable = true;
   constructor(private http: HttpClient) { }
+
+  private buildAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+
+    if (token && token !== 'undefined' && token !== 'null') {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    return headers;
+  }
 
   // Exemple de méthode GET
   getData(): Observable<any> {
@@ -29,6 +41,17 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/users`);
   }
 
+  getUsersByName(name: string): Observable<any[]> {
+    const query = encodeURIComponent(name?.trim() || '');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    headers = headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers = headers.set('Pragma', 'no-cache');
+    const timestamp = Date.now();
+    const url = `${this.apiUrl}/users/search?name=${query}&t=${timestamp}`;
+    console.log('🌐 Calling API search endpoint:', url);
+    return this.http.get<any[]>(url, { headers });
+  }
+
   // Candidats (pour lier un entretien à un candidat)
   // See getCandidats() method below in Candidat methods section
 
@@ -38,11 +61,13 @@ export class ApiService {
 
   // Recruteur courant (permets d'obtenir l'id du recruteur connecté)
   getCurrentRecruteur(): Observable<any> {
+    const headers = this.buildAuthHeaders();
+
     // Fallback only when endpoint path is missing. Do not retry on auth errors (401/403).
-    return this.http.get(`${this.apiUrl}/recruteur/me`).pipe(
+    return this.http.get(`${this.apiUrl}/recruteur/me`, { headers }).pipe(
       catchError((error) => {
         if (error?.status === 404) {
-          return this.http.get(`${this.apiUrl}/recruteurs/me`);
+          return this.http.get(`${this.apiUrl}/recruteurs/me`, { headers });
         }
         return throwError(() => error);
       })
@@ -63,39 +88,124 @@ export class ApiService {
     return this.http.delete(`${this.apiUrl}/users/${id}`);
   }
 
-  // Ajoutez d'autres méthodes selon vos besoins API
-
   // Register
   register(user: any): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post(`${this.apiUrl}/auth/register`, user, { headers });
+    const cleanEmail = String(user?.email || '').trim();
+    const cleanRole = String(user?.role || 'CANDIDAT').replace(/^ROLE_/, '').toUpperCase() || 'CANDIDAT';
+    const cleanPassword = user?.password ?? user?.motDePasse ?? user?.rawPassword ?? '';
+
+    const normalizedUser: any = {
+      nom: user?.nom ?? '',
+      prenom: user?.prenom ?? '',
+      email: cleanEmail,
+      role: cleanRole,
+      roleString: user?.roleString ?? undefined,
+      cv: user?.cv ?? undefined,
+      niveauEtude: user?.niveauEtude ?? undefined,
+      competences: user?.competences ?? undefined,
+      experience: user?.experience ?? undefined,
+      entreprise: user?.entreprise ?? undefined,
+      poste: user?.poste ?? undefined,
+      secteur: user?.secteur ?? undefined,
+      budget: user?.budget ?? undefined,
+      organisation: user?.organisation ?? undefined,
+      adresse: user?.adresse ?? undefined,
+      descriptionProjet: user?.descriptionProjet ?? undefined,
+      password: cleanPassword,
+      rawPassword: cleanPassword,
+      motDePasse: cleanPassword,
+    };
+
+    return this.http.post(`${this.apiUrl}/auth/register`, normalizedUser, { headers }).pipe(
+      catchError((firstError) => {
+        if (firstError?.status === 400 || firstError?.status === 403) {
+          const minimalPayload = {
+            nom: normalizedUser.nom,
+            email: normalizedUser.email,
+            role: cleanRole,
+            motDePasse: cleanPassword,
+            password: cleanPassword,
+            rawPassword: cleanPassword,
+          };
+          return this.http.post(`${this.apiUrl}/auth/register`, minimalPayload, { headers }).pipe(
+            catchError((secondError) => {
+              if (secondError?.status === 403 && cleanRole !== 'CANDIDAT') {
+                // Last fallback when backend rejects non-candidate self-signup.
+                const candidatePayload = { ...minimalPayload, role: 'CANDIDAT' };
+                return this.http.post(`${this.apiUrl}/auth/register`, candidatePayload, { headers });
+              }
+              return throwError(() => secondError);
+            })
+          );
+        }
+        return throwError(() => firstError);
+      })
+    );
   }
 
   // Login
   login(credentials: any): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post(`${this.apiUrl}/auth/login`, credentials, { headers });
+    const email = String(credentials?.email ?? credentials?.username ?? '').trim();
+    const password = String(credentials?.password ?? credentials?.motDePasse ?? credentials?.rawPassword ?? '');
+
+    // Try the most likely backend contract first to avoid server-side deserialization issues.
+    const primaryPayload = {
+      email,
+      motDePasse: password,
+    };
+
+    return this.http.post(`${this.apiUrl}/auth/login`, primaryPayload, { headers }).pipe(
+      catchError((firstError) => {
+        if (firstError?.status === 400 || firstError?.status === 401 || firstError?.status === 403 || firstError?.status === 500) {
+          const fallbackPasswordPayload = {
+            email,
+            password,
+          };
+
+          return this.http.post(`${this.apiUrl}/auth/login`, fallbackPasswordPayload, { headers }).pipe(
+            catchError((secondError) => {
+              if (secondError?.status === 400 || secondError?.status === 401 || secondError?.status === 403 || secondError?.status === 500) {
+                const fallbackUsernamePayload = {
+                  username: email,
+                  password,
+                };
+                return this.http.post(`${this.apiUrl}/auth/login`, fallbackUsernamePayload, { headers });
+              }
+              return throwError(() => secondError);
+            })
+          );
+        }
+        return throwError(() => firstError);
+      })
+    );
+  }
+
+  // Reset Password
+  resetPassword(phone: string): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(`${this.apiUrl}/auth/reset-password`, { phone }, { headers });
   }
 
   // Entretiens (Interviews)
   getEntretiens(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/entretiens`);
+    const headers = this.buildAuthHeaders();
+    return this.http.get(`${this.apiUrl}/entretiens`, { headers });
   }
 
   getAllEntretiensForAdmin(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/entretiens`);
+    const headers = this.buildAuthHeaders();
+    return this.http.get<any[]>(`${this.apiUrl}/entretiens`, { headers });
   }
 
   getEntretiensByCandidat(candidatId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/entretiens/candidat/${candidatId}`);
+    const headers = this.buildAuthHeaders();
+    return this.http.get(`${this.apiUrl}/entretiens/candidat/${candidatId}`, { headers });
   }
 
   getEntretiensByRecruteur(recruteurId: number): Observable<any[]> {
-    const token = localStorage.getItem('token');
-    let headers = new HttpHeaders();
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
+    const headers = this.buildAuthHeaders();
 
     const primaryUrl = `${this.apiUrl}/entretiens/recruteur/${recruteurId}`;
     const fallbackUrl = `${this.apiUrl}/recruteurs/${recruteurId}/entretiens`;
@@ -112,6 +222,29 @@ export class ApiService {
 
   getEntretien(id: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/entretiens/${id}`);
+  }
+
+  getEntretiensByOffre(offreId: number): Observable<any[]> {
+    const headers = this.buildAuthHeaders();
+    const primaryUrl = `${this.apiUrl}/entretiens/offre/${offreId}`;
+    const fallbackUrlA = `${this.apiUrl}/offres/${offreId}/entretiens`;
+    const fallbackUrlB = `${this.apiUrl}/offres-emploi/${offreId}/entretiens`;
+
+    return this.http.get<any[]>(primaryUrl, { headers }).pipe(
+      catchError((firstError) => {
+        if (firstError?.status === 404 || firstError?.status === 405 || firstError?.status === 500) {
+          return this.http.get<any[]>(fallbackUrlA, { headers }).pipe(
+            catchError((secondError) => {
+              if (secondError?.status === 404 || secondError?.status === 405 || secondError?.status === 500) {
+                return this.http.get<any[]>(fallbackUrlB, { headers });
+              }
+              return throwError(() => secondError);
+            })
+          );
+        }
+        return throwError(() => firstError);
+      })
+    );
   }
 
   updateEntretienStatutByAdmin(id: number, statut: 'ACCEPTE' | 'REFUSE'): Observable<any> {
@@ -180,7 +313,275 @@ export class ApiService {
 
   generateAiQuestionSuggestions(entretienId: number, payload: any): Observable<any[]> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<any[]>(`${this.apiUrl}/questions/entretien/${entretienId}/ai-generate`, payload, { headers });
+    return this.http.post<any[]>(`${this.apiUrl}/questions/entretien/${entretienId}/ai-generate`, payload, { headers }).pipe(
+      catchError((error) => {
+        // If Spring endpoint is missing or unstable, fallback to external open-source API.
+        if (error?.status === 404 || error?.status === 500 || error?.status === 502 || error?.status === 503 || error?.status === 0) {
+          return this.callExternalOpenSourceQuestionApi(payload).pipe(
+            catchError(() => of(this.buildLocalQuestionFallback(payload)))
+          );
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+  private callExternalOpenSourceQuestionApi(payload: any): Observable<any[]> {
+    const type = this.normalizeQuestionType(payload?.type);
+    const niveau = String(payload?.niveau || 'INTERMEDIAIRE').trim().toUpperCase();
+    const categorie = String(payload?.categorie || 'TECHNIQUE').trim().toUpperCase();
+    const nombre = Math.max(1, Math.min(10, Number(payload?.nombre) || 3));
+    const theme = String(payload?.theme || 'entretien technique').trim();
+
+    const prompt =
+      `Genere exactement ${nombre} questions d entretien en francais au format JSON. ` +
+      `Theme: ${theme}. Categorie: ${categorie}. Niveau: ${niveau}. Type: ${type}. ` +
+      `Retourne uniquement un tableau JSON. ` +
+      `Schema: [{"contenu":"...","type":"${type}","niveau":"${niveau}","points":1,"ordre":1,"choix":[{"texte":"...","correcte":true,"ordre":1}]}].`;
+
+    const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
+    return this.http.get(url, { responseType: 'text' }).pipe(
+      map((text) => this.normalizeExternalQuestionsText(text, { type, niveau, nombre, theme }))
+    );
+  }
+
+  private normalizeQuestionType(rawType: any): string {
+    const normalized = String(rawType || 'QCM').trim().toUpperCase();
+    if (normalized === 'VF' || normalized === 'VRAI_FAUX') {
+      return 'VRAI_FAUX';
+    }
+    if (normalized === 'QCU') {
+      return 'QCU';
+    }
+    return 'QCM';
+  }
+
+  private normalizeExternalQuestionsText(text: string, context: any): any[] {
+    const extracted = this.extractJsonPayload(text);
+    const rows = Array.isArray(extracted)
+      ? extracted
+      : (Array.isArray((extracted as any)?.questions) ? (extracted as any).questions : []);
+
+    if (!rows.length) {
+      const textRows = this.extractQuestionsFromPlainText(text, context);
+      if (textRows.length) {
+        return textRows;
+      }
+      return this.buildLocalQuestionFallback(context);
+    }
+
+    return rows.slice(0, context.nombre).map((row: any, index: number) => {
+      const rowType = this.normalizeQuestionType(row?.type || context.type);
+      const rowNiveau = String(row?.niveau || context.niveau || 'INTERMEDIAIRE').trim().toUpperCase();
+      const choixRaw = Array.isArray(row?.choix) ? row.choix : [];
+      const choix = choixRaw
+        .map((choice: any, cIndex: number) => {
+          if (typeof choice === 'string') {
+            return { texte: choice.trim(), correcte: cIndex === 0, ordre: cIndex + 1 };
+          }
+          return {
+            texte: String(choice?.texte || choice?.contenu || choice?.label || '').trim(),
+            correcte: Boolean(choice?.correcte === true || choice?.correct === true || choice?.isCorrecte === true),
+            ordre: Number(choice?.ordre) || cIndex + 1
+          };
+        })
+        .filter((choice: any) => !!choice.texte);
+
+      if (!choix.length) {
+        if (rowType === 'VRAI_FAUX') {
+          choix.push({ texte: 'VRAI', correcte: true, ordre: 1 });
+          choix.push({ texte: 'FAUX', correcte: false, ordre: 2 });
+        } else {
+          choix.push({ texte: 'Option A', correcte: true, ordre: 1 });
+          choix.push({ texte: 'Option B', correcte: false, ordre: 2 });
+          choix.push({ texte: 'Option C', correcte: false, ordre: 3 });
+        }
+      }
+
+      if (!choix.some((c: any) => c.correcte)) {
+        choix[0].correcte = true;
+      }
+
+      if (rowType === 'QCU' || rowType === 'VRAI_FAUX') {
+        let found = false;
+        choix.forEach((c: any) => {
+          if (c.correcte && !found) {
+            found = true;
+          } else {
+            c.correcte = false;
+          }
+        });
+      }
+
+      return {
+        contenu: String(row?.contenu || '').trim() || `${context.theme} - Question ${index + 1}`,
+        type: rowType,
+        niveau: rowNiveau,
+        points: Number(row?.points) || 1,
+        ordre: Number(row?.ordre) || index + 1,
+        choix
+      };
+    });
+  }
+
+  private extractQuestionsFromPlainText(text: string, context: any): any[] {
+    const raw = String(text || '').trim();
+    if (!raw) {
+      return [];
+    }
+
+    const lines = raw
+      .split(/\r?\n/)
+      .map((line) => line.replace(/^\s*(?:[-*]|\d+[.)])\s*/g, '').trim())
+      .filter((line) => line.length > 15)
+      .filter((line) => /\?|:/.test(line));
+
+    const unique = Array.from(new Set(lines));
+    if (!unique.length) {
+      return [];
+    }
+
+    const type = this.normalizeQuestionType(context?.type);
+    const niveau = String(context?.niveau || 'INTERMEDIAIRE').trim().toUpperCase();
+    const wanted = Math.max(1, Math.min(10, Number(context?.nombre) || 3));
+
+    return unique.slice(0, wanted).map((questionText, index) => {
+      const contenu = questionText.endsWith('?') || questionText.endsWith(':')
+        ? questionText
+        : `${questionText} ?`;
+
+      if (type === 'VRAI_FAUX') {
+        return {
+          contenu,
+          type,
+          niveau,
+          points: 1,
+          ordre: index + 1,
+          choix: [
+            { texte: 'VRAI', correcte: true, ordre: 1 },
+            { texte: 'FAUX', correcte: false, ordre: 2 }
+          ]
+        };
+      }
+
+      return {
+        contenu,
+        type,
+        niveau,
+        points: 1,
+        ordre: index + 1,
+        choix: [
+          { texte: 'Option A', correcte: true, ordre: 1 },
+          { texte: 'Option B', correcte: false, ordre: 2 },
+          { texte: 'Option C', correcte: false, ordre: 3 }
+        ]
+      };
+    });
+  }
+
+  private extractJsonPayload(text: string): any {
+    const cleaned = String(text || '').trim();
+    if (!cleaned) {
+      return null;
+    }
+
+    const tryParse = (candidate: string): any => {
+      try {
+        return JSON.parse(candidate);
+      } catch {
+        return null;
+      }
+    };
+
+    const direct = tryParse(cleaned);
+    if (direct != null) {
+      return direct;
+    }
+
+    const arrStart = cleaned.indexOf('[');
+    const arrEnd = cleaned.lastIndexOf(']');
+    if (arrStart >= 0 && arrEnd > arrStart) {
+      const parsed = tryParse(cleaned.slice(arrStart, arrEnd + 1));
+      if (parsed != null) {
+        return parsed;
+      }
+    }
+
+    const objStart = cleaned.indexOf('{');
+    const objEnd = cleaned.lastIndexOf('}');
+    if (objStart >= 0 && objEnd > objStart) {
+      return tryParse(cleaned.slice(objStart, objEnd + 1));
+    }
+
+    return null;
+  }
+
+  private buildLocalQuestionFallback(context: any): any[] {
+    const type = this.normalizeQuestionType(context?.type);
+    const niveau = String(context?.niveau || 'INTERMEDIAIRE').trim().toUpperCase();
+    const theme = String(context?.theme || 'entretien technique').trim();
+    const nombre = Math.max(1, Math.min(10, Number(context?.nombre) || 3));
+    const normalizedTheme = theme.toLowerCase();
+
+    const javaPool = [
+      'Expliquez la difference entre JDK, JRE et JVM et leur role dans le cycle d execution Java.',
+      'Quand utiliser une interface plutot qu une classe abstraite en Java moderne ?',
+      'Comment gerer proprement les exceptions checked et unchecked dans un service Java ?',
+      'Quels benefices apporte le garbage collector et quelles limites faut-il anticiper ?',
+      'Comment optimiser les performances d une API Spring Boot qui execute des requetes lentes ?'
+    ];
+
+    const sqlPool = [
+      'Quelle difference entre INNER JOIN et LEFT JOIN avec un cas concret de recrutement ?',
+      'Comment indexer une table SQL de candidatures pour accelerer les recherches par statut ?',
+      'Pourquoi une requete peut-elle ignorer un index et comment le diagnostiquer ?',
+      'Comment ecrire une requete pour retrouver les candidats ayant passe au moins 3 entretiens ?',
+      'Quelles bonnes pratiques pour eviter les injections SQL dans une API backend ?'
+    ];
+
+    const genericPool = [
+      'Comment prioriser une solution technique quand les contraintes delai, qualite et cout sont opposees ?',
+      'Quelles etapes mettez-vous en place pour valider une fonctionnalite avant mise en production ?',
+      'Comment communiquez-vous un risque technique critique a une equipe non-technique ?',
+      'Quelle methode utilisez-vous pour analyser une anomalie intermittente en production ?',
+      'Comment concevoir une solution evolutive qui reste simple a maintenir ?'
+    ];
+
+    const selectedPool = normalizedTheme.includes('java')
+      ? javaPool
+      : (normalizedTheme.includes('sql') || normalizedTheme.includes('database') || normalizedTheme.includes('bdd'))
+        ? sqlPool
+        : genericPool;
+
+    return Array.from({ length: nombre }, (_, index) => {
+      const contenuBase = selectedPool[index % selectedPool.length];
+      if (type === 'VRAI_FAUX') {
+        return {
+          contenu: `${theme} - Question ${index + 1}: ${contenuBase}`,
+          type,
+          niveau,
+          points: 1,
+          ordre: index + 1,
+          choix: [
+            { texte: 'VRAI', correcte: true, ordre: 1 },
+            { texte: 'FAUX', correcte: false, ordre: 2 }
+          ]
+        };
+      }
+
+      return {
+        contenu: `${theme} - Question ${index + 1}: ${contenuBase}`,
+        type,
+        niveau,
+        points: 1,
+        ordre: index + 1,
+        choix: [
+          { texte: 'Analyser puis prioriser la solution', correcte: true, ordre: 1 },
+          { texte: 'Implementer sans specification', correcte: false, ordre: 2 },
+          { texte: 'Ignorer les tests', correcte: false, ordre: 3 }
+        ]
+      };
+    });
   }
 
   createQuestion(question: any): Observable<any> {
@@ -300,6 +701,40 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/candidats`, candidateData, { headers });
   }
 
+  // ==================== FOLLOW FEATURE ====================
+
+  followUser(userToFollowId: number, token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/follows/${userToFollowId}/follow`, {}, { headers });
+  }
+
+  unfollowUser(userToUnfollowId: number, token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/follows/${userToUnfollowId}/unfollow`, {}, { headers });
+  }
+
+  getFollowers(userId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/follows/${userId}/followers`);
+  }
+
+  isFollowing(userIdToCheck: number, token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/follows/${userIdToCheck}/is-following`, { headers });
+  }
+
+  getFollowersCount(userId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/follows/${userId}/followers-count`);
+  }
+
   updateCandidate(id: number, candidateData: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -365,7 +800,7 @@ export class ApiService {
   getMesCandidatures(): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
-    if (token) {
+    if (token && token !== 'undefined' && token !== 'null') {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get(`${this.apiUrl}/candidatures/mes-candidatures`, { headers });
@@ -374,7 +809,7 @@ export class ApiService {
   getStatsCandidatures(): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
-    if (token) {
+    if (token && token !== 'undefined' && token !== 'null') {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get(`${this.apiUrl}/candidatures/stats`, { headers });
@@ -384,7 +819,7 @@ export class ApiService {
   getCandidatureById(id: number): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
-    if (token) {
+    if (token && token !== 'undefined' && token !== 'null') {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get(`${this.apiUrl}/candidatures/${id}`, { headers });
@@ -517,25 +952,21 @@ export class ApiService {
     }
 
     const primaryUrl = `${this.apiUrl}/offres-emploi/${id}`;
-    const altUrl = `${this.apiUrl}/offres/${id}`;
 
     return this.http.get(primaryUrl, { headers }).pipe(
       catchError((firstError) => {
         const shouldTryAltEndpoint = firstError?.status === 404 || firstError?.status === 405 || firstError?.status === 500;
 
         if (shouldTryAltEndpoint) {
-          return this.http.get(altUrl, { headers }).pipe(
-            catchError(() => {
-              // Last fallback: fetch list and resolve the item client-side.
-              return this.http.get<any[]>(`${this.apiUrl}/offres-emploi`, { headers }).pipe(
-                map((offres) => {
-                  const matched = (offres || []).find((item: any) => Number(item?.id) === Number(id));
-                  if (!matched) {
-                    throw firstError;
-                  }
-                  return matched;
-                })
-              );
+          // Fallback: fetch list and resolve the item client-side.
+          // Avoid probing /api/offres/{id} which may return noisy 500s on some backends.
+          return this.http.get<any[]>(`${this.apiUrl}/offres-emploi`, { headers }).pipe(
+            map((offres) => {
+              const matched = (offres || []).find((item: any) => Number(item?.id) === Number(id));
+              if (!matched) {
+                throw firstError;
+              }
+              return matched;
             })
           );
         }
@@ -593,50 +1024,60 @@ export class ApiService {
 
   // ==================== DOCUMENTS CRUD ====================
 
-  getAllDocuments(): Observable<any> {
+  // Récupérer UNIQUEMENT les documents du candidat connecté (et non tous les documents)
+getMesDocuments(): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+        headers = headers.set('Authorization', `Bearer ${token}`);
     }
+    // ✅ /documents suffit — le backend filtre par candidat via le token JWT
     return this.http.get(`${this.apiUrl}/documents`, { headers });
-  }
+}
 
-  getDocumentById(id: number): Observable<any> {
+// Récupérer un document par son ID (avec vérification d'appartenance)
+getDocumentById(id: number): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+        headers = headers.set('Authorization', `Bearer ${token}`);
     }
+    // ✅ Ce endpoint vérifie que le document appartient au candidat connecté
     return this.http.get(`${this.apiUrl}/documents/${id}`, { headers });
-  }
+}
 
-  creerDocument(data: any): Observable<any> {
+// Créer un document (automatiquement lié au candidat connecté)
+creerDocument(data: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+        headers = headers.set('Authorization', `Bearer ${token}`);
     }
+    // ✅ Inchangé - le backend lie automatiquement au candidat connecté
     return this.http.post(`${this.apiUrl}/documents`, data, { headers });
-  }
+}
 
-  modifierDocument(id: number, data: any): Observable<any> {
+// Modifier un document (vérifie que le document appartient au candidat)
+modifierDocument(id: number, data: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+        headers = headers.set('Authorization', `Bearer ${token}`);
     }
+    // ✅ Inchangé - le backend vérifie l'appartenance avant modification
     return this.http.put(`${this.apiUrl}/documents/${id}`, data, { headers });
-  }
+}
 
-  supprimerDocument(id: number): Observable<any> {
+// Supprimer un document (vérifie que le document appartient au candidat)
+supprimerDocument(id: number): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+        headers = headers.set('Authorization', `Bearer ${token}`);
     }
+    // ✅ Inchangé - le backend vérifie l'appartenance avant suppression
     return this.http.delete(`${this.apiUrl}/documents/${id}`, { headers });
-  }
+}
 
   quickApply(candidatureData: any): Observable<any> {
     const token = localStorage.getItem('token');
@@ -700,6 +1141,154 @@ export class ApiService {
     }
     return this.http.delete(`${this.apiUrl}/messages/${messageId}`, { headers });
   }
+
+  // ==================== NOTIFICATIONS ====================
+
+  getUnreadNotificationCount(token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    headers = headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers = headers.set('Pragma', 'no-cache');
+    headers = headers.set('Expires', '0');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Add timestamp to prevent caching
+    const timestamp = Date.now();
+    return this.http.get(`${this.apiUrl}/notifications/unread-count?t=${timestamp}`, { headers });
+  }
+
+  getNotifications(token: string): Observable<any[]> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    headers = headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers = headers.set('Pragma', 'no-cache');
+    headers = headers.set('Expires', '0');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Add timestamp to prevent caching
+    const timestamp = Date.now();
+    return this.http.get<any[]>(`${this.apiUrl}/notifications?t=${timestamp}`, { headers });
+  }
+
+  markNotificationAsRead(notificationId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/notifications/${notificationId}/read`, {}, { headers });
+  }
+
+  markAllNotificationsAsRead(token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/notifications/mark-all-read`, {}, { headers });
+  }
+
+  deleteAllNotifications(token: string): Observable<any> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/notifications/delete-all`, {}, { headers });
+  }
+
+// ==================== FONCTIONNALITÉS AVANCÉES ====================
+
+// 1. Gamification
+getGamification(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/gamification`);
+}
+
+// 2. Smart Match
+getSmartMatch(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/smart-match`);
+}
+
+// 3. Radar Compétences
+getRadarCompetences(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/radar-competences`);
+}
+
+// 4. Taux de réussite
+getTauxReussite(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/taux-reussite`);
+}
+
+// 5. Statistiques par mois
+getStatsParMois(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/stats-par-mois`);
+}
+
+// 6. Prédiction IA
+getPredictionSucces(cvContent: string, historique: any[]): Observable<any> {
+    if (!this.mlAvailable) {
+      return of({
+        probabilite: 25,
+        meilleurMoment: 'Service IA indisponible',
+        pointsForts: ['Profil en cours d analyse'],
+        pointsAmeliorer: ['Relancer le service ML sur le port 8000'],
+        conseilsSpecifiques: ['Demarrer le serveur Python pour activer la prediction'],
+        couleur: '#ef4444'
+      });
+    }
+
+    return this.http.post(`${this.mlUrl}/prediction/succes`, {
+      cv_content: cvContent,
+      historique_candidatures: historique
+    }).pipe(
+      catchError(() => {
+        this.mlAvailable = false;
+        return of({
+          probabilite: 25,
+          meilleurMoment: 'Service IA indisponible',
+          pointsForts: ['Profil en cours d analyse'],
+          pointsAmeliorer: ['Relancer le service ML sur le port 8000'],
+          conseilsSpecifiques: ['Demarrer le serveur Python pour activer la prediction'],
+          couleur: '#ef4444'
+        });
+      })
+    );
+}
+
+// 7. Relances
+getRelances(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/relances`);
+}
+
+// 8. Timeline
+getTimeline(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidatures/timeline`);
+}
+
+// ==================== ANALYSE CV ====================
+
+ analyserCV(documentId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/cv-analyse/analyser/${documentId}`, {});
+  }
+
+  // ============ OPTIMISATION CV ============
+  optimiserCV(documentId: number, offreEmploi: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/cv-analyse/optimiser/${documentId}`, { offreEmploi });
+  }
+
+
+
+
+
+//  CHATBOT
+chatWithML(message: string, cvContent: string): Observable<any> {
+    // Appel direct au serveur FastAPI sur le port 8000
+    return this.http.post('http://localhost:8000/chat/ml', { 
+        message: message, 
+        cv_content: cvContent 
+    });
+}
+
+
+
 }
 
 

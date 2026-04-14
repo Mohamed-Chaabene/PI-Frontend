@@ -64,7 +64,14 @@
                     <label for="edit-candidat" class="form-label">Candidat <span class="text-danger">*</span></label>
                     <select id="edit-candidat" class="form-control" [(ngModel)]="editingEntretien.candidatId" name="editCandidatId" [required]="editingEntretien.type !== 'TEST'">
                       <option [ngValue]="null">-- Sélectionner un candidat --</option>
-                      <option *ngFor="let c of candidats" [ngValue]="c.id">{{ c.nom }} {{ c.prenom }}</option>
+                      <ng-container *ngIf="editingEntretien.offreId; else freeCandidateList">
+                        <option *ngFor="let candidature of candidaturesOffre" [ngValue]="candidature.candidatId || candidature.candidat?.id || candidature.idCandidat">
+                          {{ candidature.nomComplet || candidature.candidatNom || candidature.candidat?.nom + ' ' + candidature.candidat?.prenom || 'Candidat accepté' }}
+                        </option>
+                      </ng-container>
+                      <ng-template #freeCandidateList>
+                        <option *ngFor="let c of candidats" [ngValue]="c.id">{{ c.nom }} {{ c.prenom }}</option>
+                      </ng-template>
                     </select>
                   </div>
                 </div>
@@ -184,28 +191,13 @@
                 </div>
               </div>
 
-              <div class="row" *ngIf="newEntretien.type && newEntretien.type !== 'TEST' && !newEntretien.offreId">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label for="candidat" class="form-label">Candidat <span class="text-danger">*</span></label>
-                    <select id="candidat" class="form-control" [(ngModel)]="newEntretien.candidatId" name="candidatId" [required]="newEntretien.type !== 'TEST'" #candidatField="ngModel">
-                      <option [ngValue]="null">-- Sélectionner un candidat --</option>
-                      <option *ngFor="let c of candidats" [ngValue]="c.id">{{ c.nom }} {{ c.prenom }}</option>
-                    </select>
-                    <div *ngIf="candidatField.invalid && candidatField.touched" class="text-danger small mt-1">
-                      <i class="ri-error-warning-line"></i> Un candidat est obligatoire pour ce type
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <div class="row" *ngIf="newEntretien.offreId">
                 <div class="col-12">
                   <div class="mb-3">
-                    <label class="form-label">Candidats ayant postulé</label>
+                    <label class="form-label">Candidats acceptés</label>
                     <div class="border rounded p-3 bg-white">
                       <div *ngIf="candidaturesOffre.length === 0" class="text-muted small">
-                        Aucun candidat n'a encore postulé à cette offre.
+                        Aucun candidat accepté pour cette offre.
                       </div>
                       <div *ngIf="candidaturesOffre.length > 0" class="d-flex flex-column gap-2">
                         <div *ngFor="let candidature of candidaturesOffre" class="d-flex justify-content-between align-items-center border-bottom pb-2">
@@ -276,7 +268,7 @@
               </div>
 
               <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-success" [disabled]="createForm.invalid">
+                <button type="submit" class="btn btn-success">
                   <i class="ri-check-line"></i> Créer Entretien
                 </button>
                 <button type="button" class="btn btn-secondary" (click)="showCreateForm = false">

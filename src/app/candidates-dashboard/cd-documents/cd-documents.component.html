@@ -36,29 +36,269 @@
 
 <!-- Liste des documents -->
 <div *ngIf="!isLoading && !errorMessage && documents.length > 0" class="documents-grid">
-    <div class="document-card" *ngFor="let doc of documents">
-        <div class="document-icon" [style.backgroundColor]="getTypeColor(doc.type) + '20'">
-            <i [class]="getTypeIcon(doc.type)" [style.color]="getTypeColor(doc.type)"></i>
-        </div>
-        <div class="document-info">
-            <h3>{{ doc.nom || getTypeLabel(doc.type) }}</h3>
-            <div class="document-meta">
+   <div class="document-card" *ngFor="let doc of documents">
+    <div class="card-header-row">
+        <div class="card-left">
+            <div class="document-icon" [style.backgroundColor]="getTypeColor(doc.type) + '20'">
+                <i [class]="getTypeIcon(doc.type)" [style.color]="getTypeColor(doc.type)"></i>
+            </div>
+            <div class="document-info">
+                <h3>{{ doc.nom || getTypeLabel(doc.type) }}</h3>
                 <span class="badge" [ngClass]="{'badge-success': doc.compatibleATS, 'badge-warning': !doc.compatibleATS}">
                     {{ doc.compatibleATS ? 'ATS compatible' : 'ATS à améliorer' }}
                 </span>
             </div>
-            <p class="document-preview">{{ (doc.contenu | slice:0:80) }}...</p>
         </div>
-        <div class="document-actions">
-            <button class="btn-view" (click)="viewDocument(doc)" title="Voir">
-                <i class="ri-eye-line"></i>
-            </button>
-            <button class="btn-edit" (click)="openEditModal(doc)" title="Modifier">
-                <i class="ri-edit-line"></i>
-            </button>
-            <button class="btn-delete" (click)="deleteDocument(doc.id)" title="Supprimer">
-                <i class="ri-delete-bin-line"></i>
-            </button>
+       <!-- Dans la section des actions du document -->
+<div class="document-actions">
+    <button class="btn-view" (click)="viewDocument(doc)" title="Voir">
+        <i class="ri-eye-line"></i>
+    </button>
+   <!---- <button class="btn-optimize" (click)="openOptimizeModal(doc)" title="Optimiser CV">
+        <i class="ri-rocket-line"></i>
+    </button>  ------------>
+    <button class="btn-edit" (click)="openEditModal(doc)" title="Modifier">
+        <i class="ri-edit-line"></i>
+    </button>
+
+    <button class="btn-analyse" (click)="ouvrirAnalyseCV(doc)" 
+        title="Analyser avec IA" *ngIf="doc.type === 'CV'">
+    <i class="ri-robot-line"></i>
+</button>
+<button class="btn-optimize" (click)="ouvrirOptimisation(doc)" 
+        title="Optimiser pour une offre" *ngIf="doc.type === 'CV'">
+    <i class="ri-rocket-line"></i>
+</button>
+
+    <button class="btn-delete" (click)="deleteDocument(doc.id)" title="Supprimer">
+        <i class="ri-delete-bin-line"></i>
+    </button>
+</div>
+    </div>
+    <div class="document-preview-frame">
+        <iframe [srcdoc]="doc.contenu" sandbox="allow-same-origin" scrolling="no"></iframe>
+    </div>
+</div>
+    </div>
+    
+    <!-- MODAL ANALYSE CV IA -->
+<div class="modal-overlay" *ngIf="showAnalyseCVModal" (click)="showAnalyseCVModal=false">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); border-radius: 28px 28px 0 0;">
+            <h3 style="color: white;">
+                <i class="ri-robot-line"></i> Analyse IA de votre CV
+            </h3>
+            <button class="modal-close" style="color: white; background: rgba(255,255,255,0.2);" 
+                    (click)="showAnalyseCVModal=false">&times;</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- Loading -->
+            <div *ngIf="isAnalysing" class="text-center py-5">
+                <div class="spinner-border" style="color: #6c5ce7;"></div>
+                <p class="mt-3" style="color: #6b7280;">🤖 Claude analyse votre CV...</p>
+            </div>
+
+            <!-- Résultats -->
+            <div *ngIf="!isAnalysing && analyseResult">
+
+                <!-- Score Global -->
+                <div class="analyse-score-section">
+                    <div class="score-big-circle" 
+                         [style.borderColor]="getScoreColor(analyseResult.scoreGlobal)">
+                        <span [style.color]="getScoreColor(analyseResult.scoreGlobal)">
+                            {{ analyseResult.scoreGlobal }}
+                        </span>
+                        <small>/100</small>
+                    </div>
+                    <div class="score-label-big" [style.color]="getScoreColor(analyseResult.scoreGlobal)">
+                        {{ getScoreLabel(analyseResult.scoreGlobal) }}
+                    </div>
+                </div>
+
+                <!-- Scores détaillés -->
+                <div class="scores-detail-grid">
+                    <div class="score-detail-item" *ngIf="analyseResult.scorePresentation">
+                        <span>Présentation</span>
+                        <div class="score-bar">
+                            <div [style.width]="analyseResult.scorePresentation + '%'"
+                                 [style.background]="getScoreColor(analyseResult.scorePresentation)"></div>
+                        </div>
+                        <span>{{ analyseResult.scorePresentation }}%</span>
+                    </div>
+                    <div class="score-detail-item" *ngIf="analyseResult.scoreCompetences">
+                        <span>Compétences</span>
+                        <div class="score-bar">
+                            <div [style.width]="analyseResult.scoreCompetences + '%'"
+                                 [style.background]="getScoreColor(analyseResult.scoreCompetences)"></div>
+                        </div>
+                        <span>{{ analyseResult.scoreCompetences }}%</span>
+                    </div>
+                    <div class="score-detail-item" *ngIf="analyseResult.scoreExperience">
+                        <span>Expérience</span>
+                        <div class="score-bar">
+                            <div [style.width]="analyseResult.scoreExperience + '%'"
+                                 [style.background]="getScoreColor(analyseResult.scoreExperience)"></div>
+                        </div>
+                        <span>{{ analyseResult.scoreExperience }}%</span>
+                    </div>
+                    <div class="score-detail-item" *ngIf="analyseResult.scoreFormation">
+                        <span>Formation</span>
+                        <div class="score-bar">
+                            <div [style.width]="analyseResult.scoreFormation + '%'"
+                                 [style.background]="getScoreColor(analyseResult.scoreFormation)"></div>
+                        </div>
+                        <span>{{ analyseResult.scoreFormation }}%</span>
+                    </div>
+                </div>
+
+                <!-- Résumé -->
+                <div class="analyse-box info-box" *ngIf="analyseResult.resumeAnalyse">
+                    <h4>📋 Résumé de l'analyse</h4>
+                    <p>{{ analyseResult.resumeAnalyse }}</p>
+                </div>
+
+                <!-- Points forts -->
+                <div class="analyse-box success-box" *ngIf="analyseResult.pointsForts?.length">
+                    <h4>✅ Points forts</h4>
+                    <ul>
+                        <li *ngFor="let p of analyseResult.pointsForts">{{ p }}</li>
+                    </ul>
+                </div>
+
+                <!-- Points à améliorer -->
+                <div class="analyse-box warning-box" *ngIf="analyseResult.pointsAmeliorer?.length">
+                    <h4>🎯 Points à améliorer</h4>
+                    <ul>
+                        <li *ngFor="let p of analyseResult.pointsAmeliorer">{{ p }}</li>
+                    </ul>
+                </div>
+
+                <!-- ATS -->
+                <div class="analyse-box" 
+                     [ngClass]="analyseResult.compatibleATS ? 'success-box' : 'warning-box'"
+                     *ngIf="analyseResult.conseilsATS?.length">
+                    <h4>🤖 Compatibilité ATS : 
+                        <span>{{ analyseResult.compatibleATS ? '✅ Compatible' : '⚠️ À améliorer' }}</span>
+                    </h4>
+                    <ul>
+                        <li *ngFor="let c of analyseResult.conseilsATS">{{ c }}</li>
+                    </ul>
+                </div>
+
+                <!-- Mots clés manquants -->
+                <div class="analyse-box danger-box" *ngIf="analyseResult.motsClesManquants?.length">
+                    <h4>🔑 Mots-clés manquants</h4>
+                    <div class="keywords-cloud">
+                        <span *ngFor="let k of analyseResult.motsClesManquants" class="keyword-tag">{{ k }}</span>
+                    </div>
+                </div>
+
+                <!-- Bouton optimiser -->
+                <div class="text-center mt-4">
+                    <button class="btn-submit" (click)="showAnalyseCVModal=false; ouvrirOptimisation(documentEnCours)">
+                        <i class="ri-rocket-line"></i> Optimiser pour une offre
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL OPTIMISATION CV -->
+<div class="modal-overlay" *ngIf="showOptimiseModal" (click)="showOptimiseModal=false">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header" style="background: linear-gradient(135deg, #10b981, #34d399); border-radius: 28px 28px 0 0;">
+            <h3 style="color: white;">
+                <i class="ri-rocket-line"></i> Optimiser pour une offre
+            </h3>
+            <button class="modal-close" style="color: white; background: rgba(255,255,255,0.2);"
+                    (click)="showOptimiseModal=false">&times;</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- Input offre -->
+            <div *ngIf="!optimisationResult">
+                <div class="form-group">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block;">
+                        📋 Collez l'offre d'emploi ici
+                    </label>
+                    <textarea class="form-control" rows="8" 
+                              [(ngModel)]="offreEmploiInput"
+                              placeholder="Copiez-collez ici le texte complet de l'offre d'emploi...">
+                    </textarea>
+                </div>
+                <button class="btn-submit" (click)="lancerOptimisation()" [disabled]="isOptimising">
+                    {{ isOptimising ? '🤖 Analyse en cours...' : '🚀 Analyser la compatibilité' }}
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div *ngIf="isOptimising" class="text-center py-5">
+                <div class="spinner-border" style="color: #10b981;"></div>
+                <p class="mt-3">🤖 Le modèle ML analyse votre CV...</p>
+            </div>
+
+            <!-- Résultats optimisation -->
+            <div *ngIf="optimisationResult && !isOptimising">
+                <div class="analyse-score-section">
+                    <div class="score-big-circle"
+                         [style.borderColor]="getScoreColor(optimisationResult.scoreCompatibilite)">
+                        <span [style.color]="getScoreColor(optimisationResult.scoreCompatibilite)">
+                            {{ optimisationResult.scoreCompatibilite }}
+                        </span>
+                        <small>%</small>
+                    </div>
+                    <div>
+                        <div class="score-label-big" 
+                             [style.color]="getScoreColor(optimisationResult.scoreCompatibilite)">
+                            Compatibilité avec l'offre
+                        </div>
+                        <p style="color: #6b7280; font-size: 14px;">
+                            Probabilité d'entretien : {{ optimisationResult.probabiliteEntretien }}%
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Compétences correspondantes -->
+                <div class="analyse-box success-box">
+                    <h4>✅ Compétences correspondantes</h4>
+                    <div class="keywords-cloud">
+                        <span *ngFor="let c of optimisationResult.competencesCorrespondantes" 
+                              class="keyword-tag success-tag">{{ c }}</span>
+                    </div>
+                </div>
+
+                <!-- Compétences manquantes -->
+                <div class="analyse-box danger-box">
+                    <h4>❌ Compétences à ajouter</h4>
+                    <div class="keywords-cloud">
+                        <span *ngFor="let c of optimisationResult.competencesManquantes" 
+                              class="keyword-tag danger-tag">{{ c }}</span>
+                    </div>
+                </div>
+
+                <!-- Suggestions -->
+                <div class="analyse-box info-box">
+                    <h4>💡 Suggestions d'optimisation</h4>
+                    <ul>
+                        <li *ngFor="let s of optimisationResult.suggestionsOptimisation">{{ s }}</li>
+                    </ul>
+                </div>
+
+                <!-- Phrases à ajouter -->
+                <div class="analyse-box warning-box">
+                    <h4>✍️ Phrases à ajouter dans votre CV</h4>
+                    <ul>
+                        <li *ngFor="let p of optimisationResult.phrasesAjouter" 
+                            style="font-style: italic;">{{ p }}</li>
+                    </ul>
+                </div>
+
+                <button class="btn-cancel mt-3" (click)="optimisationResult=null; offreEmploiInput=''">
+                    ↩️ Tester une autre offre
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -272,9 +512,9 @@
             </div>
             <div class="document-viewer">
                 <!-- Afficher le document en HTML rendu -->
-                <iframe [srcdoc]="selectedDocumentSrcdoc" 
+                <iframe [srcdoc]="selectedDocument?.contenu" 
                         class="viewer-iframe"
-                    sandbox="allow-popups allow-forms allow-modals">
+                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals">
                 </iframe>
             </div>
         </div>
@@ -290,28 +530,7 @@
         <div class="modal-body">
             <div class="form-group"><label>Nom</label><input type="text" class="form-control" [(ngModel)]="editingDocument.nom"></div>
             <div class="form-group"><label>Type</label><select class="form-control" [(ngModel)]="editingDocument.type"><option *ngFor="let t of types" [value]="t">{{ getTypeLabel(t) }}</option></select></div>
-
-            <div *ngIf="isCvType(editingDocument?.type); else rawContentEdit">
-                <div class="form-row">
-                    <div class="form-group"><label>Prénom</label><input type="text" class="form-control" [(ngModel)]="editCvData.prenom"></div>
-                    <div class="form-group"><label>Nom</label><input type="text" class="form-control" [(ngModel)]="editCvData.nom"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Titre professionnel</label><input type="text" class="form-control" [(ngModel)]="editCvData.titre"></div>
-                    <div class="form-group"><label>Email</label><input type="email" class="form-control" [(ngModel)]="editCvData.email"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Téléphone</label><input type="text" class="form-control" [(ngModel)]="editCvData.telephone"></div>
-                    <div class="form-group"><label>Adresse</label><input type="text" class="form-control" [(ngModel)]="editCvData.adresse"></div>
-                </div>
-                <div class="form-group"><label>Compétences (séparées par des virgules)</label><input type="text" class="form-control" [(ngModel)]="editCvSkillsText"></div>
-                <div class="form-group"><label>Profil</label><textarea class="form-control" rows="4" [(ngModel)]="editCvData.profil"></textarea></div>
-            </div>
-
-            <ng-template #rawContentEdit>
-                <div class="form-group"><label>Contenu</label><textarea class="form-control" rows="10" [(ngModel)]="editingDocument.contenu"></textarea></div>
-            </ng-template>
-
+            <div class="form-group"><label>Contenu</label><textarea class="form-control" rows="10" [(ngModel)]="editingDocument.contenu"></textarea></div>
             <div class="form-group checkbox"><label><input type="checkbox" [(ngModel)]="editingDocument.compatibleATS"> Compatible ATS</label></div>
         </div>
         <div class="modal-footer">
@@ -341,9 +560,9 @@
                 </button>
             </div>
             <div class="document-preview">
-                <iframe [srcdoc]="previewDocumentSrcdoc" 
+                <iframe [srcdoc]="generatedDocument?.contenu" 
                         class="preview-iframe"
-                    sandbox="allow-popups allow-forms">
+                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms">
                 </iframe>
             </div>
         </div>

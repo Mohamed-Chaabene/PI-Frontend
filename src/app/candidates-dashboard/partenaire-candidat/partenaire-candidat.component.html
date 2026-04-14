@@ -1,52 +1,229 @@
 <div class="page-container">
 
   <div class="page-header">
-    <h4><i class="ri-building-line"></i> Nos Partenaires</h4>
-    <span class="badge-count">{{ filteredPartenaires.length }} partenaires</span>
+    <div class="partner-title-block">
+      <div class="partner-icon-box">
+        <i class="ri-building-line"></i>
+    </div>
+    <div class="partner-title-text">
+      <span>Nos Partenaires</span>
+      <div class="title-underline"></div>
+    </div>
+  </div>
+  
+</div>
+
+  <div class="stats-banner">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="ri-team-line"></i></div>
+        <div>
+          <div class="stat-number">{{ partenaires.length }}</div>
+          <div class="stat-label">Total partenaires</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="ri-building-line"></i></div>
+        <div>
+          <div class="stat-number">{{ getCount('ENTREPRISE') }}</div>
+          <div class="stat-label">Entreprises</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="ri-graduation-cap-line"></i></div>
+        <div>
+          <div class="stat-number">{{ getCount('UNIVERSITE') }}</div>
+          <div class="stat-label">Universités</div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="search-bar">
-    <div class="search-wrapper">
-      <i class="ri-search-line search-icon"></i>
+  <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+
+    <div [style]="isFocused ?
+      'display:flex; align-items:center; background:white; border:1.5px solid #7c3aed; border-radius:50px; padding:6px 16px 6px 6px; box-shadow:0 0 0 3px rgba(124,58,237,0.15); flex:1;' :
+      'display:flex; align-items:center; background:white; border:1.5px solid #e5e7eb; border-radius:50px; padding:6px 16px 6px 6px; box-shadow:0 2px 8px rgba(0,0,0,.06); flex:1;'">
+
+      <div style="background:#EDE9FE; color:#7C3AED; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; margin-right:10px; flex-shrink:0;">
+        <i class="ri-search-eye-line"></i>
+      </div>
+
       <input type="text"
-             class="search-input"
+             style="flex:1; border:none; outline:none; font-size:14px; padding:6px 0; background:transparent; color:#374151;"
              placeholder="Rechercher un partenaire..."
              [value]="searchTerm"
+             (focus)="isFocused = true"
+             (blur)="isFocused = false"
              (input)="searchTerm = $any($event.target).value"/>
-      <button *ngIf="searchTerm" class="clear-btn" type="button" (click)="searchTerm = ''">
+
+      <button *ngIf="searchTerm"
+              type="button"
+              style="background:#f3f4f6; border:none; cursor:pointer; color:#9ca3af; font-size:14px; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;"
+              (click)="searchTerm = ''">
         <i class="ri-close-line"></i>
       </button>
+    </div>
+
+    <button
+      (click)="comparaisonMode ? resetComparaison() : comparaisonMode = true"
+      [style]="comparaisonMode ?
+        'background:#ef4444; color:white; border:none; border-radius:50px; padding:8px 16px; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; flex-shrink:0;' :
+        'background:#6366f1; color:white; border:none; border-radius:50px; padding:8px 16px; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; flex-shrink:0;'">
+      <i [class]="comparaisonMode ? 'ri-close-line' : 'ri-scales-line'"></i>
+      {{ comparaisonMode ? 'Annuler' : 'Comparer' }}
+    </button>
+
+    <div style="background:white; border-radius:10px; padding:6px 14px 6px 10px; border:1.5px solid #7c3aed; outline:2px solid rgba(124,58,237,0.1); display:flex; align-items:center; gap:10px; flex-shrink:0;">
+      <span style="font-size:12px; font-weight:700; color:#6366f1; white-space:nowrap; display:flex; align-items:center; gap:4px;">🏆 Top</span>
+      <div style="width:1px; height:20px; background:#e5e7eb;"></div>
+      <div style="display:flex; gap:6px;">
+        <div *ngFor="let t of topPartenaires; let i = index"
+             (click)="voirOffres(t.id)"
+             [style]="i === 0 ? 'display:flex; align-items:center; gap:5px; padding:5px 10px; border-radius:20px; border:1px solid #f59e0b; background:linear-gradient(135deg,#fef3c7,#fde68a); cursor:pointer;' :
+                      i === 1 ? 'display:flex; align-items:center; gap:5px; padding:5px 10px; border-radius:20px; border:1px solid #9ca3af; background:linear-gradient(135deg,#f3f4f6,#e5e7eb); cursor:pointer;' :
+                                'display:flex; align-items:center; gap:5px; padding:5px 10px; border-radius:20px; border:1px solid #b45309; background:linear-gradient(135deg,#fef3c7,#fed7aa); cursor:pointer;'">
+          <span style="font-size:12px;">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
+          <span [style]="i === 0 ? 'font-size:11px; font-weight:700; color:#b45309;' :
+                         i === 1 ? 'font-size:11px; font-weight:700; color:#6b7280;' :
+                                   'font-size:11px; font-weight:700; color:#92400e;'">
+            {{ t.nom }} · {{ t.nbOffres }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="comparaisonMode && !resultatComparaison"
+       style="background:#ede9fe; border-radius:10px; padding:8px 14px; margin-bottom:16px; font-size:13px; color:#6366f1; font-weight:600;">
+    {{ !partenaireSelectionne1 ?
+      '👆 Sélectionne le 1er partenaire' :
+      '👆 Sélectionne le 2ème partenaire' }}
+  </div>
+
+  <div *ngIf="resultatComparaison"
+       style="background:white; border-radius:16px; border:1px solid #e5e7eb; padding:20px; margin-bottom:20px; box-shadow:0 4px 20px rgba(99,102,241,0.1);">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h5 style="font-size:15px; font-weight:700; color:#374151; margin:0;">
+        ⚖️ Résultat de la comparaison
+      </h5>
+      <button (click)="resetComparaison()"
+              style="background:none; border:none; cursor:pointer; color:#9ca3af; font-size:18px;">
+        <i class="ri-close-line"></i>
+      </button>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:16px; align-items:center;">
+
+      <div style="background:#f5f3ff; border-radius:12px; padding:16px; text-align:center;"
+           [style.border]="resultatComparaison.meilleur === resultatComparaison.nom1 ?
+             '2px solid #6366f1' : '1px solid #e5e7eb'">
+        <div style="font-size:18px; font-weight:700; color:#374151; margin-bottom:8px;">
+          {{ resultatComparaison.nom1 }}
+          <span *ngIf="resultatComparaison.meilleur === resultatComparaison.nom1">🏆</span>
+        </div>
+        <div style="font-size:13px; color:#6b7280; margin-bottom:4px;">
+          <i class="ri-file-list-line"></i>
+          {{ resultatComparaison.nbOffres1 }} offres
+        </div>
+        <div style="font-size:13px; color:#6b7280;">
+          <i class="ri-bar-chart-line"></i>
+          {{ resultatComparaison.tauxActivite1 }} offres/semaine
+        </div>
+      </div>
+
+      <div style="font-size:20px; font-weight:800; color:#9ca3af;">VS</div>
+
+      <div style="background:#f5f3ff; border-radius:12px; padding:16px; text-align:center;"
+           [style.border]="resultatComparaison.meilleur === resultatComparaison.nom2 ?
+             '2px solid #6366f1' : '1px solid #e5e7eb'">
+        <div style="font-size:18px; font-weight:700; color:#374151; margin-bottom:8px;">
+          {{ resultatComparaison.nom2 }}
+          <span *ngIf="resultatComparaison.meilleur === resultatComparaison.nom2">🏆</span>
+        </div>
+        <div style="font-size:13px; color:#6b7280; margin-bottom:4px;">
+          <i class="ri-file-list-line"></i>
+          {{ resultatComparaison.nbOffres2 }} offres
+        </div>
+        <div style="font-size:13px; color:#6b7280;">
+          <i class="ri-bar-chart-line"></i>
+          {{ resultatComparaison.tauxActivite2 }} offres/semaine
+        </div>
+      </div>
+
+    </div>
+
+    <div style="text-align:center; margin-top:16px; padding:10px; background:#f0fdf4; border-radius:10px; border:1px solid #bbf7d0;">
+      <span style="font-size:14px; font-weight:700; color:#16a34a;">
+        🏆 Meilleur partenaire : {{ resultatComparaison.meilleur }}
+      </span>
     </div>
   </div>
 
   <div class="cards-grid">
-    <div class="partner-card" *ngFor="let p of filteredPartenaires">
+    <div class="partner-card"
+         *ngFor="let p of filteredPartenaires"
+         [style.border]="comparaisonMode &&
+           (partenaireSelectionne1?.id === p.id ||
+            partenaireSelectionne2?.id === p.id) ?
+           '2px solid #6366f1' : ''">
+
+      <button *ngIf="comparaisonMode && !resultatComparaison"
+              (click)="selectionnerPourComparaison(p)"
+              style="position:absolute; top:10px; right:10px; z-index:3; background:#6366f1; color:white; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center;">
+        <i class="ri-add-line"></i>
+      </button>
 
       <div class="card-cover"
            [class.cover-entreprise]="p.type === 'ENTREPRISE'"
-           [class.cover-universite]="p.type !== 'ENTREPRISE'">
+           [class.cover-universite]="p.type === 'UNIVERSITE'">
         <div class="photo-wrap">
-          <img *ngIf="p.photoUrl" [src]="p.photoUrl" class="partner-photo" [alt]="p.nom" />
-          <div *ngIf="!p.photoUrl"
-               class="partner-initials"
+          <div class="partner-initials"
                [class.initials-entreprise]="p.type === 'ENTREPRISE'"
-               [class.initials-universite]="p.type !== 'ENTREPRISE'">
-            {{ p.nom }}
+               [class.initials-universite]="p.type === 'UNIVERSITE'">
+            {{ p.nom?.substring(0, 2).toUpperCase() }}
           </div>
         </div>
       </div>
-
+       
       <div class="card-body">
         <div class="card-name">{{ p.nom }}</div>
-
-        <div class="type-pill"
-             [class.pill-entreprise]="p.type === 'ENTREPRISE'"
-             [class.pill-universite]="p.type !== 'ENTREPRISE'">
-          <span class="pill-dot"
-                [class.dot-entreprise]="p.type === 'ENTREPRISE'"
-                [class.dot-universite]="p.type !== 'ENTREPRISE'">
+        <div class="vues-badge">
+          <span class="vues-inner">
+            <span style="font-size:14px;">👁️</span>
+            <span>{{ vues[p.id] || 0 }} vues</span>
           </span>
-          {{ p.type }}
+        </div>
+
+        <div class="activity-badge"
+             [style.background]="getActivityColor(activityRates[p.id] || 0) + '20'"
+             [style.color]="getActivityColor(activityRates[p.id] || 0)"
+             [style.border-color]="getActivityColor(activityRates[p.id] || 0) + '40'">
+          <i class="ri-bar-chart-line"></i>
+          {{ getActivityLabel(activityRates[p.id] || 0) }}
+          · {{ activityRates[p.id] || 0 }} offres/semaine
+        </div>
+
+        <!-- ✅ Prédiction ML + Type pill côte à côte -->
+        <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+          <div class="prediction-badge"
+               [class.pred-emploi]="predictions[p.id]?.includes('EMPLOI')"
+               [class.pred-stage]="predictions[p.id]?.includes('STAGE')">
+            <span>{{ predictions[p.id]?.includes('EMPLOI') ? '💼' : '🎓' }}</span>
+            {{ predictions[p.id] || '...' }}
+          </div>
+
+          <div class="type-pill"
+               [class.pill-entreprise]="p.type === 'ENTREPRISE'"
+               [class.pill-universite]="p.type === 'UNIVERSITE'">
+            <span class="pill-dot"
+                  [class.dot-entreprise]="p.type === 'ENTREPRISE'"
+                  [class.dot-universite]="p.type === 'UNIVERSITE'">
+            </span>
+            {{ p.type }}
+          </div>
         </div>
 
         <div class="info-block">

@@ -100,9 +100,6 @@
             <button class="btn-pass" [disabled]="isPassButtonDisabled(item)" (click)="passEntretien(item)">
               {{ getPassButtonLabel(item) }}
             </button>
-            <small class="pass-hint" *ngIf="!item.completed && !hasAttempted(item) && !isPassAllowedToday(item)">
-              Vous pourrez passer cet entretien uniquement le jour programme.
-            </small>
           </div>
         </div>
       </article>
