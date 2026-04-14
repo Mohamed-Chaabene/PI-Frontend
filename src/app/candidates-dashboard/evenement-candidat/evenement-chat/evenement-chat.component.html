@@ -1,0 +1,57 @@
+<!-- chat-evenement.component.html -->
+<div class="chat-wrapper">
+
+    <!-- Chat fermé -->
+    <div class="chat-closed" *ngIf="!isLoading && !chatOuvert">
+        <i class="ri-lock-line"></i>
+        <p>Le chat ouvrira 24h avant le début de l'événement</p>
+    </div>
+
+    <!-- Ajouter en haut du template -->
+    <div class="chat-error" *ngIf="erreur">
+        <i class="ri-error-warning-line"></i>
+        <p>{{ erreur }}</p>
+    </div>
+
+    <!-- Chat ouvert -->
+    <div class="chat-container" *ngIf="!isLoading && chatOuvert">
+
+        <div class="chat-header">
+            <i class="ri-chat-3-line"></i>
+            <span>Chat des participants</span>
+            <span class="chat-live-badge">LIVE</span>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" #messagesContainer>
+            <div class="message"
+                 *ngFor="let msg of messages"
+                 [class.message-moi]="msg.candidatId === candidatId">
+                <div class="message-auteur">{{ msg.nomExpediteur }}</div>
+                <div class="message-contenu">{{ msg.contenu }}</div>
+                <div class="message-heure">
+                    {{ msg.envoyeA | date:'HH:mm' }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Saisie -->
+        <div class="chat-input">
+            <input
+                type="text"
+                [(ngModel)]="nouveauMessage"
+                placeholder="Votre message..."
+                (keyup.enter)="envoyer()">
+            <button (click)="envoyer()" [disabled]="!nouveauMessage.trim()">
+                <i class="ri-send-plane-line"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Loading -->
+    <div class="chat-loading" *ngIf="isLoading">
+        <p>Vérification du chat...</p>
+    </div>
+
+</div>
