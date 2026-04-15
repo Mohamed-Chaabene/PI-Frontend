@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ParticipationService {
-    private apiUrl = 'http://localhost:8080/api/participations';
+    private apiUrl = 'http://localhost:8086/api/participations';
 
     constructor(private http: HttpClient) {}
 

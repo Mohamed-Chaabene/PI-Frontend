@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PartenaireService } from '../../services/partenaire.service';
-import { OffrePartenaireService } from '../../services/offre-partenaire.service'; // ← AJOUTE
+import { OffrePartenaireService } from '../../services/offre-partenaire.service'; 
 
 @Component({
   selector: 'app-partenaire-candidat',
@@ -19,20 +19,20 @@ export class PartenaireCandidatComponent implements OnInit {
   isFocused: boolean = false;
   activityRates: { [id: number]: number } = {};
 
-  // ✅ Comparaison
+  
   comparaisonMode: boolean = false;
   partenaireSelectionne1: any = null;
   partenaireSelectionne2: any = null;
   resultatComparaison: any = null;
 
-  // ✅ Prédictions ML
-  predictions: { [id: number]: string } = {}; 
+  
+  predictions: { [id: number]: any } = {};
   vues: { [id: number]: number } = {};
 
   constructor(
     private partenaireService: PartenaireService,
     private router: Router,
-    private offrePartenaireService: OffrePartenaireService // ← AJOUTE
+    private offrePartenaireService: OffrePartenaireService 
   ) {}
 
   ngOnInit() {
@@ -68,23 +68,27 @@ export class PartenaireCandidatComponent implements OnInit {
     });
   }
 
-  // ✅ Charge la prédiction ML
+  
   loadPrediction(id: number) {
-    this.offrePartenaireService
-      .predictNextOffreType(id)
-      .subscribe({
-        next: (pred: string) => this.predictions[id] = pred,
-        error: () => this.predictions[id] = 'EMPLOI (50%)'
-      });
-  }
+  this.offrePartenaireService.predictML(id).subscribe({
+    next: (pred: any) => this.predictions[id] = pred,
+    error: () => this.predictions[id] = {
+      type: 'EMPLOI',
+      probability: 50,
+      confidence: 'LOW',
+      probaStage: 50,
+      probaEmploi: 50
+    }
+  });
+}
 
-  // ✅ Couleur prédiction
+  
   getPredictionColor(pred: string): string {
     if (!pred) return '#6366f1';
     return pred.includes('EMPLOI') ? '#1d4ed8' : '#92400e';
   }
 
-  // ✅ Icône prédiction
+  
   getPredictionIcon(pred: string): string {
     if (!pred) return 'ri-question-line';
     return pred.includes('EMPLOI')
