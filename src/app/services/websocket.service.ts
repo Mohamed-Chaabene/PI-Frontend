@@ -6,26 +6,25 @@ import { switchMap } from 'rxjs/operators';
 @Injectable({ providedIn: 'root' })
 export class WebsocketService {
 
-  // ── BehaviorSubject garde les données en mémoire ──────
   private activitiesSubject  = new BehaviorSubject<any[]>([]);
   private dashboardSubject   = new BehaviorSubject<any>(null);
   private pollingSubscription?: Subscription;
   isConnected = false;
 
-  private api = 'http://localhost:8086/api/dashboard';
+  private api = 'http://localhost:8080/api/dashboard';
 
   constructor(private http: HttpClient) {}
 
   connect() {
     this.isConnected = true;
 
-    // Évite double polling
+    
     if (this.pollingSubscription && !this.pollingSubscription.closed) return;
 
-    // ── Chargement immédiat ───────────────────────────────
+    
     this.chargerActivites();
 
-    // ── Polling toutes les 5 secondes ─────────────────────
+    
     this.pollingSubscription = interval(5000).pipe(
       switchMap(() => this.http.get<any[]>(`${this.api}/activites-recentes`))
     ).subscribe({
@@ -33,7 +32,7 @@ export class WebsocketService {
       error: () => {}
     });
 
-    // ── Polling dashboard toutes les 30 secondes ──────────
+    
     interval(30000).pipe(
       switchMap(() => this.http.get<any>(`${this.api}/dashboard-update`))
     ).subscribe({
@@ -50,7 +49,7 @@ export class WebsocketService {
   }
 
   disconnect() {
-    // Ne pas arrêter — service singleton
+    
   }
 
   getActivities(): Observable<any[]> {
