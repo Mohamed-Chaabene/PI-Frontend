@@ -4,12 +4,14 @@
 
         <!-- Hero -->
         <div class="hero-section">
-            <div class="hero-text">
-                <span class="hero-badge">
-                    <i class="ri-chat-3-line"></i>
-                    Salons de discussion
-                </span>
-                <h1>Chats de vos événements</h1>
+            <div class="hero-content">
+                <div class="hero-text">
+                    <span class="hero-badge">
+                        <i class="ri-chat-3-line"></i>
+                        Salons de discussion
+                    </span>
+                    <h1>Chats de vos événements</h1>
+                </div>
             </div>
         </div>
 
@@ -40,9 +42,8 @@
                     </div>
                     <div class="chat-info">
                         <h3>{{ e.titre }}</h3>
-                        <span class="event-type">{{ e.type }}</span>
+                        <span class="event-type-badge">{{ e.type }}</span>
                     </div>
-                    <!-- Statut chat -->
                     <span class="chat-statut" [class]="getChatStatutClass(e.chatOuvert)">
                         <span class="statut-dot"></span>
                         {{ getChatStatutLabel(e.chatOuvert) }}
@@ -60,26 +61,19 @@
                     </div>
                     <div class="info-row">
                         <i class="ri-time-line"></i>
-                        <span *ngIf="!e.chatOuvert">
-                            Chat disponible 24h avant l'événement
-                        </span>
-                        <span *ngIf="e.chatOuvert" style="color: #1a6b3c; font-weight: 500;">
-                            Salon actif — participants connectés
-                        </span>
+                        <span *ngIf="!e.chatOuvert">Chat disponible 24h avant l'événement</span>
+                        <span class="actif-label" *ngIf="e.chatOuvert">Salon actif — participants connectés</span>
                     </div>
                 </div>
 
                 <div class="chat-card-footer">
-                    <!-- Chat ouvert -->
-                    <button class="btn-rejoindre"
+                    <button class="btn-card btn-rejoindre"
                             *ngIf="e.chatOuvert"
                             (click)="ouvrirChat(e.id)">
                         <i class="ri-chat-3-line"></i>
                         <span>Rejoindre le chat</span>
                     </button>
-
-                    <!-- Chat fermé -->
-                    <button class="btn-ferme" *ngIf="!e.chatOuvert" disabled>
+                    <button class="btn-card btn-ferme" *ngIf="!e.chatOuvert" disabled>
                         <i class="ri-lock-line"></i>
                         <span>Chat non disponible</span>
                     </button>

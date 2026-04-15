@@ -791,3 +791,326 @@ $modal-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
         margin: 1rem;
     }
 }
+
+// =============================================
+// SEARCH SECTION — Design Premium
+// =============================================
+.search-section {
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.search-form {
+    background: #fff;
+    border-radius: 20px;
+    border: 1.5px solid $gray-200;
+    padding: 0.6rem 0.6rem 0.6rem 0.75rem;
+    box-shadow: 0 4px 24px rgba(21, 61, 147, 0.07);
+    position: relative;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus-within {
+        border-color: $primary-light;
+        box-shadow: 0 4px 28px rgba(59, 130, 246, 0.15);
+    }
+
+    .search-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
+
+        .search-icon {
+            font-size: 1.2rem;
+            color: $primary;
+            padding-left: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 0.92rem;
+            color: $gray-800;
+            padding: 0.65rem 0.25rem;
+            background: transparent;
+            font-weight: 500;
+
+            &::placeholder {
+                color: $gray-400;
+                font-weight: 400;
+            }
+        }
+
+        // Spinner animé
+        .search-spinner {
+            display: flex;
+            align-items: center;
+            color: $primary-light;
+            flex-shrink: 0;
+
+            i {
+                font-size: 1.1rem;
+                animation: spin 0.7s linear infinite;
+            }
+        }
+
+        // Bouton effacer ✕
+        .btn-clear-search {
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 50%;
+            border: none;
+            background: $gray-100;
+            color: $gray-500;
+            cursor: pointer;
+            @include flex-center;
+            @include transition;
+            flex-shrink: 0;
+
+            i { font-size: 0.95rem; }
+
+            &:hover {
+                background: $danger-soft;
+                color: $danger;
+            }
+        }
+
+        // Bouton Rechercher
+        .search-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: linear-gradient(135deg, $primary-light, $primary-dark);
+            color: #fff;
+            border: none;
+            padding: 0.7rem 1.35rem;
+            border-radius: 14px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            @include transition;
+            flex-shrink: 0;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+
+            i { font-size: 1rem; }
+
+            &:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+        }
+    }
+}
+
+// ── Dropdown intelligent ─────────────────────
+.search-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1.5px solid $gray-200;
+    border-radius: 16px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+    z-index: 999;
+    overflow: hidden;
+    animation: fadeIn 0.18s ease;
+
+    .dropdown-section {
+        padding: 0.5rem 0;
+
+        & + .dropdown-section {
+            border-top: 1px solid $gray-100;
+        }
+    }
+
+    .dropdown-label {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: $gray-400;
+        padding: 0.5rem 1rem 0.35rem;
+
+        i { font-size: 0.8rem; }
+
+        .mode-badge {
+            margin-left: auto;
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            color: #fff;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.65rem 1rem;
+        cursor: pointer;
+        @include transition;
+
+        &:hover {
+            background: $gray-50;
+        }
+
+        // Historique
+        &.historique-item {
+            i {
+                font-size: 1rem;
+                color: $gray-400;
+                flex-shrink: 0;
+            }
+
+            span {
+                font-size: 0.85rem;
+                color: $gray-700;
+                font-weight: 500;
+            }
+        }
+
+        // Suggestions
+        &.suggestion-item {
+            justify-content: space-between;
+
+            .suggestion-info {
+                display: flex;
+                flex-direction: column;
+                gap: 0.2rem;
+                flex: 1;
+                min-width: 0;
+
+                .suggestion-titre {
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    color: $gray-800;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .suggestion-meta {
+                    font-size: 0.72rem;
+                    color: $gray-400;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.3rem;
+
+                    i { font-size: 0.72rem; }
+                }
+            }
+
+            .suggestion-badge {
+                flex-shrink: 0;
+                font-size: 0.68rem;
+                font-weight: 600;
+                background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(79,70,229,0.1));
+                color: #6d28d9;
+                padding: 0.2rem 0.6rem;
+                border-radius: 999px;
+                border: 1px solid rgba(109,40,217,0.2);
+            }
+        }
+
+        // Résultats
+        &.result-item {
+            i {
+                font-size: 1.1rem;
+                color: $primary-light;
+                flex-shrink: 0;
+            }
+
+            div {
+                display: flex;
+                flex-direction: column;
+                gap: 0.15rem;
+                min-width: 0;
+                flex: 1;
+
+                .result-titre {
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    color: $gray-800;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: block;
+                }
+
+                .result-meta {
+                    font-size: 0.72rem;
+                    color: $gray-400;
+                    display: block;
+                }
+            }
+        }
+    }
+
+    // Aucun résultat
+    .dropdown-empty {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 1.25rem 1rem;
+        color: $gray-400;
+        font-size: 0.82rem;
+
+        i { font-size: 1.25rem; color: $gray-300; }
+
+        span { font-style: italic; }
+    }
+}
+
+// ── Barre info résultats ─────────────────────
+.search-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    padding: 0 0.5rem;
+
+    .results-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.78rem;
+        color: $gray-500;
+        font-weight: 500;
+
+        i { color: $primary-light; font-size: 0.85rem; }
+    }
+
+    .mode-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: $gray-400;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        background: $gray-100;
+        border: 1px solid $gray-200;
+
+        i { font-size: 0.8rem; }
+
+        &.backend {
+            background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(79,70,229,0.08));
+            color: #6d28d9;
+            border-color: rgba(109,40,217,0.2);
+        }
+    }
+}

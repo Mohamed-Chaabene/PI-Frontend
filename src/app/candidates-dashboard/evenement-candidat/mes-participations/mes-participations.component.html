@@ -74,16 +74,18 @@
                     </div>
                 </div>
 
-                <!-- Bouton placé dans la page "Mes Participations", visible par le candidat connecté -->
-                <button class="btn-ics" (click)="exporterCalendrier()">
-                <i class="ri-calendar-download-line"></i>
-                Exporter mes événements confirmés (.ics)
-                </button>
-                <button class="btn-google-calendar" (click)="ouvrirGoogleCalendar()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg" 
-                    width="18" height="18" alt="Google Calendar">
-                Ajouter à Google Calendar
-                </button>
+                                    <!-- Bouton placé dans la page "Mes Participations", visible par le candidat connecté -->
+                                <div class="cal-actions">
+                        <button class="btn-cal btn-ics" (click)="exporterCalendrier()">
+                            <i class="ri-calendar-download-line"></i>
+                            <span>Exporter (.ics)</span>
+                        </button>
+                        <button class="btn-cal btn-google" (click)="ouvrirGoogleCalendar()">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg"
+                                width="16" height="16" alt="Google Calendar">
+                            <span>Google Calendar</span>
+                        </button>
+                    </div>
                 <!-- QR Code Section -->
                 <div class="qr-section" *ngIf="p.statut === 'CONFIRME' && p.qrCode">
                     <div class="section-divider">
@@ -105,8 +107,8 @@
 
                 <!-- Chat Section -->
                 <div class="chat-section" *ngIf="p.statut === 'CONFIRME'">
-                    <div class="section-divider">
-                        <span><i class="ri-chat-3-line"></i> Chat des participants</span>
+    <div class="section-divider">
+        <span><i class="ri-chat-3-line"></i> Chat des participants</span>
                     </div>
                     <button class="btn-chat"
                             (click)="ouvrirChat(p.evenementId)"
@@ -188,6 +190,31 @@
 
                         </div>
                     </ng-container>
+                </div>
+
+                <!-- Certificat Section -->
+                <div class="certificat-section" *ngIf="p.statut === 'CONFIRME'">
+                    <div class="section-divider">
+                        <span><i class="ri-award-line"></i> Certificat de présence</span>
+                    </div>
+
+                    <!-- Certificat disponible -->
+                    <div class="cert-ready" *ngIf="p.certificateGenerated && p.certificateUrl">
+                        <div class="cert-ready-info">
+                            <i class="ri-checkbox-circle-fill cert-icon-ready"></i>
+                            <span>Votre certificat est disponible !</span>
+                        </div>
+                        <button class="btn-cert" (click)="telecharger(p.certificateUrl)">
+                            <i class="ri-download-2-line"></i>
+                            Télécharger le PDF
+                        </button>
+                    </div>
+
+                    <!-- En attente de génération -->
+                    <div class="cert-pending" *ngIf="!p.certificateGenerated">
+                        <i class="ri-time-line"></i>
+                        <span>Certificat disponible 24h après la fin de l'événement</span>
+                    </div>
                 </div>
 
             </div>

@@ -195,4 +195,25 @@ private formatGoogleDate(date: any): string {
   const d = new Date(date);
   return d.toISOString().replace(/-|:|\.\d{3}Z/g, '').slice(0, 15);
 }
+
+
+get confirmeesAvecCertificat(): any[] {
+    return this.participations.filter(p =>
+      p.statut === 'CONFIRME' && p.certificateGenerated
+    );
+  }
+
+  get confirmesSansCertificat(): any[] {
+    return this.participations.filter(p =>
+      p.statut === 'CONFIRME' && !p.certificateGenerated
+    );
+  }
+
+  get autresParticipations(): any[] {
+    return this.participations.filter(p => p.statut !== 'CONFIRME');
+  }
+
+  telecharger(url: string): void {
+    this.participationService.ouvrirCertificat(url);
+  }
 }

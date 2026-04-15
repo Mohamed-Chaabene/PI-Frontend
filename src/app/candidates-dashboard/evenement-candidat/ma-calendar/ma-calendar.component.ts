@@ -109,10 +109,7 @@ export class MaCalendarComponent implements OnInit {
     }
 
     getCouleur(e: any): string {
-        const statut = this.participationsStatuts.get(e.id);
-        if (statut === 'CONFIRME') return '#1a6b3c';
-        if (statut === 'EN_ATTENTE') return '#f9a825';
-        if (statut === 'REFUSE') return '#9e9e9e';
+       
         const couleurs: any = {
             'JOB_FAIR':   '#1565c0',
             'WORKSHOP':   '#6a1b9a',

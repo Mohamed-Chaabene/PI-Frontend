@@ -51,11 +51,18 @@ export class ParticipationService {
         `http://localhost:8081/api/participations/stats/candidat/${candidatId}`
     );
 
+
     
     
-}
-getQRCode(id: number): Observable<string> {
-  return this.http.get(`/api/participations/${id}/qrcode`, { responseType: 'text' });
-}
+  }
+
+  getQRCode(id: number): Observable<string> {
+        return this.http.get(`/api/participations/${id}/qrcode`, { responseType: 'text' });
+        }
+    
+    ouvrirCertificat(certificateUrl: string): void {
+    window.open(certificateUrl, '_blank');
+  }
+   
 
 }
