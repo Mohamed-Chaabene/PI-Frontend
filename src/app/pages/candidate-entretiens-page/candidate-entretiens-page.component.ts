@@ -33,6 +33,15 @@ interface CandidateEntretien {
   fromCandidature?: boolean;
 }
 
+interface EntretienReminder {
+  entretienId: number;
+  title: string;
+  dateLabel: string;
+  message: string;
+  level: 'today' | 'soon' | 'planned';
+  orderTime: number;
+}
+
 @Component({
   selector: 'app-candidate-entretiens-page',
   standalone: true,
@@ -44,6 +53,7 @@ export class CandidateEntretiensPageComponent {
   private readonly attemptStoragePrefix = 'entretienAttempted_';
   entretiens: CandidateEntretien[] = [];
   upcomingEntretiens: CandidateEntretien[] = [];
+  reminders: EntretienReminder[] = [];
   loading = true;
   errorMessage = '';
   showCalendar = true;
@@ -121,6 +131,7 @@ export class CandidateEntretiensPageComponent {
         this.upcomingEntretiens = this.entretiens
           .filter((item) => this.isUpcoming(item))
           .sort((left, right) => this.getEntretienTime(left) - this.getEntretienTime(right));
+        this.reminders = this.buildReminders(this.upcomingEntretiens);
         this.buildCalendar();
         this.loading = false;
       },
@@ -353,6 +364,17 @@ export class CandidateEntretiensPageComponent {
     return date.toLocaleString('fr-FR');
   }
 
+  getReminderBadgeLabel(level: EntretienReminder['level']): string {
+    switch (level) {
+      case 'today':
+        return 'Aujourdhui';
+      case 'soon':
+        return 'Bientot';
+      default:
+        return 'Planifie';
+    }
+  }
+
   getPhoto(item: CandidateEntretien): string {
     return (item.photo || '').trim() || 'images/banner/banner1.png';
   }
@@ -436,6 +458,46 @@ export class CandidateEntretiensPageComponent {
   private getEntretienTime(item: CandidateEntretien): number {
     const parsed = this.parseEntretienDate(item.dateEntretien);
     return parsed.getTime();
+  }
+
+  private buildReminders(items: CandidateEntretien[]): EntretienReminder[] {
+    const now = Date.now();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const reminderWindowMs = 7 * oneDayMs;
+
+    return items
+      .map((item) => {
+        const orderTime = this.getEntretienTime(item);
+        if (!Number.isFinite(orderTime) || orderTime < now) {
+          return null;
+        }
+
+        const diff = orderTime - now;
+        if (diff > reminderWindowMs) {
+          return null;
+        }
+
+        const level: EntretienReminder['level'] = diff <= oneDayMs
+          ? 'today'
+          : diff <= 3 * oneDayMs
+            ? 'soon'
+            : 'planned';
+
+        const title = item.titre || item.offreTitre || item.poste || 'Entretien';
+        const dateLabel = this.formatDate(item.dateEntretien);
+
+        return {
+          entretienId: Number(item.id) || 0,
+          title,
+          dateLabel,
+          message: `Votre entretien "${title}" est prevu le ${dateLabel}.`,
+          level,
+          orderTime
+        } as EntretienReminder;
+      })
+      .filter((reminder): reminder is EntretienReminder => !!reminder)
+      .sort((left, right) => left.orderTime - right.orderTime)
+      .slice(0, 5);
   }
 
   private isUpcoming(item: CandidateEntretien): boolean {

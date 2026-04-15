@@ -47,6 +47,8 @@ import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 import { RdInterviews } from './recruiter-dashboard/rd-interviews/rd-interviews';
 import { RdAddQuestions } from './recruiter-dashboard/rd-add-questions/rd-add-questions';
+import { OffreStatistiquesComponent } from './recruiter-dashboard/offre-statistiques/offre-statistiques.component';
+import { OffreRechercheAvanceeComponent } from './recruiter-dashboard/offre-recherche-avancee/offre-recherche-avancee.component';
 import { PublicTestPassPageComponent } from './pages/public-test-pass-page/public-test-pass-page.component';
 import { CandidateEntretiensPageComponent } from './pages/candidate-entretiens-page/candidate-entretiens-page.component';
 import { VideoInterviewRoomPageComponent } from './pages/video-interview-room-page/video-interview-room-page.component';
@@ -164,6 +166,8 @@ export const routes: Routes = [
             { path: 'change-password', component: RdChangePasswordComponent },
             { path: 'interviews', component: RdInterviews },
             { path: 'interviews/add-questions/:id', component: RdAddQuestions },
+            { path: 'offre-statistiques', component: OffreStatistiquesComponent },
+            { path: 'offre-recherche-avancee', component: OffreRechercheAvanceeComponent },
         ]
 
     }, {

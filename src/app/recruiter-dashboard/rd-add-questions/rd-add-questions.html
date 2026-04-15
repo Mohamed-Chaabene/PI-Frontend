@@ -215,24 +215,23 @@
               <div class="chat-controls">
                 <div class="row g-2">
                   <div class="col-6">
-                    <select class="form-control" [(ngModel)]="aiForm.categorie" name="chatAiCategorie">
-                      <option *ngFor="let category of categoriesEntretien" [value]="category">{{ category }}</option>
-                    </select>
-                  </div>
-                  <div class="col-6">
-                    <select class="form-control" [(ngModel)]="aiForm.niveau" name="chatAiNiveau">
-                      <option *ngFor="let niveau of niveaux" [value]="niveau">{{ niveau }}</option>
-                    </select>
-                  </div>
-                  <div class="col-6">
                     <select class="form-control" [(ngModel)]="aiForm.type" name="chatAiType">
                       <option *ngFor="let type of typesQuestion" [value]="type">{{ type }}</option>
                     </select>
                   </div>
-                  <div class="col-3">
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      [(ngModel)]="aiForm.theme"
+                      name="chatAiTheme"
+                      placeholder="Theme choisi par le recruteur (ex: SQL JOIN)"
+                    >
+                  </div>
+                  <div class="col-6">
                     <input type="number" min="1" max="10" class="form-control" [(ngModel)]="aiForm.nombre" name="chatAiNombre" placeholder="Nb">
                   </div>
-                  <div class="col-3">
+                  <div class="col-6">
                     <input type="number" min="0.1" max="1.0" step="0.1" class="form-control" [(ngModel)]="aiForm.temperature" name="chatAiTemperature" placeholder="T">
                   </div>
                 </div>
@@ -243,7 +242,7 @@
                     class="form-control"
                     [(ngModel)]="chatUserInput"
                     name="chatUserInput"
-                    placeholder="Ex: Genere 3 questions SQL niveau intermediaire"
+                    placeholder="Posez une question au chatbot (Envoyer = discuter, Generer = produire des questions)"
                     (keyup.enter)="sendChatMessage()"
                   >
                   <button type="button" class="btn btn-primary" (click)="sendChatMessage()">Envoyer</button>
@@ -254,7 +253,7 @@
                     <span *ngIf="!isAiGenerating">Generer</span>
                     <span *ngIf="isAiGenerating">...</span>
                   </button>
-                  <small class="text-muted">Le theme utilise est votre message.</small>
+                  <small class="text-muted">Envoyer = conversation. Generer = création de questions selon le type et le thème choisis.</small>
                 </div>
 
                 <div *ngIf="aiError" class="alert alert-danger mt-2 mb-0 py-2">{{ aiError }}</div>
@@ -262,10 +261,14 @@
                 <div *ngIf="aiSuggestions.length" class="chat-suggestions mt-2">
                   <div class="ai-suggestion-card" *ngFor="let suggestion of aiSuggestions">
                     <div class="d-flex justify-content-between align-items-start mb-1">
-                      <strong>{{ suggestion.type }}</strong>
+                      <strong>{{ getSuggestionTypeLabel(suggestion) }}</strong>
                       <span class="badge bg-light text-dark">{{ suggestion.points || 1 }} pts</span>
                     </div>
                     <p class="mb-1 small">{{ suggestion.contenu }}</p>
+                    <ul class="suggestion-choices mb-2" *ngIf="getSuggestionChoices(suggestion).length > 0">
+                      <li *ngFor="let choice of getSuggestionChoices(suggestion)">{{ choice }}</li>
+                    </ul>
+                    <p class="mb-2 small suggestion-answer"><strong>Bonne reponse:</strong> {{ getSuggestionCorrectAnswers(suggestion) }}</p>
                     <button type="button" class="btn btn-sm btn-outline-success" (click)="applyAiSuggestion(suggestion)">Utiliser</button>
                   </div>
                 </div>

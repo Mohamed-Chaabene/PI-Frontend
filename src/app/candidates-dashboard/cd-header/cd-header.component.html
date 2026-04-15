@@ -139,15 +139,17 @@
                                  *ngFor="let notif of notifications; let i = index"
                                  [class.unread]="!notif.isRead"
                                  [class.new-notification]="i === 0 && !notif.isRead"
+                                 [class.reminder-today]="notif.type === 'interview_reminder' && notif.reminderLevel === 'today'"
+                                 [class.reminder-soon]="notif.type === 'interview_reminder' && notif.reminderLevel === 'soon'"
+                                 [class.reminder-planned]="notif.type === 'interview_reminder' && notif.reminderLevel === 'planned'"
                                  (click)="markNotificationAsRead(notif.id)">
-                                <div class="notification-icon">
-                                    <i class="ri-user-follow-line" *ngIf="notif.type === 'follow'"></i>
-                                    <i class="ri-briefcase-line" *ngIf="notif.type === 'new_job_posted'"></i>
-                                    <i class="ri-mail-line" *ngIf="notif.type === 'message'"></i>
+                                <div class="notification-icon" [ngClass]="getNotificationLevelClass(notif)">
+                                    <i [class]="getNotificationIcon(notif)"></i>
                                 </div>
                                 <div class="notification-content">
+                                    <p class="notification-title">{{ getNotificationTitle(notif) }}</p>
                                     <p class="notification-message">{{ notif.message }}</p>
-                                    <span class="notification-time">{{ formatDate(notif.createdAt) }}</span>
+                                    <span class="notification-time">{{ getNotificationTime(notif) }}</span>
                                 </div>
                                 <div class="notification-status">
                                     <span class="unread-dot" *ngIf="!notif.isRead"></span>

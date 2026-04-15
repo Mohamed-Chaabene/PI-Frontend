@@ -117,8 +117,11 @@
                             <td>{{ row.scoreExperience }} / 100</td>
                             <td><strong>{{ row.scoreFinal }} / 100</strong></td>
                             <td>{{ row.tauxCorrespondance }}%</td>
-                            <td>{{ formatExperienceYears(row.experienceAnnees) }} ans</td>
-                            <td>{{ row.decision }}</td>
+                            <td>{{ row.experienceAnnees | number:'1.0-0' }} ans</td>
+                            <td>
+                                <div>{{ row.decision }}</div>
+                                <div class="text-muted small">{{ row.recommandation }}</div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

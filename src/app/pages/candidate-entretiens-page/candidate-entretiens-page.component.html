@@ -80,6 +80,21 @@
       {{ errorMessage }}
     </div>
 
+    <div class="reminder-panel" *ngIf="!loading && !errorMessage && reminders.length > 0">
+      <div class="reminder-head">
+        <h3>Rappels d entretien</h3>
+        <span>{{ reminders.length }} rappel(s)</span>
+      </div>
+
+      <article class="reminder-item" *ngFor="let reminder of reminders" [ngClass]="'level-' + reminder.level">
+        <div class="reminder-badge">{{ getReminderBadgeLabel(reminder.level) }}</div>
+        <div class="reminder-content">
+          <h4>{{ reminder.title }}</h4>
+          <p>{{ reminder.message }}</p>
+        </div>
+      </article>
+    </div>
+
     <div class="entretiens-grid" *ngIf="!loading && !errorMessage && entretiens.length > 0">
       <article class="entretien-card" *ngFor="let item of entretiens; trackBy: trackByEntretien">
         <div class="cover">
