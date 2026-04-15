@@ -458,4 +458,70 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
             }
         }, 0);
     }
+
+    // ==================== DELETE ACCOUNT METHODS ====================
+
+    openDeleteAccountModal(): void {
+        // Show confirmation alert instead of modal
+        const confirmed = window.confirm(
+            'Are you sure you want to DELETE YOUR ACCOUNT?\n\n' +
+            'This will:\n' +
+            '• Remove your profile permanently\n' +
+            '• Delete all your personal information\n' +
+            '• Remove your location data\n' +
+            '• This action CANNOT be undone\n\n' +
+            'You will be logged out immediately.\n\n' +
+            'Click OK to confirm deletion or Cancel to go back.'
+        );
+
+        if (confirmed) {
+            this.deleteAccount();
+        }
+    }
+
+    private deleteAccount(): void {
+        const token = localStorage.getItem('token');
+        const userId = this.currentUserId;
+
+        if (!token || !userId) {
+            console.error('❌ Missing token or user ID');
+            alert('Error: Cannot delete account. Please log in again.');
+            return;
+        }
+
+        console.log('🗑️ Deleting account for user ID:', userId);
+
+        this.apiService.deleteAccount(userId, token).subscribe({
+            next: (response: any) => {
+                console.log('✅ Account deleted successfully:', response);
+                
+                // Clear localStorage
+                localStorage.removeItem('token');
+                localStorage.removeItem('candidatId');
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('userName');
+                
+                // Show success message
+                alert('✅ Your account has been deleted successfully.\n\nYou will be redirected to the login page.');
+                
+                // Redirect to login
+                this.router.navigate(['/login']);
+            },
+            error: (error: any) => {
+                console.error('❌ Error deleting account:', error);
+                
+                const errorMessage = error?.error?.message || 'Failed to delete account. Please try again.';
+                alert('❌ Error: ' + errorMessage);
+            }
+        });
+    }
+
+    closeDeleteAccountModal(): void {
+        this.showDeleteAccountModal = false;
+    }
+
+    confirmDeleteAccount(): void {
+        // This method is no longer used with alert-based confirmation
+    }
 }

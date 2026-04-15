@@ -90,6 +90,15 @@ export class ApiService {
     return this.http.delete(`${this.apiUrl}/users/${id}`);
   }
 
+  // Delete Account - removes user, candidate, and location data
+  deleteAccount(userId: number, token: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.delete(`${this.apiUrl}/users/${userId}/delete-account`, { headers });
+  }
+
   // Register
   register(user: any): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
