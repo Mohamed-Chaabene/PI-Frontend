@@ -82,6 +82,9 @@ import { FormationCreateComponent } from './admin-dashboard/formation-create/for
 import { FormationEditComponent } from './admin-dashboard/formation-edit/formation-edit.component';
 import { FormationParticipantsComponent } from './admin-dashboard/formation-participants/formation-participants.component';
 import { FeedbackAdminComponent } from './admin-dashboard/feedback-admin/feedback-admin.component';
+import { ChatEvenementComponent } from './candidates-dashboard/evenement-candidat/evenement-chat/evenement-chat.component';
+import { EvenementChatComponent } from './evenement-dashboard/evenement-chat/evenement-chat.component';
+
 export const routes: Routes = [
     { path: '', component: HomeDemoOneComponent },
     { path: 'login', component: HomeDemoOneComponent },
@@ -148,6 +151,9 @@ export const routes: Routes = [
             { path: 'mes-participations', component: MesParticipationsComponent },
             { path: 'ma-calendar', component: MaCalendarComponent },
             { path: 'mes-formations', component: MesFormationsComponent },
+            { path: 'chat/:evenementId', component: ChatEvenementComponent }
+            
+            
         ]
     },
     {
@@ -191,6 +197,8 @@ export const routes: Routes = [
             { path: 'demandes', component: EvenementDemandesComponent },
             { path: 'calendrier', component: EvenementCalendrierComponent },
             { path: 'feedbacks', component: EvenementFeedbacksComponent },
+            { path: 'chats', component: EvenementChatComponent },
+            { path: 'chat/:evenementId', component: ChatEvenementComponent }
         ]
     },
     {

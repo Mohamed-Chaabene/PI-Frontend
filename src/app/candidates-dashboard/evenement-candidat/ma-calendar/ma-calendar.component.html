@@ -16,7 +16,6 @@
 
         <!-- Stats Grid -->
         <div class="stats-advanced-grid" *ngIf="stats">
-
             <div class="stat-advanced-card">
                 <div class="stat-icon-wrapper" style="background: #dbeafe;">
                     <i class="ri-calendar-check-line" style="color: #1565c0;"></i>
@@ -29,7 +28,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="stat-advanced-card">
                 <div class="stat-icon-wrapper" style="background: rgba(16,185,129,0.1);">
                     <i class="ri-check-circle-line" style="color: #1a6b3c;"></i>
@@ -42,7 +40,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="stat-advanced-card">
                 <div class="stat-icon-wrapper" style="background: rgba(245,158,11,0.1);">
                     <i class="ri-time-line" style="color: #f59e0b;"></i>
@@ -55,7 +52,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="stat-advanced-card">
                 <div class="stat-icon-wrapper" style="background: rgba(216,27,96,0.1);">
                     <i class="ri-heart-line" style="color: #d81b60;"></i>
@@ -68,7 +64,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <!-- Légende -->
@@ -79,28 +74,16 @@
             </div>
             <div class="legend-items">
                 <span class="legend-item">
-                    <span class="legend-dot" style="background:#1565c0;"></span>
-                    Job Fair
+                    <span class="legend-dot" style="background:#1565c0;"></span> Job Fair
                 </span>
                 <span class="legend-item">
-                    <span class="legend-dot" style="background:#6a1b9a;"></span>
-                    Workshop
+                    <span class="legend-dot" style="background:#6a1b9a;"></span> Workshop
                 </span>
                 <span class="legend-item">
-                    <span class="legend-dot" style="background:#e65100;"></span>
-                    Conférence
+                    <span class="legend-dot" style="background:#e65100;"></span> Conférence
                 </span>
                 <span class="legend-item">
-                    <span class="legend-dot" style="background:#00695c;"></span>
-                    Networking
-                </span>
-                <span class="legend-item">
-                    <span class="legend-dot" style="background:#1a6b3c;"></span>
-                    Confirmé
-                </span>
-                <span class="legend-item">
-                    <span class="legend-dot" style="background:#f59e0b;"></span>
-                    En attente
+                    <span class="legend-dot" style="background:#00695c;"></span> Networking
                 </span>
             </div>
         </div>
@@ -131,8 +114,6 @@
         </div>
 
         <div class="modal-body">
-
-            <!-- Détails -->
             <div class="detail-items">
                 <div class="detail-item">
                     <div class="detail-icon">
@@ -140,7 +121,7 @@
                     </div>
                     <div class="detail-content">
                         <span class="detail-label">Date</span>
-                        <span class="detail-value">{{ formatDate(selectedEvenement?.date) }}</span>
+                        <span class="detail-value">{{ formatDate(selectedEvenement?.dateHeure) }}</span>  <!-- ← date → dateHeure -->
                     </div>
                 </div>
                 <div class="detail-item">
@@ -172,39 +153,32 @@
                 </div>
             </div>
 
-            <!-- Statut participation -->
             <div class="status-badge-block">
-
                 <div class="status-badge confirme"
                      *ngIf="selectedEvenement?.statut === 'CONFIRME'">
                     <span class="status-dot"></span>
                     <i class="ri-check-circle-line"></i>
                     <span>Vous êtes inscrit — statut CONFIRMÉ</span>
                 </div>
-
                 <div class="status-badge attente"
                      *ngIf="selectedEvenement?.statut === 'EN_ATTENTE'">
                     <span class="status-dot"></span>
                     <i class="ri-time-line"></i>
                     <span>Inscription en attente de validation</span>
                 </div>
-
                 <div class="status-badge refuse"
                      *ngIf="selectedEvenement?.statut === 'REFUSE'">
                     <span class="status-dot"></span>
                     <i class="ri-close-circle-line"></i>
                     <span>Demande refusée</span>
                 </div>
-
                 <div class="status-badge disponible"
                      *ngIf="!selectedEvenement?.estInscrit">
                     <span class="status-dot"></span>
                     <i class="ri-calendar-check-line"></i>
                     <span>Vous pouvez vous inscrire à cet événement</span>
                 </div>
-
             </div>
-
         </div>
 
         <div class="modal-footer">

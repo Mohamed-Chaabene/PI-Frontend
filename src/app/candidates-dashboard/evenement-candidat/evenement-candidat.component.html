@@ -28,25 +28,119 @@
             </div>
         </div>
 
-        <!-- Barre de recherche -->
-        <div class="search-section">
-            <form class="search-form">
-                <div class="search-input-wrapper">
-                    <i class="ri-search-line search-icon"></i>
-                    <input
-                        type="text"
-                        class="search-input"
-                        placeholder="Rechercher un événement par titre, lieu ou type..."
-                        [ngModel]="searchTerm"
-                        (ngModelChange)="onSearch($event)"
-                        name="search">
-                    <button type="button" class="search-btn" (click)="onSearch(searchTerm)">
-                        <i class="ri-search-line"></i>
-                        <span>Rechercher</span>
-                    </button>
-                </div>
-            </form>
-        </div>
+        <!-- Barre de recherche intelligente -->
+                    <div class="search-section">
+                        <form class="search-form" (submit)="$event.preventDefault()">
+                            <div class="search-input-wrapper" style="position: relative;">
+                                <i class="ri-search-line search-icon"></i>
+
+                                <input
+                                    type="text"
+                                    class="search-input"
+                                    placeholder="Rechercher par titre, lieu, type, date..."
+                                    [ngModel]="searchTerm"
+                                    (ngModelChange)="onSearch($event)"
+                                    (focus)="showDropdown = true"
+                                    (blur)="fermerDropdown()"
+                                    name="search"
+                                    autocomplete="off">
+
+                                <!-- Spinner pendant la recherche -->
+                                <span class="search-spinner" *ngIf="isSearching">
+                                    <i class="ri-loader-4-line"></i>
+                                </span>
+
+                                <!-- Bouton effacer -->
+                                <button type="button" class="btn-clear-search"
+                                        *ngIf="searchTerm"
+                                        (click)="effacerRecherche()">
+                                    <i class="ri-close-line"></i>
+                                </button>
+
+                                <button type="button" class="search-btn" (click)="executerRecherche(searchTerm)">
+                                    <i class="ri-search-line"></i>
+                                    <span>Rechercher</span>
+                                </button>
+                            </div>
+
+                            <!-- ── Dropdown intelligent ── -->
+                            <div class="search-dropdown" *ngIf="showDropdown">
+
+                                <!-- Historique des recherches -->
+                                <div class="dropdown-section" *ngIf="historique.length > 0 && !searchTerm">
+                                    <div class="dropdown-label">
+                                        <i class="ri-history-line"></i> Recherches récentes
+                                    </div>
+                                    <div class="dropdown-item historique-item"
+                                        *ngFor="let h of historique"
+                                        (mousedown)="selectionnerHistorique(h)">
+                                        <i class="ri-time-line"></i>
+                                        <span>{{ h }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Suggestions personnalisées -->
+                                <div class="dropdown-section" *ngIf="suggestions.length > 0 && !searchTerm">
+                                    <div class="dropdown-label">
+                                        <i class="ri-magic-line"></i> Recommandés pour vous
+                                    </div>
+                                    <div class="dropdown-item suggestion-item"
+                                        *ngFor="let s of suggestions"
+                                        (mousedown)="selectionnerSuggestion(s)">
+                                        <div class="suggestion-info">
+                                            <span class="suggestion-titre">{{ s.titre }}</span>
+                                            <span class="suggestion-meta">
+                                                <i class="ri-map-pin-line"></i> {{ s.lieu }} ·
+                                                <i class="ri-price-tag-3-line"></i> {{ s.type }}
+                                            </span>
+                                        </div>
+                                        <span class="suggestion-badge">✨ Suggéré</span>
+                                    </div>
+                                </div>
+
+                                <!-- Résultats en temps réel pendant la saisie -->
+                                <div class="dropdown-section" *ngIf="searchTerm && filteredEvenements.length > 0">
+                                    <div class="dropdown-label">
+                                        <i class="ri-search-line"></i>
+                                        {{ filteredEvenements.length }} résultat(s)
+                                        <span class="mode-badge" *ngIf="modeRecherche === 'backend'">
+                                            IA
+                                        </span>
+                                    </div>
+                                    <div class="dropdown-item result-item"
+                                        *ngFor="let e of filteredEvenements | slice:0:4"
+                                        (mousedown)="selectionnerSuggestion(e)">
+                                        <i class="ri-calendar-event-line"></i>
+                                        <div>
+                                            <span class="result-titre">{{ e.titre }}</span>
+                                            <span class="result-meta">{{ e.lieu }} · {{ e.type }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Aucun résultat -->
+                                <div class="dropdown-empty"
+                                    *ngIf="searchTerm && filteredEvenements.length === 0 && !isSearching">
+                                    <i class="ri-search-eye-line"></i>
+                                    <span>Aucun événement trouvé pour "{{ searchTerm }}"</span>
+                                </div>
+
+                            </div>
+                        </form>
+
+                        <!-- Indicateur mode recherche -->
+                        <div class="search-meta" *ngIf="searchTerm">
+                            <span class="results-count">
+                                <i class="ri-filter-line"></i>
+                                {{ filteredEvenements.length }} événement(s) trouvé(s)
+                            </span>
+                            <span class="mode-label" [class.backend]="modeRecherche === 'backend'">
+                                <i class="ri-cpu-line" *ngIf="modeRecherche === 'backend'"></i>
+                                <i class="ri-search-line" *ngIf="modeRecherche === 'local'"></i>
+                                {{ modeRecherche === 'backend' ? 'Recherche intelligente' : 'Recherche locale' }}
+                            </span>
+                        </div>
+                    </div>
 
         <!-- Loading State -->
         <div *ngIf="isLoading" class="loading-container">
@@ -112,7 +206,7 @@
                     </div>
                     <div class="info-row">
                         <i class="ri-calendar-line"></i>
-                        <span>{{ formatDate(evenement.date) }}</span>
+                        <span>{{ formatDate(evenement.dateHeure) }}</span>  <!-- ← date → dateHeure -->
                     </div>
                     <div class="info-row">
                         <i class="ri-price-tag-3-line"></i>
@@ -199,7 +293,7 @@
                 </span>
                 <span class="meta-item">
                     <i class="ri-calendar-line"></i>
-                    {{ formatDate(evenementSelectionne?.date) }}
+                    {{ formatDate(evenementSelectionne?.dateHeure) }}  <!-- ← date → dateHeure -->
                 </span>
                 <span class="meta-item">
                     <i class="ri-user-line"></i>

@@ -180,6 +180,12 @@
 
                 <ul class="header-dropdown-menu" [class.show]="activeDropdown === 'profile'">
                     <li>
+                        <button type="button" class="dropdown-item" (click)="openDeleteAccountModal()">
+                            <i class="ri-delete-bin-line"></i>
+                            Delete Account
+                        </button>
+                    </li>
+                    <li>
                         <button type="button" class="dropdown-item" (click)="logout()">
                             <i class="ri-logout-box-r-line"></i>
                             Logout

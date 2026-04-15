@@ -148,9 +148,9 @@
                                 <i class="ri-user-line"></i>
                                 {{ evenement.nomOrganisateur }}
                             </span>
-                            <span class="event-date d-block">
+                           <span class="event-date d-block">
                                 <i class="ri-calendar-line"></i>
-                                {{ evenement.date }}
+                                {{ evenement.dateHeure | date:'dd/MM/yyyy HH:mm' }}
                             </span>
                             <a class="link-btn d-inline-block position-relative"
                                (click)="voir(evenement.id)"
