@@ -22,7 +22,7 @@
                 border-radius: 5px;
                 color: var(--bodyColor);
                 padding: 11px 15px 11px 42px;
-                
+
                 i {
                     top: 50%;
                     left: 15px;
@@ -43,20 +43,17 @@
             }
         }
     }
-    /* width */
     &::-webkit-scrollbar {
         width: 5px;
-		height: 5px;
-		border-radius: 15px;
+        height: 5px;
+        border-radius: 15px;
     }
-    /* Track */
     &::-webkit-scrollbar-track {
-		border-radius: 15px;
+        border-radius: 15px;
     }
-    /* Handle */
     &::-webkit-scrollbar-thumb {
         background: #f2f2f2;
-		border-radius: 15px;
+        border-radius: 15px;
     }
 }
 
@@ -114,7 +111,7 @@
             li {
                 a {
                     padding: 10px 15px 10px 40px;
-                    
+
                     i {
                         font-size: 17px;
                     }
@@ -187,23 +184,23 @@
 }
 
 .sidebar-area {
-    background-color: #1a6b3c; 
+    background-color: #153d93; // ← vert → bleu
 
     ul {
         li {
             a {
-                color: var(--whiteColor); 
+                color: var(--whiteColor);
 
                 i {
-                    color: var(--whiteColor); 
+                    color: var(--whiteColor);
                 }
 
                 &:hover, &.active {
-                    background-color: var(--whiteColor); 
-                    color: #1a6b3c; 
+                    background-color: var(--whiteColor);
+                    color: #153d93; // ← vert → bleu
 
                     i {
-                        color: #1a6b3c; 
+                        color: #153d93; // ← vert → bleu
                     }
                 }
             }
@@ -217,7 +214,7 @@
 
 .sidebar-btn {
     button {
-        background-color: #1a6b3c;
+        background-color: #153d93; // ← vert → bleu
     }
 }
 

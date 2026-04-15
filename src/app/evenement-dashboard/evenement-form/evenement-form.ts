@@ -21,16 +21,14 @@ export class EvenementFormComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        // ✅ Contraintes ici
         this.form = this.fb.group({
             titre:          ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-            date:           ['', [Validators.required]],
+            dateHeure:      ['', [Validators.required]],   // ← date → dateHeure
             lieu:           ['', [Validators.required, Validators.minLength(2)]],
             type:           ['', [Validators.required]],
             organisateurId: [null]
         });
 
-        // ✅ Récupère l'ID depuis le token
         const token = localStorage.getItem('token');
         if (token) {
             const decoded: any = jwtDecode(token);
@@ -40,18 +38,24 @@ export class EvenementFormComponent implements OnInit {
         }
     }
 
-    // ✅ Getters
-    get titre() { return this.form.get('titre'); }
-    get date()  { return this.form.get('date'); }
-    get lieu()  { return this.form.get('lieu'); }
-    get type()  { return this.form.get('type'); }
+    // Getters
+    get titre()     { return this.form.get('titre'); }
+    get dateHeure() { return this.form.get('dateHeure'); }  // ← date → dateHeure
+    get lieu()      { return this.form.get('lieu'); }
+    get type()      { return this.form.get('type'); }
 
     publier() {
         console.log('Form valid:', this.form.valid);
         console.log('Form values:', this.form.value);
 
         if (this.form.valid) {
-            this.service.publier(this.form.value).subscribe({
+            // ⚠️ Ajoute ':00' pour les secondes attendues par Spring
+            const payload = {
+                ...this.form.value,
+                dateHeure: this.form.value.dateHeure + ':00'
+            };
+
+            this.service.publier(payload).subscribe({
                 next: (res) => {
                     console.log('Événement publié ✅', res);
                     this.success = true;
@@ -68,7 +72,7 @@ export class EvenementFormComponent implements OnInit {
                 }
             });
         } else {
-            this.form.markAllAsTouched(); // ✅ affiche toutes les erreurs
+            this.form.markAllAsTouched();
         }
     }
 

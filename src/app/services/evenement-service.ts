@@ -51,4 +51,32 @@ getStats(mois: number, annee: number, organisateurId: number): Observable<any> {
         `${this.apiUrl}/stats?mois=${mois}&annee=${annee}&organisateurId=${organisateurId}`
     );
 }
+
+// Appelle l'endpoint Spring avec le JWT et télécharge le fichier .ics reçu
+exporterMesEvenementsConfirmes(candidatId: number): void {
+  const url = `${this.apiUrl}/export-ics/confirmed/${candidatId}`;
+  const token = localStorage.getItem('token');
+
+  fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .then(res => res.blob())                          // Convertit la réponse en fichier binaire
+  .then(blob => {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);          // Crée une URL temporaire vers le blob
+    link.download = 'mes-evenements-confirmes.ics'; // Nom du fichier téléchargé
+    link.click();
+    URL.revokeObjectURL(link.href);                 // Libère la mémoire après téléchargement
+  })
+  .catch(err => console.error('Erreur export ICS:', err));
+}
+
+getMesParticipationsConfirmees(candidatId: number): Observable<any[]> {
+  const token = localStorage.getItem('token');
+  return this.http.get<any[]>(
+    `http://localhost:8081/api/participations/confirmed/${candidatId}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  
+}
 }

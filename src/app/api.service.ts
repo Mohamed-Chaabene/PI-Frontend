@@ -9,9 +9,11 @@ import { catchError, map } from 'rxjs/operators';
 export class ApiService {
 
   // Use relative URL so Angular dev proxy can forward to Spring Boot and avoid CORS issues.
+
   private apiUrl = '/api';
   private mlUrl = 'http://localhost:8000';
   private mlAvailable = true;
+
   constructor(private http: HttpClient) { }
 
   private buildAuthHeaders(): HttpHeaders {

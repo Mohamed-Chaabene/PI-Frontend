@@ -43,7 +43,7 @@ export class EvenementDemandesComponent implements OnInit {
     accepter(id: number) {
         this.participationService.accepter(id).subscribe({
             next: () => {
-                alert('✅ Participation acceptée !');
+                
                 this.loadDemandes(); // rafraîchit la liste
             },
             error: (err) => console.error('Erreur:', err)
@@ -54,7 +54,7 @@ export class EvenementDemandesComponent implements OnInit {
     refuser(id: number) {
         this.participationService.refuser(id).subscribe({
             next: () => {
-                alert('❌ Participation refusée !');
+                
                 this.loadDemandes();
             },
             error: (err) => console.error('Erreur:', err)

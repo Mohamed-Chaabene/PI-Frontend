@@ -72,6 +72,7 @@ import { MaCalendarComponent } from './candidates-dashboard/evenement-candidat/m
 // More common
 import { BlogSidebarComponent } from './common/blog-sidebar/blog-sidebar.component';
 
+
 import { PricingComponent } from './common/pricing/pricing.component';
 
 import { JobsSidebarComponent } from './common/jobs-sidebar/jobs-sidebar.component';
@@ -109,6 +110,7 @@ import { EvenementDemandesComponent } from './evenement-dashboard/evenement-dema
 import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { EvenementFeedbacksComponent } from './evenement-dashboard/evenement-feedback/evenement-feedbacks.component';
+import { ChatEvenementComponent } from './candidates-dashboard/evenement-candidat/evenement-chat/evenement-chat.component';
 import { FeedbackAdminComponent } from './admin-dashboard/feedback-admin/feedback-admin.component';
 import { FormationsAdminComponent } from './admin-dashboard/formations-admin/formations-admin.component';
 import { FormationCreateComponent } from './admin-dashboard/formation-create/formation-create.component';
@@ -117,12 +119,11 @@ import { FormationParticipantsComponent } from './admin-dashboard/formation-part
 import { CdMessageMailboxComponent } from './candidates-dashboard/cd-message-mailbox/cd-message-mailbox.component';
 import { MesFormationsComponent } from './candidates-dashboard/mes-formations/mes-formations.component';
 import { RdMessagesMailboxComponent } from './recruiter-dashboard/rd-messages-mailbox/rd-messages-mailbox.component';
-
+import { EvenementChatComponent } from './evenement-dashboard/evenement-chat/evenement-chat.component';
 // Banner components are now in SharedModule
 // participations
 
 registerLocaleData(localeFr);
-
 
 
 
@@ -192,7 +193,7 @@ registerLocaleData(localeFr);
         PartenaireListComponent,
         OffreListComponent,
         EntretienListComponent,
-    
+
         CandidatureListComponent,
         EvenementListAdminComponent,
         AdHeaderComponent,  
@@ -205,13 +206,15 @@ registerLocaleData(localeFr);
         MaCalendarComponent,
         EvenementFeedbacksComponent,
         FeedbackAdminComponent,
-FormationsAdminComponent,
-FormationCreateComponent,
-FormationEditComponent,
-FormationParticipantsComponent,
-CdMessageMailboxComponent,
-MesFormationsComponent,
-RdMessagesMailboxComponent,
+        FormationsAdminComponent,
+        FormationCreateComponent,
+        FormationEditComponent,
+        FormationParticipantsComponent,
+        CdMessageMailboxComponent,
+        MesFormationsComponent,
+        RdMessagesMailboxComponent,
+        ChatEvenementComponent,
+        EvenementChatComponent,
         
         
         
@@ -230,7 +233,7 @@ RdMessagesMailboxComponent,
         GoogleMapsModule,
         FullCalendarModule,
         SharedModule
-        
+
         
         
         

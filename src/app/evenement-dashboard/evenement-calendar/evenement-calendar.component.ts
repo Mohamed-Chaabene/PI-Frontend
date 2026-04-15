@@ -16,7 +16,6 @@ import { jwtDecode } from 'jwt-decode';
 })
 export class EvenementCalendrierComponent implements OnInit {
 
-    //  Configuration FullCalendar
     calendarOptions: CalendarOptions = {
         plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
@@ -42,11 +41,8 @@ export class EvenementCalendrierComponent implements OnInit {
         }
     };
 
-    //  Modal
     selectedEvenement: any = null;
     showModal = false;
-
-    //  Données
     userRole = '';
     userId!: number;
     demandesEnvoyees: Set<number> = new Set();
@@ -62,12 +58,12 @@ export class EvenementCalendrierComponent implements OnInit {
 
     ngOnInit() {
         const token = localStorage.getItem('token');
-    if (token) {
-        const decoded: any = jwtDecode(token);
-        this.userId = decoded?.id; //  organisateurId
-    }
-    this.chargerEvenements(); //  charge ses événements
-    this.chargerStats();
+        if (token) {
+            const decoded: any = jwtDecode(token);
+            this.userId = decoded?.id;
+        }
+        this.chargerEvenements();
+        this.chargerStats();
     }
 
     chargerParticipations() {
@@ -77,39 +73,36 @@ export class EvenementCalendrierComponent implements OnInit {
                     this.demandesEnvoyees.add(p.evenementId);
                     this.participationsStatuts.set(p.evenementId, p.statut);
                 });
-                //  Recharge les événements après participations
                 this.chargerEvenements();
             },
             error: (err) => console.error('Erreur participations:', err)
         });
     }
 
-   chargerEvenements() {
-    //  Organisateur voit seulement ses événements
-    this.evenementService.getByOrganisateur(this.userId).subscribe({
-        next: (data) => {
-            this.calendarOptions = {
-                ...this.calendarOptions,
-                events: data.map((e: any) => ({
-                    id: String(e.id),
-                    title: e.titre,
-                    date: e.date,
-                    backgroundColor: this.getCouleur(e),
-                    borderColor: this.getCouleur(e),
-                    textColor: '#ffffff',
-                    extendedProps: {
-                        lieu: e.lieu,
-                        type: e.type,
-                        organisateur: e.nomOrganisateur
-                    }
-                }))
-            };
-        },
-        error: (err) => console.error('Erreur événements:', err)
-    });
-}
+    chargerEvenements() {
+        this.evenementService.getByOrganisateur(this.userId).subscribe({
+            next: (data) => {
+                this.calendarOptions = {
+                    ...this.calendarOptions,
+                    events: data.map((e: any) => ({
+                        id: String(e.id),
+                        title: e.titre,
+                        date: e.dateHeure,          // ← date → dateHeure
+                        backgroundColor: this.getCouleur(e),
+                        borderColor: this.getCouleur(e),
+                        textColor: '#ffffff',
+                        extendedProps: {
+                            lieu: e.lieu,
+                            type: e.type,
+                            organisateur: e.nomOrganisateur
+                        }
+                    }))
+                };
+            },
+            error: (err) => console.error('Erreur événements:', err)
+        });
+    }
 
-    //  Titre avec badge selon statut
     getTitreAvecBadge(e: any): string {
         const statut = this.participationsStatuts.get(e.id);
         if (statut === 'CONFIRME') return `✅ ${e.titre}`;
@@ -118,16 +111,11 @@ export class EvenementCalendrierComponent implements OnInit {
         return e.titre;
     }
 
-    //  Couleur selon type et statut participation
     getCouleur(e: any): string {
         const statut = this.participationsStatuts.get(e.id);
-
-        // Si candidat inscrit
         if (statut === 'CONFIRME') return '#1a6b3c';
         if (statut === 'EN_ATTENTE') return '#f9a825';
         if (statut === 'REFUSE') return '#9e9e9e';
-
-        // Couleur par type
         const couleurs: any = {
             'JOB_FAIR':   '#1565c0',
             'WORKSHOP':   '#6a1b9a',
@@ -137,12 +125,11 @@ export class EvenementCalendrierComponent implements OnInit {
         return couleurs[e.type] || '#1565c0';
     }
 
-    //  Clic sur événement → modal
     onEventClick(info: EventClickArg) {
         this.selectedEvenement = {
             id: Number(info.event.id),
             titre: info.event.title,
-            date: info.event.startStr,
+            dateHeure: info.event.startStr,         // ← date → dateHeure
             lieu: info.event.extendedProps['lieu'],
             type: info.event.extendedProps['type'],
             organisateur: info.event.extendedProps['organisateur'],
@@ -157,7 +144,6 @@ export class EvenementCalendrierComponent implements OnInit {
         this.selectedEvenement = null;
     }
 
-    //  Candidat participe depuis le calendrier
     participer(evenementId: number) {
         this.participationService.confirmer({
             evenementId: evenementId,
@@ -167,13 +153,12 @@ export class EvenementCalendrierComponent implements OnInit {
                 this.demandesEnvoyees.add(evenementId);
                 this.participationsStatuts.set(evenementId, 'EN_ATTENTE');
                 this.closeModal();
-                this.chargerEvenements(); //  rafraîchit le calendrier
+                this.chargerEvenements();
             },
             error: (err) => console.error('Erreur:', err)
         });
     }
 
-    //  Getters rôle
     get isCandidat(): boolean { return this.userRole === 'CANDIDAT'; }
     get isOrganisateur(): boolean { return this.userRole === 'ORGANISATEUR'; }
 
@@ -181,20 +166,22 @@ export class EvenementCalendrierComponent implements OnInit {
         if (!value) return '-';
         const date = new Date(value);
         if (isNaN(date.getTime())) return String(value);
-        return date.toLocaleDateString('fr-FR');
+        const heureVide = date.getHours() === 0 && date.getMinutes() === 0;
+        const datePart = date.toLocaleDateString('fr-FR');
+        return heureVide ? datePart : `${datePart} à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
     }
 
     chargerStats() {
-    this.evenementService.getStats(
-        this.moisActuel,
-        this.anneeActuelle,
-        this.userId
-    ).subscribe({
-        next: (data) => {
-            this.stats = data;
-            console.log('Stats:', data);
-        },
-        error: (err) => console.error('Erreur stats:', err)
-    });
-}
+        this.evenementService.getStats(
+            this.moisActuel,
+            this.anneeActuelle,
+            this.userId
+        ).subscribe({
+            next: (data) => {
+                this.stats = data;
+                console.log('Stats:', data);
+            },
+            error: (err) => console.error('Erreur stats:', err)
+        });
+    }
 }
