@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs';
 })
 export class AdDashboardComponent implements OnInit, OnDestroy {
 
-    // ── Existant ──────────────────────────────────────────────
+    
     totalPartenaires = 0;
     totalOffres      = 0;
     totalEmplois     = 0;
@@ -23,25 +23,25 @@ export class AdDashboardComponent implements OnInit, OnDestroy {
     adminName        = '';
     today            = new Date();
 
-    // ── NOUVEAU : Horloge ─────────────────────────────────────
+    
     currentTime = '';
     currentDate = '';
     private clockInterval: any;
 
-    // ── NOUVEAU : Top 5 ───────────────────────────────────────
+    
     topPartenaires: any[] = [];
     maxOffres = 1;
     medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
 
-    // ── NOUVEAU : Scores scheduler ────────────────────────────
+    
     scores: any[] = [];
 
-    // ── NOUVEAU : Keywords ────────────────────────────────────
+   
     statsKeywords: any = null;
 
-    // ── NOUVEAU : WebSocket ───────────────────────────────────
-    activities: any[]          = [];
-    wsConnected                = false;
+    
+    activities: any[]  = [];
+    wsConnected = false;
     private subs: Subscription[] = [];
 
     constructor(
@@ -69,7 +69,7 @@ export class AdDashboardComponent implements OnInit, OnDestroy {
         
     }
 
-    // ── Existant ──────────────────────────────────────────────
+    
     loadData() {
         this.partenaireService.getAll().subscribe({
             next: (data: any[]) => {
@@ -106,7 +106,7 @@ export class AdDashboardComponent implements OnInit, OnDestroy {
         });
     }
 
-    // ── NOUVEAU : Horloge ─────────────────────────────────────
+    
     startClock() {
         this.updateClock();
         this.clockInterval = setInterval(() => this.updateClock(), 1000);
@@ -120,7 +120,7 @@ export class AdDashboardComponent implements OnInit, OnDestroy {
         });
     }
 
-    // ── NOUVEAU : Top 5 ───────────────────────────────────────
+    
     loadTopPartenaires() {
         this.dashboardService.getTopPartenaires().subscribe({
             next: (data: any[]) => {
@@ -131,7 +131,7 @@ export class AdDashboardComponent implements OnInit, OnDestroy {
         });
     }
 
-    // ── NOUVEAU : Scores scheduler ────────────────────────────
+    
     loadScores() {
         this.dashboardService.getScoresPopularite().subscribe({
             next: (data: any[]) => this.scores = data,
@@ -139,7 +139,7 @@ export class AdDashboardComponent implements OnInit, OnDestroy {
         });
     }
 
-    // ── NOUVEAU : Keywords ────────────────────────────────────
+    
     loadStatsKeywords() {
         this.dashboardService.getStatsKeywords().subscribe({
             next: (data: any) => this.statsKeywords = data,
@@ -147,18 +147,18 @@ export class AdDashboardComponent implements OnInit, OnDestroy {
         });
     }
 
-    // ── NOUVEAU : WebSocket ───────────────────────────────────
+    
     connectWebSocket() {
     this.wsService.connect();
 
-    // ── Activités — reçoit toute la liste ────────────────
+    
     const actSub = this.wsService.getActivities().subscribe(data => {
         if (data && data.length > 0) {
             this.activities = data;
         }
     });
 
-    // ── Dashboard updates ─────────────────────────────────
+    
     const dashSub = this.wsService.getDashboardUpdates().subscribe(data => {
         if (!data) return;
         this.wsConnected = true;
@@ -172,7 +172,7 @@ export class AdDashboardComponent implements OnInit, OnDestroy {
     this.subs.push(actSub, dashSub);
    }
 
-    // ── NOUVEAU : Helpers ─────────────────────────────────────
+    
     getBarWidth(nbOffres: number): number {
         return Math.round((nbOffres / this.maxOffres) * 100);
     }

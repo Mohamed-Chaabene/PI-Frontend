@@ -43,7 +43,7 @@ export class OffrePartenaireService {
         );
     }
 
-    // ── Nouveau (Flask ML) ────────────────────────────────────
+    
     predictML(partenaireId: number): Observable<any> {
         return this.http.get<any>(
             `${this.apiUrl}/predict/${partenaireId}`
