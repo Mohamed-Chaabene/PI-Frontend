@@ -50,7 +50,7 @@ export class ApiService {
     headers = headers.set('Pragma', 'no-cache');
     const timestamp = Date.now();
     const url = `${this.apiUrl}/users/search?name=${query}&t=${timestamp}`;
-    console.log('🌐 Calling API search endpoint:', url);
+    console.log('Calling API search endpoint:', url);
     return this.http.get<any[]>(url, { headers });
   }
 
@@ -150,39 +150,20 @@ export class ApiService {
     const email = String(credentials?.email ?? credentials?.username ?? '').trim();
     const password = String(credentials?.password ?? credentials?.motDePasse ?? credentials?.rawPassword ?? '');
 
-    // Try the most likely backend contract first to avoid server-side deserialization issues.
-    const primaryPayload = {
+    // Send payload matching backend LoginRequest DTO expectations
+    const payload = {
       email,
       motDePasse: password,
     };
 
-    return this.http.post(`${this.apiUrl}/auth/login`, primaryPayload, { headers }).pipe(
-      catchError((firstError) => {
-        if (firstError?.status === 400 || firstError?.status === 401 || firstError?.status === 403 || firstError?.status === 500) {
-          const fallbackPasswordPayload = {
-            email,
-            password,
-          };
-
-          return this.http.post(`${this.apiUrl}/auth/login`, fallbackPasswordPayload, { headers }).pipe(
-            catchError((secondError) => {
-              if (secondError?.status === 400 || secondError?.status === 401 || secondError?.status === 403 || secondError?.status === 500) {
-                const fallbackUsernamePayload = {
-                  username: email,
-                  password,
-                };
-                return this.http.post(`${this.apiUrl}/auth/login`, fallbackUsernamePayload, { headers });
-              }
-              return throwError(() => secondError);
-            })
-          );
-        }
-        return throwError(() => firstError);
-      })
-    );
+    return this.http.post(`${this.apiUrl}/auth/login`, payload, { headers });
   }
 
-  // Reset Password
+  changePassword(payload: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(`${this.apiUrl}/auth/change-password`, payload, { headers });
+  }
+
   resetPassword(phone: string): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post(`${this.apiUrl}/auth/reset-password`, { phone }, { headers });
@@ -2346,6 +2327,28 @@ chatRecruiterAssistant(message: string, context?: { theme?: string; type?: strin
     }
 
     return `Sur "${themeLabel}", je peux vous répondre de façon concrète. Donnez-moi un point précis à clarifier ou un candidat à évaluer, et je vous aide immédiatement.`;
+  }
+
+  // ==================== CONNECTION STATISTICS ====================
+
+  getConnectionCount(userId: number): Observable<any> {
+    const headers = this.buildAuthHeaders();
+    return this.http.get(`${this.apiUrl}/connections/count/${userId}`, { headers });
+  }
+
+  getConnectionStats(userId: number): Observable<any> {
+    const headers = this.buildAuthHeaders();
+    return this.http.get(`${this.apiUrl}/connections/stats/${userId}`, { headers });
+  }
+
+  getLoginHistory(userId: number): Observable<any[]> {
+    const headers = this.buildAuthHeaders();
+    return this.http.get<any[]>(`${this.apiUrl}/connections/history/${userId}`, { headers });
+  }
+
+  getAllConnectionStats(): Observable<any[]> {
+    const headers = this.buildAuthHeaders();
+    return this.http.get<any[]>(`${this.apiUrl}/connections/all-stats`, { headers });
   }
 
 
