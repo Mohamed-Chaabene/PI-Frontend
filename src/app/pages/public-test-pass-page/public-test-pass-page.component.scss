@@ -389,34 +389,4 @@
   .report-grid {
     grid-template-columns: 1fr;
   }
-<<<<<<< HEAD
-=======
-}
-
-.screenshot-blocker-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: #000;
-  z-index: 9999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  color: #fff;
-  font-size: 2rem;
-  
-  .message {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    i {
-      font-size: 4rem;
-      color: #ef4444;
-    }
-  }
->>>>>>> 5fa053cdd5392487b4ffb949419e940b3b4a6593
 }

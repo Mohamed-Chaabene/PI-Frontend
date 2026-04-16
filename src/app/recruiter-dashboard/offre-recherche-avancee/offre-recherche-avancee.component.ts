@@ -21,14 +21,8 @@ export class OffreRechercheAvanceeComponent implements OnInit, OnDestroy {
   errorMessage = '';
 
   // Paramètres de recherche
-
-/* === VERSION HEAD ==== */
   searchType: 'simple' | 'advanced' | 'company' | 'popular' = 'simple';
   searchTypes: Array<'simple' | 'advanced' | 'company' | 'popular'> = ['simple', 'advanced', 'company', 'popular'];
-
-/* === VERSION MERGE ==== */
-  searchType = 'simple';
-/* === FIN VERSIONS === */
   keyword = '';
   location = '';
   minSalaire: number | null = null;

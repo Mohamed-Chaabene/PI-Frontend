@@ -104,53 +104,42 @@ export class ApiService {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const cleanEmail = String(user?.email || '').trim();
     const cleanRole = String(user?.role || 'CANDIDAT').replace(/^ROLE_/, '').toUpperCase() || 'CANDIDAT';
-    const cleanPassword = user?.password ?? user?.motDePasse ?? user?.rawPassword ?? '';
+    const cleanPassword = user?.motDePasse ?? '';
 
+    // Payload minimaliste - seulement les champs attendus par le backend
     const normalizedUser: any = {
       nom: user?.nom ?? '',
-      prenom: user?.prenom ?? '',
       email: cleanEmail,
       role: cleanRole,
-      roleString: user?.roleString ?? undefined,
-      cv: user?.cv ?? undefined,
-      niveauEtude: user?.niveauEtude ?? undefined,
-      competences: user?.competences ?? undefined,
-      experience: user?.experience ?? undefined,
-      entreprise: user?.entreprise ?? undefined,
-      poste: user?.poste ?? undefined,
-      secteur: user?.secteur ?? undefined,
-      budget: user?.budget ?? undefined,
-      organisation: user?.organisation ?? undefined,
-      adresse: user?.adresse ?? undefined,
-      descriptionProjet: user?.descriptionProjet ?? undefined,
-      password: cleanPassword,
-      rawPassword: cleanPassword,
       motDePasse: cleanPassword,
     };
 
+    // Ajouter les champs optionnels s'ils existent
+    if (user?.cv) normalizedUser.cv = user.cv;
+    if (user?.niveauEtude) normalizedUser.niveauEtude = user.niveauEtude;
+    if (user?.experience) normalizedUser.experience = user.experience;
+    if (user?.entreprise) normalizedUser.entreprise = user.entreprise;
+    if (user?.poste) normalizedUser.poste = user.poste;
+    if (user?.secteur) normalizedUser.secteur = user.secteur;
+    if (user?.budget) normalizedUser.budget = user.budget;
+    if (user?.organisation) normalizedUser.organisation = user.organisation;
+    if (user?.adresse) normalizedUser.adresse = user.adresse;
+    if (user?.descriptionProjet) normalizedUser.descriptionProjet = user.descriptionProjet;
+
     return this.http.post(`${this.apiUrl}/auth/register`, normalizedUser, { headers }).pipe(
       catchError((firstError) => {
-        if (firstError?.status === 400 || firstError?.status === 403) {
-          const minimalPayload = {
-            nom: normalizedUser.nom,
-            email: normalizedUser.email,
-            role: cleanRole,
-            motDePasse: cleanPassword,
-            password: cleanPassword,
-            rawPassword: cleanPassword,
-          };
-          return this.http.post(`${this.apiUrl}/auth/register`, minimalPayload, { headers }).pipe(
-            catchError((secondError) => {
-              if (secondError?.status === 403 && cleanRole !== 'CANDIDAT') {
-                // Last fallback when backend rejects non-candidate self-signup.
-                const candidatePayload = { ...minimalPayload, role: 'CANDIDAT' };
-                return this.http.post(`${this.apiUrl}/auth/register`, candidatePayload, { headers });
-              }
-              return throwError(() => secondError);
-            })
-          );
-        }
-        return throwError(() => firstError);
+        // Si erreur, essayer avec payload minimal
+        const minimalPayload = {
+          nom: normalizedUser.nom,
+          email: normalizedUser.email,
+          role: cleanRole,
+          motDePasse: cleanPassword,
+        };
+        return this.http.post(`${this.apiUrl}/auth/register`, minimalPayload, { headers }).pipe(
+          catchError((secondError) => {
+            return throwError(() => secondError);
+          })
+        );
       })
     );
   }

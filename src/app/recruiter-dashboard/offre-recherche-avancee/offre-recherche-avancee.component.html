@@ -9,13 +9,7 @@
   <div class="search-type-selector">
     <div class="search-type-buttons">
       <button
-
-/* === VERSION HEAD ==== */
         *ngFor="let type of searchTypes"
-
-/* === VERSION MERGE ==== */
-        *ngFor="let type of ['simple', 'advanced', 'company', 'popular']"
-/* === FIN VERSIONS === */
         [class.active]="searchType === type"
         (click)="searchType = type"
         class="type-btn">

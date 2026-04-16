@@ -717,19 +717,10 @@ export class PublicTestPassPageComponent {
 
     const report = this.candidateReport;
     const pointsForts = report.pointsForts.length
-
-/* === VERSION HEAD ==== */
-      ? report.pointsForts.map((item) => `<li>${this.escapeHtml(item)}</li>`).join('')
-      : '<li>Aucun point fort identifie.</li>';
-    const pointsFaibles = report.pointsFaibles.length
-      ? report.pointsFaibles.map((item) => `<li>${this.escapeHtml(item)}</li>`).join('')
-
-/* === VERSION MERGE ==== */
       ? report.pointsForts.map((item: string) => `<li>${this.escapeHtml(item)}</li>`).join('')
       : '<li>Aucun point fort identifie.</li>';
     const pointsFaibles = report.pointsFaibles.length
       ? report.pointsFaibles.map((item: string) => `<li>${this.escapeHtml(item)}</li>`).join('')
-/* === FIN VERSIONS === */
       : '<li>Aucun point faible identifie.</li>';
 
     const html = `
