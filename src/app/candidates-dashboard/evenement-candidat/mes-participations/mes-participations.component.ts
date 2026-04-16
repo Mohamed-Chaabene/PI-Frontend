@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ParticipationService } from '../../../services/participation-service';
 import { FeedbackEventService } from '../../../services/feedbackevent-service';
+import { EvenementService } from '../../../services/evenement-service';
+import { ApiService } from '../../../api.service';
 import { jwtDecode } from 'jwt-decode';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-mes-participations',
@@ -25,7 +28,10 @@ export class MesParticipationsComponent implements OnInit {
 
     constructor(
         private participationService: ParticipationService,
-        private feedbackService: FeedbackEventService
+        private feedbackService: FeedbackEventService,
+        private evenementService: EvenementService,
+        private apiService: ApiService,
+        private router: Router
     ) {}
 
     ngOnInit() {
@@ -114,10 +120,100 @@ export class MesParticipationsComponent implements OnInit {
     return dateEvenement < new Date();
 }
 
+ouvrirChat(evenementId: number) {
+    this.router.navigate(['/candidates-dashboard/chat', evenementId]);
+}
+
     formatDate(value: any): string {
         if (!value) return '-';
         const date = new Date(value);
         if (isNaN(date.getTime())) return String(value);
         return date.toLocaleDateString('fr-FR');
     }
+
+// Récupère l'id du candidat connecté depuis le token JWT décodé
+// APRÈS (adapté à ton projet)
+exporterCalendrier(): void {
+  // L'id du candidat est stocké directement dans le localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const candidatId = user.id;
+  this.evenementService.exporterMesEvenementsConfirmes(candidatId);
+}
+
+ouvrirGoogleCalendar(): void {
+  const email = localStorage.getItem('userEmail');
+
+  if (!email) {
+    alert('Utilisateur non connecté.');
+    return;
+  }
+
+  // Étape 1 : récupère le candidat par email pour obtenir son id
+  this.apiService.getCandidateByEmail(email).subscribe({
+    next: (candidat) => {
+      const candidatId = candidat.id;
+      console.log('candidatId trouvé :', candidatId);
+
+      // Étape 2 : appelle le service avec l'id trouvé
+      this.evenementService.getMesParticipationsConfirmees(candidatId).subscribe({
+        next: (participations) => {
+          if (participations.length === 0) {
+            alert('Aucun événement confirmé à exporter.');
+            return;
+          }
+
+          // Étape 3 : ouvre un onglet Google Calendar par événement confirmé
+          participations.forEach((p: any) => {
+            const ev = p.evenement;
+            const debut = this.formatGoogleDate(ev.dateHeure);
+            const fin = this.formatGoogleDate(
+              new Date(new Date(ev.dateHeure).getTime() + 2 * 60 * 60 * 1000)
+            );
+
+            const params = new URLSearchParams({
+              action: 'TEMPLATE',
+              text: ev.titre,
+              dates: `${debut}/${fin}`,
+              location: ev.lieu || '',
+              details: ev.type || ''
+            });
+
+            window.open(
+              `https://calendar.google.com/calendar/render?${params.toString()}`,
+              '_blank'
+            );
+          });
+        },
+        error: (err) => console.error('Erreur participations :', err)
+      });
+    },
+    error: (err) => console.error('Erreur récupération candidat :', err)
+  });
+}
+
+private formatGoogleDate(date: any): string {
+  const d = new Date(date);
+  return d.toISOString().replace(/-|:|\.\d{3}Z/g, '').slice(0, 15);
+}
+
+
+get confirmeesAvecCertificat(): any[] {
+    return this.participations.filter(p =>
+      p.statut === 'CONFIRME' && p.certificateGenerated
+    );
+  }
+
+  get confirmesSansCertificat(): any[] {
+    return this.participations.filter(p =>
+      p.statut === 'CONFIRME' && !p.certificateGenerated
+    );
+  }
+
+  get autresParticipations(): any[] {
+    return this.participations.filter(p => p.statut !== 'CONFIRME');
+  }
+
+  telecharger(url: string): void {
+    this.participationService.ouvrirCertificat(url);
+  }
 }

@@ -40,7 +40,7 @@ export class HomeDemoOneComponent {
     isLoadingOffres = false;
     publicTestsError = '';
     offresError = '';
-    readonly defaultEntretienPhoto = 'images/banner/banner1.jpg';
+    readonly defaultEntretienPhoto = 'images/banner/banner1.png';
  
     constructor(
         private titleService: Title,

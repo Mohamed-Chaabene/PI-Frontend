@@ -1,0 +1,1442 @@
+
+> jove@1.2.0 start
+> ng serve
+
+[33m❯[39m Building...
+[32m✔[39m Building...
+Application bundle generation failed. [13.169 seconds] - 2026-04-08T13:15:20.940Z
+
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FilterPipe is not used within the template of CdMailboxComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/candidates-dashboard/cd-mailbox/cd-mailbox.component.ts:12:39:
+[37m      12 │   imports: [CommonModule, FormsModule, [32mFilterPipe[37m],
+         ╵                                        [32m~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/formations/formation-detail/formation-detail.component.html:6:46:
+[37m      6 │ ...ass="col-lg-8"><h1>{{ formation?.[32mtitre[37m || 'Formation' }}</h1></div>
+        ╵                                     [32m~~~~~[0m
+
+  Warning occurs in the template of component FormationDetailComponent.
+
+    src/app/formations/formation-detail/formation-detail.component.ts:9:15:
+[37m      9 │   templateUrl: [32m'./formation-detail.component.html'[37m,
+        ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: RouterLink is not used within the template of CandidateEntretiensPageComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/candidate-entretiens-page/candidate-entretiens-page.component.ts:23:26:
+[37m      23 │   imports: [CommonModule, [32mRouterLink[37m, SharedModule],
+         ╵                           [32m~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/job-details-page/job-details-page.component.html:100:102:
+[37m      100 │ ...um">Published on:</span> {{ formatDate(offre?.[32mdatePublication[37m) }}
+          ╵                                                  [32m~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component JobDetailsPageComponent.
+
+    src/app/pages/job-details-page/job-details-page.component.ts:40:17:
+[37m      40 │     templateUrl: [32m'./job-details-page.component.html'[37m,
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: RouterLink is not used within the template of PublicTestPassPageComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/public-test-pass-page/public-test-pass-page.component.ts:39:39:
+[37m      39 │   imports: [CommonModule, FormsModule, [32mRouterLink[37m, SharedModule],
+         ╵                                        [32m~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/candidates-dashboard/cd-documents/cd-documents.component.scss:49:20:
+[37m      49 │         background: [32m[37mdarken($primary, 8%);
+         ╵                     [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.adjust instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/candidates-dashboard/cd-documents/cd-documents.component.scss:49:20:
+[37m      49 │         background: [32m[37mdarken($primary, 8%);
+         ╵                     [32m^[0m
+
+
+  darken() is deprecated. Suggestions:
+  
+  color.scale($color, $lightness: -12.6315789474%)
+  color.adjust($color, $lightness: -8%)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/candidates-dashboard/cd-documents/cd-documents.component.scss:406:32:
+[37m      406 │                     background: [32m[37mdarken($primary, 8%);
+          ╵                                 [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.adjust instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/candidates-dashboard/cd-documents/cd-documents.component.scss:406:32:
+[37m      406 │                     background: [32m[37mdarken($primary, 8%);
+          ╵                                 [32m^[0m
+
+
+  darken() is deprecated. Suggestions:
+  
+  color.scale($color, $lightness: -12.6315789474%)
+  color.adjust($color, $lightness: -8%)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/feedback-admin/feedback-admin.component.scss:177:71:
+[37m      177 │ ...bg-page; color: $text-main; border-color: [32m[37mdarken($border, 8%); }
+          ╵                                              [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.adjust instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/feedback-admin/feedback-admin.component.scss:177:71:
+[37m      177 │ ...bg-page; color: $text-main; border-color: [32m[37mdarken($border, 8%); }
+          ╵                                              [32m^[0m
+
+
+  darken() is deprecated. Suggestions:
+  
+  color.scale($color, $lightness: -8.7931034483%)
+  color.adjust($color, $lightness: -8%)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/formation-create/formation-create.component.scss:231:22:
+[37m      231 │         border-color: [32m[37mdarken($border, 8%);
+          ╵                       [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.adjust instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/formation-create/formation-create.component.scss:231:22:
+[37m      231 │         border-color: [32m[37mdarken($border, 8%);
+          ╵                       [32m^[0m
+
+
+  darken() is deprecated. Suggestions:
+  
+  color.scale($color, $lightness: -8.7931034483%)
+  color.adjust($color, $lightness: -8%)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/formation-create/formation-create.component.scss:252:20:
+[37m      252 │         background: [32m[37mdarken($primary, 6%);
+          ╵                     [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.adjust instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/formation-create/formation-create.component.scss:252:20:
+[37m      252 │         background: [32m[37mdarken($primary, 6%);
+          ╵                     [32m^[0m
+
+
+  darken() is deprecated. Suggestions:
+  
+  color.scale($color, $lightness: -17.6878612717%)
+  color.adjust($color, $lightness: -6%)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/formation-edit/formation-edit.component.scss:231:22:
+[37m      231 │         border-color: [32m[37mdarken($border, 8%);
+          ╵                       [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.adjust instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/formation-edit/formation-edit.component.scss:231:22:
+[37m      231 │         border-color: [32m[37mdarken($border, 8%);
+          ╵                       [32m^[0m
+
+
+  darken() is deprecated. Suggestions:
+  
+  color.scale($color, $lightness: -8.7931034483%)
+  color.adjust($color, $lightness: -8%)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/formation-edit/formation-edit.component.scss:252:20:
+[37m      252 │         background: [32m[37mdarken($primary, 6%);
+          ╵                     [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.adjust instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/formation-edit/formation-edit.component.scss:252:20:
+[37m      252 │         background: [32m[37mdarken($primary, 6%);
+          ╵                     [32m^[0m
+
+
+  darken() is deprecated. Suggestions:
+  
+  color.scale($color, $lightness: -17.6878612717%)
+  color.adjust($color, $lightness: -6%)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/formations-admin/formations-admin.component.scss:410:28:
+[37m      410 │       &:hover { background: [32m[37mdarken($primary-light, 4%); border-co...
+          ╵                             [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.adjust instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/admin/formations-admin/formations-admin.component.scss:410:28:
+[37m      410 │       &:hover { background: [32m[37mdarken($primary-light, 4%); border-co...
+          ╵                             [32m^[0m
+
+
+  darken() is deprecated. Suggestions:
+  
+  color.scale($color, $lightness: -4.2411642412%)
+  color.adjust($color, $lightness: -4%)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/mes-formations/mes-formations.component.scss:165:20:
+[37m      165 │         background: [32m[37mdarken($primary, 6%);
+          ╵                     [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.adjust instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/mes-formations/mes-formations.component.scss:165:20:
+[37m      165 │         background: [32m[37mdarken($primary, 6%);
+          ╵                     [32m^[0m
+
+
+  darken() is deprecated. Suggestions:
+  
+  color.scale($color, $lightness: -17.6878612717%)
+  color.adjust($color, $lightness: -6%)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/mes-formations/mes-formations.component.scss:419:22:
+[37m      419 │           background: [32m[37mdarken($primary, 6%);
+          ╵                       [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.adjust instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/formations/mes-formations/mes-formations.component.scss:419:22:
+[37m      419 │           background: [32m[37mdarken($primary, 6%);
+          ╵                       [32m^[0m
+
+
+  darken() is deprecated. Suggestions:
+  
+  color.scale($color, $lightness: -17.6878612717%)
+  color.adjust($color, $lightness: -6%)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/pages/categories-page/categories-page.component.scss:1:8:
+[37m      1 │ @import [32m[37m"../../common/categories/categories.component.scss";
+        ╵         [32m^[0m
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:11:29:
+[37m      11 │     @if $prev-num == null or [32m[37munit($num) == "%" or unit($prev-num) ...
+         ╵                              [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use math.unit instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:11:50:
+[37m      11 │ ...$prev-num == null or unit($num) == "%" or [32m[37munit($prev-num) == "%" {
+         ╵                                              [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use math.unit instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:37:10:
+[37m      37 │   @return [32m[37mred($value), green($value), blue($value);
+         ╵           [32m^[0m
+
+
+  red() is deprecated. Suggestion:
+  
+  color.channel($color, "red", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:37:23:
+[37m      37 │   @return red($value), [32m[37mgreen($value), blue($value);
+         ╵                        [32m^[0m
+
+
+  green() is deprecated. Suggestion:
+  
+  color.channel($color, "green", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:185:9:
+[37m      185 │     "r": [32m[37mred($color),
+          ╵          [32m^[0m
+
+
+  red() is deprecated. Suggestion:
+  
+  color.channel($color, "red", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:186:9:
+[37m      186 │     "g": [32m[37mgreen($color),
+          ╵          [32m^[0m
+
+
+  green() is deprecated. Suggestion:
+  
+  color.channel($color, "green", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:187:9:
+[37m      187 │     "b": [32m[37mblue($color)
+          ╵          [32m^[0m
+
+
+  blue() is deprecated. Suggestion:
+  
+  color.channel($color, "blue", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:207:10:
+[37m      207 │   @return [32m[37mmix(white, $color, $weight);
+          ╵           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:212:10:
+[37m      212 │   @return [32m[37mmix(black, $color, $weight);
+          ╵           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_variables.scss:342:26:
+[37m      342 │ $light-bg-subtle:         [32m[37mmix($gray-100, $white) !default;
+          ╵                           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:1:8:
+[37m      1 │ @import [32m[37m"mixins/banner";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:7:8:
+[37m      7 │ @import [32m[37m"functions";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:8:8:
+[37m      8 │ @import [32m[37m"variables";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:9:8:
+[37m      9 │ @import [32m[37m"variables-dark";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:10:8:
+[37m      10 │ @import [32m[37m"maps";
+         ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m232 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.[0m [1m[35m[plugin angular-sass][0m
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  null
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/recruiter-dashboard/rd-interviews/rd-interviews.ts:603:26:
+[37m      603 │       alert('Le mode de l'[32mentretien[37m est obligatoire.');
+          ╵                           [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'entretien'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/recruiter-dashboard/rd-interviews/rd-interviews.ts:603:26:
+[37m      603 │       alert('Le mode de l'[32mentretien[37m est obligatoire.');
+          ╵                           [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2554: Expected 0-1 arguments, but got 5.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/recruiter-dashboard/rd-interviews/rd-interviews.ts:603:26:
+[37m      603 │       alert('Le mode de l'[32mentretien est obligatoire.');[37m
+          ╵                           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/recruiter-dashboard/rd-interviews/rd-interviews.ts:603:36:
+[37m      603 │       alert('Le mode de l'entretien [32mest[37m obligatoire.');
+          ╵                                     [32m~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'est'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/recruiter-dashboard/rd-interviews/rd-interviews.ts:603:36:
+[37m      603 │       alert('Le mode de l'entretien [32mest[37m obligatoire.');
+          ╵                                     [32m~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/recruiter-dashboard/rd-interviews/rd-interviews.ts:603:40:
+[37m      603 │       alert('Le mode de l'entretien est [32mobligatoire[37m.');
+          ╵                                         [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'obligatoire'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/recruiter-dashboard/rd-interviews/rd-interviews.ts:603:40:
+[37m      603 │       alert('Le mode de l'entretien est [32mobligatoire[37m.');
+          ╵                                         [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1003: Identifier expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/recruiter-dashboard/rd-interviews/rd-interviews.ts:603:52:
+[37m      603 │       alert('Le mode de l'entretien est obligatoire.[32m');[37m
+          ╵                                                     [32m~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1002: Unterminated string literal.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/recruiter-dashboard/rd-interviews/rd-interviews.ts:603:55:
+[37m      603 │       alert('Le mode de l'entretien est obligatoire.');[32m[37m
+          ╵                                                        [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/recruiter-dashboard/rd-interviews/rd-interviews.ts:604:6:
+[37m      604 │       [32mreturn[37m false;
+          ╵       [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mExpected identifier but found ","[0m
+
+    src/app/recruiter-dashboard/rd-interviews/rd-interviews.ts:1307:62:
+[37m      1307 │ ...       alert('Le mode de l', entretien, est, obligatoire.[32m,[37m '););
+           ╵                                                             [32m^[0m
+
+[39m[22m
+Watch mode enabled. Watching for file changes...
+[33m❯[39m Changes detected. Rebuilding...
+[32m✔[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m            [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m             [2m | [22m  [36m4.17 MB[39m[2m | [22m
+[32mchunk-OR4UXVS4.js[39m  [2m | [22m[2m-[22m                [2m | [22m  [36m1.20 MB[39m[2m | [22m
+[32mscripts.js[39m         [2m | [22m[2mscripts[22m          [2m | [22m[36m693.22 kB[39m[2m | [22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m           [2m | [22m[36m451.31 kB[39m[2m | [22m
+[32mchunk-XRU2KJDU.js[39m  [2m | [22m[2m-[22m                [2m | [22m  [36m4.21 kB[39m[2m | [22m
+[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m        [2m | [22m [36m95 bytes[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m    [2m | [22m  [1m6.52 MB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m            [2m | [22m [1mRaw size[22m
+[32mchunk-LLA4EFO2.js[39m  [2m | [22m[2mformations-module[22m[2m | [22m[36m472.18 kB[39m[2m | [22m
+[32mchunk-HRJHYVET.js[39m  [2m | [22m[2mfreelance-module[22m [2m | [22m[36m111.36 kB[39m[2m | [22m
+
+Application bundle generation complete. [13.503 seconds] - 2026-04-08T13:18:21.484Z
+
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:11:29:
+[37m      11 │     @if $prev-num == null or [32m[37munit($num) == "%" or unit($prev-num) ...
+         ╵                              [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use math.unit instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:11:50:
+[37m      11 │ ...$prev-num == null or unit($num) == "%" or [32m[37munit($prev-num) == "%" {
+         ╵                                              [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use math.unit instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:37:10:
+[37m      37 │   @return [32m[37mred($value), green($value), blue($value);
+         ╵           [32m^[0m
+
+
+  red() is deprecated. Suggestion:
+  
+  color.channel($color, "red", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:37:23:
+[37m      37 │   @return red($value), [32m[37mgreen($value), blue($value);
+         ╵                        [32m^[0m
+
+
+  green() is deprecated. Suggestion:
+  
+  color.channel($color, "green", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:185:9:
+[37m      185 │     "r": [32m[37mred($color),
+          ╵          [32m^[0m
+
+
+  red() is deprecated. Suggestion:
+  
+  color.channel($color, "red", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:186:9:
+[37m      186 │     "g": [32m[37mgreen($color),
+          ╵          [32m^[0m
+
+
+  green() is deprecated. Suggestion:
+  
+  color.channel($color, "green", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:187:9:
+[37m      187 │     "b": [32m[37mblue($color)
+          ╵          [32m^[0m
+
+
+  blue() is deprecated. Suggestion:
+  
+  color.channel($color, "blue", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:207:10:
+[37m      207 │   @return [32m[37mmix(white, $color, $weight);
+          ╵           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:212:10:
+[37m      212 │   @return [32m[37mmix(black, $color, $weight);
+          ╵           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_variables.scss:342:26:
+[37m      342 │ $light-bg-subtle:         [32m[37mmix($gray-100, $white) !default;
+          ╵                           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:1:8:
+[37m      1 │ @import [32m[37m"mixins/banner";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:7:8:
+[37m      7 │ @import [32m[37m"functions";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:8:8:
+[37m      8 │ @import [32m[37m"variables";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:9:8:
+[37m      9 │ @import [32m[37m"variables-dark";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:10:8:
+[37m      10 │ @import [32m[37m"maps";
+         ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m232 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.[0m [1m[35m[plugin angular-sass][0m
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  null
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FilterPipe is not used within the template of CdMailboxComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/candidates-dashboard/cd-mailbox/cd-mailbox.component.ts:12:39:
+[37m      12 │   imports: [CommonModule, FormsModule, [32mFilterPipe[37m],
+         ╵                                        [32m~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/formations/formation-detail/formation-detail.component.html:6:46:
+[37m      6 │ ...ass="col-lg-8"><h1>{{ formation?.[32mtitre[37m || 'Formation' }}</h1></div>
+        ╵                                     [32m~~~~~[0m
+
+  Warning occurs in the template of component FormationDetailComponent.
+
+    src/app/formations/formation-detail/formation-detail.component.ts:9:15:
+[37m      9 │   templateUrl: [32m'./formation-detail.component.html'[37m,
+        ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: RouterLink is not used within the template of CandidateEntretiensPageComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/candidate-entretiens-page/candidate-entretiens-page.component.ts:23:26:
+[37m      23 │   imports: [CommonModule, [32mRouterLink[37m, SharedModule],
+         ╵                           [32m~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/job-details-page/job-details-page.component.html:100:102:
+[37m      100 │ ...um">Published on:</span> {{ formatDate(offre?.[32mdatePublication[37m) }}
+          ╵                                                  [32m~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component JobDetailsPageComponent.
+
+    src/app/pages/job-details-page/job-details-page.component.ts:40:17:
+[37m      40 │     templateUrl: [32m'./job-details-page.component.html'[37m,
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: RouterLink is not used within the template of PublicTestPassPageComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/public-test-pass-page/public-test-pass-page.component.ts:39:39:
+[37m      39 │   imports: [CommonModule, FormsModule, [32mRouterLink[37m, SharedModule],
+         ╵                                        [32m~~~~~~~~~~[0m
+
+[39m[22m
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4200[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[33m❯[39m Changes detected. Rebuilding...
+[32m✔[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m            [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m             [2m | [22m  [36m4.17 MB[39m[2m | [22m
+[32mchunk-OR4UXVS4.js[39m  [2m | [22m[2m-[22m                [2m | [22m  [36m1.20 MB[39m[2m | [22m
+[32mscripts.js[39m         [2m | [22m[2mscripts[22m          [2m | [22m[36m693.22 kB[39m[2m | [22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m           [2m | [22m[36m451.31 kB[39m[2m | [22m
+[32mchunk-XRU2KJDU.js[39m  [2m | [22m[2m-[22m                [2m | [22m  [36m4.21 kB[39m[2m | [22m
+[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m        [2m | [22m [36m95 bytes[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m    [2m | [22m  [1m6.52 MB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m            [2m | [22m [1mRaw size[22m
+[32mchunk-LLA4EFO2.js[39m  [2m | [22m[2mformations-module[22m[2m | [22m[36m472.18 kB[39m[2m | [22m
+[32mchunk-HRJHYVET.js[39m  [2m | [22m[2mfreelance-module[22m [2m | [22m[36m111.36 kB[39m[2m | [22m
+
+Application bundle generation complete. [0.841 seconds] - 2026-04-08T13:18:22.730Z
+
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:11:29:
+[37m      11 │     @if $prev-num == null or [32m[37munit($num) == "%" or unit($prev-num) ...
+         ╵                              [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use math.unit instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:11:50:
+[37m      11 │ ...$prev-num == null or unit($num) == "%" or [32m[37munit($prev-num) == "%" {
+         ╵                                              [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use math.unit instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:37:10:
+[37m      37 │   @return [32m[37mred($value), green($value), blue($value);
+         ╵           [32m^[0m
+
+
+  red() is deprecated. Suggestion:
+  
+  color.channel($color, "red", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:37:23:
+[37m      37 │   @return red($value), [32m[37mgreen($value), blue($value);
+         ╵                        [32m^[0m
+
+
+  green() is deprecated. Suggestion:
+  
+  color.channel($color, "green", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:185:9:
+[37m      185 │     "r": [32m[37mred($color),
+          ╵          [32m^[0m
+
+
+  red() is deprecated. Suggestion:
+  
+  color.channel($color, "red", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:186:9:
+[37m      186 │     "g": [32m[37mgreen($color),
+          ╵          [32m^[0m
+
+
+  green() is deprecated. Suggestion:
+  
+  color.channel($color, "green", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:187:9:
+[37m      187 │     "b": [32m[37mblue($color)
+          ╵          [32m^[0m
+
+
+  blue() is deprecated. Suggestion:
+  
+  color.channel($color, "blue", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:207:10:
+[37m      207 │   @return [32m[37mmix(white, $color, $weight);
+          ╵           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:212:10:
+[37m      212 │   @return [32m[37mmix(black, $color, $weight);
+          ╵           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_variables.scss:342:26:
+[37m      342 │ $light-bg-subtle:         [32m[37mmix($gray-100, $white) !default;
+          ╵                           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:1:8:
+[37m      1 │ @import [32m[37m"mixins/banner";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:7:8:
+[37m      7 │ @import [32m[37m"functions";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:8:8:
+[37m      8 │ @import [32m[37m"variables";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:9:8:
+[37m      9 │ @import [32m[37m"variables-dark";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:10:8:
+[37m      10 │ @import [32m[37m"maps";
+         ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m232 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.[0m [1m[35m[plugin angular-sass][0m
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  null
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FilterPipe is not used within the template of CdMailboxComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/candidates-dashboard/cd-mailbox/cd-mailbox.component.ts:12:39:
+[37m      12 │   imports: [CommonModule, FormsModule, [32mFilterPipe[37m],
+         ╵                                        [32m~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/formations/formation-detail/formation-detail.component.html:6:46:
+[37m      6 │ ...ass="col-lg-8"><h1>{{ formation?.[32mtitre[37m || 'Formation' }}</h1></div>
+        ╵                                     [32m~~~~~[0m
+
+  Warning occurs in the template of component FormationDetailComponent.
+
+    src/app/formations/formation-detail/formation-detail.component.ts:9:15:
+[37m      9 │   templateUrl: [32m'./formation-detail.component.html'[37m,
+        ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: RouterLink is not used within the template of CandidateEntretiensPageComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/candidate-entretiens-page/candidate-entretiens-page.component.ts:23:26:
+[37m      23 │   imports: [CommonModule, [32mRouterLink[37m, SharedModule],
+         ╵                           [32m~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/job-details-page/job-details-page.component.html:100:102:
+[37m      100 │ ...um">Published on:</span> {{ formatDate(offre?.[32mdatePublication[37m) }}
+          ╵                                                  [32m~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component JobDetailsPageComponent.
+
+    src/app/pages/job-details-page/job-details-page.component.ts:40:17:
+[37m      40 │     templateUrl: [32m'./job-details-page.component.html'[37m,
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: RouterLink is not used within the template of PublicTestPassPageComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/public-test-pass-page/public-test-pass-page.component.ts:39:39:
+[37m      39 │   imports: [CommonModule, FormsModule, [32mRouterLink[37m, SharedModule],
+         ╵                                        [32m~~~~~~~~~~[0m
+
+[39m[22m

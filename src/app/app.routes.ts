@@ -41,13 +41,17 @@ import { RdDashboardComponent } from './recruiter-dashboard/rd-dashboard/rd-dash
 import { RdPostJobComponent } from './recruiter-dashboard/rd-post-job/rd-post-job.component';
 import { RdManageJobsComponent } from './recruiter-dashboard/rd-manage-jobs/rd-manage-jobs.component';
 import { RdApplicantsComponent } from './recruiter-dashboard/rd-applicants/rd-applicants.component';
+import { RdCandidaturesListComponent } from './recruiter-dashboard/rd-candidatures-list/rd-candidatures-list.component';
 import { RdMessagesComponent } from './recruiter-dashboard/rd-messages/rd-messages.component';
 import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.component';
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 import { RdInterviews } from './recruiter-dashboard/rd-interviews/rd-interviews';
 import { RdAddQuestions } from './recruiter-dashboard/rd-add-questions/rd-add-questions';
+import { OffreStatistiquesComponent } from './recruiter-dashboard/offre-statistiques/offre-statistiques.component';
+import { OffreRechercheAvanceeComponent } from './recruiter-dashboard/offre-recherche-avancee/offre-recherche-avancee.component';
 import { PublicTestPassPageComponent } from './pages/public-test-pass-page/public-test-pass-page.component';
 import { CandidateEntretiensPageComponent } from './pages/candidate-entretiens-page/candidate-entretiens-page.component';
+import { VideoInterviewRoomPageComponent } from './pages/video-interview-room-page/video-interview-room-page.component';
 import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';
 import { EvenementDashboardComponent } from './evenement-dashboard/evenement-dashboard.component';
 import { EvenementTemplateComponent } from './evenement-dashboard/evenement-template/evenement-template.component';
@@ -78,6 +82,9 @@ import { FormationCreateComponent } from './admin-dashboard/formation-create/for
 import { FormationEditComponent } from './admin-dashboard/formation-edit/formation-edit.component';
 import { FormationParticipantsComponent } from './admin-dashboard/formation-participants/formation-participants.component';
 import { FeedbackAdminComponent } from './admin-dashboard/feedback-admin/feedback-admin.component';
+import { ChatEvenementComponent } from './candidates-dashboard/evenement-candidat/evenement-chat/evenement-chat.component';
+import { EvenementChatComponent } from './evenement-dashboard/evenement-chat/evenement-chat.component';
+
 export const routes: Routes = [
     { path: '', component: HomeDemoOneComponent },
     { path: 'login', component: HomeDemoOneComponent },
@@ -87,12 +94,14 @@ export const routes: Routes = [
     { path: 'pricing', component: PricingPageComponent },
     { path: 'jobs-grid', component: JobsGridPageComponent },
     { path: 'jobs-listing', component: JobsListingPageComponent },
+    { path: 'job-details/:id', component: JobDetailsPageComponent },
     { path: 'job-details', component: JobDetailsPageComponent },
     { path: 'categories', component: CategoriesPageComponent },
     { path: 'candidates', component: CandidatesPageComponent },
     { path: 'candidate-details/:id', component: CandidateDetailsPageComponent },
     { path: 'candidate-details', component: CandidateDetailsPageComponent, pathMatch: 'full' },
     { path: 'candidate-entretiens', component: CandidateEntretiensPageComponent },
+    { path: 'entretiens/video/:id', component: VideoInterviewRoomPageComponent },
     { path: 'employers', component: EmployersPageComponent },
     { path: 'employer-details', component: EmployerDetailsPageComponent },
     { path: 'faq', component: FaqPageComponent },
@@ -142,6 +151,9 @@ export const routes: Routes = [
             { path: 'mes-participations', component: MesParticipationsComponent },
             { path: 'ma-calendar', component: MaCalendarComponent },
             { path: 'mes-formations', component: MesFormationsComponent },
+            { path: 'chat/:evenementId', component: ChatEvenementComponent }
+            
+            
         ]
     },
     {
@@ -154,11 +166,14 @@ export const routes: Routes = [
             { path: 'post-job', component: RdPostJobComponent },
             { path: 'manage-jobs', component: RdManageJobsComponent },
             { path: 'applicants', component: RdApplicantsComponent },
+            { path: 'candidatures', component: RdCandidaturesListComponent },
             { path: 'messages', component: RdMessagesComponent },
             { path: 'profile', component: RdProfileComponent },
             { path: 'change-password', component: RdChangePasswordComponent },
             { path: 'interviews', component: RdInterviews },
             { path: 'interviews/add-questions/:id', component: RdAddQuestions },
+            { path: 'offre-statistiques', component: OffreStatistiquesComponent },
+            { path: 'offre-recherche-avancee', component: OffreRechercheAvanceeComponent },
         ]
 
     }, {
@@ -182,6 +197,8 @@ export const routes: Routes = [
             { path: 'demandes', component: EvenementDemandesComponent },
             { path: 'calendrier', component: EvenementCalendrierComponent },
             { path: 'feedbacks', component: EvenementFeedbacksComponent },
+            { path: 'chats', component: EvenementChatComponent },
+            { path: 'chat/:evenementId', component: ChatEvenementComponent }
         ]
     },
     {

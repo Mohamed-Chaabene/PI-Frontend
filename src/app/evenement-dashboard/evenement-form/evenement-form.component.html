@@ -67,23 +67,23 @@
                                 </div>
                             </div>
 
-                            <!-- Date -->
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">Date</label>
-                                    <input
-                                        type="date"
-                                        class="form-control"
-                                        formControlName="date"
-                                        [class.is-invalid]="date?.invalid && date?.touched"
-                                        [class.is-valid]="date?.valid && date?.touched"
-                                    >
-                                    <div class="error-msg" *ngIf="date?.invalid && date?.touched">
-                                        <i class="ri-error-warning-line"></i>
-                                        <span *ngIf="date?.errors?.['required']">La date est obligatoire</span>
+                            <!-- Date et Heure -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Date et heure</label>
+                                        <input
+                                            type="datetime-local"
+                                            class="form-control"
+                                            formControlName="dateHeure"
+                                            [class.is-invalid]="dateHeure?.invalid && dateHeure?.touched"
+                                            [class.is-valid]="dateHeure?.valid && dateHeure?.touched"
+                                        >
+                                        <div class="error-msg" *ngIf="dateHeure?.invalid && dateHeure?.touched">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span *ngIf="dateHeure?.errors?.['required']">La date et l'heure sont obligatoires</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
                             <!-- Lieu -->
                             <div class="col-md-6">

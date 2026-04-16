@@ -62,18 +62,18 @@
                             </div>
 
                             <!-- Date -->
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">Date</label>
-                                    <input
-                                        type="date"
-                                        class="form-control"
-                                        name="date"
-                                        [(ngModel)]="evenement.date"
-                                        required
-                                    >
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Date et heure</label>
+                                        <input
+                                            type="datetime-local"
+                                            class="form-control"
+                                            name="dateHeure"
+                                            [(ngModel)]="evenement.dateHeure"
+                                            required
+                                        >
+                                    </div>
                                 </div>
-                            </div>
 
                             <!-- Lieu -->
                             <div class="col-md-6">

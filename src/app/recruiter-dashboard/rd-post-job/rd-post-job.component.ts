@@ -14,6 +14,7 @@ export class RdPostJobComponent {
     successMessage = '';
     errorMessage = '';
     lastCandidatureLink = '';
+    submitAttempted = false;
 
     mesOffres: any[] = [];
 
@@ -23,10 +24,13 @@ export class RdPostJobComponent {
         entreprise: '',
         location: '',
         salary: '',
-        typeContrat: 'CDI',
+        typeContrat: '',
         deadline: '',
         competences: ''
     };
+
+    readonly textPattern = "^[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9 .,'()\-/+]*$";
+    readonly salaryPattern = "^[A-Za-zÀ-ÿ0-9 .,'()\-/+]*$";
 
     constructor(private apiService: ApiService, private router: Router) { }
 
@@ -67,9 +71,11 @@ export class RdPostJobComponent {
         this.successMessage = '';
         this.errorMessage = '';
         this.lastCandidatureLink = '';
+        this.submitAttempted = true;
 
-        if (!this.formulaire.titre.trim() || !this.formulaire.description.trim() || !this.formulaire.location.trim()) {
-            this.errorMessage = 'Titre, description et localisation sont obligatoires.';
+        const validationMessage = this.validateFormulaire();
+        if (validationMessage) {
+            this.errorMessage = validationMessage;
             return;
         }
 
@@ -84,7 +90,8 @@ export class RdPostJobComponent {
             competencesRequises: this.formulaire.competences
                 .split(',')
                 .map((item) => item.trim())
-                .filter((item) => !!item),
+                .filter((item) => !!item)
+                .slice(0, 15),
             statut: 'ACTIVE'
         };
 
@@ -103,23 +110,114 @@ export class RdPostJobComponent {
                     this.saving = false;
                     return;
                 }
-                this.errorMessage = 'Erreur lors de la publication de l\'offre.';
+                this.errorMessage = err?.error?.message || err?.message || 'Erreur lors de la publication de l\'offre.';
                 this.saving = false;
             }
         });
     }
 
     reinitialiser(): void {
+        this.submitAttempted = false;
         this.formulaire = {
             titre: '',
             description: '',
             entreprise: '',
             location: '',
             salary: '',
-            typeContrat: 'CDI',
+            typeContrat: '',
             deadline: '',
             competences: ''
         };
+    }
+
+    private validateFormulaire(): string {
+        const titre = this.formulaire.titre.trim();
+        const description = this.formulaire.description.trim();
+        const location = this.formulaire.location.trim();
+        const entreprise = this.formulaire.entreprise.trim();
+        const salary = this.formulaire.salary.trim();
+        const competences = this.formulaire.competences.trim();
+        const typeContrat = (this.formulaire.typeContrat || '').trim();
+
+        if (!titre || !description || !entreprise || !location || !salary || !typeContrat || !this.formulaire.deadline || !competences) {
+            return 'Titre, description, entreprise, localisation, salaire, type de contrat, date limite et competences sont obligatoires.';
+        }
+
+        if (titre.length < 3 || titre.length > 120) {
+            return 'Le titre doit contenir entre 3 et 120 caracteres.';
+        }
+
+        if (description.length < 20 || description.length > 2000) {
+            return 'La description doit contenir entre 20 et 2000 caracteres.';
+        }
+
+        if (entreprise.length < 2 || entreprise.length > 100) {
+            return 'Le nom de l\'entreprise doit contenir entre 2 et 100 caracteres.';
+        }
+
+        if (location.length < 2 || location.length > 100) {
+            return 'La localisation doit contenir entre 2 et 100 caracteres.';
+        }
+
+        if (salary.length < 1 || salary.length > 50) {
+            return 'Le salaire doit contenir entre 1 et 50 caracteres.';
+        }
+
+        if (competences.length < 2 || competences.length > 300) {
+            return 'Le champ competences doit contenir entre 2 et 300 caracteres.';
+        }
+
+        const allowedTypes = ['CDI', 'CDD', 'STAGE', 'FREELANCE'];
+        if (!allowedTypes.includes(typeContrat)) {
+            return 'Type de contrat invalide.';
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const deadlineDate = new Date(this.formulaire.deadline);
+        deadlineDate.setHours(0, 0, 0, 0);
+
+        if (Number.isNaN(deadlineDate.getTime())) {
+            return 'La date limite est invalide.';
+        }
+
+        if (deadlineDate <= today) {
+            return 'La date limite doit etre strictement future.';
+        }
+
+        return '';
+    }
+
+    isInvalidTextField(value: string, min: number, max: number, required = false): boolean {
+        const trimmed = (value || '').trim();
+        if (!this.submitAttempted) {
+            return false;
+        }
+        if (required && !trimmed) {
+            return true;
+        }
+        if (!trimmed) {
+            return false;
+        }
+        return trimmed.length < min || trimmed.length > max;
+    }
+
+    isInvalidDeadline(): boolean {
+        if (!this.submitAttempted || !this.formulaire.deadline) {
+            return false;
+        }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const deadlineDate = new Date(this.formulaire.deadline);
+        deadlineDate.setHours(0, 0, 0, 0);
+        return Number.isNaN(deadlineDate.getTime()) || deadlineDate <= today;
+    }
+
+    isInvalidTypeContrat(): boolean {
+        if (!this.submitAttempted) {
+            return false;
+        }
+        return !(this.formulaire.typeContrat || '').trim();
     }
 
     formatDate(value: any): string {

@@ -5,12 +5,25 @@ import { ProfileUpdateService } from '../../services/profile-update.service';
 import { PusherService } from '../../services/pusher.service';
 import { JwtTokenUtil } from '../../utils/jwt-token.util';
 import { Subscription } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 interface SearchResult {
     id: number;
     nom: string;
     email: string;
     role: string | null;
+}
+
+interface CandidateReminderNotification {
+    id: string;
+    type: 'interview_reminder';
+    message: string;
+    createdAt: string;
+    isRead: boolean;
+    reminderLevel: 'today' | 'soon' | 'planned';
+    interviewId: number;
+    reminderDate: string;
 }
 
 @Component({
@@ -36,10 +49,13 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
     followedUsers: Set<number> = new Set();
     followingUsers: Set<number> = new Set();
     currentUserId: number | null = null;
+    currentCandidateId: number | null = null;
+    showDeleteAccountModal = false;
     
     // Notification panel properties
     showNotificationPanel = false;
     notifications: any[] = [];
+    private reminderNotifications: CandidateReminderNotification[] = [];
     
     private searchDebounce?: number;
     private notificationSubscription?: Subscription;
@@ -59,6 +75,7 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         this.currentUserInitial = this.buildInitial(this.currentUserEmail);
         this.currentUserName = String(localStorage.getItem('userName') || this.currentUserName);
         this.loadHeaderProfileData();
+        this.loadInterviewReminders();
 
         // Get token and extract user ID from JWT
         const token = localStorage.getItem('token');
@@ -283,18 +300,22 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
     private loadHeaderProfileData(): void {
         const email = this.currentUserEmail;
         if (!email) {
+            this.loadInterviewReminders();
             return;
         }
 
         this.apiService.getCandidateByEmail(email).subscribe({
             next: (data: any) => {
                 if (data) {
+                    this.currentCandidateId = Number(data.id) || this.currentCandidateId;
                     this.currentUserImageUrl = data.profile_picture_url || data.profilePictureUrl || '';
                     this.currentUserName = data.nom || this.currentUserName;
+                    this.loadInterviewReminders();
                 }
             },
             error: () => {
                 // keep fallback values if candidate info is unavailable
+                this.loadInterviewReminders();
             }
         });
     }
@@ -327,6 +348,293 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         });
     }
 
+    private loadInterviewReminders(): void {
+        const candidateId = this.resolveCandidateIdForReminders();
+        if (!candidateId) {
+            this.loadInterviewRemindersFromAcceptedCandidatures();
+            return;
+        }
+
+        this.apiService.getEntretiensByCandidat(candidateId).subscribe({
+            next: (entretiens: any) => {
+                const reminderItems = this.buildReminderNotifications(this.normalizeCollection(entretiens));
+                this.reminderNotifications = reminderItems;
+                if (!this.reminderNotifications.length) {
+                    this.loadInterviewRemindersFromAcceptedCandidatures();
+                    return;
+                }
+                this.mergeReminderNotificationsIntoPanel();
+            },
+            error: () => {
+                this.loadInterviewRemindersFromAcceptedCandidatures();
+            }
+        });
+    }
+
+    private loadInterviewRemindersFromAcceptedCandidatures(): void {
+        const candidateId = this.resolveCandidateIdForReminders();
+        const normalizedEmail = this.normalizeText(this.currentUserEmail);
+        const normalizedName = this.normalizeText(this.currentUserName);
+
+        forkJoin({
+            candidatures: this.apiService.getMesCandidatures().pipe(catchError(() => of([]))),
+            entretiens: this.apiService.getEntretiens().pipe(catchError(() => of([])))
+        }).subscribe({
+            next: ({ candidatures, entretiens }) => {
+                const candidaturesList = this.normalizeCollection(candidatures);
+                const entretiensList = this.normalizeCollection(entretiens);
+
+                const acceptedOffers = new Set<number>();
+                const acceptedTitles: string[] = [];
+
+                candidaturesList.forEach((candidature: any) => {
+                    if (!this.isAcceptedCandidature(candidature)) {
+                        return;
+                    }
+
+                    const offerId = this.getOffreIdFromCandidature(candidature);
+                    if (offerId > 0) {
+                        acceptedOffers.add(offerId);
+                    }
+
+                    const title = this.normalizeText(candidature?.offreTitre || candidature?.poste || candidature?.offre?.titre || '');
+                    if (title) {
+                        acceptedTitles.push(title);
+                    }
+                });
+
+                const relevantEntretiens = entretiensList.filter((item: any) => {
+                    const entretienCandidateId = Number(item?.candidatId ?? item?.candidat?.id ?? item?.candidateId ?? 0);
+                    if (candidateId && Number.isFinite(entretienCandidateId) && entretienCandidateId === candidateId) {
+                        return true;
+                    }
+
+                    const entretienEmail = this.normalizeText(item?.email || item?.candidat?.email || item?.candidateEmail || '');
+                    if (normalizedEmail && entretienEmail && entretienEmail === normalizedEmail) {
+                        return true;
+                    }
+
+                    const entretienName = this.normalizeText(item?.candidatNom || item?.candidat?.nom || item?.candidateName || '');
+                    if (normalizedName && entretienName && (entretienName.includes(normalizedName) || normalizedName.includes(entretienName))) {
+                        return true;
+                    }
+
+                    const offerId = Number(item?.offreId ?? item?.offre?.id ?? item?.offreEmploi?.id ?? 0);
+                    if (Number.isFinite(offerId) && offerId > 0 && acceptedOffers.has(offerId)) {
+                        return true;
+                    }
+
+                    const itemTitle = this.normalizeText(item?.offreTitre || item?.poste || item?.titre || item?.description || '');
+                    if (!itemTitle) {
+                        return false;
+                    }
+
+                    return acceptedTitles.some((title) => !!title && itemTitle.includes(title));
+                });
+
+                this.reminderNotifications = this.buildReminderNotifications(relevantEntretiens);
+                this.mergeReminderNotificationsIntoPanel();
+            },
+            error: () => {
+                this.reminderNotifications = [];
+                this.mergeReminderNotificationsIntoPanel();
+            }
+        });
+    }
+
+    private mergeReminderNotificationsIntoPanel(): void {
+        const existing = this.notifications.filter((item) => item?.type !== 'interview_reminder');
+        this.notifications = [...this.reminderNotifications, ...existing];
+        this.unreadNotifications = this.unreadNotifications + this.reminderNotifications.length;
+        this.appRef.tick();
+    }
+
+    private resolveCandidateIdForReminders(): number | null {
+        if (this.currentCandidateId && this.currentCandidateId > 0) {
+            return this.currentCandidateId;
+        }
+
+        const local = Number(localStorage.getItem('candidatId'));
+        if (!isNaN(local) && local > 0) {
+            this.currentCandidateId = local;
+            return local;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            return null;
+        }
+
+        try {
+            const parts = token.split('.');
+            if (parts.length !== 3) {
+                return this.currentUserId;
+            }
+
+            const decoded: any = JSON.parse(atob(parts[1]));
+            const candidateId = Number(decoded?.candidatId || decoded?.candidateId || decoded?.id || decoded?.userId || 0);
+            if (!isNaN(candidateId) && candidateId > 0) {
+                this.currentCandidateId = candidateId;
+                return candidateId;
+            }
+        } catch {
+            // Ignore decode errors and fall back to the token-derived user id.
+        }
+
+        return this.currentUserId;
+    }
+
+    private normalizeCollection(payload: any): any[] {
+        if (Array.isArray(payload)) {
+            return payload;
+        }
+
+        if (!payload || typeof payload !== 'object') {
+            return [];
+        }
+
+        const candidates = [payload?.content, payload?.items, payload?.data, payload?.results, payload?.entretiens, payload?.interviews, payload?.list];
+        for (const value of candidates) {
+            if (Array.isArray(value)) {
+                return value;
+            }
+        }
+
+        return [];
+    }
+
+    private buildReminderNotifications(entretiens: any[]): CandidateReminderNotification[] {
+        const now = Date.now();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+        const reminderWindowMs = 30 * oneDayMs;
+
+        return entretiens
+            .map((item: any) => {
+                const dateValue = String(item?.dateEntretien || item?.scheduledAt || item?.date || '').trim();
+                const parsedDate = new Date(dateValue);
+                const time = parsedDate.getTime();
+                if (!Number.isFinite(time)) {
+                    const title = String(item?.titre || item?.offreTitre || item?.poste || 'Entretien').trim();
+                    return {
+                        id: `interview-reminder-undated-${item?.id || title}`,
+                        type: 'interview_reminder',
+                        message: `Rappel entretien: ${title}. Date a confirmer avec le recruteur.`,
+                        createdAt: new Date().toISOString(),
+                        isRead: false,
+                        reminderLevel: 'planned',
+                        interviewId: Number(item?.id) || 0,
+                        reminderDate: ''
+                    } as CandidateReminderNotification;
+                }
+
+                if (time < now || time - now > reminderWindowMs) {
+                    return null;
+                }
+
+                const title = String(item?.titre || item?.offreTitre || item?.poste || 'Entretien').trim();
+                const level = time - now <= oneDayMs ? 'today' : time - now <= 3 * oneDayMs ? 'soon' : 'planned';
+
+                return {
+                    id: `interview-reminder-${item?.id || time}`,
+                    type: 'interview_reminder',
+                    message: `Rappel entretien: ${title} est prevu le ${this.formatReminderDate(parsedDate)}.`,
+                    createdAt: parsedDate.toISOString(),
+                    isRead: false,
+                    reminderLevel: level,
+                    interviewId: Number(item?.id) || 0,
+                    reminderDate: parsedDate.toISOString()
+                } as CandidateReminderNotification;
+            })
+            .filter((item): item is CandidateReminderNotification => !!item)
+            .sort((left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime())
+            .slice(0, 5);
+    }
+
+    private normalizeText(value: any): string {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+    }
+
+    private isAcceptedCandidature(candidature: any): boolean {
+        const statut = String(candidature?.statut || candidature?.status || candidature?.etat || candidature?.state || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toUpperCase()
+            .trim();
+
+        if (!statut) {
+            return false;
+        }
+
+        return statut.includes('ACCEP') || statut.includes('ACCEPT') || statut.includes('RETENU') || statut.includes('ENTRETIEN');
+    }
+
+    private getOffreIdFromCandidature(candidature: any): number {
+        const raw = candidature?.offreId ?? candidature?.idOffre ?? candidature?.offre?.id ?? candidature?.offreEmploi?.id;
+        const offerId = Number(raw);
+        return Number.isFinite(offerId) && offerId > 0 ? offerId : 0;
+    }
+
+    private formatReminderDate(date: Date): string {
+        return date.toLocaleString('fr-FR', {
+            day: '2-digit',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    isReminderNotification(notification: any): boolean {
+        return notification?.type === 'interview_reminder';
+    }
+
+    getNotificationIcon(notification: any): string {
+        if (this.isReminderNotification(notification)) {
+            return 'ri-calendar-event-line';
+        }
+
+        if (notification?.type === 'follow') {
+            return 'ri-user-follow-line';
+        }
+
+        if (notification?.type === 'new_job_posted') {
+            return 'ri-briefcase-line';
+        }
+
+        if (notification?.type === 'message') {
+            return 'ri-mail-line';
+        }
+
+        return 'ri-notification-3-line';
+    }
+
+    getNotificationLevelClass(notification: any): string {
+        if (!this.isReminderNotification(notification)) {
+            return '';
+        }
+
+        return `reminder-${String(notification?.reminderLevel || 'planned')}`;
+    }
+
+    getNotificationTitle(notification: any): string {
+        if (this.isReminderNotification(notification)) {
+            return 'Rappel entretien';
+        }
+
+        return 'Notification';
+    }
+
+    getNotificationTime(notification: any): string {
+        if (this.isReminderNotification(notification)) {
+            return this.formatDate(notification?.createdAt || notification?.reminderDate || '');
+        }
+
+        return this.formatDate(notification?.createdAt || '');
+    }
+
     // ==================== NOTIFICATION PANEL METHODS ====================
 
     toggleNotificationPanel(): void {
@@ -347,20 +655,38 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
 
         this.apiService.getNotifications(token).subscribe({
             next: (notifications: any[]) => {
-                this.notifications = notifications || [];
+                const backendNotifications = Array.isArray(notifications) ? notifications : [];
+                this.notifications = [...this.reminderNotifications, ...backendNotifications];
                 console.log('📬 Notifications loaded:', this.notifications.length);
             },
             error: (error) => {
                 console.error('❌ Error loading notifications:', error);
-                this.notifications = [];
+                this.notifications = [...this.reminderNotifications];
             }
         });
     }
 
-    markNotificationAsRead(notificationId: number): void {
+    markNotificationAsRead(notificationId: number | string): void {
+        const notification = this.notifications.find(n => n.id === notificationId || String(n.id) === String(notificationId));
+        if (!notification) {
+            return;
+        }
+
+        if (this.isReminderNotification(notification)) {
+            notification.isRead = true;
+            this.unreadNotifications = Math.max(0, this.unreadNotifications - 1);
+            this.appRef.tick();
+            return;
+        }
+
         if (!notificationId) return;
 
-        this.apiService.markNotificationAsRead(notificationId).subscribe({
+        const numericNotificationId = Number(notificationId);
+        if (!Number.isFinite(numericNotificationId) || numericNotificationId <= 0) {
+            return;
+        }
+
+        this.apiService.markNotificationAsRead(numericNotificationId).subscribe({
             next: (response: any) => {
                 console.log('✅ Notification marked as read:', notificationId);
                 
@@ -378,6 +704,11 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
                 console.error('❌ Error marking notification as read:', error);
             }
         });
+    }
+
+    goToInterviewReminders(): void {
+        this.showNotificationPanel = false;
+        this.router.navigate(['/candidate-entretiens']);
     }
 
     markAllAsRead(): void {
@@ -425,6 +756,10 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
 
     formatDate(dateString: string): string {
         try {
+            if (!dateString) {
+                return 'recently';
+            }
+
             const date = new Date(dateString);
             const now = new Date();
             const diffMs = now.getTime() - date.getTime();
@@ -457,5 +792,71 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
                 console.log('⬆️ Scrolled notification list to top');
             }
         }, 0);
+    }
+
+    // ==================== DELETE ACCOUNT METHODS ====================
+
+    openDeleteAccountModal(): void {
+        // Show confirmation alert instead of modal
+        const confirmed = window.confirm(
+            'Are you sure you want to DELETE YOUR ACCOUNT?\n\n' +
+            'This will:\n' +
+            '• Remove your profile permanently\n' +
+            '• Delete all your personal information\n' +
+            '• Remove your location data\n' +
+            '• This action CANNOT be undone\n\n' +
+            'You will be logged out immediately.\n\n' +
+            'Click OK to confirm deletion or Cancel to go back.'
+        );
+
+        if (confirmed) {
+            this.deleteAccount();
+        }
+    }
+
+    private deleteAccount(): void {
+        const token = localStorage.getItem('token');
+        const userId = this.currentUserId;
+
+        if (!token || !userId) {
+            console.error('❌ Missing token or user ID');
+            alert('Error: Cannot delete account. Please log in again.');
+            return;
+        }
+
+        console.log('🗑️ Deleting account for user ID:', userId);
+
+        this.apiService.deleteAccount(userId, token).subscribe({
+            next: (response: any) => {
+                console.log('✅ Account deleted successfully:', response);
+                
+                // Clear localStorage
+                localStorage.removeItem('token');
+                localStorage.removeItem('candidatId');
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('userName');
+                
+                // Show success message
+                alert('✅ Your account has been deleted successfully.\n\nYou will be redirected to the login page.');
+                
+                // Redirect to login
+                this.router.navigate(['/login']);
+            },
+            error: (error: any) => {
+                console.error('❌ Error deleting account:', error);
+                
+                const errorMessage = error?.error?.message || 'Failed to delete account. Please try again.';
+                alert('❌ Error: ' + errorMessage);
+            }
+        });
+    }
+
+    closeDeleteAccountModal(): void {
+        this.showDeleteAccountModal = false;
+    }
+
+    confirmDeleteAccount(): void {
+        // This method is no longer used with alert-based confirmation
     }
 }

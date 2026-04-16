@@ -28,7 +28,6 @@
 
         <!-- Stats -->
         <div class="row mb-4" *ngIf="stats">
-
             <div class="col-lg-3 col-md-6 mb-3">
                 <div class="stat-card">
                     <div class="stat-icon" style="background:#e3f2fd;">
@@ -40,7 +39,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="col-lg-3 col-md-6 mb-3">
                 <div class="stat-card">
                     <div class="stat-icon" style="background:#e8f5e9;">
@@ -52,7 +50,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="col-lg-3 col-md-6 mb-3">
                 <div class="stat-card">
                     <div class="stat-icon" style="background:#fff8e1;">
@@ -64,7 +61,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="col-lg-3 col-md-6 mb-3">
                 <div class="stat-card">
                     <div class="stat-icon" style="background:#fce4ec;">
@@ -76,7 +72,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <!-- Légende -->
@@ -134,13 +129,11 @@
         </div>
 
         <div class="modal-body">
-
-            <!-- Détails -->
             <ul class="detail-list ps-0 mb-0 list-unstyled">
                 <li class="position-relative">
                     <i class="ri-calendar-line"></i>
                     <span class="d-block">Date</span>
-                    <strong>{{ formatDate(selectedEvenement?.date) }}</strong>
+                    <strong>{{ formatDate(selectedEvenement?.dateHeure) }}</strong>  <!-- ← date → dateHeure -->
                 </li>
                 <li class="position-relative">
                     <i class="ri-map-pin-line"></i>
@@ -159,7 +152,6 @@
                 </li>
             </ul>
 
-            <!-- Statut participation candidat -->
             <div class="participation-status" *ngIf="isCandidat">
                 <div class="status-badge confirme"
                      *ngIf="selectedEvenement?.statut === 'CONFIRME'">
@@ -182,7 +174,6 @@
                     Vous pouvez vous inscrire à cet événement
                 </div>
             </div>
-
         </div>
 
         <div class="modal-footer">

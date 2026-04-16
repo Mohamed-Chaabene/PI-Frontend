@@ -11,8 +11,8 @@
         </li>
         <li>
             <a routerLink="/evenement-dashboard/liste" class="d-block position-relative" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                 <i class="ri-calendar-line"></i>
-               Listes des événement
+                <i class="ri-calendar-line"></i>
+                Listes des événements
             </a>
         </li>
         <li>
@@ -22,41 +22,42 @@
             </a>
         </li>
         <li>
-            <a routerLink="/evenement-dashboard/calendrier"
-                class="d-block position-relative"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="{exact: true}">
+            <a routerLink="/evenement-dashboard/calendrier" class="d-block position-relative" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
                 <i class="ri-calendar-2-line"></i>
                 Calendrier
             </a>
         </li>
         <li>
-             <a routerLink="/evenement-dashboard/demandes"
-                class="d-block position-relative"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="{exact: true}">
+            <a routerLink="/evenement-dashboard/demandes" class="d-block position-relative" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
                 <i class="ri-user-received-line"></i>
                 Demandes
             </a>
         </li>
-        
+
+        <li>
+            <a routerLink="/evenement-dashboard/chats" class="d-block position-relative" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                <i class="ri-chat-3-line"></i>
+                Salons de chat
+            </a>
+        </li>
+
         <li>
             <a routerLink="/evenement-dashboard/feedbacks" class="d-block position-relative" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                <i class="ri-chat-3-line"></i>
+                <i class="ri-star-line"></i>
                 Feedbacks
             </a>
         </li>
-        <li>    
+        <li>
             <a routerLink="/evenement-dashboard/settings" class="d-block position-relative" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
                 <i class="ri-settings-3-line"></i>
                 Paramètres
             </a>
         </li>
         <li>
-           <a class="d-block position-relative" (click)="logout()" style="cursor: pointer;">
-              <i class="ri-logout-box-line"></i>
+            <a class="d-block position-relative" (click)="logout()" style="cursor: pointer;">
+                <i class="ri-logout-box-line"></i>
                 Logout
-           </a>
+            </a>
         </li>
     </ul>
 </div>

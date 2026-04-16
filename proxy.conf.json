@@ -4,5 +4,23 @@
     "secure": false,
     "changeOrigin": true,
     "logLevel": "info"
+  },
+  "/ml": {
+    "target": "http://localhost:8000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "info",
+    "pathRewrite": {
+      "^/ml": ""
+    }
+  },
+  "/oss": {
+    "target": "https://text.pollinations.ai",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "info",
+    "pathRewrite": {
+      "^/oss/generate": "/generate"
+    }
   }
 }
