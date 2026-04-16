@@ -15,12 +15,25 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && token !== 'undefined' && token !== 'null') {
+      if (isJwtExpired(token)) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('recruteurId');
+        return next.handle(req);
+      }
+
       const cloned = req.clone({
         headers: req.headers.set('Authorization', `Bearer ${token}`)
       });
       return next.handle(cloned);
     }
+
+    // Purge invalid placeholder values left by previous sessions.
+    if (token === 'undefined' || token === 'null') {
+      localStorage.removeItem('token');
+    }
+
     return next.handle(req);
   }
 }
@@ -45,7 +58,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   const token = localStorage.getItem('token');
-  if (token) {
+  if (token && token !== 'undefined' && token !== 'null') {
+    if (isJwtExpired(token)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('recruteurId');
+      return next(req);
+    }
+
     console.log('✅ Token found and adding to request:', req.url);
     const cloned = req.clone({
       headers: req.headers.set('Authorization', `Bearer ${token}`)
@@ -56,3 +76,23 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   console.log('❌ No token in localStorage for:', req.url);
   return next(req);
 };
+
+function isJwtExpired(token: string): boolean {
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) {
+      return true;
+    }
+
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    const exp = Number(payload?.exp || 0);
+    if (!exp) {
+      return false;
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    return exp <= now;
+  } catch {
+    return true;
+  }
+}

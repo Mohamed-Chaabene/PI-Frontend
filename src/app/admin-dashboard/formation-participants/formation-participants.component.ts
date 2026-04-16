@@ -84,6 +84,10 @@ export class FormationParticipantsComponent implements OnInit {
     });
   }
 
+  getInscriptionDate(inscription: Inscription | any): string | null {
+    return inscription?.dateInscription || inscription?.date_inscription || null;
+  }
+
   getCount(statut: string): number {
     return this.inscriptions.filter(i => i.statut === statut).length;
   }

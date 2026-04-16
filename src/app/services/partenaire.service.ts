@@ -28,4 +28,19 @@ export class PartenaireService {
     delete(id: number): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${id}`);
     }
+    getTopPartenaires(limit: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/top/${limit}`);
+    }
+    
+    getActivityRate(id: number): Observable<number> {
+        return this.http.get<number>(`${this.apiUrl}/${id}/activity-rate`);
+    }
+    comparerPartenaires(id1: number, id2: number): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}/comparer?id1=${id1}&id2=${id2}`);
+    }
+    incrementerVues(id: number): Observable<void> {return this.http.put<void>(`${this.apiUrl}/${id}/vues`, {});
+    }
+
+    getNombreVues(id: number): Observable<number> {return this.http.get<number>(`${this.apiUrl}/${id}/vues`);
+    }
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
@@ -26,11 +26,24 @@ interface EntretienDetails {
   id?: number;
   titre?: string;
   description?: string;
+  seuilReussite?: number | null;
+  dureeMinutes?: number | null;
+  decision?: string;
+  score?: number;
   recruteur?: {
     id?: number;
     nom?: string;
     email?: string;
   };
+}
+
+interface CandidateAutoReport {
+  generatedAt: Date;
+  scoreGlobal: number;
+  seuil: number;
+  pointsForts: string[];
+  pointsFaibles: string[];
+  recommandations: Array<{ titre: string; raison: string; motCle: string }>;
 }
 
 @Component({
@@ -42,6 +55,7 @@ interface EntretienDetails {
 })
 export class PublicTestPassPageComponent {
   private readonly attemptStoragePrefix = 'entretienAttempted_';
+  private readonly defaultPassThresholdPercent = 60;
   entretienId = 0;
   entretienDetails: EntretienDetails | null = null;
   questions: TestQuestion[] = [];
@@ -50,16 +64,25 @@ export class PublicTestPassPageComponent {
   submitting = false;
   loadError = '';
   resultMessage = '';
+  finalScorePercent: number | null = null;
+  passedEntretien: boolean | null = null;
+  requiredThresholdPercent = this.defaultPassThresholdPercent;
   showConsent = true;
   examStarted = false;
+  dureeMinutes = 30;
+  remainingSeconds = 30 * 60;
   violationDetected = false;
   violationReason = '';
   acknowledgingRules = false;
+  isObscured = false;
+  private timerInterval: ReturnType<typeof setInterval> | null = null;
+  candidateReport: CandidateAutoReport | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -71,11 +94,6 @@ export class PublicTestPassPageComponent {
     }
 
     this.entretienId = id;
-    if (this.hasAttemptedLocally()) {
-      this.loadError = 'Vous avez deja passe cet entretien. Une seconde tentative nest pas autorisee.';
-      this.loading = false;
-      return;
-    }
 
     this.loadEntretienDetailsAndGuard();
   }
@@ -84,17 +102,17 @@ export class PublicTestPassPageComponent {
     this.apiService.getEntretien(this.entretienId).subscribe({
       next: (data: EntretienDetails) => {
         this.entretienDetails = data || null;
-        if (this.isBackendMarkedCompleted(data)) {
+        this.requiredThresholdPercent = this.extractThresholdPercent(data);
+        this.updateDurationFromEntretien(data);
+        if (this.isBlockingCompletionState(data)) {
           this.markAttemptedLocally();
           this.loadError = 'Vous avez deja passe cet entretien. Une seconde tentative nest pas autorisee.';
           this.loading = false;
           return;
         }
 
-        if (!this.isInterviewToday(data)) {
-          this.loadError = 'Cet entretien est accessible uniquement le jour prevu.';
-          this.loading = false;
-          return;
+        if (this.hasAttemptedLocally()) {
+          localStorage.removeItem(`${this.attemptStoragePrefix}${this.entretienId}`);
         }
 
         this.loadQuestions();
@@ -107,33 +125,26 @@ export class PublicTestPassPageComponent {
     });
   }
 
-  private extractInterviewDate(details: any): Date | null {
+  private isInterviewInFuture(details: any): boolean {
     const raw = details?.dateEntretien || details?.date || details?.scheduledAt;
     if (!raw) {
-      return null;
-    }
-    const parsed = new Date(raw);
-    if (!Number.isFinite(parsed.getTime())) {
-      return null;
-    }
-    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
-  }
-
-  private todayDateOnly(): Date {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  }
-
-  private isInterviewToday(details: any): boolean {
-    const interviewDay = this.extractInterviewDate(details);
-    if (!interviewDay) {
       return false;
     }
-    return interviewDay.getTime() === this.todayDateOnly().getTime();
+
+    const parsed = new Date(raw);
+    return Number.isFinite(parsed.getTime()) && parsed.getTime() > Date.now();
   }
 
   private isBackendMarkedCompleted(details: any): boolean {
     return details?.completed === true || details?.termine === true || details?.status === 'COMPLETED';
+  }
+
+  private isBlockingCompletionState(details: any): boolean {
+    if (this.isInterviewInFuture(details)) {
+      return false;
+    }
+
+    return this.isBackendMarkedCompleted(details);
   }
 
   private hasAttemptedLocally(): boolean {
@@ -183,6 +194,7 @@ export class PublicTestPassPageComponent {
 
     try {
       await this.enterFullscreen();
+      this.startCountdown();
       this.examStarted = true;
     } catch {
       this.showConsent = true;
@@ -230,7 +242,7 @@ export class PublicTestPassPageComponent {
     }
 
     const blockedWithCtrl = ['c', 'v', 'x', 'u', 's', 'p', 'r'];
-    if (event.shiftKey && (key === 'i' || key === 'j' || key === 'c')) {
+    if (event.shiftKey && (key === 'i' || key === 'j' || key === 'c' || key === 's')) {
       return true;
     }
 
@@ -251,15 +263,22 @@ export class PublicTestPassPageComponent {
 
   private submitWithPenalty(reason: string): void {
     this.submitting = true;
+    this.stopCountdown();
 
     this.apiService.submitEntretienResponses(this.entretienId, 0).subscribe({
       next: () => {
         this.markAttemptedLocally();
+        this.finalScorePercent = 0;
+        this.passedEntretien = false;
+        this.candidateReport = this.buildCandidateReport(0);
         this.resultMessage = `Comportement suspect detecte: ${reason}. Votre entretien a ete refuse automatiquement.`;
         this.notifyRecruiter(reason);
         this.submitting = false;
       },
       error: () => {
+        this.finalScorePercent = 0;
+        this.passedEntretien = false;
+        this.candidateReport = this.buildCandidateReport(0);
         this.resultMessage = `Comportement suspect detecte: ${reason}. L'enregistrement backend a echoue, mais l'entretien est marque comme refuse.`;
         this.notifyRecruiter(reason);
         this.submitting = false;
@@ -327,26 +346,102 @@ export class PublicTestPassPageComponent {
   }
 
   submitTest(): void {
+    this.submitTestInternal(false);
+  }
+
+  private submitTestInternal(timeoutReached: boolean): void {
     if (this.questions.length === 0 || this.submitting || this.violationDetected) {
       return;
     }
 
     this.submitting = true;
+    this.stopCountdown();
     const score = this.computeScorePercent();
+    this.candidateReport = this.buildCandidateReport(score);
+    const reportText = this.buildReportText(this.candidateReport);
 
-    this.apiService.submitEntretienResponses(this.entretienId, score).subscribe({
-      next: () => {
+    this.apiService.submitEntretienResponses(this.entretienId, score, reportText).subscribe({
+      next: (response: any) => {
         this.markAttemptedLocally();
-        this.resultMessage = `Votre score a ete enregistre: ${score.toFixed(2)}%`;
+        this.finalScorePercent = score;
+        this.requiredThresholdPercent = this.extractThresholdPercent(response);
+        this.passedEntretien = this.extractDecisionFromResponse(response, score, this.requiredThresholdPercent);
+        this.resultMessage = this.passedEntretien
+          ? `${timeoutReached ? 'Temps ecoule. ' : ''}Felicitations, vous avez reussi l'entretien avec ${score.toFixed(2)}%.`
+          : `${timeoutReached ? 'Temps ecoule. ' : ''}Vous n'avez pas atteint le seuil de reussite (${this.requiredThresholdPercent}%). Score obtenu: ${score.toFixed(2)}%.`;
         this.examStarted = false;
         this.forceExitFullscreen();
         this.submitting = false;
       },
       error: () => {
-        this.resultMessage = 'Le score local est calcule mais lenregistrement backend a echoue.';
+        this.finalScorePercent = score;
+        this.passedEntretien = score >= this.requiredThresholdPercent;
+        this.resultMessage = `${timeoutReached ? 'Temps ecoule. ' : ''}Le score local est calcule mais lenregistrement backend a echoue.`;
+        this.examStarted = false;
+        this.forceExitFullscreen();
         this.submitting = false;
       }
     });
+  }
+
+  get remainingTimeLabel(): string {
+    const safeSeconds = Math.max(0, this.remainingSeconds);
+    const minutes = Math.floor(safeSeconds / 60);
+    const seconds = safeSeconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  private startCountdown(): void {
+    this.stopCountdown();
+    this.remainingSeconds = this.dureeMinutes * 60;
+
+    this.timerInterval = setInterval(() => {
+      if (!this.examStarted || this.submitting || this.violationDetected) {
+        return;
+      }
+
+      if (this.remainingSeconds <= 1) {
+        this.remainingSeconds = 0;
+        this.submitTestInternal(true);
+        return;
+      }
+
+      this.remainingSeconds -= 1;
+    }, 1000);
+  }
+
+  private stopCountdown(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
+  private extractDecisionFromResponse(response: any, fallbackScore: number, threshold: number): boolean {
+    const decisionRaw = String(response?.decision || response?.statut || '').trim().toUpperCase();
+    if (decisionRaw) {
+      if (['ACCEPTE', 'ACCEPTER', 'REUSSI', 'SUCCESS', 'PASSED', 'VALIDE'].includes(decisionRaw)) {
+        return true;
+      }
+      if (['REFUSE', 'ECHEC', 'FAILED', 'REJECTED', 'NON_REUSSI'].includes(decisionRaw)) {
+        return false;
+      }
+    }
+
+    const scoreFromResponse = Number(response?.score);
+    if (Number.isFinite(scoreFromResponse)) {
+      return scoreFromResponse >= threshold;
+    }
+
+    return fallbackScore >= threshold;
+  }
+
+  private extractThresholdPercent(source: any): number {
+    const candidate = Number(source?.seuilReussite);
+    if (Number.isFinite(candidate) && candidate >= 0 && candidate <= 100) {
+      return candidate;
+    }
+    return this.requiredThresholdPercent || this.defaultPassThresholdPercent;
   }
 
   @HostListener('document:contextmenu', ['$event'])
@@ -385,11 +480,38 @@ export class PublicTestPassPageComponent {
       return;
     }
 
+    const ctrl = event.ctrlKey || event.metaKey;
+    if (event.key === 'PrintScreen' || (ctrl && event.shiftKey && event.key.toLowerCase() === 's') || event.key === 'Meta') {
+      this.obscureScreen();
+    }
+
     if (this.isShortcutBlocked(event)) {
       event.preventDefault();
       event.stopPropagation();
       this.registerViolation(`raccourci interdit: ${event.key}`);
     }
+  }
+
+  @HostListener('window:keyup', ['$event'])
+  onKeyup(event: KeyboardEvent): void {
+    if (!this.examStarted || this.violationDetected) {
+      return;
+    }
+
+    if (event.key === 'PrintScreen') {
+      navigator.clipboard.writeText('');
+      this.obscureScreen();
+      this.registerViolation('capture d\'écran interdite');
+    }
+  }
+
+  private obscureScreen(): void {
+    this.ngZone.run(() => {
+      this.isObscured = true;
+      setTimeout(() => {
+        this.isObscured = false;
+      }, 3000);
+    });
   }
 
   @HostListener('window:blur')
@@ -475,8 +597,221 @@ export class PublicTestPassPageComponent {
     return false;
   }
 
+  private buildCandidateReport(score: number): CandidateAutoReport {
+    const correctSummaries: string[] = [];
+    const incorrectSummaries: string[] = [];
+
+    for (const q of this.questions) {
+      const label = this.summarizeQuestionForReport(q);
+      if (this.isCorrectAnswer(q)) {
+        correctSummaries.push(label);
+      } else {
+        incorrectSummaries.push(label);
+      }
+    }
+
+    const pointsForts = correctSummaries.slice(0, 5);
+    const pointsFaibles = incorrectSummaries.slice(0, 5);
+    const recommandations = this.generateRecommendations(pointsFaibles);
+
+    return {
+      generatedAt: new Date(),
+      scoreGlobal: Number(score.toFixed(2)),
+      seuil: this.requiredThresholdPercent,
+      pointsForts,
+      pointsFaibles,
+      recommandations
+    };
+  }
+
+  private generateRecommendations(pointsFaibles: string[]): Array<{ titre: string; raison: string; motCle: string }> {
+    const joined = pointsFaibles.join(' ').toLowerCase();
+    const rules: Array<{ key: string; titre: string; raison: string }> = [
+      { key: 'angular', titre: 'Formation Angular', raison: 'Renforcer les composants, services, routing et RxJS.' },
+      { key: 'typescript', titre: 'Formation TypeScript', raison: 'Mieux maitriser les types, interfaces et generics.' },
+      { key: 'javascript', titre: 'Formation JavaScript avance', raison: 'Consolider la logique, async/await et closures.' },
+      { key: 'java', titre: 'Formation Java/Spring', raison: 'Consolider Java backend et principes Spring Boot.' },
+      { key: 'spring', titre: 'Formation Spring Boot API', raison: 'Ameliorer la conception API REST et securite.' },
+      { key: 'api', titre: 'Formation API REST', raison: 'Mieux structurer routes, statuts et contrats API.' },
+      { key: 'sql', titre: 'Formation SQL', raison: 'Ameliorer modelisation et requetes SQL.' },
+      { key: 'database', titre: 'Formation Base de donnees', raison: 'Consolider relations, index et optimisation.' },
+      { key: 'css', titre: 'Formation CSS/SCSS', raison: 'Renforcer mise en page responsive et architecture styles.' },
+      { key: 'communication', titre: 'Formation Communication pro', raison: 'Ameliorer expression et structure des reponses.' },
+      { key: 'rh', titre: 'Atelier Entretien RH', raison: 'Mieux preparer les reponses comportementales.' }
+    ];
+
+    const recos: Array<{ titre: string; raison: string; motCle: string }> = [];
+    for (const rule of rules) {
+      if (joined.includes(rule.key)) {
+        recos.push({ titre: rule.titre, raison: rule.raison, motCle: rule.key });
+      }
+    }
+
+    if (!recos.length) {
+      recos.push({
+        titre: 'Parcours de remise a niveau',
+        raison: 'Revoir les fondamentaux techniques correspondant aux questions non reussies.',
+        motCle: 'general'
+      });
+    }
+
+    return recos.slice(0, 4);
+  }
+
+  private summarizeQuestionForReport(question: TestQuestion): string {
+    const raw = this.getQuestionText(question);
+    if (raw.length <= 120) {
+      return raw;
+    }
+    return `${raw.slice(0, 117)}...`;
+  }
+
+  private buildReportText(report: CandidateAutoReport | null): string {
+    if (!report) {
+      return '';
+    }
+
+    const forts = report.pointsForts.length
+      ? report.pointsForts.map((p, i) => `${i + 1}. ${p}`).join('\n')
+      : 'Aucun point fort identifie.';
+
+    const faibles = report.pointsFaibles.length
+      ? report.pointsFaibles.map((p, i) => `${i + 1}. ${p}`).join('\n')
+      : 'Aucun point faible identifie.';
+
+    const recommandations = report.recommandations.length
+      ? report.recommandations.map((r, i) => `${i + 1}. ${r.titre} - ${r.raison}`).join('\n')
+      : 'Aucune recommandation disponible.';
+
+    return [
+      `Rapport automatique candidat - Entretien #${this.entretienId}`,
+      `Date: ${report.generatedAt.toLocaleString('fr-FR')}`,
+      `Score global: ${report.scoreGlobal}%`,
+      `Seuil: ${report.seuil}%`,
+      '',
+      'Points forts:',
+      forts,
+      '',
+      'Points faibles:',
+      faibles,
+      '',
+      'Recommandations:',
+      recommandations
+    ].join('\n');
+  }
+
+  openFormationRecommendations(): void {
+    const keyword = this.candidateReport?.recommandations?.[0]?.motCle || 'general';
+    this.router.navigate(['/formations'], { queryParams: { q: keyword } });
+  }
+
+  exportReportPdf(): void {
+    if (!this.candidateReport) {
+      return;
+    }
+
+    const report = this.candidateReport;
+    const pointsForts = report.pointsForts.length
+      ? report.pointsForts.map((item: string) => `<li>${this.escapeHtml(item)}</li>`).join('')
+      : '<li>Aucun point fort identifie.</li>';
+    const pointsFaibles = report.pointsFaibles.length
+      ? report.pointsFaibles.map((item: string) => `<li>${this.escapeHtml(item)}</li>`).join('')
+      : '<li>Aucun point faible identifie.</li>';
+
+    const html = `
+      <html>
+        <head>
+          <title>Rapport entretien #${this.entretienId}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 24px; color: #1f2937; }
+            h1 { margin-bottom: 4px; }
+            .meta { color: #4b5563; margin-bottom: 20px; }
+            .card { border: 1px solid #d1d5db; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+            .score { font-size: 20px; font-weight: 700; }
+            ul { margin: 8px 0 0 20px; }
+          </style>
+        </head>
+        <body>
+          <h1>Rapport automatique du candidat</h1>
+          <div class="meta">Entretien: ${this.escapeHtml(this.examTitle)} | Date: ${report.generatedAt.toLocaleString('fr-FR')}</div>
+          <div class="card score">Score global: ${report.scoreGlobal}% (Seuil: ${report.seuil}%)</div>
+          <div class="card">
+            <h3>Points forts</h3>
+            <ul>${pointsForts}</ul>
+          </div>
+          <div class="card">
+            <h3>Points faibles</h3>
+            <ul>${pointsFaibles}</ul>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const popup = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700');
+    if (popup) {
+      popup.document.write(html);
+      popup.document.close();
+      popup.focus();
+      popup.print();
+      return;
+    }
+
+    this.printHtmlWithIframe(html);
+  }
+
+  private printHtmlWithIframe(html: string): void {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentWindow?.document;
+    if (!iframeDoc || !iframe.contentWindow) {
+      document.body.removeChild(iframe);
+      return;
+    }
+
+    iframeDoc.open();
+    iframeDoc.write(html);
+    iframeDoc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 800);
+    }, 200);
+  }
+
+  private escapeHtml(value: string): string {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   goHome(): void {
+    this.stopCountdown();
     this.forceExitFullscreen();
     this.router.navigate(['/']);
+  }
+
+  private updateDurationFromEntretien(details: EntretienDetails | null): void {
+    const raw = Number((details as any)?.dureeMinutes);
+    if (Number.isFinite(raw) && raw >= 1 && raw <= 300) {
+      this.dureeMinutes = Math.trunc(raw);
+    } else {
+      this.dureeMinutes = 30;
+    }
+    this.remainingSeconds = this.dureeMinutes * 60;
   }
 }

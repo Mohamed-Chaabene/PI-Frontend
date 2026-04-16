@@ -24,6 +24,28 @@ export interface Formation {
   writtenUrl?:    string;   // URL formation écrite (W3Schools, MDN...)
   description?:   string;   // Description de la formation
   imageUrl?:      string;   // Thumbnail
+
+  // ✅ Champs du Scheduler / Stats
+  badge?:         string;
+  totalInscrits?: number;
+  noteMoyenne?:   number;
+  tauxCompletion?:number;
+  scorePopularite?:number;
+}
+
+export interface FormationStats {
+  formationId:    number;
+  titre:          string;
+  categorie:      string;
+  niveau:         string;
+  statut:         string;
+  badge:          string | null;
+  totalInscrits:  number;
+  noteMoyenne:    number;
+  totalCertifies: number;
+  totalTermines:  number;
+  tauxCompletion: number;
+  scorePopularite:number;
 }
 
 export interface FormationSuggestion {

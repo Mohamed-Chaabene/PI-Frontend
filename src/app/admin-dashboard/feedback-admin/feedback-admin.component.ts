@@ -54,8 +54,8 @@ export class FeedbackAdminComponent implements OnInit {
 
     // Charger les feedbacks
     this.feedbackService.getByFormation(this.formationId).subscribe({
-      next: (data) => {
-        this.feedbacks = data.sort((a, b) =>
+      next: (data: any) => {
+        this.feedbacks = data.sort((a: any, b: any) =>
           new Date(b.dateCreation).getTime() - new Date(a.dateCreation).getTime()
         );
         this.loading = false;

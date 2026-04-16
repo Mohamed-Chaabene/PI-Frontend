@@ -527,6 +527,18 @@
                     background-color: #f9fafb;
                 }
 
+                &.reminder-today {
+                    background: #fff5f5;
+                }
+
+                &.reminder-soon {
+                    background: #fffaf2;
+                }
+
+                &.reminder-planned {
+                    background: #f5faff;
+                }
+
                 &.unread {
                     background-color: #fffbf0;
 
@@ -546,6 +558,21 @@
                     align-items: center;
                     justify-content: center;
                     font-size: 18px;
+
+                    &.reminder-today {
+                        background: rgba(220, 38, 38, 0.14);
+                        color: #b42323;
+                    }
+
+                    &.reminder-soon {
+                        background: rgba(234, 88, 12, 0.14);
+                        color: #c34f08;
+                    }
+
+                    &.reminder-planned {
+                        background: rgba(9, 101, 164, 0.14);
+                        color: #0965a4;
+                    }
                 }
 
                 .notification-content {
@@ -554,6 +581,15 @@
                     display: flex;
                     flex-direction: column;
                     gap: 4px;
+
+                    .notification-title {
+                        margin: 0;
+                        font-size: 12px;
+                        font-weight: 700;
+                        color: #eb6f23;
+                        text-transform: uppercase;
+                        letter-spacing: 0.02em;
+                    }
 
                     .notification-message {
                         margin: 0;

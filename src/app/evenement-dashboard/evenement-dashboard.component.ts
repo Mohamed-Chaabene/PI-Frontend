@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { EvenementSidebarComponent } from './evenement-sidebar/evenement-sidebar.component';
 
+
 @Component({
     selector: 'app-evenement-dashboard',
     standalone: false,

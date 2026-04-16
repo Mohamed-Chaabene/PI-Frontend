@@ -184,6 +184,27 @@
     color: #fff !important;
   }
 
+  .action-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .action-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 1rem;
+      line-height: 1;
+    }
+  }
+
   .btn-success {
     background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
     color: #fff !important;
