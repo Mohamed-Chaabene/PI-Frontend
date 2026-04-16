@@ -1,16 +1,13 @@
 <div class="chatbot-wrapper">
 
-  <!-- ── Bouton flottant ──────────────────────────────────────── -->
   <button class="chatbot-toggle" (click)="toggleChat()" [class.open]="isOpen" type="button" title="Assistant IA">
     <i class="ri-robot-line" *ngIf="!isOpen"></i>
     <i class="ri-close-line" *ngIf="isOpen"></i>
     <span class="chatbot-badge" *ngIf="!isOpen">IA</span>
   </button>
 
-  <!-- ── Panel chatbot ────────────────────────────────────────── -->
   <div class="chatbot-panel" [class.open]="isOpen">
 
-    <!-- Header -->
     <div class="chatbot-header">
       <div class="chatbot-header-info">
         <div class="chatbot-avatar">
@@ -56,58 +53,60 @@
         </div>
       </div>
 
-      <!-- Actions header : voix + fermer -->
       <div class="chatbot-header-actions">
-
-        <!-- Bouton stop lecture (visible seulement si en train de lire) -->
         <button *ngIf="isSpeaking" (click)="stopSpeaking()" type="button"
           class="chatbot-action-btn speaking-btn" title="Arrêter la lecture">
           <i class="ri-stop-circle-line"></i>
         </button>
-
-        <!-- Bouton toggle TTS (activer/désactiver la voix auto) -->
         <button *ngIf="isTTSSupported" (click)="toggleVoice()" type="button"
           class="chatbot-action-btn"
           [class.voice-active]="voiceEnabled"
           [title]="voiceEnabled ? 'Désactiver la lecture vocale automatique' : 'Activer la lecture vocale automatique'">
           <i [class]="voiceEnabled ? 'ri-volume-up-line' : 'ri-volume-mute-line'"></i>
         </button>
-
-        <!-- Bouton fermer -->
         <button (click)="closeChat()" title="Fermer" type="button" class="chatbot-action-btn">
           <i class="ri-close-line"></i>
         </button>
       </div>
     </div>
 
-    <!-- Messages -->
     <div class="chatbot-messages" #messagesContainer>
       <div class="chat-message" *ngFor="let msg of messages; let i = index"
         [class.user]="msg.role === 'user'"
         [class.assistant]="msg.role === 'assistant'">
 
-        <!-- Avatar assistant -->
         <div class="msg-avatar" *ngIf="msg.role === 'assistant'">
           <i class="ri-robot-line"></i>
         </div>
 
-        <!-- Bulle message -->
         <div class="msg-bubble">
 
-          <!-- Loading animation -->
           <div class="msg-loading" *ngIf="msg.loading">
             <span></span><span></span><span></span>
           </div>
 
-          <!-- Image render -->
-          <img class="chat-img-bubble" *ngIf="msg.imageUrl" [src]="msg.imageUrl" alt="User upload" />
+          <img class="chat-img-bubble" *ngIf="msg.imageUrl && !msg.imageUrl.startsWith('[image:')"
+            [src]="msg.imageUrl" alt="User upload" />
 
-          <!-- Contenu -->
+          <div class="chat-file-bubble" *ngIf="msg.imageUrl && msg.imageUrl.startsWith('[image:')">
+            <i class="ri-image-line"></i>
+            <span>Image jointe</span>
+          </div>
+
+          <div class="chat-file-bubble" *ngIf="msg.fileName && !msg.imageUrl">
+            <i [class]="getFileIcon(msg.fileName)"></i>
+            <div class="chat-file-info">
+              <span class="chat-file-name">{{ msg.fileName }}</span>
+              <span class="chat-file-excerpt" *ngIf="msg.fileExcerpt && !msg.fileExcerpt.startsWith('[file:')">
+                {{ msg.fileExcerpt }}
+              </span>
+            </div>
+          </div>
+
           <div class="msg-content" *ngIf="!msg.loading && !msg.isEditing"
             [innerHTML]="formatMessage(msg.content)">
           </div>
 
-          <!-- Mode édition (user only) -->
           <div class="msg-edit-mode" *ngIf="msg.isEditing">
             <textarea [(ngModel)]="msg.editContent" rows="3" class="edit-textarea"></textarea>
             <div class="edit-actions">
@@ -116,38 +115,31 @@
             </div>
           </div>
 
-          <!-- Actions survol -->
           <div class="msg-hover-actions" *ngIf="!msg.loading && !msg.isEditing">
-            <!-- Copier (tous les messages) -->
             <button title="Copier" (click)="copyMessage(msg)">
               <i class="ri-clipboard-line"></i>
             </button>
-            <!-- Lire à voix haute (assistant uniquement) -->
             <button *ngIf="msg.role === 'assistant' && isTTSSupported"
               [title]="isSpeaking ? 'Arrêter la lecture' : 'Lire à voix haute'"
               (click)="isSpeaking ? stopSpeaking() : speakMessage(msg.content)"
               [class.tts-active]="isSpeaking">
               <i [class]="isSpeaking ? 'ri-stop-circle-line' : 'ri-volume-up-line'"></i>
             </button>
-            <!-- Modifier (user uniquement) -->
             <button *ngIf="msg.role === 'user'" title="Modifier" (click)="startEditMessage(msg)">
               <i class="ri-edit-line"></i>
             </button>
-            <!-- Supprimer (user uniquement) -->
             <button *ngIf="msg.role === 'user'" title="Supprimer" (click)="deleteMessage(i)" class="del-btn">
               <i class="ri-delete-bin-line"></i>
             </button>
           </div>
         </div>
 
-        <!-- Avatar user -->
         <div class="msg-avatar user-avatar" *ngIf="msg.role === 'user'">
           <i class="ri-user-line"></i>
         </div>
       </div>
     </div>
 
-    <!-- Suggestions rapides -->
     <div class="chatbot-suggestions" *ngIf="messages.length <= 1">
       <button *ngFor="let s of quickSuggestions" class="suggestion-chip"
         (click)="sendMessage(s)" type="button">
@@ -155,17 +147,33 @@
       </button>
     </div>
 
-    <!-- Image preview -->
     <div class="chatbot-image-preview" *ngIf="selectedImageBase64">
       <div class="preview-container">
         <img [src]="selectedImageBase64" alt="Preview"/>
-        <button class="remove-image-btn" (click)="removeSelectedImage()">
+        <button class="remove-preview-btn" (click)="removeSelectedImage()" type="button">
           <i class="ri-close-circle-fill"></i>
         </button>
       </div>
     </div>
 
-    <!-- Indicateur d'écoute vocale -->
+    <div class="chatbot-file-preview" *ngIf="selectedFileName && !selectedImageBase64">
+      <div class="file-preview-container">
+        <i [class]="getFileIcon(selectedFileName)" class="file-preview-icon"></i>
+        <div class="file-preview-info">
+          <span class="file-preview-name">{{ selectedFileName }}</span>
+          <span class="file-preview-status" *ngIf="selectedFileText">
+            <i class="ri-check-line"></i> Texte extrait ({{ selectedFileText.length }} caractères)
+          </span>
+          <span class="file-preview-status pending" *ngIf="!selectedFileText">
+            <i class="ri-time-line"></i> Prêt à envoyer
+          </span>
+        </div>
+        <button class="remove-preview-btn" (click)="removeSelectedFile()" type="button">
+          <i class="ri-close-circle-fill"></i>
+        </button>
+      </div>
+    </div>
+
     <div class="voice-listening-bar" *ngIf="isListening">
       <div class="listening-waves">
         <span></span><span></span><span></span><span></span><span></span>
@@ -176,18 +184,26 @@
       </button>
     </div>
 
-    <!-- Zone de saisie -->
     <div class="chatbot-input-area">
-      <input type="file" #fileInput id="image-upload" accept="image/*"
-        (change)="onFileSelected($event)" style="display: none;">
 
-      <!-- Bouton joindre image -->
-      <button class="chatbot-upload-btn" (click)="fileInput.click()"
-        title="Joindre une image" type="button">
+      <input type="file" #imageInput id="image-upload" accept="image/*"
+        (change)="onImageSelected($event)" style="display: none;">
+
+      <input type="file" #docInput id="doc-upload" [accept]="ACCEPTED_FILE_TYPES"
+        (change)="onDocumentSelected($event)" style="display: none;">
+
+      <button class="chatbot-upload-btn" (click)="imageInput.click()"
+        title="Joindre une image" type="button"
+        [class.active]="selectedImageBase64">
         <i class="ri-image-add-line"></i>
       </button>
 
-      <!-- Bouton microphone (STT) -->
+      <button class="chatbot-upload-btn doc-btn" (click)="docInput.click()"
+        title="Joindre un document (PDF, Word, etc.)" type="button"
+        [class.active]="selectedFileName && !selectedImageBase64">
+        <i class="ri-file-add-line"></i>
+      </button>
+
       <button *ngIf="isSpeechSupported"
         class="chatbot-mic-btn"
         [class.listening]="isListening"
@@ -198,23 +214,25 @@
         <i [class]="isListening ? 'ri-mic-off-line' : 'ri-mic-line'"></i>
       </button>
 
-      <!-- Textarea -->
       <textarea id="chatbot-input" class="chatbot-textarea"
         [(ngModel)]="inputText"
         (keydown)="onEnterKey($event)"
-        [placeholder]="isListening ? 'Parlez maintenant...' : 'Posez votre question...'"
+        [placeholder]="isListening ? 'Parlez maintenant...' : selectedFileName ? 'Posez votre question sur ce document...' : 'Posez votre question...'"
         rows="1"
         [disabled]="isLoading">
       </textarea>
 
-      <!-- Bouton envoyer -->
       <button class="chatbot-send"
         (click)="sendMessage()"
-        [disabled]="(!inputText.trim() && !selectedImageBase64) || isLoading"
+        [disabled]="(!inputText.trim() && !selectedImageBase64 && !selectedFileName) || isLoading"
         type="button">
         <i class="ri-send-plane-fill" *ngIf="!isLoading"></i>
         <i class="ri-loader-4-line spin" *ngIf="isLoading"></i>
       </button>
+    </div>
+
+    <div class="chatbot-footer">
+      Powered by IA 
     </div>
 
   </div>

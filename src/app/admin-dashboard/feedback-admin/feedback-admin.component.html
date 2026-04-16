@@ -1,11 +1,6 @@
-
-
-
-
 <div class="feedback-admin-area">
   <div class="container">
 
-    <!-- ══ Stats header ══════════════════════════════════════════════════════ -->
     <div class="stats-banner" *ngIf="!loading && feedbacks.length">
       <div class="stat-main">
         <span class="big-note">{{ stats.moyenne }}</span>
@@ -41,7 +36,6 @@
       </div>
     </div>
 
-    <!-- ══ Bouton retour ══════════════════════════════════════════════════════ -->
     <div class="page-header">
       <h2 class="page-title">
         Tous les avis
@@ -52,16 +46,13 @@
         </a>
     </div>
 
-    <!-- ══ Chargement ════════════════════════════════════════════════════════ -->
     <div class="empty-state" *ngIf="loading">Chargement des feedbacks...</div>
 
-    <!-- ══ Vide ══════════════════════════════════════════════════════════════ -->
     <div class="empty-state" *ngIf="!loading && feedbacks.length === 0">
       <i class="ri-chat-off-line" style="font-size:40px;opacity:0.3;display:block;margin-bottom:12px"></i>
       Aucun feedback pour cette formation.
     </div>
 
-    <!-- ══ Liste des feedbacks ════════════════════════════════════════════════ -->
     <div class="feedbacks-grid" *ngIf="!loading && feedbacks.length">
       <div class="feedback-card" *ngFor="let f of feedbacks">
 

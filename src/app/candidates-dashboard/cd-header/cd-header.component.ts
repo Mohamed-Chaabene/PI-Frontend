@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ApplicationRef, NgZone } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ApplicationRef, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { ProfileUpdateService } from '../../services/profile-update.service';
@@ -50,6 +50,12 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
     followingUsers: Set<number> = new Set();
     currentUserId: number | null = null;
     currentCandidateId: number | null = null;
+
+/* === VERSION HEAD ==== */
+
+/* === VERSION MERGE ==== */
+    showDeleteAccountModal = false;
+/* === FIN VERSIONS === */
     
     // Notification panel properties
     showNotificationPanel = false;
@@ -632,8 +638,8 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         return this.formatDate(notification?.createdAt || '');
     }
 
-    // ==================== NOTIFICATION PANEL METHODS ====================
-
+    // ==================== NOTIFICATION PANEL METHODS =============
+/* === VERSION MERGE ==== */
     toggleNotificationPanel(): void {
         this.showNotificationPanel = !this.showNotificationPanel;
         
@@ -791,8 +797,8 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         }, 0);
     }
 
-    // ==================== DELETE ACCOUNT METHODS ====================
-
+    // ==================== DELETE ACCOUNT METHODS =============
+/* === VERSION MERGE ==== */
     openDeleteAccountModal(): void {
         // Show confirmation alert instead of modal
         const confirmed = window.confirm(
@@ -848,4 +854,17 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
             }
         });
     }
+
+/* === VERSION HEAD ==== */
+
+/* === VERSION MERGE ==== */
+    closeDeleteAccountModal(): void {
+        this.showDeleteAccountModal = false;
+    }
+
+    confirmDeleteAccount(): void {
+        // This method is no longer used with alert-based confirmation
+    }
+/* === FIN VERSIONS === */
 }
+

@@ -1,4 +1,3 @@
-// ─── Variables ────────────────────────────────────────────────────────────────
 $primary:       #667eea;
 $primary-light: #e0e7ff;
 $primary-dark:  #764ba2;
@@ -21,7 +20,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
   background: $bg-page;
   padding: 40px 0 80px;
 
-  // ─── Card formulaire ───────────────────────────────────────────────────────
   .form-card {
     background: $bg-card;
     border: none;
@@ -79,7 +77,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ─── Séparateurs de section ────────────────────────────────────────────────
   .form-section-title {
     display: flex;
     align-items: center;
@@ -113,7 +110,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ─── Champs ────────────────────────────────────────────────────────────────
   .form-group {
     margin-bottom: 18px;
 
@@ -181,7 +177,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ─── Boutons d'action ──────────────────────────────────────────────────────
   .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -212,7 +207,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
       }
     }
 
-    // ✅ MODIFIÉ : couleur alignée avec le header
     .btn-submit {
       display: inline-flex;
       align-items: center;
@@ -242,7 +236,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ─── Sidebar ───────────────────────────────────────────────────────────────
   .sidebar-area {
     position: sticky;
     top: 24px;
@@ -310,7 +303,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     &:hover { color: $primary; }
   }
 
-  // ── Toggle switch ─────────────────────────────────────────────────
   .editor-toggle-row {
     display: flex;
     align-items: center;
@@ -377,7 +369,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ── Bouton vérifier YouTube ───────────────────────────────────────
   .btn-preview-yt {
     display: inline-flex;
     align-items: center;
@@ -394,7 +385,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     &:hover { background: #b91c1c; color: #fff; }
   }
 
-  // ── Aperçu contenu ────────────────────────────────────────────────
   .content-preview {
     background: #f0fdf4;
     border: 1px solid #bbf7d0;
@@ -433,7 +423,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     &.badge-video-only { background: #f1f5f9; color: #475569; }
   }
 
-  // ── Sources documentation — onglets ──────────────────────────────
   .doc-source-tabs {
     display: flex;
     gap: 10px;
@@ -485,7 +474,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ── Suggestions documentation ─────────────────────────────────────
   .doc-suggestions-list {
     border: 1.5px solid $border;
     border-radius: $radius-input;
@@ -562,7 +550,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ── Doc sélectionnée ──────────────────────────────────────────────
   .selected-ok {
     display: flex;
     align-items: center;
@@ -597,7 +584,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ── Loader suggestions ────────────────────────────────────────────
   .suggestions-loading {
     display: flex;
     align-items: center;
@@ -613,7 +599,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     i { font-size: 15px; }
   }
 
-  // ── Suggestions vidéo ─────────────────────────────────────────────
   .suggestions-list {
     border: 1.5px solid $border;
     border-radius: $radius-input;
@@ -707,7 +692,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ── Playlist preview ──────────────────────────────────────────────
   .playlist-preview {
     margin-top: 8px;
     padding: 10px 14px;
@@ -717,7 +701,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     font-size: 0.85rem;
     color: $text-muted;
   }
-  // ── Champs invalides ──────────────────────────────────────────────
 .form-control.is-invalid {
   border-color: #dc2626 !important;
   background-image: none;
@@ -725,7 +708,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
   &:focus { box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15); }
 }
 
-// ── Messages d'erreur ─────────────────────────────────────────────
 .invalid-feedback,
 .invalid-feedback-inline {
   display: block;
@@ -742,7 +724,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
   }
 }
 
-// ── Alerte erreur globale ─────────────────────────────────────────
 .alert-error {
   display: flex;
   align-items: center;
@@ -758,14 +739,12 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
   i { font-size: 16px; }
 }
 
-// ── Label required ────────────────────────────────────────────────
 .form-label.required::after {
   content: ' *';
   color: #dc2626;
   font-weight: 700;
 }
 
-// ── Compteur caractères ───────────────────────────────────────────
 .char-counter {
   font-size: 0.75rem;
   color: #9ca3af;
@@ -776,7 +755,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
   &.danger  { color: #dc2626; font-weight: 600; }
 }
 
-// ── Champ valide ──────────────────────────────────────────────────
 .form-control.ng-valid.ng-dirty:not([value=""]) {
   border-color: #16a34a;
 }

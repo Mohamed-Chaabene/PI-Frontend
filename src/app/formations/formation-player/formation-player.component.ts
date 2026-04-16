@@ -61,7 +61,7 @@ export class FormationPlayerComponent
   // ── Anti-triche et Temps ─────────────────────────────────────
   quizBloque         = false;
   quizBloqueMessage  = '';
-  quizTimerRestant   = 300; // 5 minutes en secondes
+  quizTimerRestant   = 600; // 10 minutes en secondes
   private timerInterval: any = null;
   private visibilityChanges    = 0;
   private readonly MAX_VISIBILITY_CHANGES = 1;
@@ -71,7 +71,10 @@ export class FormationPlayerComponent
   private cutListener:         ((e: Event) => void) | null = null;
   private contextMenuListener: ((e: Event) => void) | null = null;
   private keydownListener:     ((e: KeyboardEvent) => void) | null = null;
+  private keyupListener:       ((e: KeyboardEvent) => void) | null = null;
   private blurListener:        (() => void) | null = null;
+  
+  isObscured = false;
 
   // ── YouTube IFrame ────────────────────────────────────────────
   private ytPlayer:    any = null;
@@ -197,16 +200,30 @@ export class FormationPlayerComponent
 
     this.keydownListener = (e: KeyboardEvent) => {
       const ctrl = e.ctrlKey || e.metaKey;
-      if (ctrl && ['c','v','a','x','u'].includes(e.key.toLowerCase())) {
+      if (ctrl && ['c','v','a','x','u','p','s'].includes(e.key.toLowerCase())) {
         e.preventDefault();
         this.afficherAvertissement('Les raccourcis clavier sont désactivés.');
       }
-      if (e.key === 'F12' ||
-          (ctrl && e.shiftKey && ['i','j'].includes(e.key.toLowerCase()))) {
+      if (e.key === 'F12' || e.key === 'PrintScreen' ||
+          (ctrl && e.shiftKey && ['i','j','s'].includes(e.key.toLowerCase()))) {
         e.preventDefault();
+        if (e.key === 'PrintScreen' || (ctrl && e.shiftKey && e.key.toLowerCase() === 's')) {
+            navigator.clipboard.writeText('');
+            this.afficherAvertissement('La capture d\'écran est désactivée pendant le quiz.');
+            this.obscureScreen();
+        }
       }
     };
     document.addEventListener('keydown', this.keydownListener);
+
+    this.keyupListener = (e: KeyboardEvent) => {
+      if (e.key === 'PrintScreen') {
+        navigator.clipboard.writeText('');
+        this.afficherAvertissement('La capture d\'écran est désactivée pendant le quiz.');
+        this.obscureScreen();
+      }
+    };
+    document.addEventListener('keyup', this.keyupListener);
 
     this.visibilityListener = () => {
       if (document.hidden && this.showQuizFinal && !this.quizFinalSubmitted) {
@@ -251,6 +268,8 @@ export class FormationPlayerComponent
       document.removeEventListener('contextmenu', this.contextMenuListener);
     if (this.keydownListener)
       document.removeEventListener('keydown',     this.keydownListener);
+    if (this.keyupListener)
+      document.removeEventListener('keyup',       this.keyupListener);
     if (this.visibilityListener)
       document.removeEventListener('visibilitychange', this.visibilityListener);
     if (this.blurListener)
@@ -261,6 +280,7 @@ export class FormationPlayerComponent
     this.cutListener         = null;
     this.contextMenuListener = null;
     this.keydownListener     = null;
+    this.keyupListener       = null;
     this.visibilityListener  = null;
     this.blurListener        = null;
   }
@@ -290,6 +310,15 @@ export class FormationPlayerComponent
     this.avertissementMessage = msg;
     this.showAvertissement    = true;
     setTimeout(() => { this.showAvertissement = false; }, 3000);
+  }
+
+  private obscureScreen(): void {
+    this.ngZone.run(() => {
+      this.isObscured = true;
+      setTimeout(() => {
+        this.isObscured = false;
+      }, 3000);
+    });
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -457,7 +486,7 @@ export class FormationPlayerComponent
           new Array(this.quizFinalQuestions.length).fill(-1);
         this.quizFinalLoading   = false;
         
-        this.quizTimerRestant = 300; 
+        this.quizTimerRestant = 600; 
         this.demarrerTimer();
       },
       error: () => { this.quizFinalLoading = false; }

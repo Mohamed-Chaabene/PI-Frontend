@@ -209,6 +209,28 @@ export class FormationCreateComponent implements OnInit {
   }
 
   // ── Soumission ──────────────────────────────────────────────────
+  private normalizePayload(raw: any): FormationCreatePayload {
+    const payload = { ...raw } as any;
+
+    const toUndefined = (value: string | undefined): string | undefined =>
+      value?.trim() ? value.trim() : undefined;
+
+    payload.lienExterne = toUndefined(payload.lienExterne);
+    payload.playlistId  = toUndefined(payload.playlistId);
+    payload.youtubeId   = toUndefined(payload.youtubeId);
+    payload.stackBlitzUrl = toUndefined(payload.stackBlitzUrl);
+    payload.writtenUrl  = toUndefined(payload.writtenUrl);
+
+    // Pour les formations "Bientôt", ne pas envoyer de contenu vide au backend.
+    if (payload.statut === 'Bientôt') {
+      payload.lienExterne = undefined;
+      payload.playlistId  = undefined;
+      payload.youtubeId   = undefined;
+    }
+
+    return payload;
+  }
+
   submit(): void {
     this.form.markAllAsTouched();
     this.serverErrors       = {};
@@ -220,21 +242,22 @@ export class FormationCreateComponent implements OnInit {
 
     if (this.form.invalid) {
       // Vérifier si la seule erreur est noContent avec statut Bientôt
-      const onlyNoContent = formErrors
+      const onlyNoContent = formErrors != null
         && Object.keys(formErrors).length === 1
         && formErrors['noContent'];
 
       if (onlyNoContent && statut === 'Bientôt') {
         // Pas d'erreur bloquante — on peut continuer
       } else {
+        this.serverErrorMessage = "Le formulaire contient des erreurs ou des champs obligatoires manquants. Veuillez vérifier les champs en rouge.";
         return;
       }
     }
 
+    const payload = this.normalizePayload(this.form.getRawValue());
+
     this.saving = true;
-    this.formationService.createFormation(
-      this.form.getRawValue() as FormationCreatePayload
-    ).subscribe({
+    this.formationService.createFormation(payload).subscribe({
       next: () => {
         this.saving = false;
         this.router.navigate(['/admin-dashboard/formations']);

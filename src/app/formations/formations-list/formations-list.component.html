@@ -5,7 +5,8 @@
       <div class="col-lg-4 col-md-12">
         <ul class="ps-0 mb-0 list-unstyled">
           <li class="d-inline-block position-relative"><a routerLink="/">Home</a></li>
-          <li class="d-inline-block position-relative"><a routerLink="/candidates-dashboard/mes-formations">Mes formations</a></li>          <li class="d-inline-block position-relative">Liste Formations</li>
+          <li class="d-inline-block position-relative"><a routerLink="/candidates-dashboard/mes-formations">Mes formations</a></li>
+          <li class="d-inline-block position-relative">Liste Formations</li>
         </ul>
       </div>
     </div>
@@ -14,7 +15,7 @@
 
 <div class="formations-area">
 
-  <!-- ══════════════════════════════════════════ HERO BANNER -->
+  <!-- ══ HERO ══════════════════════════════════════════════════════════════ -->
   <div class="formations-hero">
     <div class="container">
       <div class="row align-items-center hero-content">
@@ -24,17 +25,10 @@
           <div class="hero-search">
             <div class="search-input-wrap">
               <i class="ri-search-line"></i>
-              <input
-                type="text"
-                placeholder="Rechercher une formation..."
-                [(ngModel)]="searchTerm"
-                (ngModelChange)="applySearch()"
-                name="searchTerm"
-              >
+              <input type="text" placeholder="Rechercher une formation..."
+                [(ngModel)]="searchTerm" (ngModelChange)="applySearch()" name="searchTerm">
             </div>
-            <button type="button" class="search-btn" (click)="applySearch()">
-              Rechercher
-            </button>
+            <button type="button" class="search-btn" (click)="applySearch()">Rechercher</button>
           </div>
         </div>
         <div class="col-lg-5 d-none d-lg-flex justify-content-end">
@@ -57,47 +51,118 @@
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════ CONTENU -->
+  <!-- ══ CONTENU ═══════════════════════════════════════════════════════════ -->
   <div class="container pb-5">
 
-    <!-- ── CAS ADMIN : layout avec sidebar ── -->
+    <!-- ── CAS ADMIN ─────────────────────────────────────────────────────── -->
     <ng-container *ngIf="isAdmin; else publicLayout">
       <div class="row justify-content-between">
 
-        <!-- Colonne formations (admin) -->
         <div class="col-lg-8 col-md-12">
 
-          <!-- Filtres chips -->
-          <div class="formations-filters">
-            <button
-              type="button"
-              *ngFor="let f of filters"
-              class="filter-chip"
-              [class.active]="activeFilter === f"
-              (click)="applyFilter(f)"
-            >{{ f }}</button>
+          <!-- Filtres -->
+          <div class="formations-filters d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" *ngFor="let f of filters" class="filter-chip"
+                [class.active]="activeFilter === f" (click)="applyFilter(f)">{{ f }}</button>
+            </div>
+            <div class="filters-row d-flex gap-3">
+
+              <select class="form-select form-select-sm premium-select" (change)="onCategorieChange($any($event.target).value)">
+                <option *ngFor="let c of categories" [value]="c">{{ c || 'Toutes les catégories' }}</option>
+              </select>
+            </div>
           </div>
 
-          <!-- Chargement -->
-          <div class="empty-state" *ngIf="loading">
-            <p>Chargement des formations...</p>
+          <!-- ✅ TOP FORMATIONS — rating + participants uniquement -->
+          <div class="top-section" *ngIf="topFormations.length">
+            <div class="top-header">
+              <div class="top-label">
+                <div class="top-label-accent"></div>
+                <div>
+                  <div class="top-label-title">Top formations du moment</div>
+                </div>
+              </div>
+              <div class="top-header-actions">
+                <button type="button" class="refresh-btn" (click)="refreshStatistics()" [disabled]="refreshing">
+                  <i class="ri-refresh-line"></i>
+                  {{ refreshing ? 'Actualisation...' : 'Rafraîchir statistiques' }}
+                </button>
+                <span class="top-refresh-info"><i class="ri-time-line"></i> Mis à jour automatiquement</span>
+              </div>
+            </div>
+
+            <div class="top-grid">
+              <div class="top-card"
+                *ngFor="let top of topFormations; let i = index"
+                [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2"
+                [routerLink]="['/formations', top.formationId]">
+
+                <!-- Rang -->
+                <div class="tc-top-row">
+                  <span class="rank-pill" [ngClass]="getRankClass(i)">
+                    <ng-container *ngIf="getRankLabel(i)">{{ getRankLabel(i) }} · </ng-container>#{{ i + 1 }}
+                  </span>
+                </div>
+
+                <!-- Titre -->
+                <div class="tc-title">{{ top.titre }}</div>
+                <div class="tc-badge" *ngIf="top.badge">
+                  <span class="badge" [class]="getBadgeClass(top.badge)">
+                    {{ getBadgeIcon(top.badge) }} {{ top.badge }}
+                  </span>
+                </div>
+
+                <!-- ✅ Stats : rating + participants UNIQUEMENT (pas de complétion) -->
+                <div class="tc-stats">
+
+                  <!-- Rating avec étoiles visuelles -->
+                  <span class="stat-pill stat-rating" *ngIf="getTopNoteMoyenne(top)">
+                    <span class="stat-dot dot-gold"></span>
+                    <span class="stat-note-value">{{ getTopNoteMoyenne(top) }}</span>
+                    <span class="stat-note-max">/5</span>
+                    <span class="mini-stars">
+                      <span *ngFor="let s of [1,2,3,4,5]"
+                            [class.star-full]="s <= getTopNoteEtoiles(top)"
+                            [class.star-empty]="s > getTopNoteEtoiles(top)">★</span>
+                    </span>
+                    <span class="stat-avis" *ngIf="getTopNbAvis(top) > 0">({{ getTopNbAvis(top) }} avis)</span>
+                  </span>
+
+                  <!-- Pas de note encore -->
+                  <span class="stat-pill stat-no-rating" *ngIf="!getTopNoteMoyenne(top)">
+                    <span class="stat-dot dot-gray"></span>
+                    Pas encore noté
+                  </span>
+
+                  <!-- Participants -->
+                  <span class="stat-pill stat-participants">
+                    <span class="stat-dot dot-blue"></span>
+                    {{ getTopParticipants(top) }}
+                    <span class="stat-label-text">{{ getTopParticipants(top) <= 1 ? 'participant' : 'participants' }}</span>
+                  </span>
+
+                </div>
+
+              </div>
+            </div>
           </div>
 
-          <!-- Vide -->
+          <!-- Chargement / vide -->
+          <div class="empty-state" *ngIf="loading"><p>Chargement des formations...</p></div>
           <div class="empty-state" *ngIf="!loading && filtered.length === 0">
             <div class="empty-icon">📚</div>
             <p>Aucune formation trouvée.</p>
           </div>
 
-          <!-- Grille de cards -->
+          <!-- Grille cards -->
           <div class="row g-4" *ngIf="!loading && filtered.length">
             <div class="col-lg-6 col-md-6" *ngFor="let formation of filtered">
               <div class="formation-card">
-                <div class="card-top-banner" [ngClass]="getCatClass(formation.categorie)">
+                <div class="card-top-banner position-relative" [ngClass]="getCatClass(formation.categorie)">
+
                   <span class="cat-emoji">{{ getIconEmoji(formation.categorie) }}</span>
-                  <span class="statut-badge" [ngClass]="getStatutClass(formation.statut)">
-                    {{ formation.statut }}
-                  </span>
+                  <span class="statut-badge" [ngClass]="getStatutClass(formation.statut)">{{ formation.statut }}</span>
                 </div>
                 <div class="card-body">
                   <div class="card-plateforme">{{ formation.plateforme }}</div>
@@ -108,18 +173,26 @@
                     <span><i class="ri-folder-line"></i> {{ formation.categorie }}</span>
                     <span><i class="ri-time-line"></i> {{ formation.duree }}</span>
                   </div>
-                  <!-- Rating -->
                   <div class="card-rating mt-2" *ngIf="ratings[formation.id]">
-                    <span style="color: #f1c40f; font-size: 1.1rem;">
+                    <span style="color:#f1c40f;font-size:1.1rem">
                       <ng-container *ngFor="let star of stars">
-                        <i class="ri-star-fill" *ngIf="ratings[formation.id].moyenne >= star"></i>
+                        <i class="ri-star-fill"      *ngIf="ratings[formation.id].moyenne >= star"></i>
                         <i class="ri-star-half-line" *ngIf="ratings[formation.id].moyenne >= star - 0.5 && ratings[formation.id].moyenne < star"></i>
-                        <i class="ri-star-line" *ngIf="ratings[formation.id].moyenne < star - 0.5"></i>
+                        <i class="ri-star-line"      *ngIf="ratings[formation.id].moyenne < star - 0.5"></i>
                       </ng-container>
                     </span>
-                    <span class="text-muted ms-2" style="font-size: 0.9rem; color: #6c757d;">
+                    <span class="text-muted ms-2" style="font-size:.9rem">
                       {{ ratings[formation.id].moyenne | number:'1.1-1' }} ({{ ratings[formation.id].total }})
                     </span>
+                  </div>
+                  <div class="card-badge-row mt-2" *ngIf="formation.badge">
+                    <span class="badge" [class]="getBadgeClass(formation.badge)">
+                      {{ getBadgeIcon(formation.badge) }} {{ formation.badge }}
+                    </span>
+                  </div>
+                  <div class="card-stats-row mt-3" *ngIf="formation.noteMoyenne || formation.totalInscrits">
+                    <span *ngIf="formation.noteMoyenne"><i class="ri-star-fill"></i> {{ formation.noteMoyenne | number:'1.1-1' }}</span>
+                    <span *ngIf="formation.totalInscrits"><i class="ri-team-line"></i> {{ formation.totalInscrits }} inscrits</span>
                   </div>
                 </div>
                 <div class="card-footer">
@@ -138,14 +211,8 @@
         <div class="col-lg-4 col-md-12">
           <div class="sidebar-area">
             <div class="stats-grid">
-              <div class="stat-card">
-                <span class="stat-value">{{ formations.length }}</span>
-                <span class="stat-label">Formations</span>
-              </div>
-              <div class="stat-card">
-                <span class="stat-value">{{ getDisponibles() }}</span>
-                <span class="stat-label">Disponibles</span>
-              </div>
+              <div class="stat-card"><span class="stat-value">{{ formations.length }}</span><span class="stat-label">Formations</span></div>
+              <div class="stat-card"><span class="stat-value">{{ getDisponibles() }}</span><span class="stat-label">Disponibles</span></div>
             </div>
             <div class="sidebar-card">
               <h3>Administration</h3>
@@ -163,42 +230,112 @@
       </div>
     </ng-container>
 
-    <!-- ── CAS PUBLIC : layout centré, pleine largeur ── -->
+    <!-- ── CAS PUBLIC ─────────────────────────────────────────────────────── -->
     <ng-template #publicLayout>
       <div class="row">
         <div class="col-12">
 
-          <!-- Filtres chips -->
-          <div class="formations-filters">
-            <button
-              type="button"
-              *ngFor="let f of filters"
-              class="filter-chip"
-              [class.active]="activeFilter === f"
-              (click)="applyFilter(f)"
-            >{{ f }}</button>
+          <!-- Filtres -->
+          <div class="formations-filters d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" *ngFor="let f of filters" class="filter-chip"
+                [class.active]="activeFilter === f" (click)="applyFilter(f)">{{ f }}</button>
+            </div>
+            <div class="filters-row d-flex gap-3">
+              <select class="form-select form-select-sm premium-select" (change)="onBadgeChange($any($event.target).value)">
+                <option *ngFor="let b of badges" [value]="b">{{ b || 'Tous les badges' }}</option>
+              </select>
+              <select class="form-select form-select-sm premium-select" (change)="onCategorieChange($any($event.target).value)">
+                <option *ngFor="let c of categories" [value]="c">{{ c || 'Toutes les catégories' }}</option>
+              </select>
+            </div>
           </div>
 
-          <!-- Chargement -->
-          <div class="empty-state" *ngIf="loading">
-            <p>Chargement des formations...</p>
+          <!-- ✅ TOP FORMATIONS public — identique admin -->
+          <div class="top-section" *ngIf="topFormations.length">
+            <div class="top-header">
+              <div class="top-label">
+                <div class="top-label-accent"></div>
+                <div>
+                  <div class="top-label-title">Top formations du moment</div>
+
+                </div>
+              </div>
+              <div class="top-header-actions">
+                <button type="button" class="refresh-btn" (click)="refreshStatistics()" [disabled]="refreshing">
+                  <i class="ri-refresh-line"></i>
+                  {{ refreshing ? 'Actualisation...' : 'Rafraîchir statistiques' }}
+                </button>
+                <span class="top-refresh-info"><i class="ri-time-line"></i> Mis à jour automatiquement</span>
+              </div>
+            </div>
+
+            <div class="top-grid">
+              <div class="top-card"
+                *ngFor="let top of topFormations; let i = index"
+                [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2"
+                [routerLink]="['/formations', top.formationId]">
+
+                <div class="tc-top-row">
+                  <span class="rank-pill" [ngClass]="getRankClass(i)">
+                    <ng-container *ngIf="getRankLabel(i)">{{ getRankLabel(i) }} · </ng-container>#{{ i + 1 }}
+                  </span>
+                </div>
+
+                <div class="tc-title">{{ top.titre }}</div>
+                <div class="tc-badge" *ngIf="top.badge">
+                  <span class="badge" [class]="getBadgeClass(top.badge)">
+                    {{ getBadgeIcon(top.badge) }} {{ top.badge }}
+                  </span>
+                </div>
+
+                <!-- ✅ Rating + participants uniquement -->
+                <div class="tc-stats">
+
+                  <span class="stat-pill stat-rating" *ngIf="getTopNoteMoyenne(top)">
+                    <span class="stat-dot dot-gold"></span>
+                    <span class="stat-note-value">{{ getTopNoteMoyenne(top) }}</span>
+                    <span class="stat-note-max">/5</span>
+                    <span class="mini-stars">
+                      <span *ngFor="let s of [1,2,3,4,5]"
+                            [class.star-full]="s <= getTopNoteEtoiles(top)"
+                            [class.star-empty]="s > getTopNoteEtoiles(top)">★</span>
+                    </span>
+                    <span class="stat-avis" *ngIf="getTopNbAvis(top) > 0">({{ getTopNbAvis(top) }} avis)</span>
+                  </span>
+
+                  <span class="stat-pill stat-no-rating" *ngIf="!getTopNoteMoyenne(top)">
+                    <span class="stat-dot dot-gray"></span>
+                    Pas encore noté
+                  </span>
+
+                  <span class="stat-pill stat-participants">
+                    <span class="stat-dot dot-blue"></span>
+                    {{ getTopParticipants(top) }}
+                    <span class="stat-label-text">{{ getTopParticipants(top) <= 1 ? 'participant' : 'participants' }}</span>
+                  </span>
+
+                </div>
+
+              </div>
+            </div>
           </div>
 
-          <!-- Vide -->
+          <!-- Chargement / vide -->
+          <div class="empty-state" *ngIf="loading"><p>Chargement des formations...</p></div>
           <div class="empty-state" *ngIf="!loading && filtered.length === 0">
             <div class="empty-icon">📚</div>
             <p>Aucune formation trouvée.</p>
           </div>
 
-          <!-- Grille de cards centrée -->
+          <!-- Grille cards -->
           <div class="row g-4 justify-content-center" *ngIf="!loading && filtered.length">
             <div class="col-lg-4 col-md-6 col-sm-12" *ngFor="let formation of filtered">
               <div class="formation-card">
-                <div class="card-top-banner" [ngClass]="getCatClass(formation.categorie)">
+                <div class="card-top-banner position-relative" [ngClass]="getCatClass(formation.categorie)">
+
                   <span class="cat-emoji">{{ getIconEmoji(formation.categorie) }}</span>
-                  <span class="statut-badge" [ngClass]="getStatutClass(formation.statut)">
-                    {{ formation.statut }}
-                  </span>
+                  <span class="statut-badge" [ngClass]="getStatutClass(formation.statut)">{{ formation.statut }}</span>
                 </div>
                 <div class="card-body">
                   <div class="card-plateforme">{{ formation.plateforme }}</div>
@@ -209,18 +346,26 @@
                     <span><i class="ri-folder-line"></i> {{ formation.categorie }}</span>
                     <span><i class="ri-time-line"></i> {{ formation.duree }}</span>
                   </div>
-                  <!-- Rating -->
                   <div class="card-rating mt-2" *ngIf="ratings[formation.id]">
-                    <span style="color: #f1c40f; font-size: 1.1rem;">
+                    <span style="color:#f1c40f;font-size:1.1rem">
                       <ng-container *ngFor="let star of stars">
-                        <i class="ri-star-fill" *ngIf="ratings[formation.id].moyenne >= star"></i>
+                        <i class="ri-star-fill"      *ngIf="ratings[formation.id].moyenne >= star"></i>
                         <i class="ri-star-half-line" *ngIf="ratings[formation.id].moyenne >= star - 0.5 && ratings[formation.id].moyenne < star"></i>
-                        <i class="ri-star-line" *ngIf="ratings[formation.id].moyenne < star - 0.5"></i>
+                        <i class="ri-star-line"      *ngIf="ratings[formation.id].moyenne < star - 0.5"></i>
                       </ng-container>
                     </span>
-                    <span class="text-muted ms-2" style="font-size: 0.9rem; color: #6c757d;">
+                    <span class="text-muted ms-2" style="font-size:.9rem">
                       {{ ratings[formation.id].moyenne | number:'1.1-1' }} ({{ ratings[formation.id].total }})
                     </span>
+                  </div>
+                  <div class="card-badge-row mt-2" *ngIf="formation.badge">
+                    <span class="badge" [class]="getBadgeClass(formation.badge)">
+                      {{ getBadgeIcon(formation.badge) }} {{ formation.badge }}
+                    </span>
+                  </div>
+                  <div class="card-stats-row mt-3" *ngIf="formation.noteMoyenne || formation.totalInscrits">
+                    <span *ngIf="formation.noteMoyenne"><i class="ri-star-fill"></i> {{ formation.noteMoyenne | number:'1.1-1' }}</span>
+                    <span *ngIf="formation.totalInscrits"><i class="ri-team-line"></i> {{ formation.totalInscrits }} inscrits</span>
                   </div>
                 </div>
                 <div class="card-footer">

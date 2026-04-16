@@ -126,10 +126,34 @@ export class FormationService {
     );
   }
 
-  // ── Candidat ──────────────────────────────────────────────────
   getCandidatByEmail(email: string): Observable<{ id: number }> {
     return this.http.get<{ id: number }>(
       `${this.api}/candidats/email/${encodeURIComponent(email)}`
     );
+  }
+
+  // ── Stats JPQL & Keywords ──────────────────────────────────────
+  getStats(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/stats`);
+  }
+
+  getStatsByCategorie(categorie: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/stats/categorie/${categorie}`);
+  }
+
+  getTopFormations(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/top`);
+  }
+
+  refreshScoresAndBadges(): Observable<any> {
+    return this.http.post<any>(`${this.base}/refresh`, {});
+  }
+
+  getFormationsParBadge(badge: string): Observable<Formation[]> {
+    return this.http.get<Formation[]>(`${this.base}/badge/${badge}`);
+  }
+
+  getFormationsPopulaires(scoreMin: number = 50): Observable<Formation[]> {
+    return this.http.get<Formation[]>(`${this.base}/populaires?scoreMin=${scoreMin}`);
   }
 }

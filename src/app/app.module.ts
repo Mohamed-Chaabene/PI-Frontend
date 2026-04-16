@@ -101,10 +101,10 @@ import { EvenementFormComponent } from './evenement-dashboard/evenement-form/eve
 import { EvenementListComponent } from './evenement-dashboard/evenement-list/evenement-list.component';
 import { EvenementEditComponent } from './evenement-dashboard/evenement-edit/evenement-edit.component';
 import { EvenementDetailComponent } from './evenement-dashboard/evenement-detail/evenement-detail.component';
-import { DatePipe } from '@angular/common';
+import { DatePipe, registerLocaleData } from '@angular/common';
 import { LOCALE_ID } from '@angular/core';
 import localeFr from '@angular/common/locales/fr';
-import { registerLocaleData } from '@angular/common';
+registerLocaleData(localeFr);
 import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header/evenement-header.component';
 import { EvenementDemandesComponent } from './evenement-dashboard/evenement-demandes/evenement-demandes.component';
 import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';

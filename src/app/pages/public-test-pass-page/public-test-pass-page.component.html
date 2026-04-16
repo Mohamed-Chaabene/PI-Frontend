@@ -1,5 +1,14 @@
 <app-navbar />
 
+<!-- ── Anti-Screenshot Overlay ────────────────────────────────────── -->
+<div class="screenshot-blocker-overlay" *ngIf="isObscured">
+  <div class="message">
+    <i class="ri-forbid-line"></i>
+    <span>Capture d'écran interdite</span>
+  </div>
+</div>
+
+
 <section class="test-pass-area ptb-100">
   <div class="container">
     <div class="test-pass-head">

@@ -6,22 +6,24 @@ import { HttpClient } from '@angular/common/http';
 import { Formation } from '../models/formation.model';
 
 interface ChatMessage {
-  role:    'user' | 'assistant' | 'system';
-  content: string;
-  imageUrl?: string;
-  loading?: boolean;
-  isInitial?: boolean;
-  isEditing?: boolean;
+  role:        'user' | 'assistant' | 'system';
+  content:     string;
+  imageUrl?:   string;
+  fileName?:   string;       // Nom du fichier joint
+  fileExcerpt?: string;      // Extrait texte du fichier (pour affichage historique)
+  loading?:    boolean;
+  isInitial?:  boolean;
+  isEditing?:  boolean;
   editContent?: string;
   editImageUrl?: string;
 }
 
 interface ChatSession {
-  id: number;
-  sessionId: string;
+  id:           number;
+  sessionId:    string;
   sessionTitle: string;
-  createdAt?: string;
-  messages: ChatMessage[];
+  createdAt?:   string;
+  messages:     ChatMessage[];
 }
 
 @Component({
@@ -46,7 +48,10 @@ export class ChatbotFormationComponent
   currentSessionId: string | null = null;
   messages:   ChatMessage[] = [];
   inputText = '';
-  selectedImageBase64: string | null = null;
+  selectedImageBase64:  string | null = null;
+  selectedFileBase64:   string | null = null;   // base64 du fichier (PDF/Word)
+  selectedFileName:     string | null = null;   // nom du fichier
+  selectedFileText:     string | null = null;   // texte extrait (PDF.js ou fallback)
   isLoading = false;
   isRenamingSession = false;
   newSessionTitle = '';
@@ -61,6 +66,9 @@ export class ChatbotFormationComponent
   private voicesLoaded = false;
 
   private readonly base = 'http://localhost:8080/api';
+
+  // ── Extensions de fichiers acceptées ────────────────────────
+  readonly ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.txt,.md,.ppt,.pptx,.xls,.xlsx,.csv';
 
   // ── Suggestions rapides selon contexte ───────────────────────
   get quickSuggestions(): string[] {
@@ -82,30 +90,22 @@ export class ChatbotFormationComponent
   }
 
   ngOnInit(): void {
-    // Précharger les voix dès que possible
-    this.synth.onvoiceschanged = () => {
-      this.voicesLoaded = true;
-    };
-    // Certains navigateurs (Chrome) chargent les voix de façon asynchrone
-    if (this.synth.getVoices().length > 0) {
-      this.voicesLoaded = true;
-    }
+    this.synth.onvoiceschanged = () => { this.voicesLoaded = true; };
+    if (this.synth.getVoices().length > 0) { this.voicesLoaded = true; }
 
     if (this.candidatId && this.formation?.id) {
       this.http.get<ChatSession[]>(`${this.base}/chatbot/history`, {
         params: {
-          candidatId: this.candidatId.toString(),
+          candidatId:  this.candidatId.toString(),
           formationId: this.formation.id.toString()
         }
       }).subscribe({
         next: (hist) => {
           if (hist && hist.length > 0) {
-            this.sessions = hist;
+            this.sessions         = hist;
             this.currentSessionId = hist[0].sessionId;
-            this.messages = hist[0].messages || [];
-            if (this.messages.length === 0) {
-              this.setInitialMessage();
-            }
+            this.messages         = hist[0].messages || [];
+            if (this.messages.length === 0) this.setInitialMessage();
             this.shouldScrollToBottom = true;
           } else {
             this.setInitialMessage();
@@ -121,7 +121,7 @@ export class ChatbotFormationComponent
   private setInitialMessage(): void {
     this.messages.push({
       role:    'assistant',
-      content: `Bonjour ! Je suis votre assistant IA pour la formation **"${this.formation?.titre}"**.\n\nJe peux vous aider à :\n- Résumer des concepts\n- Expliquer des notions difficiles\n- Répondre à vos questions\n- Suggérer des exercices pratiques\n\nQue souhaitez-vous savoir ?`,
+      content: `Bonjour ! Je suis votre assistant IA pour la formation **"${this.formation?.titre}"**.\n\nJe peux vous aider à :\n- Résumer des concepts\n- Expliquer des notions difficiles\n- Répondre à vos questions\n- Suggérer des exercices pratiques\n- Analyser des **images** liées à la formation\n- Analyser des **documents PDF ou Word** liés à la formation\n\nQue souhaitez-vous savoir ?`,
       isInitial: true
     });
   }
@@ -145,7 +145,6 @@ export class ChatbotFormationComponent
       this.shouldScrollToBottom = true;
       setTimeout(() => this.focusInput(), 100);
     } else {
-      // Arrêter tout audio quand on ferme
       this.stopListening();
       this.stopSpeaking();
     }
@@ -157,57 +156,95 @@ export class ChatbotFormationComponent
     this.stopSpeaking();
   }
 
-  // ── Envoyer un message (depuis l'input utilisateur) ───────────
+  // ── Envoyer un message ────────────────────────────────────────
   sendMessage(text?: string): void {
     const msg   = (text || this.inputText).trim();
     const image = text ? null : this.selectedImageBase64;
+    const file  = text ? null : this.selectedFileBase64;
+    const fname = text ? null : this.selectedFileName;
+    const ftext = text ? null : this.selectedFileText;
 
-    if (!msg && !this.selectedImageBase64) return;
+    if (!msg && !image && !file) return;
 
     if (!text) {
-      this.inputText = '';
+      this.inputText          = '';
       this.selectedImageBase64 = null;
+      this.selectedFileBase64  = null;
+      this.selectedFileName    = null;
+      this.selectedFileText    = null;
     }
 
-    this.sendMessageWithImage(msg, image);
+    this.sendMessageWithAttachments(msg, image, file, fname, ftext);
   }
 
   // ── Méthode centrale d'envoi ──────────────────────────────────
-  sendMessageWithImage(text: string, imageBase64: string | null): void {
+  sendMessageWithAttachments(
+    text:       string,
+    imageBase64: string | null,
+    fileBase64:  string | null,
+    fileName:   string | null,
+    fileText:   string | null
+  ): void {
     let msg = text.trim();
-    if (!msg && !imageBase64) return;
+    if (!msg && !imageBase64 && !fileBase64) return;
     if (this.isLoading) return;
 
-    // Arrêter la lecture en cours si on envoie un nouveau message
     this.stopSpeaking();
 
     if (imageBase64 && !msg) {
       msg = "Peux-tu analyser cette image s'il te plaît ?";
     }
+    if (fileBase64 && !msg) {
+      msg = `Peux-tu analyser ce document : ${fileName} ?`;
+    }
 
-    const currentImage = imageBase64;
-    this.messages.push({ role: 'user', content: msg, imageUrl: currentImage || undefined });
+    const userMsg: ChatMessage = {
+      role:    'user',
+      content: msg,
+      imageUrl:    imageBase64  || undefined,
+      fileName:    fileName     || undefined,
+      fileExcerpt: fileText     ? (fileText.length > 200 ? fileText.substring(0, 200) + '...' : fileText) : undefined
+    };
+    this.messages.push(userMsg);
     this.shouldScrollToBottom = true;
 
     const loadingMsg: ChatMessage = { role: 'assistant', content: '', loading: true };
     this.messages.push(loadingMsg);
     this.isLoading = true;
 
+    // Historique pour le backend — les base64 bruts sont remplacés par des placeholders
+    // pour éviter des payloads de 20MB+ qui causent des erreurs 500
     const history = this.messages
       .filter(m => !m.loading && m.content)
       .slice(-10)
       .map(m => {
         const obj: any = { role: m.role, content: m.content };
-        if (m.imageUrl) obj.imageUrl = m.imageUrl;
+        // Remplacer les base64 par un placeholder (URL externe = OK, base64 = trop lourd)
+        if (m.imageUrl) {
+          obj.imageUrl = m.imageUrl.startsWith('data:') ? '[image:base64]' : m.imageUrl;
+        }
+        if (m.fileName)    obj.fileName    = m.fileName;
+        if (m.fileExcerpt) obj.fileExcerpt = m.fileExcerpt;
         return obj;
       });
 
+    // Tronquer fileText à 15 000 chars pour éviter les payloads trop lourds
+    const truncatedFileText = fileText
+      ? (fileText.length > 15000 ? fileText.substring(0, 15000) + '\n...[document tronqué]' : fileText)
+      : null;
+
+    // Ne pas envoyer le base64 brut si on a déjà le texte extrait (évite les payloads de 20MB+)
+    const fileDataToSend = (truncatedFileText || !fileBase64) ? null : fileBase64;
+
     this.http.post<any>(`${this.base}/chatbot/formation`, {
       message:        msg,
-      imageUrl:       currentImage || null,
-      titreFormation: this.formation?.titre || '',
+      imageUrl:       imageBase64      || null,
+      fileData:       fileDataToSend,              // base64 seulement si pas de texte extrait
+      fileName:       fileName         || null,
+      fileText:       truncatedFileText || null,   // texte extrait (tronqué à 15k chars)
+      titreFormation: this.formation?.titre    || '',
       categorie:      this.formation?.categorie || '',
-      niveau:         this.formation?.niveau || '',
+      niveau:         this.formation?.niveau    || '',
       context:        this.context,
       formationId:    this.formation?.id,
       candidatId:     this.candidatId,
@@ -221,10 +258,7 @@ export class ChatbotFormationComponent
           this.messages[idx] = { role: 'assistant', content: replyText };
         }
 
-        // Lecture vocale automatique de la réponse
-        if (this.voiceEnabled) {
-          this.speakMessage(replyText);
-        }
+        if (this.voiceEnabled) { this.speakMessage(replyText); }
 
         if (resp.sessionId && resp.sessionId !== this.currentSessionId) {
           this.currentSessionId = resp.sessionId;
@@ -259,6 +293,11 @@ export class ChatbotFormationComponent
     });
   }
 
+  // ── Compatibilité avec l'ancienne méthode (image seule) ──────
+  sendMessageWithImage(text: string, imageBase64: string | null): void {
+    this.sendMessageWithAttachments(text, imageBase64, null, null, null);
+  }
+
   onEnterKey(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -267,20 +306,23 @@ export class ChatbotFormationComponent
   }
 
   clearChat(): void {
-    this.currentSessionId = null;
-    this.messages = [];
-    this.selectedImageBase64 = null;
+    this.currentSessionId    = null;
+    this.messages            = [];
+    this.selectedImageBase64  = null;
+    this.selectedFileBase64   = null;
+    this.selectedFileName     = null;
+    this.selectedFileText     = null;
     this.stopSpeaking();
     this.setInitialMessage();
   }
 
-  // ── Import d'images (Multimodal) ──────────────────────────────
-  onFileSelected(event: any): void {
+  // ── Import d'images ───────────────────────────────────────────
+  onImageSelected(event: any): void {
     const file = event.target.files[0];
     if (!file) return;
 
     if (!file.type.match(/image\/*/)) {
-      alert("Seules les images sont autorisées.");
+      alert("Seules les images sont autorisées pour ce bouton.");
       return;
     }
 
@@ -304,6 +346,10 @@ export class ChatbotFormationComponent
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height);
           this.selectedImageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+          // Effacer le fichier si une image est sélectionnée
+          this.selectedFileBase64 = null;
+          this.selectedFileName   = null;
+          this.selectedFileText   = null;
         }
       };
       img.src = e.target.result;
@@ -312,8 +358,109 @@ export class ChatbotFormationComponent
     event.target.value = '';
   }
 
+  // ── Import de documents (PDF, Word, etc.) ────────────────────
+  onDocumentSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (!file) return;
+
+    // Effacer l'image si un document est sélectionné
+    this.selectedImageBase64 = null;
+    this.selectedFileName    = file.name;
+
+    const ext = file.name.split('.').pop()?.toLowerCase();
+
+    if (ext === 'txt' || ext === 'md' || ext === 'csv') {
+      // Lire directement en texte
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.selectedFileText   = e.target.result as string;
+        this.selectedFileBase64 = null; // pas besoin du base64 pour les fichiers texte
+      };
+      reader.readAsText(file);
+    } else if (ext === 'pdf') {
+      // Lire en base64 ET tenter l'extraction via PDF.js (disponible en CDN)
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.selectedFileBase64 = e.target.result as string;
+        this.extractPdfText(e.target.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Word, Excel, PPT, etc. : on envoie juste le base64 + nom
+      // Le backend signalera que l'extraction n'est pas disponible
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.selectedFileBase64 = e.target.result as string;
+        this.selectedFileText   = null;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    event.target.value = '';
+  }
+
+  // ── Extraction texte PDF via PDF.js (CDN) ────────────────────
+  private async extractPdfText(base64DataUrl: string): Promise<void> {
+    try {
+      // Charger PDF.js dynamiquement si pas encore chargé
+      const pdfjsLib = (window as any)['pdfjs-dist/build/pdf'];
+      if (!pdfjsLib) {
+        // Si PDF.js n'est pas chargé, on envoie sans texte extrait
+        this.selectedFileText = null;
+        return;
+      }
+
+      const base64 = base64DataUrl.split(',')[1];
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+
+      const pdf  = await pdfjsLib.getDocument({ data: bytes }).promise;
+      let   text = '';
+      const maxPages = Math.min(pdf.numPages, 20); // max 20 pages
+
+      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+        const page    = await pdf.getPage(pageNum);
+        const content = await page.getTextContent();
+        const pageText = content.items.map((item: any) => item.str).join(' ');
+        text += pageText + '\n';
+      }
+
+      this.selectedFileText = text.trim();
+    } catch (err) {
+      console.warn('PDF text extraction failed:', err);
+      this.selectedFileText = null;
+    }
+  }
+
   removeSelectedImage(): void {
     this.selectedImageBase64 = null;
+  }
+
+  removeSelectedFile(): void {
+    this.selectedFileBase64 = null;
+    this.selectedFileName   = null;
+    this.selectedFileText   = null;
+  }
+
+  // ── Obtenir l'icône selon l'extension du fichier ─────────────
+  getFileIcon(fileName: string): string {
+    const ext = fileName?.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf':  return 'ri-file-pdf-line';
+      case 'doc':
+      case 'docx': return 'ri-file-word-line';
+      case 'xls':
+      case 'xlsx': return 'ri-file-excel-line';
+      case 'ppt':
+      case 'pptx': return 'ri-file-ppt-line';
+      case 'txt':
+      case 'md':   return 'ri-file-text-line';
+      case 'csv':  return 'ri-file-chart-line';
+      default:     return 'ri-file-line';
+    }
   }
 
   selectSession(event: any): void {
@@ -324,8 +471,8 @@ export class ChatbotFormationComponent
     }
     const session = this.sessions.find(s => s.sessionId === sessionId);
     if (session) {
-      this.currentSessionId    = sessionId;
-      this.messages            = session.messages || [];
+      this.currentSessionId     = sessionId;
+      this.messages             = session.messages || [];
       if (this.messages.length === 0) this.setInitialMessage();
       this.shouldScrollToBottom = true;
     }
@@ -336,7 +483,7 @@ export class ChatbotFormationComponent
     if (!this.currentSessionId) return;
     const session = this.sessions.find(s => s.sessionId === this.currentSessionId);
     if (session) {
-      this.newSessionTitle  = session.sessionTitle;
+      this.newSessionTitle   = session.sessionTitle;
       this.isRenamingSession = true;
     }
   }
@@ -370,7 +517,7 @@ export class ChatbotFormationComponent
       error: (err) => {
         console.error("Failed to delete the session:", err);
         const serverError = err.error?.error ? `\nDétails: ${err.error.error}` : '';
-        alert("Erreur lors de la suppression de la discussion. Veuillez réessayer." + serverError);
+        alert("Erreur lors de la suppression de la discussion." + serverError);
       }
     });
   }
@@ -415,8 +562,19 @@ export class ChatbotFormationComponent
     const session = this.sessions.find(s => s.sessionId === this.currentSessionId);
     if (session) session.messages = [...this.messages];
 
+    // Sanitiser les base64 avant d'envoyer au backend (évite les payloads massifs)
+    const sanitizedMessages = this.messages.map(m => {
+      const obj: any = { role: m.role, content: m.content };
+      if (m.imageUrl) {
+        obj.imageUrl = m.imageUrl.startsWith('data:') ? '[image:base64]' : m.imageUrl;
+      }
+      if (m.fileName)    obj.fileName    = m.fileName;
+      if (m.fileExcerpt) obj.fileExcerpt = m.fileExcerpt;
+      return obj;
+    });
+
     this.http.put(`${this.base}/chatbot/session/${this.currentSessionId}`, {
-      messages: this.messages
+      messages: sanitizedMessages
     }).subscribe();
   }
 
@@ -435,7 +593,6 @@ export class ChatbotFormationComponent
   // ── ASSISTANT VOCAL ───────────────────────────────────────────
   // ══════════════════════════════════════════════════════════════
 
-  // ── Speech-to-Text (STT) ──────────────────────────────────────
   startListening(): void {
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
@@ -446,13 +603,8 @@ export class ChatbotFormationComponent
       return;
     }
 
-    // Bascule : si déjà en écoute, on arrête
-    if (this.isListening) {
-      this.stopListening();
-      return;
-    }
+    if (this.isListening) { this.stopListening(); return; }
 
-    // Arrêter la synthèse vocale si en cours
     this.stopSpeaking();
 
     this.recognition = new SpeechRecognition();
@@ -461,23 +613,17 @@ export class ChatbotFormationComponent
     this.recognition.interimResults  = true;
     this.recognition.maxAlternatives = 1;
 
-    this.recognition.onstart = () => {
-      this.isListening = true;
-    };
+    this.recognition.onstart  = () => { this.isListening = true; };
 
     this.recognition.onresult = (event: any) => {
-      // Agréger tous les résultats intermédiaires
       const transcript = Array.from(event.results as SpeechRecognitionResultList)
         .map((r: SpeechRecognitionResult) => r[0].transcript)
         .join('');
       this.inputText = transcript;
 
-      // Résultat final → envoyer automatiquement
       if ((event.results[event.results.length - 1] as SpeechRecognitionResult).isFinal) {
         this.stopListening();
-        setTimeout(() => {
-          if (this.inputText.trim()) this.sendMessage();
-        }, 300);
+        setTimeout(() => { if (this.inputText.trim()) this.sendMessage(); }, 300);
       }
     };
 
@@ -485,31 +631,23 @@ export class ChatbotFormationComponent
       console.error('Speech recognition error:', event.error);
       this.isListening = false;
       if (event.error === 'not-allowed') {
-        alert("Accès au microphone refusé. Veuillez autoriser l'accès dans les paramètres du navigateur.");
+        alert("Accès au microphone refusé.");
       }
     };
 
-    this.recognition.onend = () => {
-      this.isListening = false;
-    };
-
+    this.recognition.onend = () => { this.isListening = false; };
     this.recognition.start();
   }
 
   stopListening(): void {
-    if (this.recognition) {
-      this.recognition.stop();
-      this.recognition = null;
-    }
+    if (this.recognition) { this.recognition.stop(); this.recognition = null; }
     this.isListening = false;
   }
 
-  // ── Text-to-Speech (TTS) ──────────────────────────────────────
   speakMessage(text: string): void {
     if (!text) return;
     this.stopSpeaking();
 
-    // Nettoyer le markdown et le HTML avant lecture
     const clean = text
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*(.*?)\*/g,     '$1')
@@ -522,16 +660,14 @@ export class ChatbotFormationComponent
 
     if (!clean) return;
 
-    const utterance     = new SpeechSynthesisUtterance(clean);
-    utterance.lang      = 'fr-FR';
-    utterance.rate      = 1.0;
-    utterance.pitch     = 1.0;
-    utterance.volume    = 1.0;
+    const utterance    = new SpeechSynthesisUtterance(clean);
+    utterance.lang     = 'fr-FR';
+    utterance.rate     = 1.0;
+    utterance.pitch    = 1.0;
+    utterance.volume   = 1.0;
 
-    // Choisir la meilleure voix française disponible
     const voices    = this.synth.getVoices();
     const frVoices  = voices.filter(v => v.lang.startsWith('fr'));
-    // Préférer une voix locale (non réseau) si disponible
     const localVoice = frVoices.find(v => v.localService);
     utterance.voice  = localVoice || frVoices[0] || null;
 
@@ -545,9 +681,7 @@ export class ChatbotFormationComponent
   }
 
   stopSpeaking(): void {
-    if (this.synth.speaking || this.synth.pending) {
-      this.synth.cancel();
-    }
+    if (this.synth.speaking || this.synth.pending) { this.synth.cancel(); }
     this.isSpeaking = false;
   }
 
@@ -556,17 +690,11 @@ export class ChatbotFormationComponent
     if (!this.voiceEnabled) this.stopSpeaking();
   }
 
-  // ── Vérifier le support du navigateur ────────────────────────
   get isSpeechSupported(): boolean {
-    return !!(
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition
-    );
+    return !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
   }
 
-  get isTTSSupported(): boolean {
-    return !!window.speechSynthesis;
-  }
+  get isTTSSupported(): boolean { return !!window.speechSynthesis; }
 
   // ── Scroll & Focus ────────────────────────────────────────────
   private scrollToBottom(): void {

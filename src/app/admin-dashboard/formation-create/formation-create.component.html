@@ -14,18 +14,15 @@
           <div class="form-card-body">
             <form [formGroup]="form" (ngSubmit)="submit()">
 
-              <!-- Alerte erreur globale -->
               <div class="alert-error" *ngIf="serverErrorMessage">
                 <i class="ri-error-warning-line"></i>
                 {{ serverErrorMessage }}
               </div>
 
-              <!-- ══ SECTION 1 : Informations générales ══════════════ -->
               <div class="form-section-title">
                 <span class="section-number">1</span> Informations générales
               </div>
 
-              <!-- Titre -->
               <div class="form-group">
                 <label class="form-label required">Titre de la formation</label>
                 <input
@@ -39,7 +36,6 @@
                   {{ getError('titre') }}
                 </div>
 
-                <!-- Suggestions YouTube -->
                 <div class="suggestions-loading" *ngIf="loading">
                   <i class="ri-loader-4-line spin"></i>
                   Recherche des meilleures playlists YouTube...
@@ -76,7 +72,6 @@
                 </div>
               </div>
 
-              <!-- Catégorie + Plateforme -->
               <div class="row">
                 <div class="col-md-6">
                   <div class="form-group">
@@ -121,7 +116,6 @@
                 </div>
               </div>
 
-              <!-- ══ SECTION 2 : Configuration ══════════════════════ -->
               <div class="form-section-title">
                 <span class="section-number">2</span> Configuration
               </div>
@@ -170,11 +164,6 @@
                 </div>
               </div>
 
-              <!-- ══ SECTION 3 : Playlist YouTube ═══════════════════ -->
-              <!--
-                ✅ Section masquée visuellement si "Bientôt"
-                   (champ optionnel mais toujours présent dans le form)
-              -->
               <ng-container>
                 <div class="form-section-title"
                      [class.section-disabled]="form.get('statut')?.value === 'Bientôt'">
@@ -213,7 +202,6 @@
                 </div>
               </ng-container>
 
-              <!-- ══ SECTION 4 : Lien externe ════════════════════════ -->
               <div class="form-section-title"
                    [class.section-disabled]="form.get('statut')?.value === 'Bientôt'">
                 <span class="section-number">4</span>
@@ -239,7 +227,6 @@
                 </div>
               </div>
 
-              <!-- ✅ Alerte contenu manquant — UNIQUEMENT si statut = Disponible -->
               <div class="alert-warning"
                    *ngIf="form.errors?.['noContent']
                           && form.touched
@@ -249,7 +236,6 @@
                 au moins un contenu : playlist YouTube ou lien externe.
               </div>
 
-              <!-- ══ SECTION 5 : Éditeur interactif ═════════════════ -->
               <div class="form-section-title">
                 <span class="section-number">5</span> Éditeur interactif
               </div>
@@ -277,7 +263,6 @@
                 </select>
               </div>
 
-              <!-- ══ SECTION 6 : Documentation ══════════════════════ -->
               <div class="form-section-title">
                 <span class="section-number">6</span> Documentation
               </div>
@@ -295,7 +280,6 @@
                   placeholder="Laisser vide — trouvée automatiquement depuis le titre">
               </div>
 
-              <!-- ══ ACTIONS ══════════════════════════════════════════ -->
               <div class="form-actions">
                 <button type="button" class="btn-cancel" (click)="cancel()">
                   <i class="ri-arrow-left-line"></i> Annuler
