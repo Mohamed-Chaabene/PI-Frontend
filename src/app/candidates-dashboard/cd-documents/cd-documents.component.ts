@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../api.service';
-// Import Observable pour le return type
 import { Observable } from 'rxjs';
+import { ViewChild, ElementRef } from '@angular/core';
 
 @Component({
     selector: 'app-cd-documents',
@@ -12,6 +12,26 @@ import { Observable } from 'rxjs';
     styleUrls: ['./cd-documents.component.scss']
 })
 export class CdDocumentsComponent implements OnInit {
+    @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
+    @ViewChild('canvasElement') canvasElement!: ElementRef<HTMLCanvasElement>;
+    
+    editingDocumentId: number | null = null; 
+    showCameraModal = false;
+    capturedImage: string | null = null;
+    isProcessing = false;
+    processingStep = 0;
+    stream: MediaStream | null = null;
+    resultatRecherche: any = null;
+    showResultModal: boolean = false;
+    modalTitle: string = '';
+    modalData: any = null;
+
+    // Variables pour la confirmation photo
+    showPhotoConfirmationModal: boolean = false;
+    originalPhoto: string | null = null;
+    processedPhoto: string | null = null;
+    isProcessingPhoto: boolean = false;
+    photoProcessingError: string | null = null;
 
     documents: any[] = [];
     isLoading = true;
@@ -115,20 +135,20 @@ export class CdDocumentsComponent implements OnInit {
         this.loadDocuments();
     }
 
- loadDocuments(): void {
-    this.isLoading = true;
-    this.apiService.getMesDocuments().subscribe({  // ✅ getMesDocuments, pas getAllDocuments
-        next: (data) => {
-            this.documents = data;
-            this.isLoading = false;
-        },
-        error: (err) => {
-            console.error('Erreur chargement documents:', err);
-            this.errorMessage = 'Erreur de chargement';
-            this.isLoading = false;
-        }
-    });
-}
+    loadDocuments(): void {
+        this.isLoading = true;
+        this.apiService.getMesDocuments().subscribe({
+            next: (data) => {
+                this.documents = data;
+                this.isLoading = false;
+            },
+            error: (err) => {
+                console.error('Erreur chargement documents:', err);
+                this.errorMessage = 'Erreur de chargement';
+                this.isLoading = false;
+            }
+        });
+    }
 
     // ==================== CHANGEMENT DE TYPE ====================
     onTypeChange(type: string): void {
@@ -144,6 +164,7 @@ export class CdDocumentsComponent implements OnInit {
 
     closeCreateModal(): void {
         this.showCreateModal = false;
+        this.editingDocumentId = null;
         this.resetForms();
     }
 
@@ -181,10 +202,12 @@ export class CdDocumentsComponent implements OnInit {
             alert("Veuillez sélectionner une image (JPG, PNG, etc.)");
             return;
         }
+        
         const reader = new FileReader();
         reader.onload = (e: any) => {
             this.cvData.photo = e.target.result;
             this.cvData.photoName = file.name;
+            alert('✅ Photo importée avec succès !');
         };
         reader.readAsDataURL(file);
     }
@@ -254,9 +277,8 @@ export class CdDocumentsComponent implements OnInit {
         this.portfolioData.technologies.splice(index, 1);
     }
 
-    // ==================== CRÉATION ====================
+    // ==================== CRÉATION / MODIFICATION ====================
     createDocument(): void {
-        // Auto-save champs en cours si non encore ajoutés
         if (this.selectedType === 'CV') {
             if (this.newExperience.poste && this.newExperience.entreprise) {
                 this.addExperience();
@@ -269,13 +291,6 @@ export class CdDocumentsComponent implements OnInit {
             }
         }
 
-        // Snapshot COMPLET de toutes les données avant reset
-        this.savedCvData = JSON.parse(JSON.stringify(this.cvData));
-        this.savedSelectedType = this.selectedType;
-        this.savedLettreData = JSON.parse(JSON.stringify(this.lettreData));
-        this.savedPortfolioData = JSON.parse(JSON.stringify(this.portfolioData));
-        this.savedAutreData = JSON.parse(JSON.stringify(this.autreData));
-
         const contenu = this.genererAIConstenu();
         const nom = this.getNomDocument();
 
@@ -284,17 +299,69 @@ export class CdDocumentsComponent implements OnInit {
             return;
         }
 
-        this.generatedDocument = {
-            nom: nom,
-            type: this.selectedType,
-            contenu: contenu
-        };
+        if (this.editingDocumentId) {
+            console.log('📝 MODIFICATION du document ID:', this.editingDocumentId);
+            
+            const updateData: any = {
+                nom: nom,
+                type: this.selectedType,
+                contenu: contenu,
+                template: this.getTemplateName(),
+                compatibleATS: true,
+                ajouterPhoto: this.selectedType === 'CV' && !!this.cvData.photo,
+            };
 
-        this.closeCreateModal();
-        this.showPreviewModal = true;
+            if (this.selectedType === 'CV') {
+                updateData.prenom = this.cvData.prenom || null;
+                updateData.titre = this.cvData.titre || null;
+                updateData.email = this.cvData.email || null;
+                updateData.telephone = this.cvData.telephone || null;
+                updateData.adresse = this.cvData.adresse || null;
+                updateData.profil = this.cvData.profil || null;
+                updateData.photoName = this.cvData.photoName || null;
+                updateData.competences = JSON.stringify(this.cvData.competences || []);
+                updateData.langues = JSON.stringify(this.cvData.langues || []);
+                updateData.centresInteret = JSON.stringify(this.cvData.centresInteret || []);
+                updateData.experiences = JSON.stringify(this.cvData.experiences || []);
+                updateData.formations = JSON.stringify(this.cvData.formations || []);
+            }
+
+            this.isUpdating = true;
+            this.apiService.modifierDocument(this.editingDocumentId, updateData).subscribe({
+                next: () => {
+                    console.log('✅ Document modifié avec succès');
+                    this.closeCreateModal();
+                    this.loadDocuments();
+                    this.isUpdating = false;
+                    this.editingDocumentId = null;
+                    alert('Document modifié avec succès !');
+                },
+                error: (err) => {
+                    console.error('Erreur lors de la modification:', err);
+                    alert('Erreur lors de la modification du document.');
+                    this.isUpdating = false;
+                }
+            });
+        } else {
+            console.log('➕ CRÉATION d\'un nouveau document');
+            
+            this.savedCvData = JSON.parse(JSON.stringify(this.cvData));
+            this.savedSelectedType = this.selectedType;
+            this.savedLettreData = JSON.parse(JSON.stringify(this.lettreData));
+            this.savedPortfolioData = JSON.parse(JSON.stringify(this.portfolioData));
+            this.savedAutreData = JSON.parse(JSON.stringify(this.autreData));
+
+            this.generatedDocument = {
+                nom: nom,
+                type: this.selectedType,
+                contenu: contenu
+            };
+
+            this.closeCreateModal();
+            this.showPreviewModal = true;
+        }
     }
 
-    // ==================== SAUVEGARDE ====================
     saveGeneratedDocument(): void {
         if (!this.generatedDocument) {
             alert("Aucun document à sauvegarder");
@@ -333,11 +400,11 @@ export class CdDocumentsComponent implements OnInit {
             };
         }
 
-        console.log('Data envoyée au backend:', dataToSend);
+        console.log('➕ Création - Data envoyée au backend:', dataToSend);
 
         this.apiService.creerDocument(dataToSend).subscribe({
             next: (savedDocument) => {
-                console.log('Document sauvegardé:', savedDocument);
+                console.log('Document créé avec succès:', savedDocument);
                 this.closePreviewModal();
                 this.loadDocuments();
                 this.isCreating = false;
@@ -345,11 +412,11 @@ export class CdDocumentsComponent implements OnInit {
                 this.savedLettreData = null;
                 this.savedPortfolioData = null;
                 this.savedAutreData = null;
-                alert('Document sauvegardé avec succès !');
+                alert('Document créé avec succès !');
             },
             error: (err) => {
-                console.error('Erreur lors de la sauvegarde:', err);
-                alert('Erreur lors de la sauvegarde du document.');
+                console.error('Erreur lors de la création:', err);
+                alert('Erreur lors de la création du document.');
                 this.isCreating = false;
             }
         });
@@ -610,34 +677,88 @@ export class CdDocumentsComponent implements OnInit {
 
     // ==================== UPDATE ====================
     openEditModal(doc: any): void {
-        this.editingDocument = { ...doc };
-        this.showEditModal = true;
-    }
-
-    closeEditModal(): void {
-        this.showEditModal = false;
-        this.editingDocument = null;
-    }
-
-    updateDocument(): void {
-        if (!this.editingDocument.nom || !this.editingDocument.contenu) {
-            alert('Veuillez remplir les informations');
-            return;
-        }
-        this.isUpdating = true;
-        this.apiService.modifierDocument(this.editingDocument.id, this.editingDocument).subscribe({
-            next: () => {
-                this.closeEditModal();
-                this.loadDocuments();
-                this.isUpdating = false;
-                alert('Document modifié !');
-            },
-            error: (err) => {
-                console.error('Erreur:', err);
-                alert('Erreur lors de la modification');
-                this.isUpdating = false;
+        this.resetForms();
+        this.selectedType = doc.type;
+        
+        if (doc.type === 'CV') {
+            this.cvData.nom = doc.nom || '';
+            this.cvData.prenom = doc.prenom || '';
+            this.cvData.titre = doc.titre || '';
+            this.cvData.email = doc.email || '';
+            this.cvData.telephone = doc.telephone || '';
+            this.cvData.adresse = doc.adresse || '';
+            this.cvData.profil = doc.profil || '';
+            
+            if (doc.competences) {
+                try {
+                    this.cvData.competences = JSON.parse(doc.competences);
+                } catch(e) {
+                    this.cvData.competences = [];
+                }
             }
-        });
+            
+            if (doc.langues) {
+                try {
+                    this.cvData.langues = JSON.parse(doc.langues);
+                } catch(e) {
+                    this.cvData.langues = [];
+                }
+            }
+            
+            if (doc.centresInteret) {
+                try {
+                    this.cvData.centresInteret = JSON.parse(doc.centresInteret);
+                } catch(e) {
+                    this.cvData.centresInteret = [];
+                }
+            }
+            
+            if (doc.experiences) {
+                try {
+                    this.cvData.experiences = JSON.parse(doc.experiences);
+                } catch(e) {
+                    this.cvData.experiences = [];
+                }
+            }
+            
+            if (doc.formations) {
+                try {
+                    this.cvData.formations = JSON.parse(doc.formations);
+                } catch(e) {
+                    this.cvData.formations = [];
+                }
+            }
+        }
+        
+        if (doc.type === 'LETTRE_DE_MOTIVATION') {
+            this.lettreData.entreprise = doc.entreprise || '';
+            this.lettreData.poste = doc.poste || '';
+            this.lettreData.message = doc.message || '';
+            this.lettreData.prenom = doc.prenom || '';
+            this.lettreData.nom = doc.nom || '';
+        }
+        
+        if (doc.type === 'PORTFOLIO') {
+            this.portfolioData.titre = doc.titre || '';
+            this.portfolioData.description = doc.description || '';
+            this.portfolioData.lien = doc.lien || '';
+            this.portfolioData.annee = doc.annee || '';
+            if (doc.technologies) {
+                try {
+                    this.portfolioData.technologies = JSON.parse(doc.technologies);
+                } catch(e) {
+                    this.portfolioData.technologies = [];
+                }
+            }
+        }
+        
+        if (doc.type === 'AUTRE') {
+            this.autreData.titre = doc.nom || '';
+            this.autreData.contenu = doc.contenu || '';
+        }
+        
+        this.editingDocumentId = doc.id;
+        this.showCreateModal = true;
     }
 
     // ==================== DELETE ====================
@@ -678,7 +799,6 @@ export class CdDocumentsComponent implements OnInit {
         this.isAnalysing = true;
         this.showAnalyseCVModal = true;
 
-        // Appel direct à l'API ML Python
         this.analyserAvecML(doc.contenu).subscribe({
             next: (data) => {
                 this.analyseResult = data;
@@ -689,7 +809,6 @@ export class CdDocumentsComponent implements OnInit {
                 console.error('Erreur API ML:', err);
                 this.isAnalysing = false;
                 
-                // Fallback: utiliser l'ancienne méthode Spring Boot
                 this.apiService.analyserCV(doc.id).subscribe({
                     next: (data) => {
                         this.analyseResult = data;
@@ -706,7 +825,6 @@ export class CdDocumentsComponent implements OnInit {
     }
 
     analyserAvecML(cvContent: string) {
-        // Utiliser fetch directement pour appeler l'API Python
         return new Observable<any>(observer => {
             fetch(`${this.ML_API_URL}/analyze`, {
                 method: 'POST',
@@ -765,7 +883,6 @@ export class CdDocumentsComponent implements OnInit {
         
         this.isOptimising = true;
         
-        // Appel direct à l'API ML Python
         this.optimiserAvecML(this.documentEnCours.contenu, this.offreEmploiInput).subscribe({
             next: (data) => {
                 this.optimisationResult = data;
@@ -776,7 +893,6 @@ export class CdDocumentsComponent implements OnInit {
                 console.error('Erreur API ML:', err);
                 this.isOptimising = false;
                 
-                // Fallback: utiliser l'ancienne méthode Spring Boot
                 this.apiService.optimiserCV(this.documentEnCours.id, this.offreEmploiInput).subscribe({
                     next: (data) => {
                         this.optimisationResult = data;
@@ -842,7 +958,424 @@ export class CdDocumentsComponent implements OnInit {
         return text.length;
     }
 
+    // ==================== CAMERA ML PROFESSIONNELLE AVEC CONFIRMATION ====================
 
+    async openCameraModal() {
+        this.showCameraModal = true;
+        this.capturedImage = null;
+        this.isProcessing = false;
+        this.processingStep = 0;
+        
+        setTimeout(async () => {
+            await this.initCamera();
+        }, 100);
+    }
+
+    async initCamera() {
+        try {
+            this.stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                } 
+            });
+            
+            if (this.videoElement) {
+                this.videoElement.nativeElement.srcObject = this.stream;
+                await this.videoElement.nativeElement.play();
+            }
+        } catch (err) {
+            console.error('Erreur accès caméra:', err);
+            alert('Impossible d\'accéder à la caméra. Vérifiez les permissions.');
+            this.closeCameraModal();
+        }
+    }
+
+    capturePhoto() {
+        const video = this.videoElement.nativeElement;
+        const canvas = this.canvasElement.nativeElement;
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        this.capturedImage = canvas.toDataURL('image/jpeg', 0.95);
+    }
+
+    async processPhotoWithML() {
+        if (!this.capturedImage) return;
+        
+        this.isProcessing = true;
+        this.processingStep = 1;
+        this.photoProcessingError = null;
+        
+        try {
+            this.processingStep = 1;
+            await this.delay(300);
+            
+            this.processingStep = 2;
+            
+            // Sauvegarder l'originale
+            this.originalPhoto = this.capturedImage;
+            
+            const response = await fetch(`${this.ML_API_URL}/photo/professionalize`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image_base64: this.capturedImage })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.processingStep = 3;
+                await this.delay(200);
+                
+                this.processingStep = 4;
+                await this.delay(200);
+                
+                // Sauvegarder la photo traitée
+                this.processedPhoto = result.image_professionnelle;
+                
+                // Fermer la modale caméra et ouvrir la modale de confirmation
+                this.closeCameraModal();
+                
+                // Ouvrir la modale de confirmation
+                this.showPhotoConfirmationModal = true;
+                
+            } else {
+                throw new Error(result.message || 'Erreur traitement');
+            }
+            
+        } catch (error) {
+            console.error('Erreur traitement photo:', error);
+            this.photoProcessingError = 'Erreur lors du traitement. Voulez-vous utiliser la photo originale ?';
+            
+            if (confirm('❌ Erreur de traitement. Utiliser la photo originale ?')) {
+                this.cvData.photo = this.capturedImage;
+                this.cvData.photoName = 'photo_camera.jpg';
+                this.closeCameraModal();
+            }
+            
+        } finally {
+            this.isProcessing = false;
+            this.processingStep = 0;
+        }
+    }
+
+    // Nouvelle méthode pour confirmer la photo traitée
+    confirmProcessedPhoto(): void {
+        if (this.processedPhoto) {
+            this.cvData.photo = this.processedPhoto;
+            this.cvData.photoName = 'photo_professionnelle.jpg';
+            this.showPhotoConfirmationModal = false;
+            this.originalPhoto = null;
+            this.processedPhoto = null;
+            alert('✅ Photo professionnelle appliquée avec succès !');
+        }
+    }
+
+    // Nouvelle méthode pour refuser la photo traitée et garder l'originale
+    rejectProcessedPhoto(): void {
+        if (this.originalPhoto) {
+            this.cvData.photo = this.originalPhoto;
+            this.cvData.photoName = 'photo_originale.jpg';
+            this.showPhotoConfirmationModal = false;
+            this.originalPhoto = null;
+            this.processedPhoto = null;
+            alert('📸 Photo originale conservée.');
+        }
+    }
+
+    // Nouvelle méthode pour recommencer la capture
+    retakeFromConfirmation(): void {
+        this.showPhotoConfirmationModal = false;
+        this.originalPhoto = null;
+        this.processedPhoto = null;
+        // Rouvrir la caméra
+        this.openCameraModal();
+    }
+
+    delay(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    retakePhoto() {
+        this.capturedImage = null;
+        this.processingStep = 0;
+    }
+
+    closeCameraModal() {
+        this.showCameraModal = false;
+        this.capturedImage = null;
+        this.isProcessing = false;
+        this.processingStep = 0;
+        
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            this.stream = null;
+        }
+    }
+
+    // ============ MÉTHODES POUR LES TESTS ============
+    afficherTousDocumentsAvecCandidat(): void {
+        this.apiService.getMesDocumentsAvecInfos().subscribe({
+            next: (data: any) => {
+                console.log('📄 Mes documents avec infos:', data);
+                this.modalTitle = '📄 Mes documents avec infos candidats';
+                this.modalData = data;
+                this.showResultModal = true;
+            },
+            error: (err: any) => {
+                console.error('Erreur:', err);
+                this.modalTitle = '❌ Erreur';
+                this.modalData = { error: 'Impossible de charger vos documents' };
+                this.showResultModal = true;
+            }
+        });
+    }
+
+    afficherCVsAvecCandidatures(): void {
+        this.apiService.getMesCVsAvecCandidatures().subscribe({
+            next: (data: any) => {
+                console.log('📊 Mes CVs avec nombre de candidatures:', data);
+                this.modalTitle = '📊 Mes CVs et nombre de candidatures';
+                this.modalData = data;
+                this.showResultModal = true;
+                
+                if (data && data.length > 0) {
+                    const max = data.reduce((a: any, b: any) => 
+                        a.nombreCandidatures > b.nombreCandidatures ? a : b, data[0]);
+                    console.log(`🏆 Le CV "${max.cvNom}" a ${max.nombreCandidatures} candidature(s) !`);
+                }
+            },
+            error: (err: any) => {
+                console.error('Erreur:', err);
+                this.modalTitle = '❌ Erreur';
+                this.modalData = { error: 'Impossible de charger vos données' };
+                this.showResultModal = true;
+            }
+        });
+    }
+
+    afficherStatistiquesParNiveau(): void {
+        this.apiService.getMesStatistiques().subscribe({
+            next: (data: any) => {
+                console.log('📈 Mes statistiques par niveau:', data);
+                this.modalTitle = '📈 Mes statistiques par niveau d\'étude';
+                this.modalData = data;
+                this.showResultModal = true;
+            },
+            error: (err: any) => {
+                console.error('Erreur:', err);
+                this.modalTitle = '❌ Erreur';
+                this.modalData = { error: 'Impossible de charger vos statistiques' };
+                this.showResultModal = true;
+            }
+        });
+    }
+
+    rechercherSimple(): void {
+        const mot = prompt('🔍 Entrez un mot-clé à rechercher (ex: java, spring, nada):');
+        if (!mot || mot.trim() === '') {
+            return;
+        }
+        
+        this.apiService.rechercherParMotCle(mot.trim()).subscribe({
+            next: (data) => {
+                console.log(`🔍 Résultats pour "${mot}":`, data);
+                this.modalTitle = `🔍 Résultats de recherche : "${mot}"`;
+                this.modalData = data;
+                this.showResultModal = true;
+            },
+            error: (err) => {
+                console.error('Erreur:', err);
+                this.modalTitle = '❌ Erreur';
+                this.modalData = { error: 'Erreur lors de la recherche' };
+                this.showResultModal = true;
+            }
+        });
+    }
+
+    rechercherMultiMots(): void {
+        const mot1 = prompt('🔑 Entrez le 1er mot-clé:');
+        if (!mot1) return;
+        
+        const mot2 = prompt('🔑 Entrez le 2ème mot-clé:');
+        if (!mot2) return;
+        
+        const mot3 = prompt('🔑 Entrez le 3ème mot-clé:');
+        if (!mot3) return;
+        
+        const motsCles = [mot1.trim(), mot2.trim(), mot3.trim()];
+        
+        this.apiService.rechercherMultiMotsCles(motsCles).subscribe({
+            next: (data) => {
+                console.log(`🔥 Résultats multi-mots (${motsCles.join(', ')}):`, data);
+                this.modalTitle = `🔥 Résultats multi-mots : "${motsCles.join(' + ')}"`;
+                this.modalData = data;
+                this.showResultModal = true;
+            },
+            error: (err) => {
+                console.error('Erreur:', err);
+                this.modalTitle = '❌ Erreur';
+                this.modalData = { error: 'Erreur lors de la recherche' };
+                this.showResultModal = true;
+            }
+        });
+    }
+
+    closeResultModal(): void {
+        this.showResultModal = false;
+        this.modalData = null;
+    }
     
+    getObjectKeys(obj: any): string[] {
+        return Object.keys(obj);
+    }
+
+    formatKey(key: string): string {
+        const map: {[key: string]: string} = {
+            'id': 'ID',
+            'documentId': 'ID Document',
+            'documentNom': 'Nom du document',
+            'cvNom': 'Nom du CV',
+            'type': 'Type',
+            'typeDocument': 'Type de document',
+            'candidatId': 'ID Candidat',
+            'candidatPrenom': 'Prénom candidat',
+            'candidatNom': 'Nom candidat',
+            'nombreCandidatures': 'Nb candidatures',
+            'nombreDocuments': 'Nb documents',
+            'niveauEtude': 'Niveau d\'étude',
+            'score': 'Score'
+        };
+        return map[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    }
+
+// ============ NOUVELLES MÉTHODES POUR TESTER SPRING DATA JPA KEYWORDS ============
+
+// Test 1: Recherche par nom contenant
+testerRechercheParNomContenant(): void {
+    const nom = prompt('🔍 Entrez un mot-clé à rechercher dans le nom du document (ex: CV, Lettre, Projet):');
+    if (!nom || nom.trim() === '') return;
+    
+    this.apiService.rechercherParNomContenant(nom.trim()).subscribe({
+        next: (data) => {
+            console.log('📄 Résultats recherche par nom contenant:', data);
+            this.modalTitle = `📄 Recherche Spring Data JPA - Nom contenant "${nom}"`;
+            this.modalData = data;
+            this.showResultModal = true;
+        },
+        error: (err) => {
+            console.error('Erreur:', err);
+            this.modalTitle = '❌ Erreur';
+            this.modalData = { error: 'Erreur lors de la recherche' };
+            this.showResultModal = true;
+        }
+    });
 }
 
+// Test 2: Recherche par type ET nom
+testerRechercheParTypeEtNom(): void {
+    const type = prompt('📁 Entrez le type de document (CV, LETTRE_DE_MOTIVATION, PORTFOLIO, AUTRE):');
+    if (!type || type.trim() === '') return;
+    
+    const nom = prompt('🔍 Entrez un mot-clé à rechercher dans le nom:');
+    if (!nom || nom.trim() === '') return;
+    
+    this.apiService.rechercherParTypeEtNom(type.trim(), nom.trim()).subscribe({
+        next: (data) => {
+            console.log('📄 Résultats recherche par type et nom:', data);
+            this.modalTitle = `📄 Type: ${type} | Nom contenant: "${nom}"`;
+            this.modalData = data;
+            this.showResultModal = true;
+        },
+        error: (err) => {
+            console.error('Erreur:', err);
+            this.modalTitle = '❌ Erreur';
+            this.modalData = { error: 'Erreur lors de la recherche' };
+            this.showResultModal = true;
+        }
+    });
+}
+
+// Test 3: Vérifier existence document
+testerExistsDocument(): void {
+    const candidatId = prompt('👤 Entrez l\'ID du candidat:');
+    if (!candidatId) return;
+    
+    const type = prompt('📁 Entrez le type de document (CV, LETTRE_DE_MOTIVATION, PORTFOLIO):');
+    if (!type) return;
+    
+    this.apiService.existsDocumentParCandidat(Number(candidatId), type).subscribe({
+        next: (exists) => {
+            console.log('📄 Existence document:', exists);
+            this.modalTitle = `📄 Existence document - Candidat ID: ${candidatId}, Type: ${type}`;
+            this.modalData = [{ 
+                "Existe": exists ? "✅ OUI" : "❌ NON",
+                "Message": exists ? "Ce candidat possède déjà un document de ce type" : "Ce candidat n'a pas de document de ce type"
+            }];
+            this.showResultModal = true;
+        },
+        error: (err) => {
+            console.error('Erreur:', err);
+            this.modalTitle = '❌ Erreur';
+            this.modalData = { error: 'Erreur lors de la vérification' };
+            this.showResultModal = true;
+        }
+    });
+}
+
+// Test 4: Compter documents par candidat
+testerCompterDocuments(): void {
+    const candidatId = prompt('👤 Entrez l\'ID du candidat pour compter ses documents:');
+    if (!candidatId) return;
+    
+    this.apiService.compterDocumentsParCandidat(Number(candidatId)).subscribe({
+        next: (count) => {
+            console.log('📄 Nombre de documents:', count);
+            this.modalTitle = `📄 Nombre de documents - Candidat ID: ${candidatId}`;
+            this.modalData = [{ 
+                "candidatId": candidatId,
+                "nombreDocuments": count,
+                "Message": `Ce candidat possède ${count} document(s)`
+            }];
+            this.showResultModal = true;
+        },
+        error: (err) => {
+            console.error('Erreur:', err);
+            this.modalTitle = '❌ Erreur';
+            this.modalData = { error: 'Erreur lors du comptage' };
+            this.showResultModal = true;
+        }
+    });
+}
+
+// Test 5: Top 5 documents récents
+testerTop5DocumentsRecents(): void {
+    const candidatId = prompt('👤 Entrez l\'ID du candidat:');
+    if (!candidatId) return;
+    
+    const mot = prompt('🔍 Entrez un mot-clé (ou laissez vide pour tous):', '');
+    
+    this.apiService.getTop5DocumentsRecents(Number(candidatId), mot || '').subscribe({
+        next: (data) => {
+            console.log('📄 Top 5 documents récents:', data);
+            this.modalTitle = `📄 Top 5 documents récents - Candidat ID: ${candidatId}`;
+            this.modalData = data;
+            this.showResultModal = true;
+        },
+        error: (err) => {
+            console.error('Erreur:', err);
+            this.modalTitle = '❌ Erreur';
+            this.modalData = { error: 'Erreur lors du chargement' };
+            this.showResultModal = true;
+        }
+    });
+}
+
+
+}

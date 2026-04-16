@@ -661,6 +661,15 @@ supprimerDocument(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/documents/${id}`, { headers });
 }
 
+traiterPhoto(formData: FormData): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/documents/traiter-photo`, formData, { headers });
+}
+
   quickApply(candidatureData: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -834,8 +843,69 @@ getTimeline(): Observable<any> {
   }
 
 
+getAlertesCandidatures(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/candidatures/alertes`);
+}
+
+getDoublonsCandidatures(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/candidatures/doublons`);
+}
+
+getAnalyseProfil(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/candidatures/analyse-profil`);
+}
 
 
+
+// ============ NOUVELLES MÉTHODES ============
+
+getMesDocumentsAvecInfos(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/documents/jpql/mes-documents-avec-infos`);
+}
+
+getMesCVsAvecCandidatures(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/documents/jpql/mes-cvs-candidatures`);
+}
+
+getMesStatistiques(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/documents/jpql/mes-statistiques`);
+}
+
+rechercherParMotCle(mot: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/documents/keywords/recherche?mot=${mot}`);
+}
+
+rechercherMultiMotsCles(motsCles: string[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/documents/keywords/multi-recherche`, motsCles);
+}
+
+
+// ============ NOUVELLES MÉTHODES SPRING DATA JPA KEYWORDS ============
+
+// Recherche par nom contenant (IgnoreCase)
+rechercherParNomContenant(nom: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/documents/keywords/jpa/by-nom?nom=${nom}`);
+}
+
+// Recherche par type ET nom
+rechercherParTypeEtNom(type: string, nom: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/documents/keywords/jpa/by-type-and-nom?type=${type}&nom=${nom}`);
+}
+
+// Vérifier existence document par candidat et type
+existsDocumentParCandidat(candidatId: number, type: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/documents/keywords/jpa/exists-by-candidat?candidatId=${candidatId}&type=${type}`);
+}
+
+// Compter documents par candidat
+compterDocumentsParCandidat(candidatId: number): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/documents/keywords/jpa/count-by-candidat?candidatId=${candidatId}`);
+}
+
+// Top 5 documents récents par candidat
+getTop5DocumentsRecents(candidatId: number, mot: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/documents/keywords/jpa/top5-recents?candidatId=${candidatId}&mot=${mot}`);
+}
 
 //  CHATBOT
 chatWithML(message: string, cvContent: string): Observable<any> {
