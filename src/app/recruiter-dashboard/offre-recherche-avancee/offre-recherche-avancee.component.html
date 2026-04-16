@@ -9,9 +9,9 @@
   <div class="search-type-selector">
     <div class="search-type-buttons">
       <button
-        *ngFor="let type of ['simple', 'advanced', 'company', 'popular']"
+        *ngFor="let type of searchTypes"
         [class.active]="searchType === type"
-        (click)="searchType = type as any"
+        (click)="searchType = type"
         class="type-btn">
         <span *ngIf="type === 'simple'">🔎 Recherche Simple</span>
         <span *ngIf="type === 'advanced'">⚙️ Recherche Avancée</span>

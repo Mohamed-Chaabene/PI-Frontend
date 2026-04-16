@@ -270,11 +270,9 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         this.searchTerm = '';
         this.resetSearch();
     }
-
-    toggleNotification() {
+ toggleNotification() {
         this.unreadNotifications = 0;
     }
-
     toggleDropdown(menu: string) {
         this.activeDropdown = this.activeDropdown === menu ? null : menu;
     }
@@ -849,13 +847,5 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
                 alert('❌ Error: ' + errorMessage);
             }
         });
-    }
-
-    closeDeleteAccountModal(): void {
-        this.showDeleteAccountModal = false;
-    }
-
-    confirmDeleteAccount(): void {
-        // This method is no longer used with alert-based confirmation
     }
 }
