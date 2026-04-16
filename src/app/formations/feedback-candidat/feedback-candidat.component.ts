@@ -142,10 +142,10 @@ export class FeedbackCandidatComponent implements OnInit {
     this.checkingTermine = true;
 
     this.feedbackService.getByFormation(this.formationId).subscribe({
-      next: (data) => {
+      next: (data: any) => {
         this.feedbacks  = data;
         this.myFeedback = this.candidatId
-          ? data.find(f => Number(f.candidat?.id) === Number(this.candidatId)) || null
+          ? data.find((f: any) => Number(f.candidat?.id) === Number(this.candidatId)) || null
           : null;
         this.loading = false;
       },
@@ -186,7 +186,7 @@ export class FeedbackCandidatComponent implements OnInit {
   private loadFeedbacksPublics(): void {
     this.loading = true;
     this.feedbackService.getByFormation(this.formationId).subscribe({
-      next:  (data) => { this.feedbacks = data; this.loading = false; },
+      next: (data: any) => { this.feedbacks = data; this.loading = false; },
       error: ()     => { this.loading = false; }
     });
   }
@@ -268,7 +268,7 @@ export class FeedbackCandidatComponent implements OnInit {
           this.loadData();
           setTimeout(() => this.successMsg = '', 3000);
         },
-        error: (err) => { this.saving = false; this.handleBackendError(err); }
+        error: (err: any) => { this.saving = false; this.handleBackendError(err); }
       });
     } else {
       const payload: FeedbackCreatePayload = {
@@ -285,7 +285,7 @@ export class FeedbackCandidatComponent implements OnInit {
           this.loadData();
           setTimeout(() => this.successMsg = '', 3000);
         },
-        error: (err) => { this.saving = false; this.handleBackendError(err); }
+        error: (err: any) => { this.saving = false; this.handleBackendError(err); }
       });
     }
   }

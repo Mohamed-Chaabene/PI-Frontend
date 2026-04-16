@@ -1,9 +1,22 @@
 <div class="player-container">
 
+  <!-- ── Anti-Screenshot Overlay ────────────────────────────────────── -->
+  <div class="screenshot-blocker-overlay" *ngIf="isObscured">
+    <div class="message">
+      <i class="ri-forbid-line"></i>
+      <span>Capture d'écran interdite</span>
+    </div>
+  </div>
+
   <!-- ── Quiz Final Overlay ═══════════════════════════════════════ -->
   <div class="quiz-final-overlay" *ngIf="showQuizFinal">
-    <div class="quiz-final-panel"
-         [class.no-select]="!quizFinalSubmitted && !quizBloque">
+    <div class="quiz-final-panel position-relative"
+         [class.no-select]="!quizFinalSubmitted && !quizBloque" style="position: relative;">
+
+      <!-- ── Bouton Fermer (X) ────────────────────────────────── -->
+      <button class="btn-close-modal-x" (click)="fermerQuizFinal()" aria-label="Fermer" title="Fermer et retourner à la formation" *ngIf="quizFinalSubmitted || quizBloque || peutReessayer">
+        <i class="ri-close-line"></i>
+      </button>
 
       <!-- ── Avertissement flottant ──────────────────────────── -->
       <div class="quiz-avertissement" *ngIf="showAvertissement">

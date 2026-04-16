@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
@@ -55,11 +55,13 @@ export class PublicTestPassPageComponent {
   violationDetected = false;
   violationReason = '';
   acknowledgingRules = false;
+  isObscured = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -230,7 +232,7 @@ export class PublicTestPassPageComponent {
     }
 
     const blockedWithCtrl = ['c', 'v', 'x', 'u', 's', 'p', 'r'];
-    if (event.shiftKey && (key === 'i' || key === 'j' || key === 'c')) {
+    if (event.shiftKey && (key === 'i' || key === 'j' || key === 'c' || key === 's')) {
       return true;
     }
 
@@ -385,11 +387,38 @@ export class PublicTestPassPageComponent {
       return;
     }
 
+    const ctrl = event.ctrlKey || event.metaKey;
+    if (event.key === 'PrintScreen' || (ctrl && event.shiftKey && event.key.toLowerCase() === 's') || event.key === 'Meta') {
+      this.obscureScreen();
+    }
+
     if (this.isShortcutBlocked(event)) {
       event.preventDefault();
       event.stopPropagation();
       this.registerViolation(`raccourci interdit: ${event.key}`);
     }
+  }
+
+  @HostListener('window:keyup', ['$event'])
+  onKeyup(event: KeyboardEvent): void {
+    if (!this.examStarted || this.violationDetected) {
+      return;
+    }
+
+    if (event.key === 'PrintScreen') {
+      navigator.clipboard.writeText('');
+      this.obscureScreen();
+      this.registerViolation('capture d\'écran interdite');
+    }
+  }
+
+  private obscureScreen(): void {
+    this.ngZone.run(() => {
+      this.isObscured = true;
+      setTimeout(() => {
+        this.isObscured = false;
+      }, 3000);
+    });
   }
 
   @HostListener('window:blur')

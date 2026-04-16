@@ -125,7 +125,8 @@
               <th>Catégorie</th>
               <th>Niveau</th>
               <th>Statut</th>
-              <th>Durée</th>
+              <th>Badge</th>
+              <th>Stats (Score)</th>
               <th class="text-end">Actions</th>
             </tr>
           </thead>
@@ -137,7 +138,17 @@
               <td>{{ f.categorie }}</td>
               <td><span class="tag" [ngClass]="getNiveauTag(f.niveau)">{{ f.niveau }}</span></td>
               <td><span class="tag" [ngClass]="getStatutTag(f.statut)">{{ f.statut }}</span></td>
-              <td>{{ f.duree }}</td>
+              <td>
+                <span *ngIf="f.badge" class="badge text-white px-2 py-1 rounded shadow-sm" [ngStyle]="{'background-color': f.scorePopularite && f.scorePopularite >= 70 ? '#8b5cf6' : (f.badge === 'Populaire' ? '#3b82f6' : (f.badge === 'En progression' ? '#f59e0b' : '#10b981'))}">{{ f.badge }}</span>
+                <span *ngIf="!f.badge" class="text-muted small">-</span>
+              </td>
+              <td>
+                <div *ngIf="f.scorePopularite !== undefined" class="d-flex flex-column lh-1 mt-1" style="font-size: 0.75rem">
+                  <span class="fw-bold mb-1" [ngStyle]="{'color': f.scorePopularite >= 70 ? '#16a34a' : (f.scorePopularite >= 40 ? '#0965A4' : '#f59e0b')}">{{ f.scorePopularite }}</span>
+                  <span class="text-muted"><i class="ri-team-line"></i> {{ f.totalInscrits || 0 }} inscrits</span>
+                </div>
+                <span *ngIf="f.scorePopularite === undefined" class="text-muted small">-</span>
+              </td>
               <td class="td-actions">
                 <a [routerLink]="['/admin-dashboard/formations', f.id, 'participants']" class="action-btn btn-view">
                   <i class="ri-group-line"></i> Participants
@@ -208,7 +219,8 @@
               <th>Titre</th>
               <th>Catégorie</th>
               <th>Niveau</th>
-              <th>Durée</th>
+              <th>Badge</th>
+              <th>Stats (Score)</th>
               <th class="text-end">Actions</th>
             </tr>
           </thead>
@@ -219,7 +231,17 @@
               </td>
               <td>{{ f.categorie }}</td>
               <td><span class="tag" [ngClass]="getNiveauTag(f.niveau)">{{ f.niveau }}</span></td>
-              <td>{{ f.duree }}</td>
+              <td>
+                <span *ngIf="f.badge" class="badge bg-secondary text-white px-2 py-1 rounded">{{ f.badge }}</span>
+                <span *ngIf="!f.badge" class="text-muted small">-</span>
+              </td>
+              <td>
+                <div *ngIf="f.scorePopularite !== undefined" class="d-flex flex-column lh-1 mt-1 text-muted" style="font-size: 0.75rem">
+                  <span class="fw-bold mb-1">{{ f.scorePopularite }}</span>
+                  <span><i class="ri-team-line"></i> {{ f.totalInscrits || 0 }} inscrits</span>
+                </div>
+                <span *ngIf="f.scorePopularite === undefined" class="text-muted small">-</span>
+              </td>
               <td class="td-actions">
                 <!-- ✅ Bouton Désarchiver -->
                 <button

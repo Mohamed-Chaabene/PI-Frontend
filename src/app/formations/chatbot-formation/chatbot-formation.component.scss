@@ -15,19 +15,16 @@ $bg-page:      #f8fafc;
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-// ── Animation micro pulsation ─────────────────────────────────────
 @keyframes pulse-mic {
   0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.35); }
   50%       { box-shadow: 0 0 0 7px rgba(220, 38, 38, 0); }
 }
 
-// ── Animation ondes d'écoute ──────────────────────────────────────
 @keyframes wave {
   0%, 100% { transform: scaleY(0.4); }
   50%       { transform: scaleY(1.2); }
 }
 
-// ── Animation bouton lecture actif ────────────────────────────────
 @keyframes pulse-speaker {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.6; }
@@ -223,14 +220,12 @@ $bg-page:      #f8fafc;
 
     &:hover { background: rgba(255,255,255,0.28); }
 
-    // Bouton TTS actif (voix auto activée)
     &.voice-active {
       background: rgba(34, 197, 94, 0.25);
       color: #86efac;
       &:hover { background: rgba(34, 197, 94, 0.38); }
     }
 
-    // Bouton stop lecture (clignotement doux)
     &.speaking-btn {
       background: rgba(239, 68, 68, 0.25);
       color: #fca5a5;
@@ -274,6 +269,16 @@ $bg-page:      #f8fafc;
         color: #fff;
         code { background: rgba(255,255,255,0.2); color: #fff; }
       }
+
+      // Bulle fichier dans les messages user
+      .chat-file-bubble {
+        background: rgba(255,255,255,0.15);
+        border-color: rgba(255,255,255,0.3);
+        color: #fff;
+
+        .chat-file-info .chat-file-name { color: #fff; }
+        .chat-file-info .chat-file-excerpt { color: rgba(255,255,255,0.75); }
+      }
     }
   }
 
@@ -311,6 +316,52 @@ $bg-page:      #f8fafc;
   &:hover .msg-hover-actions {
     opacity: 1;
     pointer-events: auto;
+  }
+}
+
+// ── Bulle de fichier dans les messages ──────────────────────────────
+.chat-file-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #f0f7ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  max-width: 100%;
+
+  > i {
+    font-size: 20px;
+    color: $primary;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .chat-file-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    .chat-file-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: $primary;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-file-excerpt {
+      font-size: 0.72rem;
+      color: #6b7280;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.3;
+    }
   }
 }
 
@@ -363,10 +414,9 @@ $bg-page:      #f8fafc;
     justify-content: center;
     transition: all 0.15s;
 
-    &:hover   { background: #f3f4f6; color: $primary; }
+    &:hover         { background: #f3f4f6; color: $primary; }
     &.del-btn:hover { color: #ef4444; }
 
-    // Bouton TTS actif dans les hover actions
     &.tts-active {
       color: $primary;
       background: #e0f0ff;
@@ -526,12 +576,13 @@ $bg-page:      #f8fafc;
   }
 }
 
-// ── Zone de saisie ──────────────────────────────────────────────────
+// ── Preview image ───────────────────────────────────────────────────
 .chatbot-image-preview {
   padding: 8px 12px;
   background: #f9fafb;
   border-top: 1px solid $border;
   display: flex;
+  flex-shrink: 0;
 
   .preview-container {
     position: relative;
@@ -544,24 +595,82 @@ $bg-page:      #f8fafc;
       border-radius: 6px;
       display: block;
     }
+  }
+}
 
-    .remove-image-btn {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      background: #fff;
-      border: none;
-      color: #ef4444;
-      font-size: 18px;
-      cursor: pointer;
-      padding: 0;
-      line-height: 1;
-      border-radius: 50%;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+// ── Preview document ────────────────────────────────────────────────
+.chatbot-file-preview {
+  padding: 8px 12px;
+  background: #f0f7ff;
+  border-top: 1px solid #bfdbfe;
+  flex-shrink: 0;
+
+  .file-preview-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 8px 12px;
+    position: relative;
+
+    .file-preview-icon {
+      font-size: 24px;
+      color: $primary;
+      flex-shrink: 0;
+    }
+
+    .file-preview-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+
+      .file-preview-name {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #1f2937;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .file-preview-status {
+        font-size: 0.72rem;
+        color: #16a34a;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+
+        i { font-size: 11px; }
+
+        &.pending { color: #6b7280; }
+      }
     }
   }
 }
 
+// ── Bouton suppression preview (commun image + fichier) ─────────────
+.remove-preview-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #fff;
+  border: none;
+  color: #ef4444;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+
+  &:hover { color: #b91c1c; }
+}
+
+// ── Zone de saisie ──────────────────────────────────────────────────
 .chatbot-input-area {
   display: flex;
   align-items: flex-end;
@@ -570,7 +679,6 @@ $bg-page:      #f8fafc;
   border-top: 1px solid $border;
   flex-shrink: 0;
 
-  // ── Bouton joindre image ──────────────────────────────────────
   .chatbot-upload-btn {
     width: 36px; height: 36px;
     background: #f3f4f6;
@@ -584,10 +692,27 @@ $bg-page:      #f8fafc;
     font-size: 17px;
     transition: all 0.15s;
     flex-shrink: 0;
+
     &:hover { background: #e5e7eb; color: $primary; }
+
+    // État actif (fichier sélectionné)
+    &.active {
+      background: #e0f2fe;
+      color: $primary;
+      border-color: #7dd3fc;
+    }
+
+    // Bouton document : légère nuance orange pour différencier
+    &.doc-btn {
+      &:hover { color: #ea580c; }
+      &.active {
+        background: #fff7ed;
+        color: #ea580c;
+        border-color: #fdba74;
+      }
+    }
   }
 
-  // ── Bouton microphone (STT) ────────────────────────────────────
   .chatbot-mic-btn {
     width: 36px; height: 36px;
     background: #f3f4f6;
@@ -609,7 +734,6 @@ $bg-page:      #f8fafc;
       cursor: not-allowed;
     }
 
-    // État actif : microphone en écoute
     &.listening {
       background: #fee2e2;
       color: #dc2626;
@@ -620,7 +744,6 @@ $bg-page:      #f8fafc;
     }
   }
 
-  // ── Textarea ──────────────────────────────────────────────────
   .chatbot-textarea {
     flex: 1;
     resize: none;
@@ -640,7 +763,6 @@ $bg-page:      #f8fafc;
     &:disabled    { background: #f9fafb; cursor: not-allowed; }
   }
 
-  // ── Bouton envoyer ────────────────────────────────────────────
   .chatbot-send {
     width: 36px; height: 36px;
     background: $primary;
