@@ -1,5 +1,14 @@
 <div class="sidebar-area" [class.active]="classApplied">
     <ul class="ps-0 mb-0 list-unstyled">
+                <li>
+            <a routerLink="/candidates-dashboard/news"
+               class="d-block position-relative"
+               routerLinkActive="active"
+               [routerLinkActiveOptions]="{exact: true}">
+                <i class="ri-newspaper-line"></i>
+                News
+            </a>
+        </li>
         <li>
             <a routerLink="/candidates-dashboard"
                class="d-block position-relative"
@@ -16,15 +25,6 @@
                [routerLinkActiveOptions]="{exact: true}">
                 <i class="ri-user-line"></i>
                 My Profile
-            </a>
-        </li>
-        <li>
-            <a routerLink="/candidate-details"
-               class="d-block position-relative"
-               routerLinkActive="active"
-               [routerLinkActiveOptions]="{exact: true}">
-                <i class="ri-file-user-line"></i>
-                Candidate Details
             </a>
         </li>
         <li>
