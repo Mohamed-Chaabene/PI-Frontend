@@ -1,14 +1,5 @@
 <div class="sidebar-area" [class.active]="classApplied">
     <ul class="ps-0 mb-0 list-unstyled">
-                <li>
-            <a routerLink="/candidates-dashboard/news"
-               class="d-block position-relative"
-               routerLinkActive="active"
-               [routerLinkActiveOptions]="{exact: true}">
-                <i class="ri-newspaper-line"></i>
-                News
-            </a>
-        </li>
         <li>
             <a routerLink="/candidates-dashboard"
                class="d-block position-relative"
@@ -16,6 +7,15 @@
                [routerLinkActiveOptions]="{exact: true}">
                 <i class="ri-dashboard-line"></i>
                 Dashboard
+            </a>
+        </li>
+        <li>
+            <a routerLink="/candidates-dashboard/news"
+               class="d-block position-relative"
+               routerLinkActive="active"
+               [routerLinkActiveOptions]="{exact: true}">
+                <i class="ri-newspaper-line"></i>
+                News
             </a>
         </li>
         <li>
@@ -55,44 +55,6 @@
             </a>
         </li>
         <li>
-            <a routerLink="/candidates-dashboard/alert-jobs"
-               class="d-block position-relative"
-               routerLinkActive="active"
-               [routerLinkActiveOptions]="{exact: true}">
-                <i class="ri-bookmark-line"></i>
-                Alert Jobs
-            </a>
-        </li>
-         <li>
-            <a routerLink="/candidates-dashboard/mes-formations"
-               class="d-block position-relative"
-               routerLinkActive="active"
-               [routerLinkActiveOptions]="{exact: true}">
-                <i class="ri-book-open-line"></i>
-                Mes Formations
-            </a>
-        </li>
-        <li>
-            <a routerLink="/candidates-dashboard/message"
-               class="d-block position-relative"
-               routerLinkActive="active"
-               [routerLinkActiveOptions]="{exact: true}">
-                <i class="ri-chat-2-line"></i>
-                Message
-            </a>
-        </li>
-        <li>
-            <a routerLink="/candidates-dashboard/change-password"
-               class="d-block position-relative"
-               routerLinkActive="active"
-               [routerLinkActiveOptions]="{exact: true}">
-                <i class="ri-lock-2-line"></i>
-                Change Password
-            </a>
-        </li>
-
-        <!--  Partenaires — correctement placé -->
-        <li>
             <a routerLink="/candidates-dashboard/partenaires"
                class="d-block position-relative"
                routerLinkActive="active"
@@ -101,7 +63,6 @@
                 Nos Partenaires
             </a>
         </li>
-
         <li>
             <a routerLink="/candidates-dashboard/evenements"
                 class="d-block position-relative"
@@ -110,15 +71,6 @@
                  <i class="ri-calendar-event-line"></i>
                     Événements
             </a>
-        </li>
-
-        <li class="logout-item">
-            <button type="button"
-                    class="d-block position-relative logout-btn"
-                    (click)="logout()">
-                <i class="ri-logout-box-r-line"></i>
-                Logout
-            </button>
         </li>
     </ul>
 </div>
