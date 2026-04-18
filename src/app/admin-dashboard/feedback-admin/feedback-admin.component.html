@@ -48,6 +48,14 @@
 
     <div class="empty-state" *ngIf="loading">Chargement des feedbacks...</div>
 
+    <!-- Alertes flash admin -->
+    <div class="alert-success" *ngIf="successMsg">
+      <i class="ri-checkbox-circle-line"></i> {{ successMsg }}
+    </div>
+    <div class="alert-error" *ngIf="errorMsg">
+      <i class="ri-error-warning-line"></i> {{ errorMsg }}
+    </div>
+
     <div class="empty-state" *ngIf="!loading && feedbacks.length === 0">
       <i class="ri-chat-off-line" style="font-size:40px;opacity:0.3;display:block;margin-bottom:12px"></i>
       Aucun feedback pour cette formation.
@@ -83,6 +91,18 @@
           <span class="modified-tag" *ngIf="f.dateModification !== f.dateCreation">
             <i class="ri-edit-2-line"></i> Modifié
           </span>
+
+          <!-- Bouton supprimer admin -->
+          <button
+            type="button"
+            class="btn-delete-admin"
+            (click)="deleteFeedback(f)"
+            [disabled]="deletingId === f.id"
+            title="Supprimer ce feedback">
+            <i class="ri-loader-4-line spin" *ngIf="deletingId === f.id"></i>
+            <i class="ri-delete-bin-line" *ngIf="deletingId !== f.id"></i>
+            {{ deletingId === f.id ? 'Suppression...' : 'Supprimer' }}
+          </button>
         </div>
 
       </div>

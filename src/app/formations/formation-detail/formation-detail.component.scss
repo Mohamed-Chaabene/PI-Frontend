@@ -10,7 +10,6 @@ $bg-card:       #ffffff;
 $radius-card:   16px;
 $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
 
-// ── Page Banner (Header bleu) ───────────────────────────────────────────
 .page-banner-area {
   background: linear-gradient(135deg, #5388c1, #85B7EB);
   padding: 40px 0;
@@ -88,8 +87,7 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
   background: $bg-page;
   padding: 40px 0 80px;
 
-  // ── Card principale ────────────────────────────────────────────────────
-  .detail-main-card {
+ .detail-main-card {
     background: $bg-card;
     border: 1px solid $border;
     border-radius: $radius-card;
@@ -184,17 +182,15 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     }
   }
 
-  // ── Zone action (boutons S'inscrire / Inscrit / Modifier) ──────────────
   .action-zone {
     padding-top: 20px;
     border-top: 1px solid $border;
     display: flex;
     gap: 12px;
-    align-items: stretch;   // même hauteur pour tous les enfants
-    flex-wrap: nowrap;      // tout sur une seule ligne
+    align-items: stretch;   
+    flex-wrap: nowrap;      
   }
 
-  // Mixin partagé — même gabarit pour les 3 boutons
   %btn-shared {
     display: inline-flex;
     align-items: center;
@@ -210,7 +206,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     transition: background 0.2s, transform 0.15s, color 0.2s;
   }
 
-  // Bouton S'inscrire
   .btn-inscrire {
     @extend %btn-shared;
     background: $primary;
@@ -222,7 +217,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     i { font-size: 16px; }
   }
 
-  // ✅ Badge "Vous êtes inscrit"
   .inscrit-badge {
     @extend %btn-shared;
     background: $primary-light;
@@ -232,7 +226,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     i { font-size: 18px; color: $primary; }
   }
 
-  // Bouton Accéder — plein, même style que btn-inscrire
   .btn-acceder {
     @extend %btn-shared;
     background: $primary;
@@ -243,7 +236,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     i { font-size: 16px; }
   }
 
-  // Bouton Voir ma progression — outline
   .btn-mes-formations {
     @extend %btn-shared;
     background: transparent;
@@ -254,7 +246,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     i { font-size: 16px; }
   }
 
-  // Bouton Modifier (admin)
   .btn-modifier {
     display: inline-flex;
     align-items: center;
@@ -272,7 +263,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     i { font-size: 15px; }
   }
 
-  // ── Compétences ────────────────────────────────────────────────────────
   .competences-card {
     background: $bg-card;
     border: 1px solid $border;
@@ -301,12 +291,10 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     }
   }
 
-  // Wrapper feedback
   .feedback-wrapper {
     margin-bottom: 24px;
   }
 
-  // Alerte admin
   .admin-alert {
     display: flex;
     align-items: center;
@@ -324,7 +312,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     a { color: $primary; font-weight: 700; text-decoration: none; &:hover { text-decoration: underline; } }
   }
 
-  // ── Sidebar ────────────────────────────────────────────────────────────
   .sidebar-area {
 
     .sidebar-info-card {
@@ -368,7 +355,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
       }
     }
 
-    // ✅ Card statut inscription dans la sidebar
     .sidebar-inscription-card {
       background: $bg-card;
       border: 1px solid $border;
@@ -402,7 +388,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
         &:disabled { opacity: 0.6; cursor: not-allowed; }
       }
 
-      // ✅ État inscrit dans la sidebar
       .sidebar-inscrit-info {
         display: flex;
         flex-direction: column;
@@ -425,7 +410,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
       }
     }
 
-    // Actions
     .sidebar-actions-card {
       background: $bg-card;
       border: 1px solid $border;
@@ -470,7 +454,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     }
   }
 
-  // ── Modal overlay ─────────────────────────────────────────────────────
   .modal-overlay {
     position: fixed;
     top: 0; left: 0;
@@ -528,7 +511,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     gap: 14px;
   }
 
-  // ── Carte choix ───────────────────────────────────────────────────
   .choice-card {
     display: flex;
     align-items: center;
@@ -589,7 +571,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
   }
 }
 
-// ── Page banner — même gradient que video/ecrite header ───────────
 .page-banner-area {
   background: linear-gradient(135deg, #0965A4 0%, #85B7EB 60%, #85B7EB 100%) !important;
   padding: 28px 0;

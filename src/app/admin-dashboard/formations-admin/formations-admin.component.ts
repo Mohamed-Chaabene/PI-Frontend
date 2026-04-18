@@ -11,7 +11,6 @@ import { FormationService } from '../../formations/services/formation.service';
 export class FormationsAdminComponent implements OnInit {
   private formationService = inject(FormationService);
 
-  // ── Données ───────────────────────────────────────────────────────────────
   actives:   Formation[] = [];  // Disponible + Bientôt
   archivees: Formation[] = [];  // Archivée uniquement
 
@@ -20,7 +19,6 @@ export class FormationsAdminComponent implements OnInit {
   archivingId:  number | null = null;
   activeTab: 'actives' | 'archivees' = 'actives';
 
-  // ── Filtres et Pagination ─────────────────────────────────────────────────
   searchTerm: string = '';
   filterNiveau: string = '';
   filterStatut: string = '';
@@ -61,7 +59,6 @@ export class FormationsAdminComponent implements OnInit {
     this.currentPage = 1;
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.refresh();
   }
@@ -74,7 +71,6 @@ export class FormationsAdminComponent implements OnInit {
         this.archivees = data.filter(f => f.statut === 'Archivée');
         this.loading   = false;
         
-        // Ajuster la page courante si elle dépasse le nouveau nombre de pages
         if (this.currentPage > this.totalPages && this.totalPages > 0) {
           this.currentPage = this.totalPages;
         } else if (this.totalPages === 0) {
@@ -85,7 +81,6 @@ export class FormationsAdminComponent implements OnInit {
     });
   }
 
-  // ── Actions ───────────────────────────────────────────────────────────────
   archiver(id: number): void {
     if (!confirm('Archiver cette formation ? Elle ne sera plus visible dans la liste publique.')) return;
     this.archivingId = id;
@@ -113,7 +108,6 @@ export class FormationsAdminComponent implements OnInit {
     });
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
   getCount(statut: string): number {
     return [...this.actives, ...this.archivees].filter(f => f.statut === statut).length;
   }

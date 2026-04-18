@@ -10,7 +10,6 @@ $bg-page:     #f8fafc;
   background: $bg-page;
 }
 
-// ── Header ────────────────────────────────────────────────────────
 .ecrite-header {
   background: linear-gradient(135deg, $primary 0%, #1a7cc4 100%);
   padding: 24px 0 28px;
@@ -44,7 +43,6 @@ $bg-page:     #f8fafc;
   }
 }
 
-// ── Sous-barre ────────────────────────────────────────────────────
 .ecrite-subbar {
   background: #0C447C;
   padding: 0 24px;
@@ -66,14 +64,12 @@ $bg-page:     #f8fafc;
   }
 }
 
-// ── Contenu principal ─────────────────────────────────────────────
 .ecrite-body {
   max-width: 960px;
   margin: 0 auto;
   padding: 0 0 60px;
 }
 
-// ── Rendu HTML du contenu ─────────────────────────────────────────
 .ecrite-content {
   background: #fff;
   border: 1px solid $border;
@@ -189,7 +185,6 @@ $bg-page:     #f8fafc;
     tr:nth-child(even) td { background: $bg-page; }
   }
 
-  // DevDocs specific
   .devdocs-content {
     ul li { line-height: 2.2; }
   }

@@ -1,11 +1,6 @@
-
-
-
-
 <div class="participants-area">
   <div class="container pb-5">
 
-    <!-- Stats -->
     <div class="stats-row" *ngIf="!loading && inscriptions.length">
       <div class="stat-card">
         <div class="stat-icon blue">👥</div>
@@ -37,7 +32,6 @@
       </div>
     </div>
 
-    <!-- Table card -->
     <div class="table-card">
 
       <div class="table-card-header">
@@ -51,19 +45,16 @@
         </a>
       </div>
 
-      <!-- Chargement -->
       <div class="empty-state" *ngIf="loading">
         <div class="loading-spinner"></div>
         <p>Chargement des participants...</p>
       </div>
 
-      <!-- Vide -->
       <div class="empty-state" *ngIf="!loading && inscriptions.length === 0">
         <div class="empty-icon">👥</div>
         <p>Aucun participant pour cette formation.</p>
       </div>
 
-      <!-- Tableau -->
       <div class="table-responsive" *ngIf="!loading && inscriptions.length">
         <table>
           <thead>

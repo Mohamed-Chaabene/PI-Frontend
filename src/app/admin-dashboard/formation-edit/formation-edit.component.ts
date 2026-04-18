@@ -58,7 +58,6 @@ form = this.fb.nonNullable.group({
   writtenUrl:    ['']
 });
 
-// ── Templates StackBlitz ─────────────────────────────────────────────────
   readonly stackBlitzTemplates = [
     { label: '-- Aucun --',    value: '' },
     { label: 'React',          value: 'https://stackblitz.com/fork/react?embed=1&hideNavigation=1&theme=dark&file=src/App.jsx' },
@@ -70,7 +69,6 @@ form = this.fb.nonNullable.group({
     { label: 'Vue.js',         value: 'https://stackblitz.com/fork/vue?embed=1&hideNavigation=1&theme=dark&file=src/App.vue' },
   ];
 
-// Les templates écrits W3Schools ont été supprimés car remplacés par la recherche intelligente Web (Scraping/Backend)
 
 getSelectedTemplateLabel(): string {
   const url = this.form.get('stackBlitzUrl')?.value;
@@ -83,7 +81,6 @@ getSelectedWrittenLabel(): string {
   return url ? 'Doc Web Intelligente' : 'Écrite';
 }
 
-  // ── Calcul de durée estimée ────────────────────────────────────────────────
   getDureeEstimee(s: FormationSuggestion): string {
     if (s.dureeTotale) return s.dureeTotale;
     if (s.nbVideos > 0) {

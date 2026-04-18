@@ -7,15 +7,11 @@ import { adminGuard } from './guards/admin.guard';
 import { authGuard } from './guards/auth.guard';
 
 export const formationsRoutes: Routes = [
-  // ── Public ──────────────────────────────────────────────────────
   { path: '', component: FormationsListComponent },
 
-  // ── Candidat ────────────────────────────────────────────────────
 
-  // ── Sous-routes avec ID (AVANT :id) ─────────────────────────────
   { path: ':id/video',  component: FormationVideoComponent  },
   { path: ':id/ecrite', component: FormationEcriteComponent },
 
-  // ── Détail (EN DERNIER) ──────────────────────────────────────────
   { path: ':id', component: FormationDetailComponent },
 ];

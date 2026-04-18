@@ -15,7 +15,6 @@ $text-muted:    #6b7280;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
-// ── Barre player — fond light ─────────────────────────────────────
 .player-header {
   display: flex;
   align-items: center;
@@ -72,7 +71,6 @@ $text-muted:    #6b7280;
   }
 }
 
-// ── Shared Video Wrappers ──
 .video-wrapper-16-9 {
   position: relative;
   padding-bottom: 56.25%;
@@ -101,7 +99,6 @@ $text-muted:    #6b7280;
   }
 }
 
-// ── Layout avec éditeur (50/50) ───────────────────────────────────
 .player-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -128,7 +125,6 @@ $text-muted:    #6b7280;
   flex-direction: column;
 }
 
-// ── Éditeur ───────────────────────────────────────────────────────
 .editor-wrapper {
   flex: 1;
   min-height: 480px;
@@ -142,7 +138,6 @@ $text-muted:    #6b7280;
   }
 }
 
-// ── Custom Playlist Layout (Mockup Style) ─────────────────────────
 .playlist-custom-layout {
   display: flex;
   min-height: 600px;
@@ -155,10 +150,10 @@ $text-muted:    #6b7280;
 
 .playlist-video-side {
   flex: 1.6;
-  background: #000; // Plus de bleu, fond noir harmonieux et cinématographique
+  background: #000; 
   display: flex;
   flex-direction: column;
-  justify-content: center; // Centre la vidéo verticalement
+  justify-content: center; 
 }
 
 .video-info-overlay {
@@ -207,7 +202,6 @@ $text-muted:    #6b7280;
   max-height: 600px; //Fallback
   padding: 10px 0;
   
-  /* Scrollbar customization */
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -283,7 +277,6 @@ $text-muted:    #6b7280;
   }
 }
 
-// ── Small Playlist for when Editor is active ──
 .playlist-bottom-menu {
   background: #f8fafc;
   max-height: 180px;
@@ -308,7 +301,6 @@ $text-muted:    #6b7280;
   }
 }
 
-// ── Pas de vidéo ──────────────────────────────────────────────────
 .no-video {
   flex: 1;
   display: flex;
@@ -324,7 +316,6 @@ $text-muted:    #6b7280;
   p { font-size: 14px; margin: 0; }
 }
 
-// ── Tip ───────────────────────────────────────────────────────────
 .player-tip {
   padding: 11px 20px;
   background: #0C447C;
@@ -339,7 +330,6 @@ $text-muted:    #6b7280;
   i { color: rgba(#fff, 0.85); font-size: 15px; flex-shrink: 0; }
 }
 
-// ── Barre de progression header ───────────────────────────────────
 .player-progression {
   flex: 1;
   padding: 0 24px;
@@ -374,7 +364,6 @@ $text-muted:    #6b7280;
   }
 }
 
-// ── Badge vidéo vue ────────────────────────────────────────────────
 .video-badge-vue {
   position: absolute;
   top: 4px; right: 4px;
@@ -398,7 +387,6 @@ $text-muted:    #6b7280;
   flex-shrink: 0;
 }
 
-// ── Navigation vidéo ──────────────────────────────────────────────
 .video-nav {
   padding: 12px 16px;
   background: #f8fafc;
@@ -422,7 +410,6 @@ $text-muted:    #6b7280;
   }
 }
 
-// ── Formation terminée ────────────────────────────────────────────
 .formation-complete {
   display: flex;
   align-items: center;
@@ -437,7 +424,6 @@ $text-muted:    #6b7280;
   i { font-size: 20px; color: #16a34a; }
 }
 
-// ── Confetti overlay ──────────────────────────────────────────────
 .confetti-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -467,7 +453,6 @@ $text-muted:    #6b7280;
   to   { opacity: 1; }
 }
 
-// ── Playlist header info ──────────────────────────────────────────
 .playlist-header-info {
   display: flex;
   justify-content: space-between;
@@ -479,7 +464,6 @@ $text-muted:    #6b7280;
   .playlist-count        { color: #6b7280; }
   .playlist-progress-text { color: #16a34a; font-weight: 600; }
 }
-  // ── Quiz final overlay ────────────────────────────────────────────
 .quiz-final-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -527,7 +511,6 @@ $text-muted:    #6b7280;
   }
 }
 
-// ── Loading ───────────────────────────────────────────────────────
 .quiz-final-loading {
   text-align: center;
   padding: 40px;
@@ -546,7 +529,6 @@ $text-muted:    #6b7280;
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-// ── Header quiz final ─────────────────────────────────────────────
 .quiz-final-header {
   text-align: center;
   margin-bottom: 32px;
@@ -579,7 +561,6 @@ $text-muted:    #6b7280;
   }
 }
 
-// ── Questions ─────────────────────────────────────────────────────
 .quiz-final-question {
   background: #f8fafc;
   border: 1px solid #e5e7eb;
@@ -657,7 +638,6 @@ $text-muted:    #6b7280;
   }
 }
 
-// ── Submit bar ────────────────────────────────────────────────────
 .quiz-final-submit-bar {
   display: flex;
   justify-content: space-between;
@@ -690,7 +670,6 @@ $text-muted:    #6b7280;
   }
 }
 
-// ── Résultats ─────────────────────────────────────────────────────
 .result-success, .result-fail {
   text-align: center;
   padding: 20px 0;
@@ -774,7 +753,6 @@ $text-muted:    #6b7280;
   margin-top: 8px;
 }
 
-// ── Corrections ───────────────────────────────────────────────────
 .corrections {
   text-align: left;
   margin-top: 24px;
@@ -833,12 +811,6 @@ $text-muted:    #6b7280;
   }
 }
 
-  /* ──────────────────────────────────────────────────────────────
-   Ajouts SCSS pour le système de tentatives et résultats épurés
-   À ajouter dans formation-player.component.scss
-   ────────────────────────────────────────────────────────────── */
-
-/* Badge tentative dans le header du quiz */
 .tentatives-badge {
   font-weight: 600;
   color: #0965A4;
@@ -853,7 +825,6 @@ $text-muted:    #6b7280;
   }
 }
 
-/* Bloc info tentatives (sous le score d'échec) */
 .tentatives-info {
   display: flex;
   align-items: center;
@@ -885,7 +856,6 @@ $text-muted:    #6b7280;
   }
 }
 
-/* Bouton fermer (tentatives épuisées) */
 .btn-close-final {
   display: inline-flex;
   align-items: center;
@@ -907,14 +877,12 @@ $text-muted:    #6b7280;
   i { font-size: 16px; }
 }
 
-/* Bouton quiz final désactivé */
 .btn-quiz-final-trigger:disabled {
   background: #9ca3af !important;
   cursor: not-allowed !important;
   opacity: 0.7;
   box-shadow: none !important;
 }
-// ── Désactiver sélection texte pendant le quiz ─────────────────────
 .no-select {
   user-select: none;
   -webkit-user-select: none;
@@ -922,7 +890,6 @@ $text-muted:    #6b7280;
   -ms-user-select: none;
 }
 
-// ── Avertissement flottant ─────────────────────────────────────────
 .quiz-avertissement {
   position: sticky;
   top: 0;
@@ -948,7 +915,6 @@ $text-muted:    #6b7280;
   to   { opacity: 1; transform: translateY(0); }
 }
 
-// ── Notice anti-triche dans le header du quiz ──────────────────────
 .anti-triche-notice {
   display: inline-flex;
   align-items: center;
@@ -965,7 +931,6 @@ $text-muted:    #6b7280;
   i { font-size: 14px; color: #d97706; }
 }
 
-// ── Panel quiz bloqué ──────────────────────────────────────────────
 .quiz-bloque-panel {
   text-align: center;
   padding: 40px 20px;

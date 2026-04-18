@@ -9,8 +9,8 @@ interface ChatMessage {
   role:        'user' | 'assistant' | 'system';
   content:     string;
   imageUrl?:   string;
-  fileName?:   string;       // Nom du fichier joint
-  fileExcerpt?: string;      // Extrait texte du fichier (pour affichage historique)
+  fileName?:   string;       
+  fileExcerpt?: string;      
   loading?:    boolean;
   isInitial?:  boolean;
   isEditing?:  boolean;
@@ -42,7 +42,6 @@ export class ChatbotFormationComponent
 
   private http = inject(HttpClient);
 
-  // ── État chatbot ──────────────────────────────────────────────
   isOpen      = false;
   sessions:   ChatSession[] = [];
   currentSessionId: string | null = null;
@@ -57,20 +56,18 @@ export class ChatbotFormationComponent
   newSessionTitle = '';
   private shouldScrollToBottom = false;
 
-  // ── État vocal ────────────────────────────────────────────────
   isListening  = false;
   isSpeaking   = false;
   voiceEnabled = false;
+  showUploadOptions = false;
   private recognition: any = null;
   private synth: SpeechSynthesis = window.speechSynthesis;
   private voicesLoaded = false;
 
   private readonly base = 'http://localhost:8080/api';
 
-  // ── Extensions de fichiers acceptées ────────────────────────
   readonly ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.txt,.md,.ppt,.pptx,.xls,.xlsx,.csv';
 
-  // ── Suggestions rapides selon contexte ───────────────────────
   get quickSuggestions(): string[] {
     const titre = this.formation?.titre || 'cette formation';
     if (this.context === 'video') {
@@ -138,7 +135,6 @@ export class ChatbotFormationComponent
     }
   }
 
-  // ── Ouvrir / fermer ───────────────────────────────────────────
   toggleChat(): void {
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
@@ -156,7 +152,6 @@ export class ChatbotFormationComponent
     this.stopSpeaking();
   }
 
-  // ── Envoyer un message ────────────────────────────────────────
   sendMessage(text?: string): void {
     const msg   = (text || this.inputText).trim();
     const image = text ? null : this.selectedImageBase64;
@@ -177,7 +172,6 @@ export class ChatbotFormationComponent
     this.sendMessageWithAttachments(msg, image, file, fname, ftext);
   }
 
-  // ── Méthode centrale d'envoi ──────────────────────────────────
   sendMessageWithAttachments(
     text:       string,
     imageBase64: string | null,
@@ -212,8 +206,6 @@ export class ChatbotFormationComponent
     this.messages.push(loadingMsg);
     this.isLoading = true;
 
-    // Historique pour le backend — les base64 bruts sont remplacés par des placeholders
-    // pour éviter des payloads de 20MB+ qui causent des erreurs 500
     const history = this.messages
       .filter(m => !m.loading && m.content)
       .slice(-10)
@@ -228,12 +220,10 @@ export class ChatbotFormationComponent
         return obj;
       });
 
-    // Tronquer fileText à 15 000 chars pour éviter les payloads trop lourds
     const truncatedFileText = fileText
       ? (fileText.length > 15000 ? fileText.substring(0, 15000) + '\n...[document tronqué]' : fileText)
       : null;
 
-    // Ne pas envoyer le base64 brut si on a déjà le texte extrait (évite les payloads de 20MB+)
     const fileDataToSend = (truncatedFileText || !fileBase64) ? null : fileBase64;
 
     this.http.post<any>(`${this.base}/chatbot/formation`, {
@@ -293,7 +283,6 @@ export class ChatbotFormationComponent
     });
   }
 
-  // ── Compatibilité avec l'ancienne méthode (image seule) ──────
   sendMessageWithImage(text: string, imageBase64: string | null): void {
     this.sendMessageWithAttachments(text, imageBase64, null, null, null);
   }
@@ -316,7 +305,6 @@ export class ChatbotFormationComponent
     this.setInitialMessage();
   }
 
-  // ── Import d'images ───────────────────────────────────────────
   onImageSelected(event: any): void {
     const file = event.target.files[0];
     if (!file) return;
@@ -358,12 +346,10 @@ export class ChatbotFormationComponent
     event.target.value = '';
   }
 
-  // ── Import de documents (PDF, Word, etc.) ────────────────────
   onDocumentSelected(event: any): void {
     const file: File = event.target.files[0];
     if (!file) return;
 
-    // Effacer l'image si un document est sélectionné
     this.selectedImageBase64 = null;
     this.selectedFileName    = file.name;
 
@@ -374,11 +360,11 @@ export class ChatbotFormationComponent
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.selectedFileText   = e.target.result as string;
-        this.selectedFileBase64 = null; // pas besoin du base64 pour les fichiers texte
+        this.selectedFileBase64 = null; 
       };
       reader.readAsText(file);
     } else if (ext === 'pdf') {
-      // Lire en base64 ET tenter l'extraction via PDF.js (disponible en CDN)
+  
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.selectedFileBase64 = e.target.result as string;
@@ -386,8 +372,6 @@ export class ChatbotFormationComponent
       };
       reader.readAsDataURL(file);
     } else {
-      // Word, Excel, PPT, etc. : on envoie juste le base64 + nom
-      // Le backend signalera que l'extraction n'est pas disponible
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.selectedFileBase64 = e.target.result as string;
@@ -399,13 +383,10 @@ export class ChatbotFormationComponent
     event.target.value = '';
   }
 
-  // ── Extraction texte PDF via PDF.js (CDN) ────────────────────
   private async extractPdfText(base64DataUrl: string): Promise<void> {
     try {
-      // Charger PDF.js dynamiquement si pas encore chargé
       const pdfjsLib = (window as any)['pdfjs-dist/build/pdf'];
       if (!pdfjsLib) {
-        // Si PDF.js n'est pas chargé, on envoie sans texte extrait
         this.selectedFileText = null;
         return;
       }
@@ -419,7 +400,7 @@ export class ChatbotFormationComponent
 
       const pdf  = await pdfjsLib.getDocument({ data: bytes }).promise;
       let   text = '';
-      const maxPages = Math.min(pdf.numPages, 20); // max 20 pages
+      const maxPages = Math.min(pdf.numPages, 20); 
 
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
         const page    = await pdf.getPage(pageNum);
@@ -445,7 +426,6 @@ export class ChatbotFormationComponent
     this.selectedFileText   = null;
   }
 
-  // ── Obtenir l'icône selon l'extension du fichier ─────────────
   getFileIcon(fileName: string): string {
     const ext = fileName?.split('.').pop()?.toLowerCase();
     switch (ext) {
@@ -478,7 +458,6 @@ export class ChatbotFormationComponent
     }
   }
 
-  // ── Renommer Session ──────────────────────────────────────────
   startRenaming(): void {
     if (!this.currentSessionId) return;
     const session = this.sessions.find(s => s.sessionId === this.currentSessionId);
@@ -522,7 +501,6 @@ export class ChatbotFormationComponent
     });
   }
 
-  // ── Actions Messages ──────────────────────────────────────────
   copyMessage(msg: ChatMessage): void {
     if (msg.content) navigator.clipboard.writeText(msg.content);
   }
@@ -578,7 +556,6 @@ export class ChatbotFormationComponent
     }).subscribe();
   }
 
-  // ── Formatter le markdown basique ─────────────────────────────
   formatMessage(content: string): string {
     return content
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -589,9 +566,6 @@ export class ChatbotFormationComponent
       .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // ── ASSISTANT VOCAL ───────────────────────────────────────────
-  // ══════════════════════════════════════════════════════════════
 
   startListening(): void {
     const SpeechRecognition =
@@ -696,7 +670,6 @@ export class ChatbotFormationComponent
 
   get isTTSSupported(): boolean { return !!window.speechSynthesis; }
 
-  // ── Scroll & Focus ────────────────────────────────────────────
   private scrollToBottom(): void {
     try {
       const el = this.messagesContainer?.nativeElement;

@@ -19,7 +19,6 @@ export class FormationDetailComponent implements OnInit {
   isAdmin     = false;
   returnUrl   = '/formations';
 
-  // ── Modal ─────────────────────────────────────────────────────────
   showAccessModal = false;
 
   constructor(
@@ -54,7 +53,6 @@ export class FormationDetailComponent implements OnInit {
     }
   }
 
-  // ── Vérifier si déjà inscrit ──────────────────────────────────────
   private verifierInscription(formationId: number): void {
     if (!this.candidatId) return;
     this.formationService.getMesInscriptions(this.candidatId).subscribe({
@@ -65,7 +63,6 @@ export class FormationDetailComponent implements OnInit {
     });
   }
 
-  // ── S'inscrire ────────────────────────────────────────────────────
 sInscrire(): void {
   if (!this.candidatId || !this.formation?.id) return;
 
@@ -73,13 +70,11 @@ sInscrire(): void {
     this.candidatId, this.formation.id
   ).subscribe({
     next: (inscription) => {
-      // ✅ Stocker inscriptionId pour le player de progression
       localStorage.setItem(
         'inscription_' + this.formation.id,
         String(inscription.id)
       );
 
-      // Mettre à jour l'état local
       this.inscrit       = true;
       this.inscriptionId = inscription.id;
 
@@ -89,7 +84,6 @@ sInscrire(): void {
   });
 }
 
-  // ── Modal accès ───────────────────────────────────────────────────
 openAccessModal(): void  { this.showAccessModal = true; }
 closeAccessModal(): void { this.showAccessModal = false; }
 
@@ -102,7 +96,6 @@ choisirFormationEcrite(): void {
   this.showAccessModal = false;
   this.router.navigate(['/formations', this.formation.id, 'ecrite']);
 }
-  // ── URLs utiles ───────────────────────────────────────────────────
   getWrittenUrl(): string {
     const map: Record<string, string> = {
       'Frontend':      'https://www.w3schools.com/html/',
@@ -122,7 +115,6 @@ choisirFormationEcrite(): void {
       : `https://www.youtube.com/results?search_query=${encodeURIComponent(this.formation?.titre ?? '')}`;
   }
 
-  // ── Helpers visuels ───────────────────────────────────────────────
   getCatClass(categorie: string): string {
     const map: Record<string, string> = {
       'Développement': 'cat-dev',    'Frontend': 'cat-frontend',
@@ -150,7 +142,6 @@ choisirFormationEcrite(): void {
     return map[niveau] || 'badge-blue';
   }
 
-  // ── Résolution candidatId ─────────────────────────────────────────
   private resolveCandidatId(onResolved?: () => void): void {
     const cached = Number(localStorage.getItem('candidatId'));
     if (!Number.isNaN(cached) && cached > 0) {

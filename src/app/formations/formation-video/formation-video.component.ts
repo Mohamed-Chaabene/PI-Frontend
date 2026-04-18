@@ -22,7 +22,6 @@ export class FormationVideoComponent implements OnInit {
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
 
-    // Lire depuis localStorage
     this.candidatId    = Number(localStorage.getItem('candidatId')) || null;
     this.inscriptionId = Number(
       localStorage.getItem('inscription_' + id)) || null;

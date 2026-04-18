@@ -22,7 +22,6 @@ export class FormationsListComponent implements OnInit {
   ratings: { [formationId: number]: { moyenne: number; total: number } } = {};
   stars = [1, 2, 3, 4, 5];
 
-  // ── Stats & filtres ───────────────────────────────────────────────────────
   stats:          FormationStats[] = [];
   topFormations:  FormationStats[] = [];
   badgeFilter     = '';
@@ -44,8 +43,6 @@ export class FormationsListComponent implements OnInit {
     this.isAdmin = role === 'ADMIN';
     this.loadAll();
   }
-
-  // ── Chargement ────────────────────────────────────────────────────────────
 
   loadAll(): void {
     this.loadFormations();
@@ -119,7 +116,6 @@ export class FormationsListComponent implements OnInit {
     });
   }
 
-  // ── Filtres / recherche ───────────────────────────────────────────────────
 
   onBadgeChange(badge: string): void {
     this.badgeFilter = badge;
@@ -163,9 +159,6 @@ export class FormationsListComponent implements OnInit {
     return this.formations.filter(f => f.statut === 'Disponible').length;
   }
 
-  // ── Helpers top formations ────────────────────────────────────────────────
-
-  /** Classe CSS du pill rang */
   getRankClass(index: number): string {
     if (index === 0) return 'rank-gold';
     if (index === 1) return 'rank-silver';
@@ -173,7 +166,6 @@ export class FormationsListComponent implements OnInit {
     return 'rank-other';
   }
 
-  /** Label textuel du rang */
   getRankLabel(index: number): string {
     if (index === 0) return 'Or';
     if (index === 1) return 'Argent';
@@ -181,7 +173,6 @@ export class FormationsListComponent implements OnInit {
     return '';
   }
 
-  /** Couleur du score basée sur la valeur réelle */
   getScoreColor(score: number): string {
     if (score >= 70) return '#633806'; // doré — top qualité
     if (score >= 50) return '#444441'; // argenté — bon
@@ -189,7 +180,6 @@ export class FormationsListComponent implements OnInit {
     return '#185FA5';                  // bleu — débutant
   }
 
-  // ── ✅ Note moyenne du top : priorité FeedbackService → fallback DTO ──────
   getTopNoteMoyenne(top: FormationStats): string | null {
     const r = this.ratings[top.formationId];
     if (r && r.moyenne > 0) return r.moyenne.toFixed(1);
@@ -197,14 +187,12 @@ export class FormationsListComponent implements OnInit {
     return null;
   }
 
-  // ── ✅ Nombre d'avis (feedbacks) ─────────────────────────────────────────
   getTopNbAvis(top: FormationStats): number {
     const r = this.ratings[top.formationId];
     if (r) return r.total;
     return 0;
   }
 
-  // ── ✅ Nombre d'étoiles entières pour affichage visuel ───────────────────
   getTopNoteEtoiles(top: FormationStats): number {
     const r = this.ratings[top.formationId];
     if (r && r.moyenne > 0) return Math.round(r.moyenne);
@@ -212,12 +200,10 @@ export class FormationsListComponent implements OnInit {
     return 0;
   }
 
-  // ── ✅ Nombre de participants (inscrits) ──────────────────────────────────
   getTopParticipants(top: FormationStats): number {
     return top.totalInscrits || 0;
   }
 
-  // ── Helpers cartes formation ───────────────────────────────────────────────
 
   getIconEmoji(categorie: string): string {
     const map: Record<string, string> = {
@@ -266,7 +252,6 @@ export class FormationsListComponent implements OnInit {
     return map[niveau] || 'debutant';
   }
 
-  // ── Helpers badges ────────────────────────────────────────────────────────
 
   getBadgeClass(badge: string | null | undefined): string {
     const map: Record<string, string> = {

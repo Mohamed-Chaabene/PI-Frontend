@@ -74,7 +74,6 @@ export class FeedbackCandidatComponent implements OnInit {
     this.resolveCandidatId();
   }
 
-  // ── Helpers erreurs ───────────────────────────────────────────
   hasError(field: string): boolean {
     const ctrl = this.form.get(field);
     return !!(ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched));
@@ -108,7 +107,6 @@ export class FeedbackCandidatComponent implements OnInit {
     return 1000 - val.length;
   }
 
-  // ── Résolution candidatId ─────────────────────────────────────
   private resolveCandidatId(): void {
     const cached = Number(localStorage.getItem('candidatId'));
     if (!Number.isNaN(cached) && cached > 0) {
@@ -136,7 +134,6 @@ export class FeedbackCandidatComponent implements OnInit {
     this.loadFeedbacksPublics();
   }
 
-  // ── Chargement données ────────────────────────────────────────
   private loadData(): void {
     this.loading         = true;
     this.checkingTermine = true;
@@ -191,7 +188,6 @@ export class FeedbackCandidatComponent implements OnInit {
     });
   }
 
-  // ── Étoiles ───────────────────────────────────────────────────
   setNote(note: number): void {
     this.form.patchValue({ note });
     this.form.get('note')?.markAsTouched();
@@ -214,7 +210,6 @@ export class FeedbackCandidatComponent implements OnInit {
     return star <= note ? 'star active' : 'star';
   }
 
-  // ── CRUD ──────────────────────────────────────────────────────
   openCreate(): void {
     this.editing      = false;
     this.showForm     = true;
@@ -317,7 +312,6 @@ export class FeedbackCandidatComponent implements OnInit {
     });
   }
 
-  // ── Helpers ───────────────────────────────────────────────────
   get noteLabel(): string {
     const labels: Record<number, string> = {
       1: 'Très mauvais', 2: 'Mauvais',

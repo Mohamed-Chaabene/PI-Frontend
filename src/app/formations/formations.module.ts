@@ -6,12 +6,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { formationsRoutes } from './formations.routes';
 import { SharedModule } from '../shared/shared.module';
 
-// ── Composants Formation ──────────────────────────────────────────────────────
 import { FormationsListComponent } from './formations-list/formations-list.component';
 import { FormationDetailComponent } from './formation-detail/formation-detail.component';
 import { FeedbackCandidatComponent } from './feedback-candidat/feedback-candidat.component';
-
-// ── NOUVEAUX ──────────────────────────────────────────────────────────────────
 import { FormationPlayerComponent } from './formation-player/formation-player.component';
 import { SafePipe } from './pipes/safe.pipe';
 import { FormationEcriteComponent } from './formation-ecrite/formation-ecrite.component';
@@ -21,12 +18,9 @@ import { ChatbotFormationComponent } from './chatbot-formation/chatbot-formation
 
 @NgModule({
   declarations: [
-    // Formation
     FormationsListComponent,
     FormationDetailComponent,
-    // Feedback
     FeedbackCandidatComponent,
-    // NOUVEAUX
     FormationPlayerComponent,
     SafePipe,
     FormationEcriteComponent,

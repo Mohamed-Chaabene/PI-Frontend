@@ -1,11 +1,6 @@
-
-
-
-
 <div class="admin-formations-area">
   <div class="container">
 
-    <!-- ══ Header ════════════════════════════════════════════════════════════ -->
     <div class="admin-header">
       <h2 class="page-title">
         Gestion des formations
@@ -18,7 +13,6 @@
       </div>
     </div>
 
-    <!-- ══ Stats ══════════════════════════════════════════════════════════════ -->
     <div class="stats-row" *ngIf="!loading">
       <div class="stat-card">
         <div class="stat-icon green">📚</div>
@@ -50,7 +44,6 @@
       </div>
     </div>
 
-    <!-- ══ Onglets Actives / Archivées ════════════════════════════════════════ -->
     <div class="tabs-row">
       <button
         type="button"
@@ -74,7 +67,6 @@
       </button>
     </div>
 
-    <!-- ══ Filtres ════════════════════════════════════════════════════════════ -->
     <div class="filters-card">
       <div class="search-input-wrapper">
         <i class="ri-search-line"></i>
@@ -102,7 +94,6 @@
       </div>
     </div>
 
-    <!-- ══ TABLE : Formations actives ════════════════════════════════════════ -->
     <div class="table-card" *ngIf="activeTab === 'actives'">
       <div class="table-card-header">
         <h3>Formations actives</h3>
@@ -159,7 +150,6 @@
                 <a [routerLink]="['/admin-dashboard/formations/edit', f.id]" class="action-btn btn-edit">
                   <i class="ri-edit-line"></i> Modifier
                 </a>
-                <!-- ✅ Bouton Archiver -->
                 <button
                   type="button"
                   class="action-btn btn-archive"
@@ -184,7 +174,6 @@
         </table>
       </div>
 
-      <!-- Pagination Actives -->
       <div class="pagination-area" *ngIf="totalPages > 1">
         <button class="page-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"><i class="ri-arrow-left-s-line"></i> Précédent</button>
         <button *ngFor="let p of getPageNumbers()" class="page-btn" [class.active]="p === currentPage" (click)="changePage(p)">{{ p }}</button>
@@ -192,7 +181,6 @@
       </div>
     </div>
 
-    <!-- ══ TABLE : Formations archivées ══════════════════════════════════════ -->
     <div class="table-card archive-table" *ngIf="activeTab === 'archivees'">
       <div class="table-card-header">
         <div class="d-flex align-items-center gap-2">
@@ -243,7 +231,6 @@
                 <span *ngIf="f.scorePopularite === undefined" class="text-muted small">-</span>
               </td>
               <td class="td-actions">
-                <!-- ✅ Bouton Désarchiver -->
                 <button
                   type="button"
                   class="action-btn btn-unarchive"
@@ -271,7 +258,6 @@
         </table>
       </div>
 
-      <!-- Pagination Archivées -->
       <div class="pagination-area" *ngIf="totalPages > 1">
         <button class="page-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"><i class="ri-arrow-left-s-line"></i> Précédent</button>
         <button *ngFor="let p of getPageNumbers()" class="page-btn" [class.active]="p === currentPage" (click)="changePage(p)">{{ p }}</button>

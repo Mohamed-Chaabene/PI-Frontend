@@ -35,12 +35,10 @@ export class FormationPlayerComponent
   currentVideo:   YoutubeVideo | null = null;
   currentIndex    = 0;
 
-  // ── Progression ───────────────────────────────────────────────
   videosVues   = new Set<string>();
   progression  = 0;
   showConfetti = false;
 
-  // ── Quiz final ────────────────────────────────────────────────
   showQuizFinal       = false;
   quizFinalLoading    = false;
   quizFinalQuestions: any[]     = [];
@@ -51,14 +49,11 @@ export class FormationPlayerComponent
   quizFinalMessage    = '';
   certificatId:       number | null = null;
 
-  // ✅ Seuil pour obtenir le certificat
   readonly SEUIL_CERTIFICAT = 70;
 
-  // ── Tentatives ────────────────────────────────────────────────
   tentativesUtilisees = 0;
   readonly MAX_TENTATIVES = 2;
 
-  // ── Anti-triche et Temps ─────────────────────────────────────
   quizBloque         = false;
   quizBloqueMessage  = '';
   quizTimerRestant   = 600; // 10 minutes en secondes
@@ -76,7 +71,6 @@ export class FormationPlayerComponent
   
   isObscured = false;
 
-  // ── YouTube IFrame ────────────────────────────────────────────
   private ytPlayer:    any = null;
   private playerReady      = false;
 
@@ -97,7 +91,6 @@ export class FormationPlayerComponent
     'Mobile':        'https://stackblitz.com/fork/web?embed=1&hideNavigation=1&theme=dark&file=index.html',
   };
 
-  // ── Getters ───────────────────────────────────────────────────
   private get quizStorageKey(): string {
     return `quiz_tentatives_${this.inscriptionId}`;
   }
@@ -120,9 +113,7 @@ export class FormationPlayerComponent
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Lifecycle
-  // ══════════════════════════════════════════════════════════════
+
   ngOnInit(): void {
     if (!this.candidatId)
       this.candidatId = Number(localStorage.getItem('candidatId')) || null;
@@ -163,9 +154,6 @@ export class FormationPlayerComponent
     this.arreterTimer();
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Gestion tentatives
-  // ══════════════════════════════════════════════════════════════
   private chargerTentatives(): void {
     const saved = localStorage.getItem(this.quizStorageKey);
     this.tentativesUtilisees = saved ? Number(saved) : 0;
@@ -176,9 +164,6 @@ export class FormationPlayerComponent
       this.quizStorageKey, String(this.tentativesUtilisees));
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // ANTI-TRICHE
-  // ══════════════════════════════════════════════════════════════
   private activerProtectionAntiTriche(): void {
     this.visibilityChanges = 0;
 
@@ -321,9 +306,6 @@ export class FormationPlayerComponent
     });
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // YouTube IFrame API
-  // ══════════════════════════════════════════════════════════════
   private loadYouTubeAPI(cb: () => void): void {
     if (window.YT?.Player) { cb(); return; }
     if (document.getElementById('yt-api-script')) {
@@ -366,9 +348,7 @@ export class FormationPlayerComponent
     this.ytPlayer = null; this.playerReady = false;
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Navigation
-  // ══════════════════════════════════════════════════════════════
+
   setCurrentVideo(video: YoutubeVideo, index: number): void {
     this.currentVideoId = video.videoId;
     this.currentVideo   = video;
@@ -394,9 +374,6 @@ export class FormationPlayerComponent
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Progression
-  // ══════════════════════════════════════════════════════════════
   private loadExistingProgression(): void {
     if (!this.inscriptionId || !this.playlistVideos.length) return;
     this.http.get<any>(
@@ -432,7 +409,6 @@ export class FormationPlayerComponent
       next: (resp) => {
         this.videosVues.add(video.videoId);
         this.progression = resp.progression;
-        // ✅ FIX : lancer le quiz à 100% mais PAS le certificat
         if (resp.formationTerminee || this.progression >= 100) {
           setTimeout(() => this.lancerQuizFinal(), 1500);
         }
@@ -447,14 +423,11 @@ export class FormationPlayerComponent
   private recalculerLocal(): void {
     const t = this.playlistVideos.length || 1;
     this.progression = Math.round(this.videosVues.size / t * 100);
-    // ✅ FIX : lancer le quiz, pas le certificat directement
     if (this.progression >= 100)
       setTimeout(() => this.lancerQuizFinal(), 1500);
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Quiz FINAL
-  // ══════════════════════════════════════════════════════════════
+
   lancerQuizFinal(): void {
     if (!this.inscriptionId) return;
     if (this.tentativesUtilisees >= this.MAX_TENTATIVES) return;
@@ -512,7 +485,6 @@ export class FormationPlayerComponent
     this.tentativesUtilisees++;
     this.sauvegarderTentatives();
 
-    // Calculer score
     let correct = 0;
     this.quizFinalQuestions.forEach((q: any, i: number) => {
       if (this.quizFinalAnswers[i] === q.correctIndex) correct++;
@@ -534,7 +506,6 @@ export class FormationPlayerComponent
         this.quizFinalReussi    = resp.reussi;
         this.quizFinalMessage   = resp.message;
 
-        // ✅ FIX PRINCIPAL : certificat seulement si score >= 70%
         if (resp.reussi && score >= this.SEUIL_CERTIFICAT) {
           this.showConfetti = true;
           setTimeout(() => { this.showConfetti = false; }, 4000);
@@ -546,7 +517,6 @@ export class FormationPlayerComponent
             error: () => {}
           });
         } else if (!resp.reussi) {
-          // ✅ Score insuffisant : message clair
           this.quizFinalMessage =
             `Score obtenu : ${score}% — Minimum requis : ${this.SEUIL_CERTIFICAT}%. ` +
             (this.peutReessayer
@@ -594,9 +564,7 @@ export class FormationPlayerComponent
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Helpers
-  // ══════════════════════════════════════════════════════════════
+
   hasEditor(): boolean {
     if (this.formation.hasEditor !== undefined) return this.formation.hasEditor;
     return this.categoriesAvecEditeur.includes(this.formation.categorie);
