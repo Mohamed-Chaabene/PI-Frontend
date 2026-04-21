@@ -117,9 +117,10 @@ export class FormationCreateComponent implements OnInit {
       switchMap(titre => {
         this.loading     = true;
         this.suggestions = [];
+        const niveau     = this.form.get('niveau')?.value || '';
         return this.http.get<FormationSuggestion[]>(
           `http://localhost:8080/api/suggestions/formations`
-          + `?titre=${encodeURIComponent(titre)}`
+          + `?titre=${encodeURIComponent(titre)}&niveau=${encodeURIComponent(niveau)}`
         );
       })
     ).subscribe({
@@ -129,6 +130,14 @@ export class FormationCreateComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // ✅ Re-déclencher la recherche si le niveau change et qu'un titre est déjà saisi
+    this.form.get('niveau')?.valueChanges.subscribe(() => {
+      const titre = this.form.get('titre')?.value;
+      if (titre && titre.length >= 3) {
+        this.titreSubject.next(titre);
+      }
+    });
+
     // ✅ Re-déclencher la validation quand le statut change
     this.form.get('statut')?.valueChanges.subscribe(() => {
       this.form.updateValueAndValidity();

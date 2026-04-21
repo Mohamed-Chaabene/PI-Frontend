@@ -1,0 +1,159 @@
+<div class="page-banner-area">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <h1>{{ parcours?.titre || 'Parcours' }}</h1>
+      </div>
+      <div class="col-lg-4">
+        <ul class="ps-0 mb-0 list-unstyled">
+          <li class="d-inline-block position-relative"><a routerLink="/">Home</a></li>
+          <li class="d-inline-block position-relative"><a routerLink="/formations">Formations</a></li>
+          <li class="d-inline-block position-relative">Parcours</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="parcours-detail-area">
+  <div class="container">
+
+    <div class="text-center py-5" *ngIf="loading">
+      <span class="text-muted">Chargement du parcours...</span>
+    </div>
+
+    <div *ngIf="!loading && parcours">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-12">
+
+          <!-- Error Alert -->
+          <div class="alert alert-danger mb-4" *ngIf="errorMsg">
+            <i class="ri-error-warning-line me-2"></i>
+            {{ errorMsg }}
+          </div>
+
+          <div class="detail-main-card">
+            <div class="detail-banner" [ngClass]="getCatClass(parcours.categorie)">
+              <span class="banner-emoji">{{ getIconEmoji(parcours.categorie) }}</span>
+            </div>
+
+            <div class="detail-card-body">
+              <div class="detail-back-btn-wrapper">
+                <a routerLink="/formations" class="voir-btn">
+                  <i class="ri-arrow-left-line"></i> Retour
+                </a>
+              </div>
+
+              <h1 class="detail-title">{{ parcours.titre }}</h1>
+
+              <div class="detail-meta">
+                <span><i class="ri-folder-line"></i> {{ parcours.categorie }}</span>
+                <span><i class="ri-global-line"></i> {{ getParcoursPlatform() }}</span>
+                <span><i class="ri-time-line"></i> Parcours Complet</span>
+              </div>
+
+              <div class="badges-row">
+                <span class="detail-badge badge-blue">Multi-niveaux</span>
+                <span class="detail-badge badge-green" *ngIf="(parcours.statut || 'Disponible') !== 'Archivée'">Disponible</span>
+                <span class="detail-badge badge-amber" *ngIf="parcours.statut === 'Archivée'">Archivé</span>
+              </div>
+
+              <div class="card-progression-large mt-3">
+                <h3 class="section-title-small mb-4">Plan d'apprentissage</h3>
+                <div class="parcours-stepper-large">
+                  <div class="stepper-track"></div>
+                  <div class="stepper-step" *ngFor="let niv of NIVEAUX" 
+                       [class.active]="isNiveauCurrent(niv)"
+                       [class.completed]="isNiveauCompleted(niv)"
+                       [class.locked]="isNiveauLocked(niv)"
+                       (click)="accederFormation(niv)">
+                    <div class="step-dot">
+                      <i class="ri-lock-line" *ngIf="isNiveauLocked(niv)"></i>
+                      <i class="ri-check-line" *ngIf="isNiveauCompleted(niv)"></i>
+                      <span class="dot-inner" *ngIf="isNiveauCurrent(niv)"></span>
+                    </div>
+                    <div class="step-label">
+                      {{ LABELS[niv] }}
+                      <span class="unlock-hint" *ngIf="!isNiveauLocked(niv) && !isNiveauCompleted(niv) && !isNiveauCurrent(niv)">
+                        Débloqué
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="action-zone mt-3">
+
+                <!-- Candidat non inscrit : bouton style formation simple -->
+                <ng-container *ngIf="!isAdmin && !inscription">
+                  <div class="not-inscrit-state">
+                    <button type="button" class="btn-inscrire" (click)="inscrire()">
+                      <i class="ri-bookmark-line me-2"></i>
+                      S'inscrire à ce parcours
+                    </button>
+                  </div>
+                </ng-container>
+
+                <!-- Candidat inscrit : afficher progression et accès -->
+                <ng-container *ngIf="!isAdmin && inscription">
+                  <div class="inscrit-badge mb-3">
+                    <i class="ri-checkbox-circle-fill"></i>
+                    Inscrit · Niveau actuel : <strong>{{ LABELS[inscription.niveauActuel] }}</strong>
+                  </div>
+
+                  <div class="d-flex gap-3 flex-wrap" *ngIf="!isParcoursTermine()">
+                    <button type="button" class="btn-acceder flex-grow-1" (click)="accederFormation()">
+                      <i class="ri-play-circle-line me-2"></i>
+                      Accéder au cours — {{ LABELS[inscription.niveauActuel] }}
+                    </button>
+                  </div>
+
+                  <div class="parcours-complete-message" *ngIf="isParcoursTermine()">
+                    <i class="ri-trophy-line"></i>
+                    <h4>Félicitations ! Parcours terminé avec succès.</h4>
+                    <p>Vous avez validé tous les niveaux. Votre certificat est disponible.</p>
+                  </div>
+                </ng-container>
+
+                <!-- Vue admin -->
+                <div class="d-flex gap-2 flex-wrap" *ngIf="isAdmin">
+                  <span class="text-muted">Vue administrateur — Accédez au tableau de bord pour gérer ce parcours.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description Section -->
+          <div class="detail-description-card mt-4" *ngIf="parcours.description">
+            <h3>À propos du parcours</h3>
+            <p>{{ parcours.description }}</p>
+          </div>
+
+          <!-- History Section -->
+          <div class="quiz-history-card mt-3" *ngIf="quizHistorique.length > 0">
+            <h3><i class="ri-history-line me-2"></i>Historique de vos tentatives</h3>
+            <div class="history-grid">
+              <div class="history-item" *ngFor="let q of quizHistorique" [class.success]="q.reussi" [class.fail]="!q.reussi">
+                <div class="h-icon"><i [class]="q.reussi ? 'ri-checkbox-circle-line' : 'ri-error-warning-line'"></i></div>
+                <div class="h-info">
+                  <span class="h-level">{{ LABELS[q.niveau] }}</span>
+                  <span class="h-score">Score: {{ q.score }}%</span>
+                </div>
+                <div class="h-meta">
+                  <span class="h-date">{{ q.dateTentative | date:'dd MMM yyyy' }}</span>
+                  <span class="h-status">{{ q.reussi ? 'Réussi' : 'Échec' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feedback Section -->
+          <div class="feedback-wrapper mt-3">
+            <app-feedback-candidat [parcoursId]="parcours.id"></app-feedback-candidat>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

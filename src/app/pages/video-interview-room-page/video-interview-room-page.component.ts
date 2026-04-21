@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { SharedModule } from '../../shared/shared.module';
 
@@ -13,7 +13,7 @@ declare global {
 @Component({
   selector: 'app-video-interview-room-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, SharedModule],
+  imports: [CommonModule, SharedModule],
   templateUrl: './video-interview-room-page.component.html',
   styleUrls: ['./video-interview-room-page.component.scss']
 })

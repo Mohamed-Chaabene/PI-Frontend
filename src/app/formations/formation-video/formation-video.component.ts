@@ -14,6 +14,9 @@ export class FormationVideoComponent implements OnInit {
   loading       = true;
   inscriptionId: number | null = null;
   candidatId:    number | null = null;
+  parcoursId:    number | null = null;
+  niveau:        string | null = null;
+  isAlreadyCompleted = false;
 
   private route            = inject(ActivatedRoute);
   private router           = inject(Router);
@@ -26,8 +29,33 @@ export class FormationVideoComponent implements OnInit {
     this.inscriptionId = Number(
       localStorage.getItem('inscription_' + id)) || null;
 
+    this.parcoursId = Number(this.route.snapshot.queryParamMap.get('parcoursId')) || null;
+    this.niveau     = this.route.snapshot.queryParamMap.get('niveau');
+    
+    const completedParam = this.route.snapshot.queryParamMap.get('completed');
+    this.isAlreadyCompleted = completedParam === 'true';
+
     this.formationService.getFormationById(id).subscribe({
-      next: (f) => { this.formation = f; this.loading = false; },
+      next: (f) => { 
+        this.formation = f;
+        
+        // Robust recovery of inscriptionId if missing from localStorage
+        if (!this.inscriptionId && this.candidatId) {
+          this.formationService.getMesInscriptions(this.candidatId).subscribe({
+            next: (inscriptions) => {
+              const found = inscriptions.find(i => i.formation?.id === f.id);
+              if (found) {
+                this.inscriptionId = found.id;
+                localStorage.setItem('inscription_' + f.id, String(found.id));
+              }
+              this.loading = false;
+            },
+            error: () => { this.loading = false; }
+          });
+        } else {
+          this.loading = false; 
+        }
+      },
       error: () => {
         this.loading = false;
         this.router.navigate(['/formations']);
@@ -36,6 +64,10 @@ export class FormationVideoComponent implements OnInit {
   }
 
   retour(): void {
-    this.router.navigate(['/formations', this.formation.id]);
+    if (this.parcoursId) {
+      this.router.navigate(['/formations/parcours', this.parcoursId]);
+    } else {
+      this.router.navigate(['/formations', this.formation.id]);
+    }
   }
 }

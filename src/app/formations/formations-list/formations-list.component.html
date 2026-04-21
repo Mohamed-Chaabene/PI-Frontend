@@ -58,172 +58,18 @@
         <div class="col-lg-8 col-md-12">
 
           <div class="formations-filters d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-            <div class="d-flex flex-wrap gap-2">
-              <button type="button" *ngFor="let f of filters" class="filter-chip"
-                [class.active]="activeFilter === f" (click)="applyFilter(f)">{{ f }}</button>
-            </div>
-            <div class="filters-row d-flex gap-3">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'all'" (click)="onTypeChange('all')">Tout</button>
+              <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'formation'" (click)="onTypeChange('formation')">Formations</button>
+              <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'parcours'" (click)="onTypeChange('parcours')">Parcours complets</button>
+              
+              <div class="filter-divider" style="width: 2px; height: 24px; background: #e5e7eb; margin: 0 10px;"></div>
 
-              <select class="form-select form-select-sm premium-select" (change)="onCategorieChange($any($event.target).value)">
-                <option *ngFor="let c of categories" [value]="c">{{ c || 'Toutes les catégories' }}</option>
+              <select class="form-select form-select-sm premium-select" [(ngModel)]="activeFilter" (change)="applySearch()" style="width: auto;">
+                <option *ngFor="let f of filters" [value]="f">
+                  {{ f === 'Toutes' ? 'Tous les niveaux' : f }}
+                </option>
               </select>
-            </div>
-          </div>
-
-          <div class="top-section" *ngIf="topFormations.length">
-            <div class="top-header">
-              <div class="top-label">
-                <div class="top-label-accent"></div>
-                <div>
-                  <div class="top-label-title">Top formations du moment</div>
-                </div>
-              </div>
-              <div class="top-header-actions">
-                <button type="button" class="refresh-btn" (click)="refreshStatistics()" [disabled]="refreshing">
-                  <i class="ri-refresh-line"></i>
-                  {{ refreshing ? 'Actualisation...' : 'Rafraîchir statistiques' }}
-                </button>
-                <span class="top-refresh-info"><i class="ri-time-line"></i> Mis à jour automatiquement</span>
-              </div>
-            </div>
-
-            <div class="top-grid">
-              <div class="top-card"
-                *ngFor="let top of topFormations; let i = index"
-                [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2"
-                [routerLink]="['/formations', top.formationId]">
-
-                <div class="tc-top-row">
-                  <span class="rank-pill" [ngClass]="getRankClass(i)">
-                    <ng-container *ngIf="getRankLabel(i)">{{ getRankLabel(i) }} · </ng-container>#{{ i + 1 }}
-                  </span>
-                </div>
-
-                <div class="tc-title">{{ top.titre }}</div>
-                <div class="tc-badge" *ngIf="top.badge">
-                  <span class="badge" [class]="getBadgeClass(top.badge)">
-                    {{ getBadgeIcon(top.badge) }} {{ top.badge }}
-                  </span>
-                </div>
-
-                <div class="tc-stats">
-
-                  <span class="stat-pill stat-rating" *ngIf="getTopNoteMoyenne(top)">
-                    <span class="stat-dot dot-gold"></span>
-                    <span class="stat-note-value">{{ getTopNoteMoyenne(top) }}</span>
-                    <span class="stat-note-max">/5</span>
-                    <span class="mini-stars">
-                      <span *ngFor="let s of [1,2,3,4,5]"
-                            [class.star-full]="s <= getTopNoteEtoiles(top)"
-                            [class.star-empty]="s > getTopNoteEtoiles(top)">★</span>
-                    </span>
-                    <span class="stat-avis" *ngIf="getTopNbAvis(top) > 0">({{ getTopNbAvis(top) }} avis)</span>
-                  </span>
-
-                  <span class="stat-pill stat-no-rating" *ngIf="!getTopNoteMoyenne(top)">
-                    <span class="stat-dot dot-gray"></span>
-                    Pas encore noté
-                  </span>
-
-                  <span class="stat-pill stat-participants">
-                    <span class="stat-dot dot-blue"></span>
-                    {{ getTopParticipants(top) }}
-                    <span class="stat-label-text">{{ getTopParticipants(top) <= 1 ? 'participant' : 'participants' }}</span>
-                  </span>
-
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          <div class="empty-state" *ngIf="loading"><p>Chargement des formations...</p></div>
-          <div class="empty-state" *ngIf="!loading && filtered.length === 0">
-            <div class="empty-icon">📚</div>
-            <p>Aucune formation trouvée.</p>
-          </div>
-
-          <div class="row g-4" *ngIf="!loading && filtered.length">
-            <div class="col-lg-6 col-md-6" *ngFor="let formation of filtered">
-              <div class="formation-card">
-                <div class="card-top-banner position-relative" [ngClass]="getCatClass(formation.categorie)">
-
-                  <span class="cat-emoji">{{ getIconEmoji(formation.categorie) }}</span>
-                  <span class="statut-badge" [ngClass]="getStatutClass(formation.statut)">{{ formation.statut }}</span>
-                </div>
-                <div class="card-body">
-                  <div class="card-plateforme">{{ formation.plateforme }}</div>
-                  <h3 class="card-title">
-                    <a [routerLink]="['/formations', formation.id]">{{ formation.titre }}</a>
-                  </h3>
-                  <div class="card-meta">
-                    <span><i class="ri-folder-line"></i> {{ formation.categorie }}</span>
-                    <span><i class="ri-time-line"></i> {{ formation.duree }}</span>
-                  </div>
-                  <div class="card-rating mt-2" *ngIf="ratings[formation.id]">
-                    <span style="color:#f1c40f;font-size:1.1rem">
-                      <ng-container *ngFor="let star of stars">
-                        <i class="ri-star-fill"      *ngIf="ratings[formation.id].moyenne >= star"></i>
-                        <i class="ri-star-half-line" *ngIf="ratings[formation.id].moyenne >= star - 0.5 && ratings[formation.id].moyenne < star"></i>
-                        <i class="ri-star-line"      *ngIf="ratings[formation.id].moyenne < star - 0.5"></i>
-                      </ng-container>
-                    </span>
-                    <span class="text-muted ms-2" style="font-size:.9rem">
-                      {{ ratings[formation.id].moyenne | number:'1.1-1' }} ({{ ratings[formation.id].total }})
-                    </span>
-                  </div>
-                  <div class="card-badge-row mt-2" *ngIf="formation.badge">
-                    <span class="badge" [class]="getBadgeClass(formation.badge)">
-                      {{ getBadgeIcon(formation.badge) }} {{ formation.badge }}
-                    </span>
-                  </div>
-                  <div class="card-stats-row mt-3" *ngIf="formation.noteMoyenne || formation.totalInscrits">
-                    <span *ngIf="formation.noteMoyenne"><i class="ri-star-fill"></i> {{ formation.noteMoyenne | number:'1.1-1' }}</span>
-                    <span *ngIf="formation.totalInscrits"><i class="ri-team-line"></i> {{ formation.totalInscrits }} inscrits</span>
-                  </div>
-                </div>
-                <div class="card-footer">
-                  <span class="niveau-badge" [ngClass]="getNiveauClass(formation.niveau)">{{ formation.niveau }}</span>
-                  <a [routerLink]="['/formations', formation.id]" class="voir-btn">
-                    Voir détails <i class="ri-arrow-right-line"></i>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="col-lg-4 col-md-12">
-          <div class="sidebar-area">
-            <div class="stats-grid">
-              <div class="stat-card"><span class="stat-value">{{ formations.length }}</span><span class="stat-label">Formations</span></div>
-              <div class="stat-card"><span class="stat-value">{{ getDisponibles() }}</span><span class="stat-label">Disponibles</span></div>
-            </div>
-            <div class="sidebar-card">
-              <h3>Administration</h3>
-              <p>Gérez les formations de la plateforme.</p>
-              <a routerLink="/formations/admin" class="sidebar-btn btn-primary">
-                <i class="ri-settings-3-line"></i> Gérer les formations
-              </a>
-              <a routerLink="/formations/admin/create" class="sidebar-btn btn-outline">
-                <i class="ri-add-line"></i> Ajouter une formation
-              </a>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </ng-container>
-
-    <ng-template #publicLayout>
-      <div class="row">
-        <div class="col-12">
-
-          <div class="formations-filters d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-            <div class="d-flex flex-wrap gap-2">
-              <button type="button" *ngFor="let f of filters" class="filter-chip"
-                [class.active]="activeFilter === f" (click)="applyFilter(f)">{{ f }}</button>
             </div>
             <div class="filters-row d-flex gap-3">
               <select class="form-select form-select-sm premium-select" (change)="onBadgeChange($any($event.target).value)">
@@ -239,125 +85,244 @@
             <div class="top-header">
               <div class="top-label">
                 <div class="top-label-accent"></div>
-                <div>
-                  <div class="top-label-title">Top formations du moment</div>
-
-                </div>
+                <div><div class="top-label-title">Top formations du moment</div></div>
               </div>
               <div class="top-header-actions">
                 <button type="button" class="refresh-btn" (click)="refreshStatistics()" [disabled]="refreshing">
                   <i class="ri-refresh-line"></i>
                   {{ refreshing ? 'Actualisation...' : 'Rafraîchir statistiques' }}
                 </button>
-                <span class="top-refresh-info"><i class="ri-time-line"></i> Mis à jour automatiquement</span>
+                <span class="top-refresh-info d-none d-sm-inline"><i class="ri-time-line"></i> Mis à jour automatiquement</span>
               </div>
             </div>
-
             <div class="top-grid">
-              <div class="top-card"
-                *ngFor="let top of topFormations; let i = index"
-                [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2"
-                [routerLink]="['/formations', top.formationId]">
-
+               <div class="top-card" *ngFor="let top of topFormations; let i = index" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2" [routerLink]="['/formations', top.formationId]">
                 <div class="tc-top-row">
                   <span class="rank-pill" [ngClass]="getRankClass(i)">
                     <ng-container *ngIf="getRankLabel(i)">{{ getRankLabel(i) }} · </ng-container>#{{ i + 1 }}
                   </span>
                 </div>
-
                 <div class="tc-title">{{ top.titre }}</div>
                 <div class="tc-badge" *ngIf="top.badge">
-                  <span class="badge" [class]="getBadgeClass(top.badge)">
-                    {{ getBadgeIcon(top.badge) }} {{ top.badge }}
-                  </span>
+                  <span class="badge" [class]="getBadgeClass(top.badge)">{{ getBadgeIcon(top.badge) }} {{ top.badge }}</span>
                 </div>
-
                 <div class="tc-stats">
-
                   <span class="stat-pill stat-rating" *ngIf="getTopNoteMoyenne(top)">
                     <span class="stat-dot dot-gold"></span>
                     <span class="stat-note-value">{{ getTopNoteMoyenne(top) }}</span>
                     <span class="stat-note-max">/5</span>
-                    <span class="mini-stars">
-                      <span *ngFor="let s of [1,2,3,4,5]"
-                            [class.star-full]="s <= getTopNoteEtoiles(top)"
-                            [class.star-empty]="s > getTopNoteEtoiles(top)">★</span>
-                    </span>
-                    <span class="stat-avis" *ngIf="getTopNbAvis(top) > 0">({{ getTopNbAvis(top) }} avis)</span>
                   </span>
-
-                  <span class="stat-pill stat-no-rating" *ngIf="!getTopNoteMoyenne(top)">
-                    <span class="stat-dot dot-gray"></span>
-                    Pas encore noté
-                  </span>
-
                   <span class="stat-pill stat-participants">
                     <span class="stat-dot dot-blue"></span>
-                    {{ getTopParticipants(top) }}
-                    <span class="stat-label-text">{{ getTopParticipants(top) <= 1 ? 'participant' : 'participants' }}</span>
+                    {{ getTopParticipants(top) }} inscrits
                   </span>
-
                 </div>
-
-              </div>
+               </div>
             </div>
           </div>
 
           <div class="empty-state" *ngIf="loading"><p>Chargement des formations...</p></div>
-          <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+          <div class="empty-state" *ngIf="!loading && unifiedFiltered.length === 0">
             <div class="empty-icon">📚</div>
-            <p>Aucune formation trouvée.</p>
+            <p>Aucun contenu trouvé.</p>
           </div>
 
-          <div class="row g-4 justify-content-center" *ngIf="!loading && filtered.length">
-            <div class="col-lg-4 col-md-6 col-sm-12" *ngFor="let formation of filtered">
+          <div class="row g-4" *ngIf="!loading && unifiedFiltered.length">
+            <div class="col-lg-6 col-md-6" *ngFor="let item of unifiedFiltered">
               <div class="formation-card">
-                <div class="card-top-banner position-relative" [ngClass]="getCatClass(formation.categorie)">
-
-                  <span class="cat-emoji">{{ getIconEmoji(formation.categorie) }}</span>
-                  <span class="statut-badge" [ngClass]="getStatutClass(formation.statut)">{{ formation.statut }}</span>
+                <div class="card-top-banner position-relative" 
+                     [ngClass]="getCatClass(item.categorie)"
+                     [style.background-image]="item.imageUrl ? 'url(' + item.imageUrl + ')' : ''"
+                     [style.background-size]="'cover'"
+                     [style.background-position]="'center'">
+                  
+                  <span class="cat-emoji" *ngIf="!item.imageUrl">
+                    {{ item.type === 'parcours' ? '🎯' : getIconEmoji(item.categorie) || '💻' }}
+                  </span>
+                  <span class="statut-badge" [ngClass]="getStatutClass(item.statut || 'Disponible')">{{ item.statut || 'Disponible' }}</span>
                 </div>
+
                 <div class="card-body">
-                  <div class="card-plateforme">{{ formation.plateforme }}</div>
+                  <div class="card-plateforme">{{ item.plateforme }}</div>
                   <h3 class="card-title">
-                    <a [routerLink]="['/formations', formation.id]">{{ formation.titre }}</a>
+                    <a [routerLink]="item.type === 'parcours' ? ['/formations/parcours', item.id] : ['/formations', item.id]">
+                      {{ item.titre }}
+                    </a>
                   </h3>
                   <div class="card-meta">
-                    <span><i class="ri-folder-line"></i> {{ formation.categorie }}</span>
-                    <span><i class="ri-time-line"></i> {{ formation.duree }}</span>
+                    <span><i class="ri-folder-line"></i> {{ item.categorie }}</span>
+                    <span><i class="ri-time-line"></i> {{ item.duree }}</span>
                   </div>
-                  <div class="card-rating mt-2" *ngIf="ratings[formation.id]">
+
+                  <div class="card-rating mt-2">
                     <span style="color:#f1c40f;font-size:1.1rem">
-                      <ng-container *ngFor="let star of stars">
-                        <i class="ri-star-fill"      *ngIf="ratings[formation.id].moyenne >= star"></i>
-                        <i class="ri-star-half-line" *ngIf="ratings[formation.id].moyenne >= star - 0.5 && ratings[formation.id].moyenne < star"></i>
-                        <i class="ri-star-line"      *ngIf="ratings[formation.id].moyenne < star - 0.5"></i>
-                      </ng-container>
+                      <i class="ri-star-fill" *ngFor="let s of [1,2,3,4,5]" 
+                         [style.color]="(item.noteMoyenne || 0) >= s ? '#f1c40f' : '#e5e7eb'"></i>
                     </span>
                     <span class="text-muted ms-2" style="font-size:.9rem">
-                      {{ ratings[formation.id].moyenne | number:'1.1-1' }} ({{ ratings[formation.id].total }})
+                      {{ (item.noteMoyenne || 0) | number:'1.1-1' }} ({{ (item.type === 'formation' ? ratings[item.id]?.total : 0) || 0 }})
                     </span>
                   </div>
-                  <div class="card-badge-row mt-2" *ngIf="formation.badge">
-                    <span class="badge" [class]="getBadgeClass(formation.badge)">
-                      {{ getBadgeIcon(formation.badge) }} {{ formation.badge }}
+
+                  <div class="card-badge-row mt-2" *ngIf="item.badge">
+                    <span class="badge" [class]="getBadgeClass(item.badge)">
+                      {{ getBadgeIcon(item.badge) }} {{ item.badge }}
                     </span>
                   </div>
-                  <div class="card-stats-row mt-3" *ngIf="formation.noteMoyenne || formation.totalInscrits">
-                    <span *ngIf="formation.noteMoyenne"><i class="ri-star-fill"></i> {{ formation.noteMoyenne | number:'1.1-1' }}</span>
-                    <span *ngIf="formation.totalInscrits"><i class="ri-team-line"></i> {{ formation.totalInscrits }} inscrits</span>
+                  <div class="card-badge-row mt-2" *ngIf="!item.badge && item.noteMoyenne >= 4">
+                     <span class="badge badge-green">👍 Bien noté</span>
                   </div>
+
+
                 </div>
+
                 <div class="card-footer">
-                  <span class="niveau-badge" [ngClass]="getNiveauClass(formation.niveau)">{{ formation.niveau }}</span>
-                  <a [routerLink]="['/formations', formation.id]" class="voir-btn">
-                    Voir détails <i class="ri-arrow-right-line"></i>
+                  <span class="niveau-badge" [ngClass]="getNiveauClass(item.niveau || 'Débutant')">
+                    {{ item.niveau }}
+                  </span>
+                  <a [routerLink]="item.type === 'parcours' ? ['/formations/parcours', item.id] : ['/formations', item.id]" class="voir-btn">
+                     Voir détails <i class="ri-arrow-right-line"></i>
                   </a>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
+        <div class="col-lg-4 col-md-12">
+          <div class="sidebar-area">
+            <div class="sidebar-card">
+              <h3>Administration</h3>
+              <p>Gérez les formations de la plateforme.</p>
+              <a routerLink="/formations/admin" class="sidebar-btn btn-primary">Gérer les formations</a>
+              <a routerLink="/formations/admin/create" class="sidebar-btn btn-outline">Ajouter une formation</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #publicLayout>
+      <div class="row">
+        <div class="col-12">
+          <div class="formations-filters d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'all'" (click)="onTypeChange('all')">Tout</button>
+              <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'formation'" (click)="onTypeChange('formation')">Formations</button>
+              <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'parcours'" (click)="onTypeChange('parcours')">Parcours complets</button>
+              
+              <div class="filter-divider" style="width: 2px; height: 24px; background: #e5e7eb; margin: 0 10px;"></div>
+              
+              <select class="form-select form-select-sm premium-select" [(ngModel)]="activeFilter" (change)="applySearch()" style="width: auto;">
+                <option *ngFor="let f of filters" [value]="f">{{ f === 'Toutes' ? 'Tous les niveaux' : f }}</option>
+              </select>
+            </div>
+            <div class="filters-row d-flex gap-3">
+              <select class="form-select form-select-sm premium-select" (change)="onBadgeChange($any($event.target).value)">
+                <option *ngFor="let b of badges" [value]="b">{{ b || 'Tous les badges' }}</option>
+              </select>
+              <select class="form-select form-select-sm premium-select" (change)="onCategorieChange($any($event.target).value)">
+                <option *ngFor="let c of categories" [value]="c">{{ c || 'Toutes les catégories' }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="top-section" *ngIf="topFormations.length">
+            <div class="top-header">
+              <div class="top-label">
+                <div class="top-label-accent"></div>
+                <div><div class="top-label-title">Top formations du moment</div></div>
+              </div>
+              <div class="top-header-actions">
+                <button type="button" class="refresh-btn" (click)="refreshStatistics()" [disabled]="refreshing">
+                  <i class="ri-refresh-line"></i>
+                  {{ refreshing ? 'Actualisation...' : 'Rafraîchir statistiques' }}
+                </button>
+                <span class="top-refresh-info d-none d-sm-inline"><i class="ri-time-line"></i> Mis à jour automatiquement</span>
+              </div>
+            </div>
+            <div class="top-grid">
+               <div class="top-card" *ngFor="let top of topFormations; let i = index" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2" [routerLink]="['/formations', top.formationId]">
+                <div class="tc-top-row">
+                  <span class="rank-pill" [ngClass]="getRankClass(i)">
+                    <ng-container *ngIf="getRankLabel(i)">{{ getRankLabel(i) }} · </ng-container>#{{ i + 1 }}
+                  </span>
+                </div>
+                <div class="tc-title">{{ top.titre }}</div>
+                <div class="tc-badge" *ngIf="top.badge">
+                  <span class="badge" [class]="getBadgeClass(top.badge)">{{ getBadgeIcon(top.badge) }} {{ top.badge }}</span>
+                </div>
+                <div class="tc-stats">
+                  <span class="stat-pill stat-rating" *ngIf="getTopNoteMoyenne(top)">
+                    <span class="stat-dot dot-gold"></span>
+                    <span class="stat-note-value">{{ getTopNoteMoyenne(top) }}</span>
+                    <span class="stat-note-max">/5</span>
+                  </span>
+                  <span class="stat-pill stat-participants">
+                    <span class="stat-dot dot-blue"></span>
+                    {{ getTopParticipants(top) }} inscrits
+                  </span>
+                </div>
+               </div>
+            </div>
+          </div>
+
+          <div class="row g-4 justify-content-center" *ngIf="!loading && unifiedFiltered.length">
+            <div class="col-lg-4 col-md-6 col-sm-12" *ngFor="let item of unifiedFiltered">
+              <div class="formation-card">
+                <div class="card-top-banner position-relative" 
+                     [ngClass]="getCatClass(item.categorie)"
+                     [style.background-image]="item.imageUrl ? 'url(' + item.imageUrl + ')' : ''"
+                     [style.background-size]="'cover'"
+                     [style.background-position]="'center'">
+                  
+                  <span class="cat-emoji" *ngIf="!item.imageUrl">
+                     {{ item.type === 'parcours' ? '🎯' : getIconEmoji(item.categorie) || '💻' }}
+                  </span>
+                  <span class="statut-badge" [ngClass]="getStatutClass(item.statut || 'Disponible')">{{ item.statut || 'Disponible' }}</span>
+                </div>
+
+                <div class="card-body">
+                  <div class="card-plateforme">{{ item.plateforme }}</div>
+                  <h3 class="card-title">
+                    <a [routerLink]="item.type === 'parcours' ? ['/formations/parcours', item.id] : ['/formations', item.id]">
+                      {{ item.titre }}
+                    </a>
+                  </h3>
+                  <div class="card-meta">
+                    <span><i class="ri-folder-line"></i> {{ item.categorie }}</span>
+                    <span><i class="ri-time-line"></i> {{ item.duree }}</span>
+                  </div>
+
+                  <div class="card-rating mt-2">
+                    <span style="color:#f1c40f;font-size:1.1rem">
+                      <i class="ri-star-fill" *ngFor="let s of [1,2,3,4,5]" 
+                         [style.color]="(item.noteMoyenne || 0) >= s ? '#f1c40f' : '#e5e7eb'"></i>
+                    </span>
+                    <span class="text-muted ms-2" style="font-size:.9rem">
+                      {{ (item.noteMoyenne || 0) | number:'1.1-1' }} ({{ (item.type === 'formation' ? ratings[item.id]?.total : 0) || 0 }})
+                    </span>
+                  </div>
+
+                  <div class="card-badge-row mt-2" *ngIf="item.badge">
+                    <span class="badge" [class]="getBadgeClass(item.badge)">
+                      {{ getBadgeIcon(item.badge) }} {{ item.badge }}
+                    </span>
+                  </div>
+
+                </div>
+
+                <div class="card-footer">
+                  <span class="niveau-badge" [ngClass]="getNiveauClass(item.niveau || 'Débutant')">
+                    {{ item.niveau }}
+                  </span>
+                  <a [routerLink]="item.type === 'parcours' ? ['/formations/parcours', item.id] : ['/formations', item.id]" class="voir-btn">
+                     Voir détails <i class="ri-arrow-right-line"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </ng-template>

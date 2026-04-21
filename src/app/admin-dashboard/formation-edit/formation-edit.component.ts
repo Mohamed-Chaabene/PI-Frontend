@@ -33,8 +33,9 @@ export class FormationEditComponent implements OnInit {
       switchMap(titre => {
         this.loading = true;
         this.suggestions = [];
+        const niveau = this.form.get('niveau')?.value || '';
         return this.http.get<FormationSuggestion[]>(
-          `http://localhost:8080/api/suggestions/formations?titre=${encodeURIComponent(titre)}`
+          `http://localhost:8080/api/suggestions/formations?titre=${encodeURIComponent(titre)}&niveau=${encodeURIComponent(niveau)}`
         );
       })
     ).subscribe({

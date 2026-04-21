@@ -42,6 +42,14 @@ export class FeedbackService {
     return this.http.get<FeedbackStats>(`${this.api}/formation/${formationId}/moyenne`);
   }
 
+  getByParcours(parcoursId: number): Observable<Feedback[]> {
+    return this.http.get<Feedback[]>(`${this.api}/parcours/${parcoursId}`);
+  }
+
+  getStatsForParcours(parcoursId: number): Observable<FeedbackStats> {
+    return this.http.get<FeedbackStats>(`${this.api}/parcours/${parcoursId}/moyenne`);
+  }
+
   getAll(): Observable<Feedback[]> {
     return this.http.get<Feedback[]>(this.api);
   }

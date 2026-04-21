@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Formation, FormationStats } from '../models/formation.model';
 import { FormationService } from '../services/formation.service';
 import { FeedbackService } from '../services/feedback.service';
+import { ParcoursService } from '../services/parcours.service';
+import { ParcoursFormation } from '../models/parcours.model';
 
 @Component({
   selector: 'app-formations-list',
@@ -13,6 +15,7 @@ export class FormationsListComponent implements OnInit {
 
   formations: Formation[] = [];
   filtered:   Formation[] = [];
+  parcours: ParcoursFormation[] = [];
   searchTerm   = '';
   activeFilter = 'Toutes';
   filters = ['Toutes', 'Débutant', 'Intermédiaire', 'Avancé', 'Expert'];
@@ -26,6 +29,9 @@ export class FormationsListComponent implements OnInit {
   topFormations:  FormationStats[] = [];
   badgeFilter     = '';
   categorieFilter = '';
+  contentTypeFilter: 'all' | 'formation' | 'parcours' = 'all';
+
+  unifiedFiltered: any[] = [];
 
   readonly badges = ['', 'Tendance', 'Populaire', 'Top noté', 'Bien noté', 'En progression'];
   readonly categories = [
@@ -35,19 +41,46 @@ export class FormationsListComponent implements OnInit {
 
   constructor(
     private formationService: FormationService,
-    private feedbackService:  FeedbackService
+    private feedbackService:  FeedbackService,
+    private parcoursService: ParcoursService
   ) {}
 
   ngOnInit(): void {
     const role = (localStorage.getItem('userRole') || '').toUpperCase().replace('ROLE_', '');
     this.isAdmin = role === 'ADMIN';
+
     this.loadAll();
+    this.loadParcours();
   }
 
   loadAll(): void {
     this.loadFormations();
     this.loadStats();
     this.loadTop();
+  }
+
+  loadParcours(): void {
+    this.parcoursService.getAll().subscribe({
+      next: (data) => {
+        this.parcours = data.filter(p => p.statut !== 'Archivée');
+        this.applySearch();
+      },
+      error: () => {
+        this.parcours = [];
+      }
+    });
+  }
+
+  // IDs des formations rattachées à un parcours (pour filter la liste publique)
+  private get usedFormationIds(): Set<number> {
+    const ids = new Set<number>();
+    this.parcours.forEach(p => {
+      if (p.niveauDebutant?.id)      ids.add(Number(p.niveauDebutant.id));
+      if (p.niveauIntermediaire?.id) ids.add(Number(p.niveauIntermediaire.id));
+      if (p.niveauAvance?.id)        ids.add(Number(p.niveauAvance.id));
+      if (p.niveauExpert?.id)        ids.add(Number(p.niveauExpert.id));
+    });
+    return ids;
   }
 
   loadFormations(): void {
@@ -128,31 +161,71 @@ export class FormationsListComponent implements OnInit {
     this.applySearch();
   }
 
+  onTypeChange(type: 'all' | 'formation' | 'parcours'): void {
+    this.contentTypeFilter = type;
+    this.applySearch();
+  }
+
   applyFilter(filter: string): void {
     this.activeFilter = filter;
     this.applySearch();
   }
 
   applySearch(): void {
-    let result = this.formations;
+    const term = this.searchTerm.trim().toLowerCase();
+    const usedIds = this.usedFormationIds;
 
-    if (this.activeFilter !== 'Toutes') {
-      result = result.filter(f => f.niveau === this.activeFilter);
+    // 1. Filtrer les formations
+    let filteredFormations = this.formations.filter(f => {
+      // Exclure les formations qui sont déjà dans un parcours pour éviter les doublons
+      if (usedIds.has(Number(f.id))) return false;
+
+      const matchNiv = this.activeFilter === 'Toutes' || f.niveau === this.activeFilter;
+      const matchCat = !this.categorieFilter || f.categorie === this.categorieFilter;
+      const matchTerm = !term || f.titre.toLowerCase().includes(term) || f.categorie.toLowerCase().includes(term);
+      
+      return matchNiv && matchCat && matchTerm;
+    });
+
+    // 2. Filtrer les parcours
+    let filteredParcours = this.parcours.filter(p => {
+      const matchCat = !this.categorieFilter || p.categorie === this.categorieFilter;
+      const matchTerm = !term || p.titre.toLowerCase().includes(term) || p.categorie.toLowerCase().includes(term);
+      // Les parcours n'ont pas de niveau unique (ils sont multi-niveaux)
+      const matchNiv = this.activeFilter === 'Toutes'; 
+      
+      return matchCat && matchTerm && matchNiv;
+    });
+
+    // 3. Appliquer le filtre de TYPE
+    if (this.contentTypeFilter === 'formation') {
+      this.unifiedFiltered = filteredFormations.map(f => ({ ...f, type: 'formation' }));
+    } else if (this.contentTypeFilter === 'parcours') {
+      this.unifiedFiltered = filteredParcours.map(p => ({ 
+        ...p, 
+        type: 'parcours',
+        plateforme: 'Parcours', 
+        niveau: 'Multi-niveaux',
+        duree: '4 niveaux',
+        totalInscrits: (p as any).totalInscrits || 0,
+        noteMoyenne: (p as any).noteMoyenne || 0
+      }));
+    } else {
+      // Conserver l'ordre : Parcours d'abord, puis formations
+      const pItems = filteredParcours.map(p => ({ 
+        ...p, 
+        type: 'parcours',
+        plateforme: 'Parcours',
+        niveau: 'Multi-niveaux',
+        duree: '4 niveaux',
+        totalInscrits: (p as any).totalInscrits || 0,
+        noteMoyenne: (p as any).noteMoyenne || 0
+      }));
+      const fItems = filteredFormations.map(f => ({ ...f, type: 'formation' }));
+      this.unifiedFiltered = [...pItems, ...fItems];
     }
 
-    if (this.categorieFilter) {
-      result = result.filter(f => f.categorie === this.categorieFilter);
-    }
-
-    if (this.searchTerm.trim()) {
-      const term = this.searchTerm.toLowerCase();
-      result = result.filter(f =>
-        f.titre.toLowerCase().includes(term) ||
-        f.categorie.toLowerCase().includes(term)
-      );
-    }
-
-    this.filtered = result;
+    this.filtered = filteredFormations; // Rétro-compatibilité si besoin
   }
 
   getDisponibles(): number {

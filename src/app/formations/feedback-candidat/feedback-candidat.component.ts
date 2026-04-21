@@ -7,6 +7,7 @@ import { Feedback, FeedbackCreatePayload } from '../models/feedback.model';
 import { FeedbackService }   from '../services/feedback.service';
 import { FormationService }  from '../services/formation.service';
 import { Inscription }       from '../models/inscription.model';
+import { ParcoursService }   from '../services/parcours.service';
 
 @Component({
   selector: 'app-feedback-candidat',
@@ -17,6 +18,7 @@ import { Inscription }       from '../models/inscription.model';
 export class FeedbackCandidatComponent implements OnInit {
 
   @Input() formationId!: number;
+  @Input() parcoursId?: number;
 
   feedbacks:    Feedback[]      = [];
   myFeedback:   Feedback | null = null;
@@ -41,7 +43,8 @@ export class FeedbackCandidatComponent implements OnInit {
   constructor(
     private fb:               FormBuilder,
     private feedbackService:  FeedbackService,
-    private formationService: FormationService
+    private formationService: FormationService,
+    private parcoursService:  ParcoursService
   ) {
     this.form = this.fb.group({
       note: [0, [
@@ -131,14 +134,39 @@ export class FeedbackCandidatComponent implements OnInit {
         console.error('Erreur décodage token:', e);
       }
     }
-    this.loadFeedbacksPublics();
+
+    // Fallback par email
+    const email = localStorage.getItem('userName') || '';
+    const role  = (localStorage.getItem('userRole') || '').toUpperCase().replace(/^ROLE_/, '');
+    if (!email || role !== 'CANDIDAT') {
+      this.loadFeedbacksPublics();
+      return;
+    }
+
+    this.formationService.getCandidatByEmail(email).subscribe({
+      next: (candidat) => {
+        if (candidat?.id) {
+          this.candidatId = Number(candidat.id);
+          localStorage.setItem('candidatId', String(candidat.id));
+          this.loadData();
+        } else {
+          this.loadFeedbacksPublics();
+        }
+      },
+      error: () => { this.loadFeedbacksPublics(); }
+    });
   }
 
   private loadData(): void {
     this.loading         = true;
     this.checkingTermine = true;
 
-    this.feedbackService.getByFormation(this.formationId).subscribe({
+    // 1. Charger les feedbacks (Form ou Parcours)
+    const obs = this.parcoursId 
+      ? this.feedbackService.getByParcours(this.parcoursId)
+      : this.feedbackService.getByFormation(this.formationId);
+
+    obs.subscribe({
       next: (data: any) => {
         this.feedbacks  = data;
         this.myFeedback = this.candidatId
@@ -146,35 +174,57 @@ export class FeedbackCandidatComponent implements OnInit {
           : null;
         this.loading = false;
       },
-      error: () => { this.loading = false; }
+      error: (err) => { 
+        this.loading = false;
+        if (err.status === 403) {
+          console.warn('Accès aux feedbacks du parcours restreint ou endpoint manquant.');
+          this.feedbacks = [];
+        }
+      }
     });
 
+    // 2. Vérifier si terminé pour autoriser le feedback
     if (this.candidatId) {
-      this.formationService.getMesInscriptions(this.candidatId).subscribe({
-        next: (inscriptions: Inscription[]) => {
-          const monInscription = inscriptions.find(
-            i => Number(i.formation?.id) === Number(this.formationId)
-          );
-
-          if (monInscription) {
-            const statut      = (monInscription.statut || '').trim().toLowerCase();
-            const progression = monInscription.progression || 0;
-
-            this.aTermine =
-              ['terminé', 'termine', 'terminée', 'completed'].includes(statut)
-              || progression >= 100;
-
-            if (progression >= 100 && !['terminé', 'termine'].includes(statut)) {
-              this.formationService.updateProgression(monInscription.id, 100)
-                .subscribe({ next: () => {}, error: () => {} });
+      if (this.parcoursId) {
+        this.parcoursService.getInscription(this.candidatId, this.parcoursId).subscribe({
+          next: (insc) => {
+            this.aTermine = insc.statut === 'TERMINE';
+            this.checkingTermine = false;
+          },
+          error: (err) => { 
+            if (err.status === 500) {
+              console.warn('Fallback Feedback: Recherche via la liste suite à erreur 500...');
+              this.parcoursService.getInscriptionsCandidatParcours(this.candidatId!).subscribe({
+                next: (list) => {
+                  const found = list.find(i => i.parcours.id === this.parcoursId);
+                  this.aTermine = found?.statut === 'TERMINE';
+                  this.checkingTermine = false;
+                },
+                error: () => { this.checkingTermine = false; }
+              });
+            } else {
+              this.checkingTermine = false; 
             }
-          } else {
-            this.aTermine = false;
           }
-          this.checkingTermine = false;
-        },
-        error: () => { this.checkingTermine = false; }
-      });
+        });
+      } else {
+        this.formationService.getMesInscriptions(this.candidatId).subscribe({
+          next: (inscriptions: Inscription[]) => {
+            const monInscription = inscriptions.find(
+              i => Number(i.formation?.id) === Number(this.formationId)
+            );
+            if (monInscription) {
+              const statut = (monInscription.statut || '').trim().toLowerCase();
+              const progression = monInscription.progression || 0;
+              this.aTermine = ['terminé', 'termine', 'terminée', 'completed'].includes(statut) || progression >= 100;
+            } else {
+              this.aTermine = false;
+            }
+            this.checkingTermine = false;
+          },
+          error: () => { this.checkingTermine = false; }
+        });
+      }
     } else {
       this.checkingTermine = false;
     }
@@ -269,9 +319,15 @@ export class FeedbackCandidatComponent implements OnInit {
       const payload: FeedbackCreatePayload = {
         note:        this.form.value.note,
         commentaire: this.form.value.commentaire.trim(),
-        formation:   { id: this.formationId },
         candidat:    { id: this.candidatId! }
       };
+      
+      if (this.parcoursId) {
+        payload.parcours = { id: this.parcoursId };
+      } else {
+        payload.formation = { id: this.formationId };
+      }
+
       this.feedbackService.create(payload).subscribe({
         next: () => {
           this.saving     = false;

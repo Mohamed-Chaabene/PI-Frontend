@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Formation, YoutubeVideo } from '../models/formation.model';
 import { FormationService } from '../services/formation.service';
 
@@ -22,11 +23,15 @@ export class FormationPlayerComponent
   @Input() formation!:    Formation;
   @Input() inscriptionId: number | null = null;
   @Input() candidatId:    number | null = null;
+  @Input() parcoursId:    number | null = null;
+  @Input() niveau:        string | null = null;
+  @Input() isAlreadyCompleted = false;
 
   private sanitizer        = inject(DomSanitizer);
   private formationService = inject(FormationService);
   private http             = inject(HttpClient);
   private ngZone           = inject(NgZone);
+  private router           = inject(Router);
 
   safeStackBlitzUrl: SafeResourceUrl | null = null;
   isPlaylist      = false;
@@ -138,11 +143,20 @@ export class FormationPlayerComponent
           this.formation.playlistId).subscribe({
         next: (videos) => {
           this.playlistVideos = videos;
-          if (videos.length > 0) this.loadExistingProgression();
+          this.loadExistingProgression();
         }
       });
     } else if (this.formation.youtubeId) {
+      this.isPlaylist = false;
+      this.currentVideoId = this.formation.youtubeId;
+      this.currentVideo = {
+        videoId: this.formation.youtubeId,
+        title: this.formation.titre,
+        thumbnail: '',
+        position: 0
+      };
       this.loadYouTubeAPI(() => this.initPlayer(this.formation.youtubeId!));
+      this.loadExistingProgression();
     }
   }
 
@@ -375,10 +389,15 @@ export class FormationPlayerComponent
   }
 
   private loadExistingProgression(): void {
-    if (!this.inscriptionId || !this.playlistVideos.length) return;
+    if (!this.inscriptionId) return;
+    
+    // Pour une playlist on utilise sa longueur, pour une vidéo unique c'est 1
+    const total = this.isPlaylist ? this.playlistVideos.length : 1;
+    if (total === 0 && this.isPlaylist) return;
+
     this.http.get<any>(
       `${this.base}/video-progression/inscription/${this.inscriptionId}`
-      + `?totalVideos=${this.playlistVideos.length}`
+      + `?totalVideos=${total}`
     ).subscribe({
       next: (data) => {
         (data.details || []).forEach((vp: any) => {
@@ -389,8 +408,15 @@ export class FormationPlayerComponent
           v => !this.videosVues.has(v.videoId))
           || this.playlistVideos[0];
         this.setCurrentVideo(first, this.playlistVideos.indexOf(first));
+
+        // AUTO-TRIGGER QUIZ if already 100% and in a parcours
+        if (this.progression >= 100 && this.parcoursId && this.niveau && !this.isAlreadyCompleted) {
+           setTimeout(() => this.lancerQuizFinal(), 2000);
+        }
       },
-      error: () => this.setCurrentVideo(this.playlistVideos[0], 0)
+      error: () => {
+        this.setCurrentVideo(this.playlistVideos[0], 0);
+      }
     });
   }
 
@@ -409,8 +435,8 @@ export class FormationPlayerComponent
       next: (resp) => {
         this.videosVues.add(video.videoId);
         this.progression = resp.progression;
-        if (resp.formationTerminee || this.progression >= 100) {
-          setTimeout(() => this.lancerQuizFinal(), 1500);
+        if ((resp.formationTerminee || this.progression >= 100) && !this.isAlreadyCompleted) {
+          setTimeout(() => this.lancerQuizFinal(), 2000);
         }
       },
       error: () => {
@@ -423,13 +449,21 @@ export class FormationPlayerComponent
   private recalculerLocal(): void {
     const t = this.playlistVideos.length || 1;
     this.progression = Math.round(this.videosVues.size / t * 100);
-    if (this.progression >= 100)
-      setTimeout(() => this.lancerQuizFinal(), 1500);
+    if (this.progression >= 100 && !this.isAlreadyCompleted) {
+      setTimeout(() => this.lancerQuizFinal(), 2000);
+    }
   }
 
 
   lancerQuizFinal(): void {
     if (!this.inscriptionId) return;
+
+    // Si on est dans un parcours, on redirige vers le quiz de niveau
+    if (this.parcoursId && this.niveau) {
+      this.router.navigate(['/formations/parcours', this.parcoursId, 'quiz', this.niveau]);
+      return;
+    }
+
     if (this.tentativesUtilisees >= this.MAX_TENTATIVES) return;
 
     this.quizBloque        = false;
@@ -588,8 +622,8 @@ export class FormationPlayerComponent
   }
 
   getProgressionColor(): string {
-    if (this.progression >= 100) return '#16a34a';
-    if (this.progression >= 50)  return '#0965A4';
-    return '#f59e0b';
+    if (this.progression >= 100) return '#16a34a'; // Green stays for completion
+    if (this.progression >= 50)  return '#fbbf24'; // Brighter amber/orange
+    return '#fcd34d'; // Lighter amber for low progression
   }
 }
