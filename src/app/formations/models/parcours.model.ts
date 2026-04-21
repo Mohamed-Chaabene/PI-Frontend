@@ -24,6 +24,7 @@ export interface InscriptionParcours {
   niveauActuel: NiveauOrdre;
   statut: 'EN_COURS' | 'TERMINE';
   dateInscription: string;
+  evaluationParcoursRequise?: boolean;
 }
 
 export const NIVEAUX_LABELS: Record<NiveauOrdre, string> = {

@@ -253,8 +253,10 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     border-top: 1px solid $border;
     display: flex;
     gap: 12px;
-    align-items: stretch;
-    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+
 
   %btn-shared {
     display: inline-flex;
@@ -268,6 +270,7 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     white-space: nowrap;
     cursor: pointer;
     text-decoration: none;
+    border: none;
     transition: background 0.2s, transform 0.15s, color 0.2s;
   }
 
@@ -301,6 +304,7 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
       @extend %btn-shared;
       background: $primary;
       color: #fff;
+      padding: 12px 24px;
       &:hover { background: $primary-dark; transform: translateY(-2px); }
     }
 
@@ -316,7 +320,7 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 12px 20px;
+      padding: 12px 24px;
       background: #e1f5fe;
       color: #01579b;
       border-radius: 10px;
@@ -327,13 +331,42 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
 
     .parcours-complete-message {
       text-align: center;
-      padding: 40px;
+      padding: 40px 30px;
       background: #f0f7ff;
-      border-radius: 20px;
-      border: 2px dashed #0965A4;
-      i { font-size: 60px; color: #f1c40f; margin-bottom: 20px; display: block; }
-      h4 { margin: 0 0 10px; color: $text-main; font-weight: 800; }
-      p { margin: 0; color: $text-muted; }
+      border-radius: 24px;
+      border: 1px solid rgba($primary, 0.2);
+      i { font-size: 50px; color: #f1c40f; margin-bottom: 15px; display: block; }
+      h4 { margin: 0 0 10px; color: $text-main; font-weight: 800; font-size: 1.3rem; }
+      p { margin: 0; color: $text-muted; font-size: 0.95rem; }
+
+      .feedback-pending-card {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid rgba($primary, 0.1);
+        p { margin-bottom: 15px; font-weight: 600; color: $text-main; }
+        
+        .btn-certif-pending {
+          background: #1a1a1a;
+          color: #fff;
+          border: none;
+          padding: 14px 28px;
+          border-radius: 12px;
+          font-weight: 700;
+          font-size: 1rem;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          
+          &:hover {
+            background: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+          }
+        }
+      }
     }
   }
 

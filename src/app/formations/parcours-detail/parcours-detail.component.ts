@@ -201,6 +201,16 @@ export class ParcoursDetailComponent implements OnInit {
     return this.inscription?.statut === 'TERMINE';
   }
 
+  isFeedbackPending(): boolean {
+    return this.inscription?.evaluationParcoursRequise === true;
+  }
+
+  allerAuFeedback(): void {
+    if (this.parcours) {
+      this.router.navigate(['/formations/parcours', this.parcours.id, 'feedback']);
+    }
+  }
+
   getFormationForNiveau(niveau: NiveauOrdre): Formation | null {
     if (!this.parcours) return null;
     switch (niveau) {

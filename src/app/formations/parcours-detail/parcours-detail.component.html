@@ -96,22 +96,32 @@
 
                 <!-- Candidat inscrit : afficher progression et accès -->
                 <ng-container *ngIf="!isAdmin && inscription">
-                  <div class="inscrit-badge mb-3">
+                  <div class="inscrit-badge">
                     <i class="ri-checkbox-circle-fill"></i>
                     Inscrit · Niveau actuel : <strong>{{ LABELS[inscription.niveauActuel] }}</strong>
                   </div>
 
                   <div class="d-flex gap-3 flex-wrap" *ngIf="!isParcoursTermine()">
-                    <button type="button" class="btn-acceder flex-grow-1" (click)="accederFormation()">
+                    <button type="button" class="btn-acceder" (click)="accederFormation()">
                       <i class="ri-play-circle-line me-2"></i>
                       Accéder au cours — {{ LABELS[inscription.niveauActuel] }}
                     </button>
+
                   </div>
 
                   <div class="parcours-complete-message" *ngIf="isParcoursTermine()">
                     <i class="ri-trophy-line"></i>
-                    <h4>Félicitations ! Parcours terminé avec succès.</h4>
-                    <p>Vous avez validé tous les niveaux. Votre certificat est disponible.</p>
+                    <h4>Félicitations ! Parcours terminé.</h4>
+                    
+                    <p *ngIf="!isFeedbackPending()">Tous les niveaux validés · Votre certificat est disponible.</p>
+                    
+                    <div class="feedback-pending-card" *ngIf="isFeedbackPending()">
+                      <p>Une dernière étape : partagez votre expérience pour obtenir votre certificat !</p>
+                      <button class="btn-certif-pending" (click)="allerAuFeedback()">
+                        <i class="ri-medal-line me-2"></i>
+                        Finaliser & Obtenir le certificat
+                      </button>
+                    </div>
                   </div>
                 </ng-container>
 

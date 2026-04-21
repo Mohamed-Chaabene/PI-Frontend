@@ -19,13 +19,21 @@
 
   <!-- Erreur -->
   <div class="error-state" *ngIf="error">
-    <i class="ri-error-warning-line"></i>
-    <h3>Erreur</h3>
-    <p>{{ error }}</p>
-    <button class="btn-secondary" (click)="retourParcours()">
-      <i class="ri-arrow-left-line"></i> Retour au parcours
-    </button>
+    <div class="error-card">
+      <div class="error-icon">
+        <i class="ri-error-warning-fill"></i>
+      </div>
+      <h3>Oups !</h3>
+      <p class="error-message">{{ error }}</p>
+      <div class="error-actions">
+        <button class="btn-retour" (click)="retourParcours()">
+          <i class="ri-arrow-left-line"></i>
+          Retour au parcours
+        </button>
+      </div>
+    </div>
   </div>
+
 
   <!-- ═══ PHASE 2: QUIZ ═══ -->
   <div class="quiz-phase" *ngIf="phase === 'quiz' && quiz && !error">

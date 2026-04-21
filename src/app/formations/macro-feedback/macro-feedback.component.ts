@@ -12,45 +12,83 @@ import { HttpClient } from '@angular/common/http';
     <div class="feedback-container">
       <div class="feedback-card">
         <header>
-          <h1>Félicitations ! 🎓</h1>
-          <p>Vous avez terminé tout le parcours. Dernière étape avant votre certificat.</p>
+          <div class="badge-container">
+            <span class="status-badge">Parcours complet</span>
+          </div>
+          <h1>Votre expérience globale</h1>
+          <p class="subtitle">Quelques questions sur votre parcours complet — requis pour obtenir votre certificat.</p>
+          
+          <div class="progress-info">
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" [style.width.%]="calculateProgress()"></div>
+            </div>
+            <span class="progress-text">{{ completedSteps() }} / 4</span>
+          </div>
         </header>
 
-        <section class="questions">
-          <div class="question-block" *ngFor="let q of questions">
-            <label>{{ q.label }}</label>
-            <div class="rating">
-              <span *ngFor="let star of [1,2,3,4,5]" 
-                    (click)="formData[q.key] = star"
-                    [class.active]="formData[q.key] >= star">
-                ★
-              </span>
+        <main class="form-body">
+          <section class="question-block">
+            <label class="center-label">Note globale du parcours</label>
+            <div class="stars-centered">
+              <span *ngFor="let s of [1,2,3,4,5]" 
+                    (click)="formData.noteGlobale = s"
+                    [class.active]="formData.noteGlobale >= s">★</span>
             </div>
-          </div>
+          </section>
 
-          <div class="question-block nps">
-            <label>Quelle est la probabilité que vous recommandiez ce parcours ? (0-10)</label>
-            <div class="nps-grid">
-              <button *ngFor="let n of [0,1,2,3,4,5,6,7,8,9,10]" 
-                      (click)="formData.npsScore = n"
-                      [class.active]="formData.npsScore === n">
-                {{ n }}
+          <section class="question-block">
+            <label>La progression entre les niveaux était...</label>
+            <div class="chips-grid">
+              <button *ngFor="let opt of progressionOptions"
+                      [class.active]="formData.progression === opt"
+                      (click)="formData.progression = opt">
+                {{ opt }}
               </button>
             </div>
-          </div>
+          </section>
 
-          <div class="question-block">
-            <label>Votre commentaire libre (optionnel)</label>
-            <textarea [(ngModel)]="formData.freeComment" placeholder="Dites-nous ce que vous en avez pensé..."></textarea>
-          </div>
-        </section>
+          <section class="question-block">
+            <label>Les quiz de validation étaient...</label>
+            <div class="chips-grid">
+              <button *ngFor="let opt of quizOptions"
+                      [class.active]="formData.experienceQuiz === opt"
+                      (click)="formData.experienceQuiz = opt">
+                {{ opt }}
+              </button>
+            </div>
+          </section>
+
+          <section class="question-block">
+            <label>Recommanderiez-vous ce parcours ?</label>
+            <div class="chips-grid">
+              <button *ngFor="let opt of recommandationOptions"
+                      [class.active]="formData.recommandation === opt"
+                      (click)="formData.recommandation = opt">
+                {{ opt }}
+              </button>
+            </div>
+          </section>
+
+          <section class="question-block">
+            <div class="label-row">
+              <label>Commentaire libre</label>
+              <span class="optional">Optionnel</span>
+            </div>
+            <textarea [(ngModel)]="formData.commentaireLibre" 
+                      maxlength="500"
+                      placeholder="Ce que vous avez le plus apprécié, ce qui pourrait être amélioré, ce que vous aimeriez voir ensuite..."></textarea>
+            <div class="char-count">{{ formData.commentaireLibre.length }} / 500</div>
+          </section>
+        </main>
 
         <footer>
-          <button class="btn-submit" 
+          <div class="footer-info">
+            <p>Requis pour le certificat</p>
+          </div>
+          <button class="btn-certif" 
                   [disabled]="!isFormValid() || submitting"
                   (click)="submit()">
-            <span *ngIf="!submitting">Finaliser & Obtenir mon certificat</span>
-            <span *ngIf="submitting">Envoi en cours...</span>
+            {{ submitting ? 'Envoi...' : 'Obtenir mon certificat' }}
           </button>
         </footer>
       </div>
@@ -58,69 +96,81 @@ import { HttpClient } from '@angular/common/http';
   `,
   styles: [`
     .feedback-container {
-      min-height: 80vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      background: #f8f9fa;
+      min-height: 100vh; background: #fafafb; display: flex; align-items: flex-start; justify-content: center; padding: 3rem 1rem;
     }
     .feedback-card {
-      background: white;
-      padding: 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-      max-width: 650px;
-      width: 100%;
+      background: white; width: 100%; max-width: 600px; padding: 2.5rem; border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.04); font-family: 'Inter', sans-serif;
     }
-    header { text-align: center; margin-bottom: 2rem; }
-    header h1 { color: #0d6efd; margin-bottom: 0.5rem; }
     
-    .question-block { margin-bottom: 1.5rem; }
-    .question-block label { display: block; font-weight: 600; margin-bottom: 0.8rem; color: #344767; }
-    
-    .rating { font-size: 1.8rem; color: #ddd; cursor: pointer; }
-    .rating span { margin-right: 5px; transition: color 0.2s; }
-    .rating span.active { color: #ffc107; }
-    
-    .nps-grid { display: flex; gap: 4px; justify-content: space-between; flex-wrap: wrap; }
-    .nps-grid button { 
-      width: 40px; height: 40px; border: 1px solid #ddd; background: white; 
-      border-radius: 4px; cursor: pointer; transition: all 0.2s;
+    header { text-align: center; margin-bottom: 2.5rem; }
+    .status-badge { 
+      background: #e8f5e9; color: #2e7d32; padding: 6px 16px; border-radius: 20px;
+      font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 1rem;
     }
-    .nps-grid button.active { background: #0d6efd; color: white; border-color: #0d6efd; }
+    h1 { margin: 0 0 0.5rem; color: #1a1a1a; font-size: 1.75rem; font-weight: 800; }
+    .subtitle { color: #666; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem; }
     
-    textarea { width: 100%; min-height: 80px; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; }
-    
-    .btn-submit {
-      width: 100%; padding: 1rem; border: none; border-radius: 8px;
-      background: #0d6efd; color: white; font-weight: 600; font-size: 1.1rem;
-      cursor: pointer; transition: opacity 0.2s;
+    .progress-info { display: flex; align-items: center; gap: 12px; max-width: 200px; margin: 0 auto; }
+    .progress-bar-bg { flex: 1; height: 6px; background: #eee; border-radius: 10px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: #0061ff; transition: width 0.3s ease; }
+    .progress-text { font-size: 0.8rem; font-weight: 700; color: #999; }
+
+    .question-block { margin-bottom: 2rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 1.5rem; }
+    .question-block:last-child { border-bottom: none; }
+    .question-block label { display: block; margin-bottom: 1rem; font-weight: 600; color: #333; font-size: 1rem; }
+    .center-label { text-align: center; }
+
+    .stars-centered { display: flex; justify-content: center; gap: 10px; font-size: 2.5rem; color: #e0e0e0; cursor: pointer; margin: 0.5rem 0; }
+    .stars-centered span { transition: all 0.2s; }
+    .stars-centered span.active { color: #ffc107; transform: scale(1.1); }
+
+    .chips-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chips-grid button {
+      padding: 10px 20px; border: 1px solid #eee; background: white; border-radius: 10px;
+      font-size: 0.9rem; font-weight: 500; color: #555; cursor: pointer; transition: all 0.2s;
     }
-    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .chips-grid button:hover { background: #f8f9fa; border-color: #ddd; }
+    .chips-grid button.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+
+    .label-row { display: flex; justify-content: space-between; align-items: center; }
+    .optional { font-size: 0.8rem; color: #999; }
+
+    textarea {
+      width: 100%; min-height: 120px; padding: 1rem; border: 1px solid #eee; border-radius: 16px;
+      font-family: inherit; font-size: 0.95rem; line-height: 1.5; resize: none; transition: border-color 0.2s;
+    }
+    textarea:focus { border-color: #1a1a1a; outline: none; }
+    .char-count { text-align: right; font-size: 0.75rem; color: #999; margin-top: 6px; }
+
+    footer { 
+      margin-top: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    }
+    .footer-info p { margin: 0; color: #888; font-size: 0.85rem; font-weight: 500; }
+    .btn-certif {
+      width: 100%; padding: 16px; border: none; border-radius: 16px; background: #0061ff;
+      color: white; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(0,97,255,0.2);
+    }
+    .btn-certif:hover { background: #0056e0; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,97,255,0.3); }
+    .btn-certif:disabled { opacity: 0.5; transform: none; box-shadow: none; filter: grayscale(1); cursor: not-allowed; }
   `]
 })
 export class MacroFeedbackComponent implements OnInit {
   parcoursId!: number;
   submitting = false;
 
-  questions = [
-    { label: 'Qualité globale du contenu', key: 'globalQualityScore' },
-    { label: 'Clarté des explications', key: 'explanationScore' },
-    { label: 'Pertinence des quiz', key: 'quizRelevanceScore' },
-    { label: 'Facilité de navigation', key: 'navigationScore' },
-    { label: 'Note globale du parcours', key: 'overallRating' }
-  ];
-
   formData: any = {
-    globalQualityScore: 0,
-    explanationScore: 0,
-    quizRelevanceScore: 0,
-    navigationScore: 0,
-    npsScore: -1,
-    overallRating: 0,
-    freeComment: ''
+    noteGlobale: 0,
+    progression: '',
+    experienceQuiz: '',
+    recommandation: '',
+    commentaireLibre: ''
   };
+
+  progressionOptions = ['Très fluide', 'Correcte', 'Parfois abrupte', 'Trop rapide'];
+  quizOptions = ['Très pertinents', 'Adaptés', 'Trop faciles', 'Trop difficiles'];
+  recommandationOptions = ['Absolument', 'Probablement', 'Pas sûr(e)', 'Non'];
 
   constructor(
     private route: ActivatedRoute,
@@ -130,19 +180,28 @@ export class MacroFeedbackComponent implements OnInit {
 
   ngOnInit(): void {
     this.parcoursId = Number(this.route.snapshot.paramMap.get('id'));
-    // En production on récupérerait l'inscriptionId lié
+  }
+
+  completedSteps(): number {
+    let count = 0;
+    if (this.formData.noteGlobale > 0) count++;
+    if (this.formData.progression !== '') count++;
+    if (this.formData.experienceQuiz !== '') count++;
+    if (this.formData.recommandation !== '') count++;
+    return count;
+  }
+
+  calculateProgress(): number {
+    return (this.completedSteps() / 4) * 100;
   }
 
   isFormValid(): boolean {
-    return this.formData.globalQualityScore > 0 &&
-           this.formData.explanationScore > 0 &&
-           this.formData.quizRelevanceScore > 0 &&
-           this.formData.navigationScore > 0 &&
-           this.formData.npsScore >= 0 &&
-           this.formData.overallRating > 0;
+    return this.completedSteps() === 4;
   }
 
   submit(): void {
+    if (!this.isFormValid()) return;
+
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const inscription = JSON.parse(localStorage.getItem('currentParcoursInscription') || '{}');
 
@@ -162,7 +221,7 @@ export class MacroFeedbackComponent implements OnInit {
     this.http.post('http://localhost:8080/api/feedbacks/macro', payload)
       .subscribe({
         next: () => {
-          alert("Merci ! Votre parcours est validé et votre certificat est en cours de préparation.");
+          alert("Merci ! Votre parcours est validé et votre certificat est prêt.");
           this.router.navigate(['/candidat-dashboard']); 
         },
         error: (err) => {

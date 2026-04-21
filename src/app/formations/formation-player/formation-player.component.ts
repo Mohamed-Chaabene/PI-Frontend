@@ -54,10 +54,11 @@ export class FormationPlayerComponent
   quizFinalMessage    = '';
   certificatId:       number | null = null;
 
-  readonly SEUIL_CERTIFICAT = 70;
+  seuilQuiz = 70;
 
   tentativesUtilisees = 0;
-  readonly MAX_TENTATIVES = 2;
+
+  readonly MAX_TENTATIVES = 3;
 
   quizBloque         = false;
   quizBloqueMessage  = '';
@@ -120,7 +121,14 @@ export class FormationPlayerComponent
 
 
   ngOnInit(): void {
+    if (this.niveau === 'EXPERT') {
+      this.seuilQuiz = 80;
+    } else {
+      this.seuilQuiz = 70;
+    }
+
     if (!this.candidatId)
+
       this.candidatId = Number(localStorage.getItem('candidatId')) || null;
     if (!this.inscriptionId) {
       const s = localStorage.getItem('inscription_' + this.formation?.id);
@@ -408,12 +416,8 @@ export class FormationPlayerComponent
           v => !this.videosVues.has(v.videoId))
           || this.playlistVideos[0];
         this.setCurrentVideo(first, this.playlistVideos.indexOf(first));
-
-        // AUTO-TRIGGER QUIZ if already 100% and in a parcours
-        if (this.progression >= 100 && this.parcoursId && this.niveau && !this.isAlreadyCompleted) {
-           setTimeout(() => this.lancerQuizFinal(), 2000);
-        }
       },
+
       error: () => {
         this.setCurrentVideo(this.playlistVideos[0], 0);
       }
@@ -459,7 +463,8 @@ export class FormationPlayerComponent
     if (!this.inscriptionId) return;
 
     // Si on est dans un parcours, on redirige vers le quiz de niveau
-    if (this.parcoursId && this.niveau) {
+    // SAUF pour le niveau EXPERT qui utilise le quiz interne avec protection anti-triche
+    if (this.parcoursId && this.niveau && this.niveau !== 'EXPERT') {
       this.router.navigate(['/formations/parcours', this.parcoursId, 'quiz', this.niveau]);
       return;
     }
@@ -484,7 +489,9 @@ export class FormationPlayerComponent
         titreFormation: this.formation.titre,
         categorie:      this.formation.categorie,
         playlistId:     this.formation.playlistId || '',
-        totalVideos:    this.playlistVideos.length
+        totalVideos:    this.playlistVideos.length,
+        niveau:         this.niveau,
+        parcoursId:     this.parcoursId
       }
     ).subscribe({
       next: (data) => {
@@ -532,7 +539,9 @@ export class FormationPlayerComponent
     this.http.post<any>(
       `${this.base}/video-progression/quiz-final/soumettre`, {
         inscriptionId: this.inscriptionId,
-        score
+        score,
+        parcoursId:    this.parcoursId,
+        niveau:        this.niveau
       }
     ).subscribe({
       next: (resp) => {
@@ -540,7 +549,7 @@ export class FormationPlayerComponent
         this.quizFinalReussi    = resp.reussi;
         this.quizFinalMessage   = resp.message;
 
-        if (resp.reussi && score >= this.SEUIL_CERTIFICAT) {
+        if (resp.reussi && score >= this.seuilQuiz) {
           this.showConfetti = true;
           setTimeout(() => { this.showConfetti = false; }, 4000);
 
@@ -552,7 +561,7 @@ export class FormationPlayerComponent
           });
         } else if (!resp.reussi) {
           this.quizFinalMessage =
-            `Score obtenu : ${score}% — Minimum requis : ${this.SEUIL_CERTIFICAT}%. ` +
+            `Score obtenu : ${score}% — Minimum requis : ${this.seuilQuiz}%. ` +
             (this.peutReessayer
               ? `Il vous reste ${this.tentativesRestantes} tentative(s).`
               : `Vous avez épuisé toutes vos tentatives.`);
@@ -568,7 +577,6 @@ export class FormationPlayerComponent
   }
 
   fermerQuizFinal(): void {
-    if (this.quizFinalReussi) return;
     this.arreterTimer();
     this.retirerProtectionAntiTriche();
     this.showQuizFinal      = false;

@@ -72,7 +72,7 @@
           <div class="quiz-final-progress-info">
             <span>{{ quizFinalQuestions.length }} questions</span>
             <span>•</span>
-            <span>Score minimum pour obtenir un certificat : 70%</span>
+            <span>Score minimum pour obtenir un certificat : {{ seuilQuiz }}%</span>
             <span>•</span>
             <span class="tentatives-badge"
                   [class.warning]="tentativesUtilisees === 1">
