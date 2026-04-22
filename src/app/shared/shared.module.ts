@@ -35,6 +35,7 @@ import { RdHeaderComponent } from '../recruiter-dashboard/rd-header/rd-header.co
 import { RdFooterComponent } from '../recruiter-dashboard/rd-footer/rd-footer.component';
 import { RdSidebarComponent } from '../recruiter-dashboard/rd-sidebar/rd-sidebar.component';
 import { WhyChooseUsComponent } from '../common/why-choose-us/why-choose-us.component';
+import { RecommendationWidgetComponent } from '../recruiter-dashboard/recommendation-widget/recommendation-widget.component';
 
 @NgModule({
   declarations: [
@@ -63,7 +64,8 @@ import { WhyChooseUsComponent } from '../common/why-choose-us/why-choose-us.comp
     RdHeaderComponent,
     RdFooterComponent,
     RdSidebarComponent,
-    WhyChooseUsComponent
+    WhyChooseUsComponent,
+    RecommendationWidgetComponent
   ],
   imports: [
     CommonModule,
@@ -98,6 +100,7 @@ import { WhyChooseUsComponent } from '../common/why-choose-us/why-choose-us.comp
     RdFooterComponent,
     RdSidebarComponent,
     WhyChooseUsComponent,
+    RecommendationWidgetComponent,
     NgxScrollTopModule,
     CommonModule,
     RouterModule,

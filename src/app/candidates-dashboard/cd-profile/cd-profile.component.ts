@@ -37,6 +37,7 @@ export class CdProfileComponent implements OnInit {
     isEditingEducation = false;
     isEditingBackground = false;
     isEditingPassion = false;
+    isEditingCompetences = false;
     isDescriptionFormSubmitted = false;
     isEducationFormSubmitted = false;
     isBackgroundFormSubmitted = false;
@@ -46,6 +47,9 @@ export class CdProfileComponent implements OnInit {
     isContactInfoSaved = false;
     isPassionSaved = false;
     passionAndGoals = '';
+    newCompetence = '';
+    availableCompetences: any[] = [];
+    selectedCompetence: string = '';
     contactData: any = {
         prenom: ''
     };
@@ -67,6 +71,346 @@ export class CdProfileComponent implements OnInit {
     errorMessage = '';
     geocodeTimer: any;
     isUploadingProfilePicture = false;
+    
+    // Education level options
+    niveauEtudeOptions: string[] = [
+        'Baccalauréat',
+        'Licence',
+        'Master',
+        'Doctorat',
+        'Diplôme Universitaire',
+        'BTS',
+        'DUT',
+        'Certificat'
+    ];
+    
+    // Study domain options
+    domaineEtudeOptions: string[] = [
+        'Informatique',
+        'Ingénierie',
+        'Génie Civil',
+        'Commerce',
+        'Gestion',
+        'Marketing',
+        'Ressources Humaines',
+        'Finance',
+        'Comptabilité',
+        'Droit',
+        'Médecine',
+        'Sciences',
+        'Mathématiques',
+        'Langues',
+        'Arts',
+        'Design',
+        'Architecture',
+        'Agriculture',
+        'Environnement',
+        'Électronique'
+    ];
+    
+    // Job title options
+    titrePosteOptions: string[] = [
+        'Développeur',
+        'Développeur Senior',
+        'Développeur Full Stack',
+        'Développeur Frontend',
+        'Développeur Backend',
+        'Ingénieur Logiciel',
+        'Ingénieur Senior',
+        'Responsable Technique',
+        'Architecte Logiciel',
+        'Chef de Projet',
+        'Product Manager',
+        'Data Scientist',
+        'Data Engineer',
+        'Designer UX/UI',
+        'Designer Graphique',
+        'Consultant',
+        'Consultant Senior',
+        'Responsable RH',
+        'Responsable QA',
+        'Testeur Automatisé'
+    ];
+    
+    // Year options for education and background
+    yearOptions: number[] = this.generateYearOptions();
+
+    // Country and City options
+    countryOptions: string[] = [
+        'Tunisie',
+        'Maroc',
+        'Algérie',
+        'Égypte',
+        'Libye',
+        'Mauritanie',
+        'Soudan',
+        'France',
+        'Belgique',
+        'Suisse',
+        'Canada',
+        'États-Unis',
+        'Royaume-Uni',
+        'Allemagne',
+        'Italie',
+        'Espagne',
+        'Pays-Bas',
+        'Portugal',
+        'Australie',
+        'Nouvelle-Zélande'
+    ];
+
+    citiesByCountry: { [key: string]: string[] } = {
+        'Tunisie': ['Tunis', 'Sfax', 'Sousse', 'Kairouan', 'Gafsa', 'Médenine', 'Tataouine', 'Bizerte', 'Hammamet', 'Djerba'],
+        'Maroc': ['Casablanca', 'Rabat', 'Fès', 'Marrakech', 'Agadir', 'Tanger', 'Tétouan', 'Meknes', 'Oujda', 'Safi'],
+        'Algérie': ['Alger', 'Oran', 'Constantine', 'Annaba', 'Blida', 'Sétif', 'Sidi Bel Abbès', 'Béjaïa', 'Tlemcen', 'Tiaret'],
+        'Égypte': ['Le Caire', 'Alexandrie', 'Giza', 'Louxor', 'Assouan', 'Mansoura', 'Tanta', 'Zagazig', 'Qena', 'Suez'],
+        'Libye': ['Tripoli', 'Benghazi', 'Misrata', 'Tobrouk', 'Derna', 'Zliten', 'Sorman', 'Zawiya', 'Sabratha', 'Ghadamès'],
+        'Mauritanie': ['Nouakchott', 'Nouadhibou', 'Kiffa', 'Rosso', 'Kaédi', 'Tidjikja', 'Atar', 'Chinguetti', 'Akjoujt', 'Bogué'],
+        'Soudan': ['Khartoum', 'Omdourman', 'Port-Soudan', 'Kassala', 'Al-Ubayyid', 'Wadi Madani', 'Atbara', 'Gedaref', 'Nyala', 'El Daein'],
+        'France': ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier', 'Bordeaux', 'Lille'],
+        'Belgique': ['Bruxelles', 'Anvers', 'Gand', 'Charleroi', 'Liège', 'Louvain', 'Mons', 'Tournai', 'Namur', 'Hasselt'],
+        'Suisse': ['Zurich', 'Genève', 'Bâle', 'Berne', 'Lausanne', 'Lucerne', 'Saint-Gall', 'Neuchâtel', 'Winterthur', 'Lugano'],
+        'Canada': ['Toronto', 'Montréal', 'Vancouver', 'Calgary', 'Edmonton', 'Ottawa', 'Winnipeg', 'Québec', 'Hamilton', 'Kitchener'],
+        'États-Unis': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphie', 'San Antonio', 'San Diego', 'Dallas', 'San Jose'],
+        'Royaume-Uni': ['Londres', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow', 'Sheffield', 'Bristol', 'Edinburgh', 'Liverpool', 'Newcastle'],
+        'Allemagne': ['Berlin', 'Munich', 'Francfort', 'Cologne', 'Hambourg', 'Stuttgart', 'Düsseldorf', 'Dortmund', 'Essen', 'Leipzig'],
+        'Italie': ['Rome', 'Milan', 'Naples', 'Turin', 'Palerme', 'Gênes', 'Bologne', 'Florence', 'Bari', 'Catane'],
+        'Espagne': ['Madrid', 'Barcelone', 'Valence', 'Séville', 'Saragosse', 'Malaga', 'Murcie', 'Palma', 'Bilbao', 'Cordoue'],
+        'Pays-Bas': ['Amsterdam', 'Rotterdam', 'La Haye', 'Utrecht', 'Eindhoven', 'Groningue', 'Arnhem', 'Alkmaar', 'Leyde', 'Nimègue'],
+        'Portugal': ['Lisbonne', 'Porto', 'Covilhã', 'Braga', 'Funchal', 'Évora', 'Covilhã', 'Aveiro', 'Viseu', 'Guarda'],
+        'Australie': ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaïde', 'Hobart', 'Canberra', 'Gold Coast', 'Newcastle', 'Wollongong'],
+        'Nouvelle-Zélande': ['Auckland', 'Wellington', 'Christchurch', 'Hamilton', 'Tauranga', 'Lower Hutt', 'Dunedin', 'Palmerston North', 'Rotorua', 'Napier']
+    };
+
+    // Get cities for selected country
+    getCitiesByCountry(): string[] {
+        if (!this.localisationData.pays || !this.citiesByCountry[this.localisationData.pays]) {
+            return [];
+        }
+        return this.citiesByCountry[this.localisationData.pays];
+    }
+
+    // City coordinates mapping
+    coordinatesByCity: { [key: string]: { [key: string]: { lat: number; lng: number } } } = {
+        'Tunisie': {
+            'Tunis': { lat: 36.8065, lng: 10.1615 },
+            'Sfax': { lat: 34.7405, lng: 10.7603 },
+            'Sousse': { lat: 35.8256, lng: 10.6369 },
+            'Kairouan': { lat: 35.6713, lng: 10.1056 },
+            'Gafsa': { lat: 34.4261, lng: 8.7818 },
+            'Médenine': { lat: 33.3539, lng: 10.5043 },
+            'Tataouine': { lat: 32.9289, lng: 10.4518 },
+            'Bizerte': { lat: 37.2744, lng: 9.8739 },
+            'Hammamet': { lat: 36.4023, lng: 10.6141 },
+            'Djerba': { lat: 33.8869, lng: 10.9369 }
+        },
+        'Maroc': {
+            'Casablanca': { lat: 33.5731, lng: -7.5898 },
+            'Rabat': { lat: 34.0209, lng: -6.8416 },
+            'Fès': { lat: 34.0333, lng: -5.0033 },
+            'Marrakech': { lat: 31.6295, lng: -8.0088 },
+            'Agadir': { lat: 30.4278, lng: -9.5881 },
+            'Tanger': { lat: 35.7595, lng: -5.8340 },
+            'Tétouan': { lat: 35.5997, lng: -5.3671 },
+            'Meknes': { lat: 33.8869, lng: -5.5491 },
+            'Oujda': { lat: 34.6841, lng: -1.9073 },
+            'Safi': { lat: 32.2993, lng: -8.7603 }
+        },
+        'Algérie': {
+            'Alger': { lat: 36.7538, lng: 3.0588 },
+            'Oran': { lat: 35.6979, lng: -0.6348 },
+            'Constantine': { lat: 36.3619, lng: 6.6135 },
+            'Annaba': { lat: 36.9000, lng: 7.7600 },
+            'Blida': { lat: 36.4766, lng: 2.8255 },
+            'Sétif': { lat: 36.1903, lng: 5.4078 },
+            'Sidi Bel Abbès': { lat: 35.1900, lng: -0.6411 },
+            'Béjaïa': { lat: 36.7538, lng: 5.0747 },
+            'Tlemcen': { lat: 35.2937, lng: -1.3144 },
+            'Tiaret': { lat: 35.3738, lng: 1.3213 }
+        },
+        'Égypte': {
+            'Le Caire': { lat: 30.0444, lng: 31.2357 },
+            'Alexandrie': { lat: 31.2001, lng: 29.9187 },
+            'Giza': { lat: 30.0131, lng: 31.2089 },
+            'Louxor': { lat: 25.6872, lng: 32.6396 },
+            'Assouan': { lat: 24.0889, lng: 32.8998 },
+            'Mansoura': { lat: 31.0461, lng: 31.3706 },
+            'Tanta': { lat: 30.7865, lng: 31.0004 },
+            'Zagazig': { lat: 30.5836, lng: 31.5029 },
+            'Qena': { lat: 26.1644, lng: 33.6357 },
+            'Suez': { lat: 29.9668, lng: 32.5498 }
+        },
+        'France': {
+            'Paris': { lat: 48.8566, lng: 2.3522 },
+            'Marseille': { lat: 43.2965, lng: 5.3698 },
+            'Lyon': { lat: 45.7640, lng: 4.8357 },
+            'Toulouse': { lat: 43.6047, lng: 1.4442 },
+            'Nice': { lat: 43.7102, lng: 7.2620 },
+            'Nantes': { lat: 47.2184, lng: -1.5536 },
+            'Strasbourg': { lat: 48.5734, lng: 7.7521 },
+            'Montpellier': { lat: 43.6108, lng: 3.8767 },
+            'Bordeaux': { lat: 44.8378, lng: -0.5792 },
+            'Lille': { lat: 50.6292, lng: 3.0573 }
+        },
+        'Belgique': {
+            'Bruxelles': { lat: 50.8503, lng: 4.3517 },
+            'Anvers': { lat: 51.2194, lng: 4.4025 },
+            'Gand': { lat: 51.0538, lng: 3.7196 },
+            'Charleroi': { lat: 50.4095, lng: 4.4347 },
+            'Liège': { lat: 50.6325, lng: 5.5700 },
+            'Louvain': { lat: 50.8798, lng: 4.7005 },
+            'Mons': { lat: 50.4501, lng: 3.9552 },
+            'Tournai': { lat: 50.6059, lng: 3.3884 },
+            'Namur': { lat: 50.4656, lng: 4.8683 },
+            'Hasselt': { lat: 50.9313, lng: 5.3381 }
+        },
+        'Suisse': {
+            'Zurich': { lat: 47.3769, lng: 8.5472 },
+            'Genève': { lat: 46.1959, lng: 6.1423 },
+            'Bâle': { lat: 47.5596, lng: 7.5886 },
+            'Berne': { lat: 46.9479, lng: 7.4474 },
+            'Lausanne': { lat: 46.5197, lng: 6.6323 },
+            'Lucerne': { lat: 47.0502, lng: 8.3093 },
+            'Saint-Gall': { lat: 47.4235, lng: 9.3768 },
+            'Neuchâtel': { lat: 46.9907, lng: 6.9217 },
+            'Winterthur': { lat: 47.5004, lng: 8.7267 },
+            'Lugano': { lat: 46.0051, lng: 8.9511 }
+        },
+        'Canada': {
+            'Toronto': { lat: 43.6629, lng: -79.3957 },
+            'Montréal': { lat: 45.5017, lng: -73.5673 },
+            'Vancouver': { lat: 49.2827, lng: -123.1207 },
+            'Calgary': { lat: 51.0447, lng: -114.0719 },
+            'Edmonton': { lat: 53.5461, lng: -113.4938 },
+            'Ottawa': { lat: 45.4215, lng: -75.6972 },
+            'Winnipeg': { lat: 49.8951, lng: -97.1384 },
+            'Québec': { lat: 46.8139, lng: -71.2080 },
+            'Hamilton': { lat: 43.2557, lng: -79.8711 },
+            'Kitchener': { lat: 43.4516, lng: -80.4925 }
+        },
+        'États-Unis': {
+            'New York': { lat: 40.7128, lng: -74.0060 },
+            'Los Angeles': { lat: 34.0522, lng: -118.2437 },
+            'Chicago': { lat: 41.8781, lng: -87.6298 },
+            'Houston': { lat: 29.7604, lng: -95.3698 },
+            'Phoenix': { lat: 33.4484, lng: -112.0742 },
+            'Philadelphie': { lat: 39.9526, lng: -75.1652 },
+            'San Antonio': { lat: 29.4241, lng: -98.4936 },
+            'San Diego': { lat: 32.7157, lng: -117.1611 },
+            'Dallas': { lat: 32.7767, lng: -96.7970 },
+            'San Jose': { lat: 37.3382, lng: -121.8863 }
+        },
+        'Royaume-Uni': {
+            'Londres': { lat: 51.5074, lng: -0.1278 },
+            'Manchester': { lat: 53.4808, lng: -2.2426 },
+            'Birmingham': { lat: 52.5086, lng: -1.8853 },
+            'Leeds': { lat: 53.8008, lng: -1.5491 },
+            'Glasgow': { lat: 55.8642, lng: -4.2518 },
+            'Sheffield': { lat: 53.3811, lng: -1.4701 },
+            'Bristol': { lat: 51.4545, lng: -2.5879 },
+            'Edinburgh': { lat: 55.9533, lng: -3.1883 },
+            'Liverpool': { lat: 53.4084, lng: -2.9916 },
+            'Newcastle': { lat: 54.9783, lng: -1.6178 }
+        },
+        'Allemagne': {
+            'Berlin': { lat: 52.5200, lng: 13.4050 },
+            'Munich': { lat: 48.1351, lng: 11.5820 },
+            'Francfort': { lat: 50.1109, lng: 8.6821 },
+            'Cologne': { lat: 50.9375, lng: 6.9603 },
+            'Hambourg': { lat: 53.5511, lng: 9.9937 },
+            'Stuttgart': { lat: 48.7758, lng: 9.1829 },
+            'Düsseldorf': { lat: 51.2277, lng: 6.7735 },
+            'Dortmund': { lat: 51.5136, lng: 7.4653 },
+            'Essen': { lat: 51.4556, lng: 7.0116 },
+            'Leipzig': { lat: 51.3397, lng: 12.3731 }
+        },
+        'Italie': {
+            'Rome': { lat: 41.9028, lng: 12.4964 },
+            'Milan': { lat: 45.4642, lng: 9.1900 },
+            'Naples': { lat: 40.8518, lng: 14.2681 },
+            'Turin': { lat: 45.0703, lng: 7.6869 },
+            'Palerme': { lat: 38.1157, lng: 13.3615 },
+            'Gênes': { lat: 44.4056, lng: 8.9463 },
+            'Bologne': { lat: 44.4949, lng: 11.3426 },
+            'Florence': { lat: 43.7696, lng: 11.2558 },
+            'Bari': { lat: 41.1186, lng: 16.8723 },
+            'Catane': { lat: 37.4979, lng: 15.0873 }
+        },
+        'Espagne': {
+            'Madrid': { lat: 40.4168, lng: -3.7038 },
+            'Barcelone': { lat: 41.3851, lng: 2.1734 },
+            'Valence': { lat: 39.4699, lng: -0.3763 },
+            'Séville': { lat: 37.3886, lng: -5.9823 },
+            'Saragosse': { lat: 41.6488, lng: -0.8891 },
+            'Malaga': { lat: 36.7213, lng: -4.4215 },
+            'Murcie': { lat: 37.9922, lng: -1.1303 },
+            'Palma': { lat: 39.5696, lng: 2.6502 },
+            'Bilbao': { lat: 43.2630, lng: -2.9350 },
+            'Cordoue': { lat: 37.8882, lng: -4.7794 }
+        },
+        'Pays-Bas': {
+            'Amsterdam': { lat: 52.3676, lng: 4.9041 },
+            'Rotterdam': { lat: 51.9225, lng: 4.4792 },
+            'La Haye': { lat: 52.0705, lng: 4.3007 },
+            'Utrecht': { lat: 52.0894, lng: 5.1104 },
+            'Eindhoven': { lat: 51.4416, lng: 5.4697 },
+            'Groningue': { lat: 53.2194, lng: 6.5665 },
+            'Arnhem': { lat: 51.9851, lng: 5.8987 },
+            'Alkmaar': { lat: 52.6343, lng: 4.7437 },
+            'Leyde': { lat: 52.1601, lng: 4.4852 },
+            'Nimègue': { lat: 51.8425, lng: 5.8520 }
+        },
+        'Portugal': {
+            'Lisbonne': { lat: 38.7223, lng: -9.1393 },
+            'Porto': { lat: 41.1579, lng: -8.6291 },
+            'Covilhã': { lat: 40.2837, lng: -7.4987 },
+            'Braga': { lat: 41.5454, lng: -8.4265 },
+            'Funchal': { lat: 32.6532, lng: -17.0091 },
+            'Évora': { lat: 38.2744, lng: -7.8987 },
+            'Aveiro': { lat: 40.6386, lng: -8.6553 },
+            'Viseu': { lat: 40.6630, lng: -7.2656 },
+            'Guarda': { lat: 40.5356, lng: -7.2691 },
+            'Faro': { lat: 37.0141, lng: -7.9304 }
+        },
+        'Australie': {
+            'Sydney': { lat: -33.8688, lng: 151.2093 },
+            'Melbourne': { lat: -37.8136, lng: 144.9631 },
+            'Brisbane': { lat: -27.4698, lng: 153.0251 },
+            'Perth': { lat: -31.9505, lng: 115.8605 },
+            'Adelaïde': { lat: -34.9285, lng: 138.6007 },
+            'Hobart': { lat: -42.8821, lng: 147.3272 },
+            'Canberra': { lat: -35.2809, lng: 149.1300 },
+            'Gold Coast': { lat: -28.0028, lng: 153.4314 },
+            'Newcastle': { lat: -32.9283, lng: 151.7817 },
+            'Wollongong': { lat: -34.4240, lng: 150.8931 }
+        },
+        'Nouvelle-Zélande': {
+            'Auckland': { lat: -37.0082, lng: 174.7850 },
+            'Wellington': { lat: -41.2865, lng: 174.7762 },
+            'Christchurch': { lat: -43.5321, lng: 172.6362 },
+            'Hamilton': { lat: -37.7870, lng: 175.2793 },
+            'Tauranga': { lat: -37.7870, lng: 176.1693 },
+            'Lower Hutt': { lat: -41.2033, lng: 174.9273 },
+            'Dunedin': { lat: -45.8788, lng: 170.5028 },
+            'Palmerston North': { lat: -40.3570, lng: 175.6112 },
+            'Rotorua': { lat: -38.1368, lng: 176.2497 },
+            'Napier': { lat: -39.4730, lng: 176.4129 }
+        }
+    };
+
+    // Update map when city is selected
+    updateMapToCity(): void {
+        if (this.localisationData.pays && this.localisationData.ville) {
+            const cityCoords = this.coordinatesByCity[this.localisationData.pays]?.[this.localisationData.ville];
+            if (cityCoords) {
+                this.mapCenter = { lat: cityCoords.lat, lng: cityCoords.lng };
+                this.markerPosition = { lat: cityCoords.lat, lng: cityCoords.lng };
+                this.localisationData.latitude = cityCoords.lat;
+                this.localisationData.longitude = cityCoords.lng;
+                this.mapZoom = 12;
+            }
+        }
+    }
 
     constructor(
         private apiService: ApiService,
@@ -74,9 +418,18 @@ export class CdProfileComponent implements OnInit {
         private profileUpdateService: ProfileUpdateService
     ) {}
 
+    generateYearOptions(): number[] {
+        const years: number[] = [];
+        for (let year = 2026; year >= 1950; year--) {
+            years.push(year);
+        }
+        return years;
+    }
+
     ngOnInit() {
         const storedUserName = localStorage.getItem('userName');
         this.currentUserName = storedUserName || 'Candidat';
+        this.loadAvailableCompetences();
         this.loadCandidateData();
     }
 
@@ -193,6 +546,22 @@ export class CdProfileComponent implements OnInit {
             }
         }
         return '';
+    }
+
+    loadAvailableCompetences(): void {
+        this.apiService.getAllCompetences().subscribe({
+            next: (data: any) => {
+                if (Array.isArray(data)) {
+                    this.availableCompetences = data;
+                } else if (Array.isArray(data.data)) {
+                    this.availableCompetences = data.data;
+                }
+            },
+            error: (err) => {
+                console.error('Error loading competences:', err);
+                this.availableCompetences = [];
+            }
+        });
     }
 
     private ensureCandidateId(onReady: () => void): void {
@@ -902,6 +1271,7 @@ export class CdProfileComponent implements OnInit {
 
     addEducation(): void {
         this.educationList.push({ niveauEtude: '', domain: '', institution: '', startDate: '', endDate: '' });
+        this.isEducationFormSubmitted = false;
     }
 
     removeEducation(index: number): void {
@@ -940,7 +1310,7 @@ export class CdProfileComponent implements OnInit {
             if (isEmpty) {
                 return true;
             }
-            if (!bg.titre || bg.titre.trim().length === 0 || bg.titre.length > 20) {
+            if (!bg.titre || bg.titre.trim().length === 0 || bg.titre.length > 30) {
                 return false;
             }
             if (!bg.company || bg.company.trim().length === 0 || bg.company.length > 20) {
@@ -963,8 +1333,8 @@ export class CdProfileComponent implements OnInit {
             if (!bg.titre || bg.titre.trim().length === 0) {
                 return `Expérience ${i + 1}: Titre du Poste est requis`;
             }
-            if (bg.titre.length > 20) {
-                return `Expérience ${i + 1}: Titre du Poste dépasse 20 caractères`;
+            if (bg.titre.length > 30) {
+                return `Expérience ${i + 1}: Titre du Poste dépasse 30 caractères`;
             }
             if (!bg.company || bg.company.trim().length === 0) {
                 return `Expérience ${i + 1}: Entreprise est requis`;
@@ -987,6 +1357,7 @@ export class CdProfileComponent implements OnInit {
 
     addBackground(): void {
         this.backgroundList.push({ titre: '', company: '', startDate: '', endDate: '' });
+        this.isBackgroundFormSubmitted = false;
     }
 
     removeBackground(index: number): void {
@@ -1026,6 +1397,46 @@ export class CdProfileComponent implements OnInit {
         if (this.cvUrl) {
             window.open(this.cvUrl, '_blank');
         }
+    }
+
+    addCompetence(): void {
+        if (this.selectedCompetence && this.selectedCompetence.trim().length > 0) {
+            if (!this.candidateData.competences) {
+                this.candidateData.competences = [];
+            }
+            // Check if competence is not already added
+            if (!this.candidateData.competences.includes(this.selectedCompetence.trim())) {
+                this.candidateData.competences.push(this.selectedCompetence.trim());
+            }
+            this.selectedCompetence = '';
+        }
+    }
+
+    removeCompetence(index: number): void {
+        if (index >= 0 && index < this.candidateData.competences.length) {
+            this.candidateData.competences.splice(index, 1);
+        }
+    }
+
+    saveCompetences(): void {
+        this.ensureCandidateId(() => {
+            this.isSaving = true;
+            this.errorMessage = '';
+            this.successMessage = '';
+            const competencesPayload = { competences: this.candidateData.competences || [] };
+            this.apiService.updateCandidateCompetences(this.candidateData.id, competencesPayload).subscribe({
+                next: () => {
+                    this.isSaving = false;
+                    this.successMessage = 'Compétences sauvegardées avec succès!';
+                    this.isEditingCompetences = false;
+                    setTimeout(() => this.successMessage = '', 3000);
+                },
+                error: (error) => {
+                    this.isSaving = false;
+                    this.errorMessage = `Erreur lors de la sauvegarde des compétences: ${error.message || error.statusText}`;
+                }
+            });
+        });
     }
 }
 

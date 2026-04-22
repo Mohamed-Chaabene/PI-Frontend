@@ -138,3 +138,40 @@
         }
     }
 }
+
+/* Recommendation Widget Styles */
+.recommendation-row {
+    background-color: #f8f9fa;
+    
+    td {
+        padding: 20px !important;
+        border: none !important;
+    }
+}
+
+/* Button for recommendations */
+.btn-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    
+    &:hover {
+        background-color: #e0a800 !important;
+        border-color: #e0a800 !important;
+    }
+    
+    i {
+        animation: pulse 2s infinite;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+    }
+}

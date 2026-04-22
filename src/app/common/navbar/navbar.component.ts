@@ -329,12 +329,24 @@ export class NavbarComponent implements OnInit {
                 setTimeout(() => { this.redirectAfterLogin(roleFinal); }, 100);
             },
             error => {
-                const serverMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
                 const isNetworkOrCors = error?.status === 0;
-                const finalMessage = isNetworkOrCors
-                    ? 'Impossible de joindre le backend. Verifiez que Spring Boot tourne sur http://localhost:8080 et que le front est lance via ng serve (proxy actif).'
-                    : serverMessage;
-                alert(`Erreur lors de la connexion (${error.status || '?'}): ${finalMessage}`);
+                let finalMessage = '';
+
+                if (isNetworkOrCors) {
+                    finalMessage = 'Impossible de joindre le backend. Vérifiez que Spring Boot tourne sur http://localhost:8080 et que le front est lancé via ng serve (proxy actif).';
+                } else if (error?.status === 401 || error?.status === 400) {
+                    finalMessage = 'Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.';
+                } else if (error?.status === 500) {
+                    const errorMessage = error?.error?.message?.toLowerCase() || '';
+                    if (errorMessage.includes('unrecognized field') || errorMessage.includes('json parse')) {
+                        finalMessage = 'Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.';
+                    } else {
+                        finalMessage = error?.error?.message || 'Une erreur serveur s\'est produite. Veuillez réessayer.';
+                    }
+                } else {
+                    finalMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
+                }
+                alert(`Erreur lors de la connexion: ${finalMessage}`);
             }
         );
     }
@@ -481,12 +493,12 @@ export class NavbarComponent implements OnInit {
 
         // Call API to send new temporary password to phone
         this.apiService.resetPassword(this.forgotPasswordData.phone).subscribe(
-            response => {
+            (response: any) => {
                 alert('Nouveau mot de passe temporaire envoyé à votre numéro de téléphone! Vérifiez vos SMS.');
                 this.forgotPasswordData = { phone: '' };
                 this.currentTab = 'tab1';
             },
-            error => {
+            (error: any) => {
                 const serverMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
                 alert(`Erreur lors de la réinitialisation (${error.status || '?'}): ${serverMessage}`);
             }

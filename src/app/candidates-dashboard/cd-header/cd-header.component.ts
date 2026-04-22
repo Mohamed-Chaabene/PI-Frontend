@@ -55,6 +55,13 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
 
 /* === VERSION MERGE ==== */
     showDeleteAccountModal = false;
+    showChangePasswordModal = false;
+    
+    changePasswordForm = {
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    };
 /* === FIN VERSIONS === */
     
     // Notification panel properties
@@ -822,35 +829,34 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         const userId = this.currentUserId;
 
         if (!token || !userId) {
-            console.error('❌ Missing token or user ID');
+            console.error('Missing token or user ID');
             alert('Error: Cannot delete account. Please log in again.');
             return;
         }
 
-        console.log('🗑️ Deleting account for user ID:', userId);
+        console.log('Deleting account for user ID:', userId);
 
         this.apiService.deleteAccount(userId, token).subscribe({
             next: (response: any) => {
-                console.log('✅ Account deleted successfully:', response);
+                console.log('Account deleted successfully:', response);
                 
-                // Clear localStorage
                 localStorage.removeItem('token');
                 localStorage.removeItem('candidatId');
                 localStorage.removeItem('currentUser');
                 localStorage.removeItem('userEmail');
                 localStorage.removeItem('userName');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('recruteurId');
                 
-                // Show success message
-                alert('✅ Your account has been deleted successfully.\n\nYou will be redirected to the login page.');
+                alert('Your account has been deleted successfully.\n\nYou will be redirected to the login page.');
                 
-                // Redirect to login
                 this.router.navigate(['/login']);
             },
             error: (error: any) => {
-                console.error('❌ Error deleting account:', error);
+                console.error('Error deleting account:', error);
                 
                 const errorMessage = error?.error?.message || 'Failed to delete account. Please try again.';
-                alert('❌ Error: ' + errorMessage);
+                alert('Error: ' + errorMessage);
             }
         });
     }
@@ -863,8 +869,61 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
     }
 
     confirmDeleteAccount(): void {
-        // This method is no longer used with alert-based confirmation
     }
+
+    openChangePasswordModal(): void {
+        this.showChangePasswordModal = true;
+        this.changePasswordForm = {
+            oldPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+        };
+    }
+
+    closeChangePasswordModal(): void {
+        this.showChangePasswordModal = false;
+        this.changePasswordForm = {
+            oldPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+        };
+    }
+
+    submitChangePassword(): void {
+        if (!this.changePasswordForm.oldPassword || !this.changePasswordForm.newPassword || !this.changePasswordForm.confirmPassword) {
+            alert('All fields are required.');
+            return;
+        }
+
+        if (this.changePasswordForm.newPassword !== this.changePasswordForm.confirmPassword) {
+            alert('New password and confirm password do not match.');
+            return;
+        }
+
+        const userId = this.currentUserId;
+        if (!userId) {
+            alert('Error: User ID not found.');
+            return;
+        }
+
+        const payload = {
+            userId: userId,
+            oldPassword: this.changePasswordForm.oldPassword,
+            newPassword: this.changePasswordForm.newPassword
+        };
+
+        this.apiService.changePassword(payload).subscribe({
+            next: (response: any) => {
+                alert('Password changed successfully.');
+                this.closeChangePasswordModal();
+            },
+            error: (error: any) => {
+                const errorMessage = error?.error?.message || 'Failed to change password. Please try again.';
+                alert('Error: ' + errorMessage);
+            }
+        });
+    }
+
 /* === FIN VERSIONS === */
 }
 
