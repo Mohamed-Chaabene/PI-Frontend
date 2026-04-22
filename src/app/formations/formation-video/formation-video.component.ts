@@ -39,18 +39,26 @@ export class FormationVideoComponent implements OnInit {
       next: (f) => { 
         this.formation = f;
         
-        // Robust recovery of inscriptionId if missing from localStorage
-        if (!this.inscriptionId && this.candidatId) {
-          this.formationService.getMesInscriptions(this.candidatId).subscribe({
-            next: (inscriptions) => {
-              const found = inscriptions.find(i => i.formation?.id === f.id);
+        // Robust recovery of inscriptionId
+        if (this.candidatId) {
+          // Si on est dans un parcours, on récupère l'inscription spécifique au parcours
+          // Sinon on cherche l'inscription classique
+          this.formationService.getInscriptionByDetails(this.candidatId, f.id, this.parcoursId || undefined).subscribe({
+            next: (found) => {
               if (found) {
                 this.inscriptionId = found.id;
-                localStorage.setItem('inscription_' + f.id, String(found.id));
+                // On ne met à jour le localStorage que si on n'est pas dans un parcours
+                // pour ne pas écraser l'ID de la formation standalone
+                if (!this.parcoursId) {
+                  localStorage.setItem('inscription_' + f.id, String(found.id));
+                }
               }
               this.loading = false;
             },
-            error: () => { this.loading = false; }
+            error: () => {
+              // Fallback: si on n'a pas trouvé d'inscription spécifique, on garde l'ID du localStorage ou null
+              this.loading = false;
+            }
           });
         } else {
           this.loading = false; 

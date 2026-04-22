@@ -431,6 +431,7 @@ export class FormationPlayerComponent
 
         if (data.progression >= 100 || this.isAlreadyCompleted) {
           this.progression = 100;
+          this.playlistVideos.forEach(v => this.videosVues.add(v.videoId));
         } else {
           this.progression = data.progression || 0;
         }

@@ -302,7 +302,8 @@ export class FormationsAdminComponent implements OnInit {
   getNiveauTag(niveau: string): string {
     const map: Record<string, string> = {
       'Débutant': 'tag-green', 'Intermédiaire': 'tag-blue',
-      'Avancé': 'tag-amber',   'Expert': 'tag-purple'
+      'Avancé': 'tag-amber',   'Expert': 'tag-purple',
+      'Complet': 'tag-purple'
     };
     return map[niveau] || 'tag-blue';
   }

@@ -99,23 +99,21 @@
 
                 <!-- Candidat inscrit : afficher progression et accès -->
                 <ng-container *ngIf="!isAdmin && inscription">
-                  <div class="inscrit-info-wrapper">
+                  <div class="inscrit-row">
                     <div class="inscrit-badge">
                       <i class="ri-checkbox-circle-fill"></i>
                       Inscrit · Niveau actuel : <strong>{{ LABELS[inscription.niveauActuel] }}</strong>
                     </div>
                     
+                    <button type="button" class="btn-acceder" *ngIf="!isParcoursTermine()" (click)="accederFormation()">
+                      <i class="ri-play-circle-line me-2"></i>
+                      Accéder au cours
+                    </button>
+
                     <div class="completion-banner-small" *ngIf="isParcoursTermine()">
                       <i class="ri-trophy-line"></i>
-                      <span>Félicitations ! Parcours terminé. Tous les niveaux sont validés.</span>
+                      <span>Parcours terminé !</span>
                     </div>
-                  </div>
-
-                  <div class="d-flex gap-3 flex-wrap mt-3" *ngIf="!isParcoursTermine()">
-                    <button type="button" class="btn-acceder" (click)="accederFormation()">
-                      <i class="ri-play-circle-line me-2"></i>
-                      Accéder au cours — {{ LABELS[inscription.niveauActuel] }}
-                    </button>
                   </div>
 
                   <div class="feedback-pending-zone mt-3" *ngIf="isParcoursTermine() && isFeedbackPending()">

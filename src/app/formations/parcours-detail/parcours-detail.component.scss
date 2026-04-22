@@ -75,6 +75,7 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
     &.cat-lang     { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
     &.cat-soft     { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
     &.cat-devops   { background: linear-gradient(135deg, #2af598 0%, #009efd 100%); }
+    &.cat-ia       { background: linear-gradient(135deg, #FF6B6B 0%, #556270 100%); }
 
     .banner-emoji { font-size: 52px; }
   }
@@ -307,7 +308,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
       padding: 12px 24px;
       &:hover { background: $primary-dark; transform: translateY(-2px); }
     }
-
     .btn-quiz {
       @extend %btn-shared;
       background: #fff;
@@ -316,25 +316,45 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
       &:hover { background: $primary-light; border-color: $primary; }
     }
 
+    .inscrit-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
     .inscrit-badge {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 12px 24px;
-      background: #e1f5fe;
-      color: #01579b;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.95rem;
       i { font-size: 1.2rem; }
     }
 
-    .inscrit-info-wrapper {
-      display: flex;
-      flex-direction: column;
+    .btn-acceder {
+      background: #0369a1;
+      color: #fff;
+      padding: 10px 25px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
       align-items: center;
-      gap: 12px;
-      width: 100%;
+      transition: all 0.3s ease;
+      &:hover {
+        background: #075985;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(3, 105, 161, 0.25);
+      }
     }
 
     .completion-banner-small {

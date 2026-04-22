@@ -102,6 +102,14 @@ export class FormationService {
     );
   }
 
+  getInscriptionByDetails(candidatId: number, formationId: number, parcoursId?: number): Observable<Inscription> {
+    let url = `${this.api}/inscriptions/candidat/${candidatId}/formation/${formationId}`;
+    if (parcoursId) {
+      url += `?parcoursId=${parcoursId}`;
+    }
+    return this.http.get<Inscription>(url);
+  }
+
   getInscriptionsByFormation(formationId: number): Observable<Inscription[]> {
     return this.http.get<Inscription[]>(
       `${this.api}/inscriptions/formation/${formationId}`

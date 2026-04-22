@@ -245,20 +245,15 @@ export class ParcoursDetailComponent implements OnInit {
   getIconEmoji(cat: string): string {
     const map: any = {
       'Développement': '💻', 'Frontend': '⚛️', 'Backend': '⚙️',
-      'Design': '🎨', 'Marketing': '📈', 'Data Science': '🧪',
+      'Design': '🎨', 'Marketing': '📈', 'Data Science': '📊', 'Data': '📊',
+      'IA': '🤖', 'Mobile': '📱',
       'Finance': '💰', 'Langues': '🌎', 'Soft Skills': '🤝', 'DevOps': '🐳'
     };
     return map[cat] || '📚';
   }
 
   getCatClass(cat: string): string {
-    const map: any = {
-      'Développement': 'cat-dev', 'Frontend': 'cat-dev', 'Backend': 'cat-dev',
-      'Design': 'cat-design', 'Marketing': 'cat-mkt',
-      'Data Science': 'cat-data', 'Finance': 'cat-fin', 'Langues': 'cat-lang',
-      'Soft Skills': 'cat-soft', 'DevOps': 'cat-devops'
-    };
-    return map[cat] || 'cat-other';
+    return 'cat-dev';
   }
 
   getParcoursPlatform(): string {

@@ -420,6 +420,9 @@ export class MacroFeedbackComponent implements OnInit {
       this.parcoursService.getInscription(Number(candidatId), this.parcoursId).subscribe({
         next: (insc) => {
           localStorage.setItem('currentParcoursInscription', JSON.stringify(insc));
+          if (insc && !insc.evaluationParcoursRequise) {
+            this.router.navigate(['/formations/parcours', this.parcoursId]);
+          }
         },
         error: (err) => console.error("Erreur chargement inscription feedback:", err)
       });
@@ -480,6 +483,14 @@ export class MacroFeedbackComponent implements OnInit {
     this.http.post('http://localhost:8080/api/feedbacks/macro', payload)
       .subscribe({
         next: () => {
+          // Mettre à jour l'état local avant de naviguer
+          const inscriptionStr = localStorage.getItem('currentParcoursInscription');
+          if (inscriptionStr) {
+            const ins = JSON.parse(inscriptionStr);
+            ins.evaluationParcoursRequise = false;
+            localStorage.setItem('currentParcoursInscription', JSON.stringify(ins));
+          }
+          
           alert("Merci pour votre avis ! Votre parcours est validé.");
           this.router.navigate(['/formations/parcours', this.parcoursId]); 
         },
