@@ -47,6 +47,7 @@ export class RdManageJobsComponent {
     offreEditee: any = null;
     decisionError = '';
     decisionReport: DecisionReport | null = null;
+    expandedOffreId: number | null = null;
 
     constructor(private apiService: ApiService, private router: Router) { }
 

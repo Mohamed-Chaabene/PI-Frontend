@@ -1503,6 +1503,24 @@ export class ApiService {
     return this.http.delete(`${this.apiUrl}/candidats/${id}`, { headers });
   }
 
+  updateCandidateCompetences(id: number, data: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.put(`${this.apiUrl}/candidats/${id}/competences`, data, { headers });
+  }
+
+  getAllCompetences(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/competences`, { headers });
+  }
+
   // Localisation methods
   getLocalisation(id: number): Observable<any> {
     const token = localStorage.getItem('token');
