@@ -1,24 +1,48 @@
-
-
-
-
 <div class="admin-formations-area">
   <div class="container">
 
-    <!-- ══ Header ════════════════════════════════════════════════════════════ -->
     <div class="admin-header">
       <h2 class="page-title">
         Gestion des formations
         <span *ngIf="!loading">({{ totalFormations }})</span>
       </h2>
-      <div style="display: flex; gap: 12px;">
-        <a routerLink="/admin-dashboard/formations/create" class="add-btn">
-          <i class="ri-add-line"></i> Ajouter une formation
-        </a>
+      <button class="add-btn" id="btn-ajouter-formation" (click)="showTypeModal = true">
+        <i class="ri-add-line"></i> Ajouter formations
+      </button>
+    </div>
+
+    <!-- ── Type-picker modal ── -->
+    <div class="type-modal-overlay" *ngIf="showTypeModal" (click)="showTypeModal = false">
+      <div class="type-modal" (click)="$event.stopPropagation()">
+        <div class="type-modal-header">
+          <h3><i class="ri-add-circle-line"></i> Quel type de contenu ?</h3>
+          <button class="close-modal" (click)="showTypeModal = false"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="type-modal-body">
+          <a routerLink="/admin-dashboard/formations/create" class="type-card" (click)="showTypeModal = false">
+            <div class="type-card-icon simple">
+              <i class="ri-book-2-line"></i>
+            </div>
+            <div class="type-card-info">
+              <strong>Formation simple</strong>
+              <span>Un seul niveau, inscriptions directes</span>
+            </div>
+            <i class="ri-arrow-right-line type-card-arrow"></i>
+          </a>
+          <a routerLink="/admin-dashboard/parcours/create" class="type-card" (click)="showTypeModal = false">
+            <div class="type-card-icon multi">
+              <i class="ri-road-map-line"></i>
+            </div>
+            <div class="type-card-info">
+              <strong>Parcours multi-niveaux</strong>
+              <span>4 niveaux (Débutant → Expert)</span>
+            </div>
+            <i class="ri-arrow-right-line type-card-arrow"></i>
+          </a>
+        </div>
       </div>
     </div>
 
-    <!-- ══ Stats ══════════════════════════════════════════════════════════════ -->
     <div class="stats-row" *ngIf="!loading">
       <div class="stat-card">
         <div class="stat-icon green">📚</div>
@@ -44,13 +68,12 @@
       <div class="stat-card">
         <div class="stat-icon gray">🗄️</div>
         <div class="stat-info">
-          <span class="stat-value">{{ archivees.length }}</span>
+          <span class="stat-value">{{ archivedCount }}</span>
           <span class="stat-label">Archivées</span>
         </div>
       </div>
     </div>
 
-    <!-- ══ Onglets Actives / Archivées ════════════════════════════════════════ -->
     <div class="tabs-row">
       <button
         type="button"
@@ -60,7 +83,7 @@
       >
         <i class="ri-list-check"></i>
         Formations actives
-        <span class="tab-count">{{ actives.length }}</span>
+        <span class="tab-count">{{ actives.length + activeParcoursCount }}</span>
       </button>
       <button
         type="button"
@@ -70,11 +93,10 @@
       >
         <i class="ri-archive-line"></i>
         Archives
-        <span class="tab-count archive">{{ archivees.length }}</span>
+        <span class="tab-count archive">{{ archivees.length + archivedParcoursCount }}</span>
       </button>
     </div>
 
-    <!-- ══ Filtres ════════════════════════════════════════════════════════════ -->
     <div class="filters-card">
       <div class="search-input-wrapper">
         <i class="ri-search-line"></i>
@@ -89,6 +111,7 @@
           <option value="Intermédiaire">Intermédiaire</option>
           <option value="Avancé">Avancé</option>
           <option value="Expert">Expert</option>
+          <option value="Complet">Complet</option>
         </select>
       </div>
 
@@ -102,10 +125,9 @@
       </div>
     </div>
 
-    <!-- ══ TABLE : Formations actives ════════════════════════════════════════ -->
     <div class="table-card" *ngIf="activeTab === 'actives'">
       <div class="table-card-header">
-        <h3>Formations actives</h3>
+        <h3>Formations et Parcours actifs</h3>
         <button type="button" class="refresh-btn" (click)="refresh()" [disabled]="loading">
           <i class="ri-refresh-line"></i> Actualiser
         </button>
@@ -113,78 +135,120 @@
 
       <div class="empty-state" *ngIf="loading">Chargement...</div>
 
-      <div class="empty-state" *ngIf="!loading && filteredFormations.length === 0">
-        Aucune formation trouvée.
+      <div class="empty-state" *ngIf="!loading && unifiedContent.length === 0">
+        Aucune formation ou parcours trouvé.
       </div>
 
-      <div class="table-responsive" *ngIf="!loading && filteredFormations.length">
+      <div class="table-responsive" *ngIf="!loading && unifiedContent.length">
         <table>
           <thead>
             <tr>
+              <th>Type</th>
               <th>Titre</th>
               <th>Catégorie</th>
               <th>Niveau</th>
               <th>Statut</th>
               <th>Badge</th>
-              <th>Stats (Score)</th>
+              <th>Stats</th>
               <th class="text-end">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let f of paginatedFormations">
+            <tr *ngFor="let item of paginatedContent" [ngClass]="'type-' + item.type">
+              <td class="td-type">
+                <span class="type-badge" [ngClass]="item.type === 'formation' ? 'formation-badge' : 'parcours-badge'">
+                  <i [ngClass]="item.type === 'formation' ? 'ri-book-2-line' : 'ri-road-map-line'"></i>
+                  {{ item.type === 'formation' ? 'Formation' : 'Parcours' }}
+                </span>
+              </td>
               <td class="td-title">
-                <span class="formation-title">{{ f.titre }}</span>
+                <span class="formation-title">{{ item.titre }}</span>
               </td>
-              <td>{{ f.categorie }}</td>
-              <td><span class="tag" [ngClass]="getNiveauTag(f.niveau)">{{ f.niveau }}</span></td>
-              <td><span class="tag" [ngClass]="getStatutTag(f.statut)">{{ f.statut }}</span></td>
+              <td>{{ item.categorie }}</td>
+              <td><span class="tag" [ngClass]="getNiveauTag(item.niveau)">{{ item.niveau }}</span></td>
+              <td><span class="tag" [ngClass]="getStatutTag(item.statut)">{{ item.statut }}</span></td>
               <td>
-                <span *ngIf="f.badge" class="badge text-white px-2 py-1 rounded shadow-sm" [ngStyle]="{'background-color': f.scorePopularite && f.scorePopularite >= 70 ? '#8b5cf6' : (f.badge === 'Populaire' ? '#3b82f6' : (f.badge === 'En progression' ? '#f59e0b' : '#10b981'))}">{{ f.badge }}</span>
-                <span *ngIf="!f.badge" class="text-muted small">-</span>
+                <span *ngIf="item.badge" class="badge text-white px-2 py-1 rounded shadow-sm" [ngStyle]="{'background-color': item.scorePopularite && item.scorePopularite >= 70 ? '#8b5cf6' : (item.badge === 'Populaire' ? '#3b82f6' : (item.badge === 'En progression' ? '#f59e0b' : '#10b981'))}">{{ item.badge }}</span>
+                <span *ngIf="!item.badge" class="text-muted small">-</span>
               </td>
               <td>
-                <div *ngIf="f.scorePopularite !== undefined" class="d-flex flex-column lh-1 mt-1" style="font-size: 0.75rem">
-                  <span class="fw-bold mb-1" [ngStyle]="{'color': f.scorePopularite >= 70 ? '#16a34a' : (f.scorePopularite >= 40 ? '#0965A4' : '#f59e0b')}">{{ f.scorePopularite }}</span>
-                  <span class="text-muted"><i class="ri-team-line"></i> {{ f.totalInscrits || 0 }} inscrits</span>
+                <div *ngIf="item.scorePopularite !== undefined" class="d-flex flex-column lh-1 mt-1" style="font-size: 0.75rem">
+                  <span class="fw-bold mb-1" [ngStyle]="{'color': item.scorePopularite >= 70 ? '#16a34a' : (item.scorePopularite >= 40 ? '#0965A4' : '#f59e0b')}">{{ item.scorePopularite }}</span>
+                  <span class="text-muted"><i class="ri-team-line"></i> {{ item.totalInscrits || 0 }} inscrits</span>
                 </div>
-                <span *ngIf="f.scorePopularite === undefined" class="text-muted small">-</span>
               </td>
               <td class="td-actions">
-                <a [routerLink]="['/admin-dashboard/formations', f.id, 'participants']" class="action-btn btn-view">
-                  <i class="ri-group-line"></i> Participants
-                </a>
-                <a [routerLink]="['/admin-dashboard/formations', f.id, 'feedbacks']" class="action-btn btn-feedback">
-                  <i class="ri-chat-3-line"></i> Feedbacks
-                </a>
-                <a [routerLink]="['/admin-dashboard/formations/edit', f.id]" class="action-btn btn-edit">
-                  <i class="ri-edit-line"></i> Modifier
-                </a>
-                <!-- ✅ Bouton Archiver -->
-                <button
-                  type="button"
-                  class="action-btn btn-archive"
-                  (click)="archiver(f.id)"
-                  [disabled]="archivingId === f.id"
-                >
-                  <i class="ri-archive-line"></i>
-                  {{ archivingId === f.id ? '...' : 'Archiver' }}
-                </button>
-                <button
-                  type="button"
-                  class="action-btn btn-delete"
-                  (click)="delete(f.id)"
-                  [disabled]="deletingId === f.id"
-                >
-                  <i class="ri-delete-bin-line"></i>
-                  {{ deletingId === f.id ? '...' : 'Supprimer' }}
-                </button>
+                <!-- Formation Actions -->
+                <ng-container *ngIf="item.type === 'formation'">
+                  <a [routerLink]="['/admin-dashboard/formations', item.id, 'participants']" class="action-btn btn-view">
+                    <i class="ri-group-line"></i> Participants
+                  </a>
+                  <a [routerLink]="['/admin-dashboard/formations', item.id, 'feedbacks']" class="action-btn btn-feedback">
+                    <i class="ri-chat-3-line"></i> Feedbacks
+                  </a>
+                  <a [routerLink]="['/admin-dashboard/formations/edit', item.id]" class="action-btn btn-edit">
+                    <i class="ri-edit-line"></i> Modifier
+                  </a>
+                  <button
+                    type="button"
+                    class="action-btn btn-archive"
+                    (click)="archiver(item.id)"
+                    [disabled]="archivingId === item.id"
+                  >
+                    <i class="ri-archive-line"></i>
+                    {{ archivingId === item.id ? '...' : 'Archiver' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="action-btn btn-delete"
+                    (click)="delete(item.id, 'formation')"
+                    [disabled]="deletingId === item.id"
+                  >
+                    <i class="ri-delete-bin-line"></i>
+                    {{ deletingId === item.id ? '...' : 'Supprimer' }}
+                  </button>
+                </ng-container>
+
+                <!-- Parcours Actions -->
+                <ng-container *ngIf="item.type === 'parcours'">
+                  <a [routerLink]="['/admin-dashboard/formations',
+                       (item.niveaux?.debut?.id || item.niveaux?.inter?.id || item.niveaux?.avance?.id || item.niveaux?.expert?.id),
+                       'participants']" class="action-btn btn-view">
+                    <i class="ri-group-line"></i> Participants
+                  </a>
+                  <a [routerLink]="['/admin-dashboard/formations',
+                       (item.niveaux?.debut?.id || item.niveaux?.inter?.id || item.niveaux?.avance?.id || item.niveaux?.expert?.id),
+                       'feedbacks']" class="action-btn btn-feedback">
+                    <i class="ri-chat-3-line"></i> Feedbacks
+                  </a>
+                  <a [routerLink]="['/admin-dashboard/parcours', item.id, 'edit']" class="action-btn btn-edit">
+                    <i class="ri-edit-line"></i> Éditer
+                  </a>
+                  <button
+                    type="button"
+                    class="action-btn btn-archive"
+                    (click)="archiverParcours(item.id)"
+                    [disabled]="archivingParcoursId === item.id"
+                  >
+                    <i class="ri-archive-line"></i>
+                    {{ archivingParcoursId === item.id ? '...' : 'Archiver' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="action-btn btn-delete"
+                    (click)="delete(item.id, 'parcours')"
+                    [disabled]="deletingId === item.id"
+                  >
+                    <i class="ri-delete-bin-line"></i>
+                    {{ deletingId === item.id ? '...' : 'Supprimer' }}
+                  </button>
+                </ng-container>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Pagination Actives -->
       <div class="pagination-area" *ngIf="totalPages > 1">
         <button class="page-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"><i class="ri-arrow-left-s-line"></i> Précédent</button>
         <button *ngFor="let p of getPageNumbers()" class="page-btn" [class.active]="p === currentPage" (click)="changePage(p)">{{ p }}</button>
@@ -192,12 +256,11 @@
       </div>
     </div>
 
-    <!-- ══ TABLE : Formations archivées ══════════════════════════════════════ -->
     <div class="table-card archive-table" *ngIf="activeTab === 'archivees'">
       <div class="table-card-header">
         <div class="d-flex align-items-center gap-2">
           <i class="ri-archive-line" style="color:#854F0B;font-size:18px"></i>
-          <h3>Formations archivées</h3>
+          <h3>Contenus archivés</h3>
         </div>
         <div class="archive-info-badge">
           <i class="ri-eye-off-line"></i>
@@ -207,12 +270,12 @@
 
       <div class="empty-state" *ngIf="loading">Chargement...</div>
 
-      <div class="empty-state archive-empty" *ngIf="!loading && filteredFormations.length === 0">
+      <div class="empty-state archive-empty" *ngIf="!loading && unifiedContent.length === 0">
         <i class="ri-archive-line" style="font-size:40px;opacity:0.3;display:block;margin-bottom:12px"></i>
-        Aucune formation archivée trouvée.
+        Aucune formation ou parcours archivé trouvé.
       </div>
 
-      <div class="table-responsive" *ngIf="!loading && filteredFormations.length">
+      <div class="table-responsive" *ngIf="!loading && unifiedContent.length > 0">
         <table>
           <thead>
             <tr>
@@ -225,45 +288,65 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let f of paginatedFormations" class="archived-row">
+            <tr *ngFor="let item of paginatedContent" class="archived-row" [ngClass]="'type-' + item.type">
+              <td class="td-type">
+                <span class="type-badge" [ngClass]="item.type === 'formation' ? 'formation-badge' : 'parcours-badge'">
+                  <i [ngClass]="item.type === 'formation' ? 'ri-book-2-line' : 'ri-road-map-line'"></i>
+                  {{ item.type === 'formation' ? 'Formation' : 'Parcours' }}
+                </span>
+              </td>
               <td class="td-title td-archived">
-                <span class="formation-title">{{ f.titre }}</span>
+                <span class="formation-title">{{ item.titre }}</span>
               </td>
-              <td>{{ f.categorie }}</td>
-              <td><span class="tag" [ngClass]="getNiveauTag(f.niveau)">{{ f.niveau }}</span></td>
+              <td>{{ item.categorie }}</td>
+              <td><span class="tag" [ngClass]="getNiveauTag(item.niveau)">{{ item.niveau }}</span></td>
               <td>
-                <span *ngIf="f.badge" class="badge bg-secondary text-white px-2 py-1 rounded">{{ f.badge }}</span>
-                <span *ngIf="!f.badge" class="text-muted small">-</span>
+                <span *ngIf="item.badge" class="badge bg-secondary text-white px-2 py-1 rounded">{{ item.badge }}</span>
+                <span *ngIf="!item.badge" class="text-muted small">-</span>
               </td>
               <td>
-                <div *ngIf="f.scorePopularite !== undefined" class="d-flex flex-column lh-1 mt-1 text-muted" style="font-size: 0.75rem">
-                  <span class="fw-bold mb-1">{{ f.scorePopularite }}</span>
-                  <span><i class="ri-team-line"></i> {{ f.totalInscrits || 0 }} inscrits</span>
+                <div *ngIf="item.scorePopularite !== undefined" class="d-flex flex-column lh-1 mt-1 text-muted" style="font-size: 0.75rem">
+                  <span class="fw-bold mb-1">{{ item.scorePopularite }}</span>
+                  <span><i class="ri-team-line"></i> {{ item.totalInscrits || 0 }} inscrits</span>
                 </div>
-                <span *ngIf="f.scorePopularite === undefined" class="text-muted small">-</span>
               </td>
               <td class="td-actions">
-                <!-- ✅ Bouton Désarchiver -->
                 <button
+                  *ngIf="item.type === 'formation'"
                   type="button"
                   class="action-btn btn-unarchive"
-                  (click)="desarchiver(f.id)"
-                  [disabled]="archivingId === f.id"
+                  (click)="desarchiver(item.id)"
+                  [disabled]="archivingId === item.id"
                 >
                   <i class="ri-archive-drawer-line"></i>
-                  {{ archivingId === f.id ? '...' : 'Désarchiver' }}
+                  {{ archivingId === item.id ? '...' : 'Désarchiver' }}
                 </button>
-                <a [routerLink]="['/admin-dashboard/formations/edit', f.id]" class="action-btn btn-edit">
+                <button
+                  *ngIf="item.type === 'parcours'"
+                  type="button"
+                  class="action-btn btn-unarchive"
+                  (click)="desarchiverParcours(item.id)"
+                  [disabled]="archivingParcoursId === item.id"
+                >
+                  <i class="ri-archive-drawer-line"></i>
+                  {{ archivingParcoursId === item.id ? '...' : 'Désarchiver' }}
+                </button>
+                
+                <a *ngIf="item.type === 'formation'" [routerLink]="['/admin-dashboard/formations/edit', item.id]" class="action-btn btn-edit">
                   <i class="ri-edit-line"></i> Modifier
                 </a>
+                <a *ngIf="item.type === 'parcours'" [routerLink]="['/admin-dashboard/parcours', item.id, 'edit']" class="action-btn btn-edit">
+                  <i class="ri-edit-line"></i> Éditer
+                </a>
+
                 <button
                   type="button"
                   class="action-btn btn-delete"
-                  (click)="delete(f.id)"
-                  [disabled]="deletingId === f.id"
+                  (click)="delete(item.id, item.type)"
+                  [disabled]="deletingId === item.id"
                 >
                   <i class="ri-delete-bin-line"></i>
-                  {{ deletingId === f.id ? '...' : 'Supprimer' }}
+                  {{ deletingId === item.id ? '...' : 'Supprimer' }}
                 </button>
               </td>
             </tr>
@@ -271,7 +354,6 @@
         </table>
       </div>
 
-      <!-- Pagination Archivées -->
       <div class="pagination-area" *ngIf="totalPages > 1">
         <button class="page-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"><i class="ri-arrow-left-s-line"></i> Précédent</button>
         <button *ngFor="let p of getPageNumbers()" class="page-btn" [class.active]="p === currentPage" (click)="changePage(p)">{{ p }}</button>
@@ -281,5 +363,3 @@
 
   </div>
 </div>
-
-

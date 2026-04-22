@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Formation, FormationStats } from '../models/formation.model';
 import { FormationService } from '../services/formation.service';
 import { FeedbackService } from '../services/feedback.service';
+import { ParcoursService } from '../services/parcours.service';
+import { ParcoursFormation } from '../models/parcours.model';
 
 @Component({
   selector: 'app-formations-list',
@@ -13,6 +15,7 @@ export class FormationsListComponent implements OnInit {
 
   formations: Formation[] = [];
   filtered:   Formation[] = [];
+  parcours: ParcoursFormation[] = [];
   searchTerm   = '';
   activeFilter = 'Toutes';
   filters = ['Toutes', 'Débutant', 'Intermédiaire', 'Avancé', 'Expert'];
@@ -22,11 +25,13 @@ export class FormationsListComponent implements OnInit {
   ratings: { [formationId: number]: { moyenne: number; total: number } } = {};
   stars = [1, 2, 3, 4, 5];
 
-  // ── Stats & filtres ───────────────────────────────────────────────────────
   stats:          FormationStats[] = [];
   topFormations:  FormationStats[] = [];
   badgeFilter     = '';
   categorieFilter = '';
+  contentTypeFilter: 'all' | 'formation' | 'parcours' = 'all';
+
+  unifiedFiltered: any[] = [];
 
   readonly badges = ['', 'Tendance', 'Populaire', 'Top noté', 'Bien noté', 'En progression'];
   readonly categories = [
@@ -36,16 +41,17 @@ export class FormationsListComponent implements OnInit {
 
   constructor(
     private formationService: FormationService,
-    private feedbackService:  FeedbackService
+    private feedbackService:  FeedbackService,
+    private parcoursService: ParcoursService
   ) {}
 
   ngOnInit(): void {
     const role = (localStorage.getItem('userRole') || '').toUpperCase().replace('ROLE_', '');
     this.isAdmin = role === 'ADMIN';
-    this.loadAll();
-  }
 
-  // ── Chargement ────────────────────────────────────────────────────────────
+    this.loadAll();
+    this.loadParcours();
+  }
 
   loadAll(): void {
     this.loadFormations();
@@ -53,13 +59,33 @@ export class FormationsListComponent implements OnInit {
     this.loadTop();
   }
 
+  loadParcours(): void {
+    this.parcoursService.getAll().subscribe({
+      next: (data) => {
+        this.parcours = data.filter(p => p.statut !== 'Archivée');
+        this.applySearch();
+      },
+      error: () => {
+        this.parcours = [];
+      }
+    });
+  }
+
+  // IDs des formations rattachées à un parcours (pour filter la liste publique)
+  private get usedFormationIds(): Set<number> {
+    const ids = new Set<number>();
+    this.parcours.forEach(p => {
+      if (p.niveauDebutant?.id)      ids.add(Number(p.niveauDebutant.id));
+      if (p.niveauIntermediaire?.id) ids.add(Number(p.niveauIntermediaire.id));
+      if (p.niveauAvance?.id)        ids.add(Number(p.niveauAvance.id));
+      if (p.niveauExpert?.id)        ids.add(Number(p.niveauExpert.id));
+    });
+    return ids;
+  }
+
   loadFormations(): void {
     this.loading = true;
-    const req = this.badgeFilter
-      ? this.formationService.getFormationsParBadge(this.badgeFilter)
-      : this.formationService.getAllFormations();
-
-    req.subscribe({
+    this.formationService.getAllFormations().subscribe({
       next: (data: Formation[]) => {
         this.formations = data.filter(f => f.statut !== 'Archivée');
         this.filtered   = [...this.formations];
@@ -111,24 +137,62 @@ export class FormationsListComponent implements OnInit {
   }
 
   private loadRatings(): void {
-    this.formations.forEach(f => {
-      this.feedbackService.getStats(f.id).subscribe({
-        next:  (s) => { this.ratings[f.id] = s; },
-        error: ()  => { this.ratings[f.id] = { moyenne: 0, total: 0 }; }
+    // 1. Collecter tous les IDs de formations (simples + parcours)
+    const allIds = new Set<number>();
+    this.formations.forEach(f => allIds.add(f.id));
+    this.parcours.forEach(p => {
+      if (p.niveauDebutant?.id)      allIds.add(p.niveauDebutant.id);
+      if (p.niveauIntermediaire?.id) allIds.add(p.niveauIntermediaire.id);
+      if (p.niveauAvance?.id)        allIds.add(p.niveauAvance.id);
+      if (p.niveauExpert?.id)        allIds.add(p.niveauExpert.id);
+    });
+
+    // 2. Charger les ratings
+    allIds.forEach(id => {
+      this.feedbackService.getStats(id).subscribe({
+        next:  (s) => { this.ratings[id] = s; this.applySearch(); },
+        error: ()  => { this.ratings[id] = { moyenne: 0, total: 0 }; }
       });
     });
   }
 
-  // ── Filtres / recherche ───────────────────────────────────────────────────
+  getParcoursRating(p: ParcoursFormation): { moyenne: number; total: number } {
+    let sum = 0;
+    let count = 0;
+    let totalAvis = 0;
+
+    const levels = [p.niveauDebutant, p.niveauIntermediaire, p.niveauAvance, p.niveauExpert];
+    levels.forEach(f => {
+      if (f && this.ratings[f.id]) {
+        const r = this.ratings[f.id];
+        if (r.total > 0) {
+          sum += r.moyenne;
+          count++;
+          totalAvis += r.total;
+        }
+      }
+    });
+
+    return {
+      moyenne: count > 0 ? Math.round((sum / count) * 10) / 10 : 0,
+      total: totalAvis
+    };
+  }
+
 
   onBadgeChange(badge: string): void {
     this.badgeFilter = badge;
-    this.loadFormations();
+    this.applySearch();
   }
 
   onCategorieChange(cat: string): void {
     this.categorieFilter = cat;
     this.loadStats();
+    this.applySearch();
+  }
+
+  onTypeChange(type: 'all' | 'formation' | 'parcours'): void {
+    this.contentTypeFilter = type;
     this.applySearch();
   }
 
@@ -138,34 +202,78 @@ export class FormationsListComponent implements OnInit {
   }
 
   applySearch(): void {
-    let result = this.formations;
+    const term = this.searchTerm.trim().toLowerCase();
+    const usedIds = this.usedFormationIds;
 
-    if (this.activeFilter !== 'Toutes') {
-      result = result.filter(f => f.niveau === this.activeFilter);
+    // 1. Filtrer les formations
+    let filteredFormations = this.formations.filter(f => {
+      // Exclure les formations qui sont déjà dans un parcours pour éviter les doublons
+      if (usedIds.has(Number(f.id))) return false;
+
+      const matchNiv = this.activeFilter === 'Toutes' || f.niveau === this.activeFilter;
+      const matchCat = !this.categorieFilter || f.categorie === this.categorieFilter;
+      const matchBadge = !this.badgeFilter || f.badge === this.badgeFilter;
+      const matchTerm = !term || f.titre.toLowerCase().includes(term) || f.categorie.toLowerCase().includes(term);
+      
+      return matchNiv && matchCat && matchBadge && matchTerm;
+    });
+
+    // 2. Filtrer les parcours
+    let filteredParcours = this.parcours.filter(p => {
+      const matchCat = !this.categorieFilter || p.categorie === this.categorieFilter;
+      const matchBadge = !this.badgeFilter || this.getParcoursBadge(p) === this.badgeFilter;
+      const matchTerm = !term || p.titre.toLowerCase().includes(term) || p.categorie.toLowerCase().includes(term);
+      // Les parcours n'ont pas de niveau unique (ils sont multi-niveaux)
+      const matchNiv = this.activeFilter === 'Toutes'; 
+      
+      return matchCat && matchBadge && matchTerm && matchNiv;
+    });
+
+    // 3. Appliquer le filtre de TYPE
+    if (this.contentTypeFilter === 'formation') {
+      this.unifiedFiltered = filteredFormations.map(f => ({ ...f, type: 'formation' }));
+    } else if (this.contentTypeFilter === 'parcours') {
+      this.unifiedFiltered = filteredParcours.map(p => {
+        const pRating = this.getParcoursRating(p);
+        return { 
+          ...p, 
+          type: 'parcours',
+          plateforme: 'Parcours', 
+          niveau: 'Multi-niveaux',
+          duree: '4 niveaux',
+          totalInscrits: (p as any).totalInscrits || 0,
+          noteMoyenne: pRating.moyenne,
+          nbAvis: pRating.total,
+          badge: this.getParcoursBadge(p)
+        };
+      });
+    } else {
+      // Conserver l'ordre : Parcours d'abord, puis formations
+      const pItems = filteredParcours.map(p => {
+        const pRating = this.getParcoursRating(p);
+        return { 
+          ...p, 
+          type: 'parcours',
+          plateforme: 'Parcours',
+          niveau: 'Multi-niveaux',
+          duree: '4 niveaux',
+          totalInscrits: (p as any).totalInscrits || 0,
+          noteMoyenne: pRating.moyenne,
+          nbAvis: pRating.total,
+          badge: this.getParcoursBadge(p)
+        };
+      });
+      const fItems = filteredFormations.map(f => ({ ...f, type: 'formation' }));
+      this.unifiedFiltered = [...pItems, ...fItems];
     }
 
-    if (this.categorieFilter) {
-      result = result.filter(f => f.categorie === this.categorieFilter);
-    }
-
-    if (this.searchTerm.trim()) {
-      const term = this.searchTerm.toLowerCase();
-      result = result.filter(f =>
-        f.titre.toLowerCase().includes(term) ||
-        f.categorie.toLowerCase().includes(term)
-      );
-    }
-
-    this.filtered = result;
+    this.filtered = filteredFormations; // Rétro-compatibilité si besoin
   }
 
   getDisponibles(): number {
     return this.formations.filter(f => f.statut === 'Disponible').length;
   }
 
-  // ── Helpers top formations ────────────────────────────────────────────────
-
-  /** Classe CSS du pill rang */
   getRankClass(index: number): string {
     if (index === 0) return 'rank-gold';
     if (index === 1) return 'rank-silver';
@@ -173,7 +281,6 @@ export class FormationsListComponent implements OnInit {
     return 'rank-other';
   }
 
-  /** Label textuel du rang */
   getRankLabel(index: number): string {
     if (index === 0) return 'Or';
     if (index === 1) return 'Argent';
@@ -181,7 +288,6 @@ export class FormationsListComponent implements OnInit {
     return '';
   }
 
-  /** Couleur du score basée sur la valeur réelle */
   getScoreColor(score: number): string {
     if (score >= 70) return '#633806'; // doré — top qualité
     if (score >= 50) return '#444441'; // argenté — bon
@@ -189,7 +295,6 @@ export class FormationsListComponent implements OnInit {
     return '#185FA5';                  // bleu — débutant
   }
 
-  // ── ✅ Note moyenne du top : priorité FeedbackService → fallback DTO ──────
   getTopNoteMoyenne(top: FormationStats): string | null {
     const r = this.ratings[top.formationId];
     if (r && r.moyenne > 0) return r.moyenne.toFixed(1);
@@ -197,14 +302,12 @@ export class FormationsListComponent implements OnInit {
     return null;
   }
 
-  // ── ✅ Nombre d'avis (feedbacks) ─────────────────────────────────────────
   getTopNbAvis(top: FormationStats): number {
     const r = this.ratings[top.formationId];
     if (r) return r.total;
     return 0;
   }
 
-  // ── ✅ Nombre d'étoiles entières pour affichage visuel ───────────────────
   getTopNoteEtoiles(top: FormationStats): number {
     const r = this.ratings[top.formationId];
     if (r && r.moyenne > 0) return Math.round(r.moyenne);
@@ -212,12 +315,10 @@ export class FormationsListComponent implements OnInit {
     return 0;
   }
 
-  // ── ✅ Nombre de participants (inscrits) ──────────────────────────────────
   getTopParticipants(top: FormationStats): number {
     return top.totalInscrits || 0;
   }
 
-  // ── Helpers cartes formation ───────────────────────────────────────────────
 
   getIconEmoji(categorie: string): string {
     const map: Record<string, string> = {
@@ -266,7 +367,6 @@ export class FormationsListComponent implements OnInit {
     return map[niveau] || 'debutant';
   }
 
-  // ── Helpers badges ────────────────────────────────────────────────────────
 
   getBadgeClass(badge: string | null | undefined): string {
     const map: Record<string, string> = {
@@ -288,5 +388,12 @@ export class FormationsListComponent implements OnInit {
       'En progression': '📈'
     };
     return badge ? (map[badge] || '') : '';
+  }
+
+  getParcoursBadge(p: ParcoursFormation): string | undefined {
+    return p.niveauDebutant?.badge 
+        || p.niveauIntermediaire?.badge 
+        || p.niveauAvance?.badge 
+        || p.niveauExpert?.badge;
   }
 }

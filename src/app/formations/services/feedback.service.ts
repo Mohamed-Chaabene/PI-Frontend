@@ -10,7 +10,6 @@ export class FeedbackService {
 
   constructor(private http: HttpClient) {}
 
-  // ── CRUD ───────────────────────────────────────────────────────────────────
   create(payload: FeedbackCreatePayload): Observable<Feedback> {
     return this.http.post<Feedback>(this.api, payload);
   }
@@ -27,7 +26,6 @@ export class FeedbackService {
     return this.http.get<Feedback>(`${this.api}/${id}`);
   }
 
-  // ── Requêtes métier ────────────────────────────────────────────────────────
   getByFormation(formationId: number): Observable<Feedback[]> {
     return this.http.get<Feedback[]>(`${this.api}/formation/${formationId}`);
   }
@@ -44,8 +42,19 @@ export class FeedbackService {
     return this.http.get<FeedbackStats>(`${this.api}/formation/${formationId}/moyenne`);
   }
 
-  // Tous les feedbacks (admin)
+  getByParcours(parcoursId: number): Observable<Feedback[]> {
+    return this.http.get<Feedback[]>(`${this.api}/parcours/${parcoursId}`);
+  }
+
+  getStatsForParcours(parcoursId: number): Observable<FeedbackStats> {
+    return this.http.get<FeedbackStats>(`${this.api}/parcours/${parcoursId}/moyenne`);
+  }
+
   getAll(): Observable<Feedback[]> {
     return this.http.get<Feedback[]>(this.api);
+  }
+
+  getMacrosByParcours(parcoursId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.api}/parcours/${parcoursId}/macro`);
   }
 }

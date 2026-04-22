@@ -10,6 +10,7 @@ export interface PusherNotification {
     type: string;
     message: string;
     senderId: number;
+    offreEmploiId?: number;
     createdAt: string;
 }
 

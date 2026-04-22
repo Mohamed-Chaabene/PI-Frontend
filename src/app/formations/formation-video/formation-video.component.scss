@@ -12,7 +12,6 @@ $bg-page:       #f8fafc;
   background: $bg-page;
 }
 
-// ── Header — même gradient que formations-hero ────────────────────
 .video-header {
   padding: 14px 0;
   background: linear-gradient(135deg, $primary 0%, $accent 60%, #85B7EB 100%);
@@ -52,7 +51,6 @@ $bg-page:       #f8fafc;
   }
 }
 
-// ── Contenu player ────────────────────────────────────────────────
 .video-content {
   flex: 1;
 

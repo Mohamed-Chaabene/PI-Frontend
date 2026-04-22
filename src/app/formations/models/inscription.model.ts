@@ -10,6 +10,7 @@ export interface Inscription {
   formation: Formation;
   candidat?: Candidat;
   certificat?: Certificat;
+  parcoursId?: number | null;
 }
 
 export interface InscriptionCreatePayload {

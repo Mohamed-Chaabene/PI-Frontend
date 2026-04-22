@@ -1,4 +1,3 @@
-// src/app/formations/guards/admin.guard.ts
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 

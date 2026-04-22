@@ -1,4 +1,3 @@
-// ─── Variables ────────────────────────────────────────────────────────────────
 $primary:       #667eea;
 $primary-light: #e0e7ff;
 $primary-dark:  #764ba2;
@@ -19,7 +18,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
   background: $bg-page;
   padding-top: 40px;
 
-  // ─── Stats ────────────────────────────────────────────────────────────────
   .stats-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -75,7 +73,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ─── Table card ───────────────────────────────────────────────────────────
   .table-card {
     background: $bg-card;
     border: none;
@@ -95,7 +92,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
       position: relative;
       overflow: hidden;
 
-      // Cercles décoratifs
       &::before {
         content: '';
         position: absolute;
@@ -165,7 +161,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
       }
     }
 
-    // Tableau
     table {
       width: 100%;
       border-collapse: collapse;
@@ -202,7 +197,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
       }
     }
 
-    // Cellule candidat avec avatar initiale
     .td-candidat {
       display: flex;
       align-items: center;
@@ -258,7 +252,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
       }
     }
 
-    // Cellule progression
     .td-progression {
       min-width: 140px;
 
@@ -293,7 +286,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ─── Badges statut ────────────────────────────────────────────────────────
   .tag {
     display: inline-block;
     padding: 3px 10px;
@@ -306,7 +298,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     &.tag-amber { background: #FAEEDA; color: #633806; }
   }
 
-  // ─── Vide / chargement ────────────────────────────────────────────────────
   .empty-state {
     text-align: center;
     padding: 56px 20px;

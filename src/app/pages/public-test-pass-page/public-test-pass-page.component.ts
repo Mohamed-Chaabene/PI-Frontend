@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, HostListener, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -74,12 +74,7 @@ export class PublicTestPassPageComponent {
   violationDetected = false;
   violationReason = '';
   acknowledgingRules = false;
-
-/* === VERSION HEAD ==== */
-
-/* === VERSION MERGE ==== */
   isObscured = false;
-/* === FIN VERSIONS === */
   private timerInterval: ReturnType<typeof setInterval> | null = null;
   candidateReport: CandidateAutoReport | null = null;
 

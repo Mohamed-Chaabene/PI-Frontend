@@ -31,7 +31,6 @@ export class FormationParticipantsComponent implements OnInit {
       finalize(() => { this.loading = false; })
     ).subscribe({
       next: (inscriptions) => {
-        // Charger les détails des candidats pour chaque inscription
         if (inscriptions.length === 0) {
           this.inscriptions = [];
           return;
@@ -41,7 +40,6 @@ export class FormationParticipantsComponent implements OnInit {
           const candidatId = ins.candidat?.id ?? 0;
           return this.apiService.getCandidat(candidatId).pipe(
             catchError(() => {
-              // Si la requête échoue, retourner un objet avec juste l'ID
               return of({ id: candidatId, code: '#' + candidatId, nom: `Candidat #${candidatId}` });
             })
           );
@@ -51,7 +49,6 @@ export class FormationParticipantsComponent implements OnInit {
           next: (candidats) => {
             this.inscriptions = inscriptions.map((ins, idx) => {
               const loadedCandidat = candidats[idx];
-              // Si le candidat n'a pas de nom, ajouter au moins l'ID
               return {
                 ...ins,
                 candidat: {
@@ -64,7 +61,6 @@ export class FormationParticipantsComponent implements OnInit {
             });
           },
           error: () => {
-            // Si ça échoue, garder les inscriptions avec fallback
             this.inscriptions = inscriptions.map(ins => {
               const candidatId = ins.candidat?.id ?? 0;
               return {

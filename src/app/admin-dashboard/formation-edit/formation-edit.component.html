@@ -2,7 +2,6 @@
   <div class="container">
     <div class="row justify-content-center">
 
-      <!-- Chargement -->
       <div class="col-lg-7 col-md-12" *ngIf="loading">
         <div class="form-card">
           <div class="loading-state">
@@ -12,7 +11,6 @@
         </div>
       </div>
 
-      <!-- Formulaire -->
       <div class="col-lg-7 col-md-12" *ngIf="!loading">
         <div class="form-card">
 
@@ -27,13 +25,11 @@
           <div class="form-card-body">
             <form [formGroup]="form" (ngSubmit)="submit()">
 
-              <!-- ── Section 1 : Informations générales ── -->
               <div class="form-section-title">
                 <span class="section-number">1</span>
                 Informations générales
               </div>
 
-              <!-- Champ titre avec suggestions -->
               <div class="form-group">
                 <label>Titre de la formation <span class="required">*</span></label>
                 <input
@@ -48,7 +44,6 @@
                   Recherche des meilleures playlists YouTube...
                 </div>
 
-                <!-- Playlists suggérées -->
                 <div class="suggestions-list" *ngIf="suggestions.length > 0 && !suggestionSelected">
                   <div class="suggestions-header">
                     <i class="ri-youtube-line" style="color:#E24B4A; font-size:16px"></i>
@@ -122,7 +117,6 @@
                 </div>
               </div>
 
-              <!-- ── Section 2 : Configuration ── -->
               <div class="form-section-title">
                 <span class="section-number">2</span>
                 Configuration
@@ -169,7 +163,6 @@
                 </div>
               </div>
 
-              <!-- ── Section 3 : Lien externe (optionnel) ── -->
               <div class="form-section-title">
                 <span class="section-number">3</span>
                 Lien externe (URL)
@@ -183,7 +176,6 @@
                 >
               </div>
 
-              <!-- ── Section 4 : Playlist YouTube ── -->
               <div class="form-section-title">
                 <span class="section-number">4</span>
                 Playlist YouTube
@@ -206,12 +198,10 @@
                     <i class="ri-youtube-line"></i> Vérifier
                   </a>
                 </div>
-                <!-- ✅ CORRECTION : div playlist-preview correctement fermée -->
                 <div class="playlist-preview" *ngIf="form.get('playlistId')?.value">
                 </div>
               </div>
 
-              <!-- ── Section 5 : Éditeur interactif ── -->
               <div class="form-section-title">
                 <span class="section-number">5</span>
                 Éditeur interactif
@@ -237,7 +227,6 @@
                 </select>
               </div>
 
-              <!-- ── Section 6 : Formation écrite ── -->
               <div class="form-section-title">
                 <span class="section-number">6</span>
                 Source documentation 
@@ -247,7 +236,6 @@
                 <input class="form-control" formControlName="writtenUrl" placeholder="Ex: https://developer.mozilla.org/..." readonly>
               </div>
 
-              <!-- ── Actions ── -->
               <div class="form-actions">
                 <button type="submit" class="btn-submit" [disabled]="saving">
                   <i class="ri-save-line" *ngIf="!saving"></i>

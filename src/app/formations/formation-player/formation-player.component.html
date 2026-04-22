@@ -1,6 +1,5 @@
 <div class="player-container">
 
-  <!-- ── Anti-Screenshot Overlay ────────────────────────────────────── -->
   <div class="screenshot-blocker-overlay" *ngIf="isObscured">
     <div class="message">
       <i class="ri-forbid-line"></i>
@@ -8,29 +7,24 @@
     </div>
   </div>
 
-  <!-- ── Quiz Final Overlay ═══════════════════════════════════════ -->
   <div class="quiz-final-overlay" *ngIf="showQuizFinal">
     <div class="quiz-final-panel position-relative"
          [class.no-select]="!quizFinalSubmitted && !quizBloque" style="position: relative;">
 
-      <!-- ── Bouton Fermer (X) ────────────────────────────────── -->
       <button class="btn-close-modal-x" (click)="fermerQuizFinal()" aria-label="Fermer" title="Fermer et retourner à la formation" *ngIf="quizFinalSubmitted || quizBloque || peutReessayer">
         <i class="ri-close-line"></i>
       </button>
 
-      <!-- ── Avertissement flottant ──────────────────────────── -->
       <div class="quiz-avertissement" *ngIf="showAvertissement">
         <i class="ri-alert-line"></i>
         {{ avertissementMessage }}
       </div>
 
-      <!-- ── Loading ──────────────────────────────────────────── -->
       <div class="quiz-final-loading" *ngIf="quizFinalLoading">
         <div class="loading-spinner"></div>
         <h3>Génération de votre évaluation finale...</h3>
       </div>
 
-      <!-- ── Quiz bloqué pour triche ──────────────────────────── -->
       <div class="quiz-bloque-panel" *ngIf="quizBloque && !quizFinalLoading">
         <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
           <span class="bloque-icon" style="font-size: 1.1em; margin: 0; line-height: 1;">🚫</span> 
@@ -54,7 +48,7 @@
 
         <button *ngIf="peutReessayer"
                 class="btn-retry-final"
-                (click)="fermerQuizFinal()"
+                (click)="lancerQuizFinal()"
                 type="button">
           <i class="ri-restart-line"></i>
           Réessayer l'évaluation
@@ -69,7 +63,6 @@
         </button>
       </div>
 
-      <!-- ── Questions ─────────────────────────────────────────── -->
       <ng-container *ngIf="!quizFinalLoading && !quizFinalSubmitted
                            && !quizBloque">
 
@@ -79,12 +72,15 @@
           <div class="quiz-final-progress-info">
             <span>{{ quizFinalQuestions.length }} questions</span>
             <span>•</span>
-            <span>Score minimum pour obtenir un certificat : 70%</span>
-            <span>•</span>
-            <span class="tentatives-badge"
-                  [class.warning]="tentativesUtilisees === 1">
-              Tentative {{ tentativesUtilisees + 1 }} / {{ MAX_TENTATIVES }}
-            </span>
+            <span>Score minimum pour obtenir un certificat : {{ seuilQuiz }}%</span>
+            <!-- Indicateur tentatives si limite présente -->
+            <ng-container *ngIf="MAX_TENTATIVES !== INFINITY">
+              <span>•</span>
+              <span class="tentatives-badge"
+                    [class.warning]="tentativesUtilisees === 2">
+                Tentative {{ tentativesUtilisees }} / {{ MAX_TENTATIVES }}
+              </span>
+            </ng-container>
             <span>•</span>
             <span class="timer-badge" [ngStyle]="{'color': quizTimerRestant <= 60 ? '#ef4444' : 'inherit', 'font-weight': 'bold'}">
               <i class="ri-timer-line"></i> {{ formattedTimer }}
@@ -132,11 +128,9 @@
         </div>
       </ng-container>
 
-      <!-- ── Résultat ───────────────────────────────────────────── -->
       <div class="quiz-final-result"
            *ngIf="quizFinalSubmitted && !quizBloque">
 
-        <!-- Succès -->
         <div class="result-success" *ngIf="quizFinalReussi">
           <div class="result-trophy">🏆</div>
           <h2>Félicitations !</h2>
@@ -157,26 +151,24 @@
           </div>
         </div>
 
-        <!-- Échec avec tentatives restantes -->
         <div class="result-fail" *ngIf="!quizFinalReussi && peutReessayer">
           <div class="result-emoji">😔</div>
           <h2>Score insuffisant</h2>
           <div class="result-score-circle fail">{{ quizFinalScore }}%</div>
           <p>{{ quizFinalMessage }}</p>
-          <div class="tentatives-info warning">
+          <div class="tentatives-info warning" *ngIf="MAX_TENTATIVES !== INFINITY && tentativesRestantes !== undefined">
             <i class="ri-error-warning-line"></i>
             Il vous reste <strong>{{ tentativesRestantes }}</strong>
-            tentative{{ tentativesRestantes > 1 ? 's' : '' }}.
+            tentative{{ tentativesRestantes > 1 ? 's' : '' }} sur {{ MAX_TENTATIVES }}.
           </div>
           <button class="btn-retry-final"
-                  (click)="fermerQuizFinal()"
+                  (click)="lancerQuizFinal()"
                   type="button">
             <i class="ri-restart-line"></i>
             Réessayer l'évaluation
           </button>
         </div>
 
-        <!-- Échec sans tentatives -->
         <div class="result-fail" *ngIf="!quizFinalReussi && !peutReessayer">
           <div class="result-emoji">😞</div>
           <h2>Tentatives épuisées</h2>
@@ -198,7 +190,6 @@
     </div>
   </div>
 
-  <!-- ── Confetti ─────────────────────────────────────────────── -->
   <div class="confetti-overlay" *ngIf="showConfetti">
     <div class="confetti-message">
       <span>🎉</span>
@@ -207,7 +198,6 @@
     </div>
   </div>
 
-  <!-- ── Header ─────────────────────────────────────────────── -->
   <div class="player-header">
     <div class="player-title">
       <i class="ri-play-circle-line"></i>
@@ -235,15 +225,15 @@
       <button class="btn-quiz-final-trigger"
               (click)="lancerQuizFinal()"
               type="button"
-              [disabled]="tentativesUtilisees >= MAX_TENTATIVES"
+              [disabled]="MAX_TENTATIVES !== INFINITY && tentativesUtilisees >= MAX_TENTATIVES"
               style="margin:0;padding:6px 14px;background:#16a34a;color:#fff;
                      border:none;border-radius:6px;font-weight:600;cursor:pointer;
                      display:flex;align-items:center;gap:6px">
         <i class="ri-medal-fill" style="font-size:16px"></i>
-        <ng-container *ngIf="tentativesUtilisees < MAX_TENTATIVES">
+        <ng-container *ngIf="MAX_TENTATIVES === INFINITY || tentativesUtilisees < MAX_TENTATIVES">
           Passer l'évaluation finale
         </ng-container>
-        <ng-container *ngIf="tentativesUtilisees >= MAX_TENTATIVES">
+        <ng-container *ngIf="MAX_TENTATIVES !== INFINITY && tentativesUtilisees >= MAX_TENTATIVES">
           Tentatives épuisées
         </ng-container>
       </button>
@@ -257,7 +247,6 @@
     </div>
   </div>
 
-  <!-- ── Layout avec éditeur ─────────────────────────────────── -->
   <div class="player-split" *ngIf="hasEditor()">
     <div class="player-left">
       <div class="video-wrapper-16-9">
@@ -283,7 +272,6 @@
     </div>
   </div>
 
-  <!-- ── Playlist sans éditeur ───────────────────────────────── -->
   <div class="playlist-custom-layout" *ngIf="isPlaylist && !hasEditor()">
     <div class="playlist-video-side">
       <div class="video-wrapper-16-9">
@@ -331,7 +319,6 @@
     </div>
   </div>
 
-  <!-- ── Vidéo simple ─────────────────────────────────────────── -->
   <div class="player-full" *ngIf="!hasEditor() && !isPlaylist">
     <div class="video-wrapper-full">
       <div id="yt-player-div"></div>

@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Formation } from '../models/formation.model';
 import { FormationService } from '../services/formation.service';
+import { ParcoursService } from '../services/parcours.service';
+import { NIVEAUX_LABELS, NiveauOrdre } from '../models/parcours.model';
 
 @Component({
   selector: 'app-formation-detail',
@@ -19,13 +21,17 @@ export class FormationDetailComponent implements OnInit {
   isAdmin     = false;
   returnUrl   = '/formations';
 
-  // ── Modal ─────────────────────────────────────────────────────────
+  // Context Parcours
+  parcoursId: number | null = null;
+  niveauContext: NiveauOrdre | null = null;
+
   showAccessModal = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private formationService: FormationService
+    private formationService: FormationService,
+    private parcoursService: ParcoursService
   ) {}
 
   ngOnInit(): void {
@@ -35,6 +41,13 @@ export class FormationDetailComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       if (params['from'] === 'dashboard') {
         this.returnUrl = '/candidates-dashboard/mes-formations';
+      }
+      if (params['parcoursId']) {
+        this.parcoursId = Number(params['parcoursId']);
+        this.returnUrl = `/formations/parcours/${this.parcoursId}`;
+      }
+      if (params['niveau']) {
+        this.niveauContext = params['niveau'] as NiveauOrdre;
       }
     });
 
@@ -54,18 +67,54 @@ export class FormationDetailComponent implements OnInit {
     }
   }
 
-  // ── Vérifier si déjà inscrit ──────────────────────────────────────
   private verifierInscription(formationId: number): void {
     if (!this.candidatId) return;
+
     this.formationService.getMesInscriptions(this.candidatId).subscribe({
       next: (inscriptions) => {
-        this.inscrit = inscriptions.some(i => i.formation?.id === formationId);
+        // Only look at inscriptions matching parcoursId context
+        const found = inscriptions.find(i =>
+          i.formation?.id === formationId &&
+          (this.parcoursId ? i.parcoursId === this.parcoursId : !i.parcoursId)
+        ) || inscriptions.find(i => i.formation?.id === formationId);
+        if (found) {
+          this.inscrit = true;
+          this.inscriptionId = found.id;
+          // Store with user-scoped key
+          const key = `candidat_${this.candidatId}_ins_${formationId}` + (this.parcoursId ? `_p${this.parcoursId}` : '');
+          localStorage.setItem(key, String(found.id));
+        } else if (this.parcoursId) {
+          this.autoInscrireDepuisParcours();
+        }
       },
-      error: () => {}
+      error: () => {
+        if (this.parcoursId) this.autoInscrireDepuisParcours();
+      }
     });
   }
 
-  // ── S'inscrire ────────────────────────────────────────────────────
+  private autoInscrireDepuisParcours(): void {
+    if (!this.candidatId || !this.parcoursId) return;
+
+    this.parcoursService.getInscription(this.candidatId, this.parcoursId).subscribe({
+      next: (insc) => {
+        // Le candidat est bien inscrit au parcours global
+        console.log('✨ [Parcours] Inscription automatique à la sous-formation contextuelle...');
+        
+        // On attend que la formation soit chargée pour avoir son ID
+        const checkFormation = setInterval(() => {
+          if (this.formation?.id) {
+            clearInterval(checkFormation);
+            this.sInscrire();
+          }
+        }, 100);
+      },
+      error: () => {
+        console.warn('Accès via parcoursId mais aucune inscription parcours trouvée.');
+      }
+    });
+  }
+
 sInscrire(): void {
   if (!this.candidatId || !this.formation?.id) return;
 
@@ -73,13 +122,10 @@ sInscrire(): void {
     this.candidatId, this.formation.id
   ).subscribe({
     next: (inscription) => {
-      // ✅ Stocker inscriptionId pour le player de progression
-      localStorage.setItem(
-        'inscription_' + this.formation.id,
-        String(inscription.id)
-      );
+      // Use user-scoped key to avoid data bleed between accounts
+      const key = `candidat_${this.candidatId}_ins_${this.formation.id}` + (this.parcoursId ? `_p${this.parcoursId}` : '');
+      localStorage.setItem(key, String(inscription.id));
 
-      // Mettre à jour l'état local
       this.inscrit       = true;
       this.inscriptionId = inscription.id;
 
@@ -89,20 +135,22 @@ sInscrire(): void {
   });
 }
 
-  // ── Modal accès ───────────────────────────────────────────────────
 openAccessModal(): void  { this.showAccessModal = true; }
 closeAccessModal(): void { this.showAccessModal = false; }
 
 choisirVideo(): void {
   this.showAccessModal = false;
-  this.router.navigate(['/formations', this.formation.id, 'video']);
+  this.router.navigate(['/formations', this.formation.id, 'video'], {
+    queryParamsHandling: 'preserve'
+  });
 }
 
 choisirFormationEcrite(): void {
   this.showAccessModal = false;
-  this.router.navigate(['/formations', this.formation.id, 'ecrite']);
+  this.router.navigate(['/formations', this.formation.id, 'ecrite'], {
+    queryParamsHandling: 'preserve'
+  });
 }
-  // ── URLs utiles ───────────────────────────────────────────────────
   getWrittenUrl(): string {
     const map: Record<string, string> = {
       'Frontend':      'https://www.w3schools.com/html/',
@@ -122,7 +170,6 @@ choisirFormationEcrite(): void {
       : `https://www.youtube.com/results?search_query=${encodeURIComponent(this.formation?.titre ?? '')}`;
   }
 
-  // ── Helpers visuels ───────────────────────────────────────────────
   getCatClass(categorie: string): string {
     const map: Record<string, string> = {
       'Développement': 'cat-dev',    'Frontend': 'cat-frontend',
@@ -150,7 +197,6 @@ choisirFormationEcrite(): void {
     return map[niveau] || 'badge-blue';
   }
 
-  // ── Résolution candidatId ─────────────────────────────────────────
   private resolveCandidatId(onResolved?: () => void): void {
     const role  = (localStorage.getItem('userRole') || '').toUpperCase().replace(/^ROLE_/, '');
     const email = localStorage.getItem('userName') || '';

@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
+import { Router, ActivatedRoute, Params } from '@angular/router';
 import { Formation, YoutubeVideo } from '../models/formation.model';
 import { FormationService } from '../services/formation.service';
 
@@ -22,11 +23,16 @@ export class FormationPlayerComponent
   @Input() formation!:    Formation;
   @Input() inscriptionId: number | null = null;
   @Input() candidatId:    number | null = null;
+  @Input() parcoursId:    number | null = null;
+  @Input() niveau:        string | null = null;
+  @Input() isAlreadyCompleted = false;
 
   private sanitizer        = inject(DomSanitizer);
   private formationService = inject(FormationService);
   private http             = inject(HttpClient);
   private ngZone           = inject(NgZone);
+  private router           = inject(Router);
+  private route            = inject(ActivatedRoute);
 
   safeStackBlitzUrl: SafeResourceUrl | null = null;
   isPlaylist      = false;
@@ -35,12 +41,10 @@ export class FormationPlayerComponent
   currentVideo:   YoutubeVideo | null = null;
   currentIndex    = 0;
 
-  // ── Progression ───────────────────────────────────────────────
   videosVues   = new Set<string>();
   progression  = 0;
   showConfetti = false;
 
-  // ── Quiz final ────────────────────────────────────────────────
   showQuizFinal       = false;
   quizFinalLoading    = false;
   quizFinalQuestions: any[]     = [];
@@ -51,14 +55,17 @@ export class FormationPlayerComponent
   quizFinalMessage    = '';
   certificatId:       number | null = null;
 
-  // ✅ Seuil pour obtenir le certificat
-  readonly SEUIL_CERTIFICAT = 70;
+  seuilQuiz = 70;
+  private quizLaunched = false;
 
-  // ── Tentatives ────────────────────────────────────────────────
   tentativesUtilisees = 0;
-  readonly MAX_TENTATIVES = 2;
+  readonly INFINITY = Infinity;
 
-  // ── Anti-triche et Temps ─────────────────────────────────────
+  /** 3 tentatives pour EXPERT ou formation simple, illimité pour les autres niveaux d'un parcours */
+  get MAX_TENTATIVES(): number {
+    return (this.niveau === 'EXPERT' || !this.parcoursId) ? 3 : Infinity;
+  }
+
   quizBloque         = false;
   quizBloqueMessage  = '';
   quizTimerRestant   = 600; // 10 minutes en secondes
@@ -76,7 +83,6 @@ export class FormationPlayerComponent
   
   isObscured = false;
 
-  // ── YouTube IFrame ────────────────────────────────────────────
   private ytPlayer:    any = null;
   private playerReady      = false;
 
@@ -97,12 +103,12 @@ export class FormationPlayerComponent
     'Mobile':        'https://stackblitz.com/fork/web?embed=1&hideNavigation=1&theme=dark&file=index.html',
   };
 
-  // ── Getters ───────────────────────────────────────────────────
   private get quizStorageKey(): string {
     return `quiz_tentatives_${this.inscriptionId}`;
   }
 
   get tentativesRestantes(): number {
+    if (this.MAX_TENTATIVES === Infinity) return Infinity;
     return Math.max(0, this.MAX_TENTATIVES - this.tentativesUtilisees);
   }
 
@@ -120,15 +126,37 @@ export class FormationPlayerComponent
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Lifecycle
-  // ══════════════════════════════════════════════════════════════
+
   ngOnInit(): void {
+    this.route.queryParams.subscribe((params: Params) => {
+      if (params['startQuiz'] === 'true') {
+        setTimeout(() => this.lancerQuizFinal(), 1000);
+      }
+    });
+
+    if (this.niveau === 'EXPERT') {
+      this.seuilQuiz = 80;
+    } else {
+      this.seuilQuiz = 70;
+    }
+
     if (!this.candidatId)
       this.candidatId = Number(localStorage.getItem('candidatId')) || null;
-    if (!this.inscriptionId) {
-      const s = localStorage.getItem('inscription_' + this.formation?.id);
-      this.inscriptionId = s ? Number(s) : null;
+
+    if (!this.inscriptionId && this.candidatId) {
+      const scopedKey = `candidat_${this.candidatId}_ins_${this.formation?.id}` + (this.parcoursId ? `_p${this.parcoursId}` : '');
+      const scoped = Number(localStorage.getItem(scopedKey)) || null;
+      if (scoped) {
+        this.inscriptionId = scoped;
+      } else {
+        // Fallback to legacy key, then wipe it so it won't persist for the next user
+        const legacy = Number(localStorage.getItem('inscription_' + this.formation?.id)) || null;
+        if (legacy) {
+          this.inscriptionId = legacy;
+          localStorage.setItem(scopedKey, String(legacy));
+        }
+        localStorage.removeItem('inscription_' + this.formation?.id);
+      }
     }
 
     this.chargerTentatives();
@@ -147,11 +175,20 @@ export class FormationPlayerComponent
           this.formation.playlistId).subscribe({
         next: (videos) => {
           this.playlistVideos = videos;
-          if (videos.length > 0) this.loadExistingProgression();
+          this.loadExistingProgression();
         }
       });
     } else if (this.formation.youtubeId) {
+      this.isPlaylist = false;
+      this.currentVideoId = this.formation.youtubeId;
+      this.currentVideo = {
+        videoId: this.formation.youtubeId,
+        title: this.formation.titre,
+        thumbnail: '',
+        position: 0
+      };
       this.loadYouTubeAPI(() => this.initPlayer(this.formation.youtubeId!));
+      this.loadExistingProgression();
     }
   }
 
@@ -163,9 +200,6 @@ export class FormationPlayerComponent
     this.arreterTimer();
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Gestion tentatives
-  // ══════════════════════════════════════════════════════════════
   private chargerTentatives(): void {
     const saved = localStorage.getItem(this.quizStorageKey);
     this.tentativesUtilisees = saved ? Number(saved) : 0;
@@ -176,9 +210,6 @@ export class FormationPlayerComponent
       this.quizStorageKey, String(this.tentativesUtilisees));
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // ANTI-TRICHE
-  // ══════════════════════════════════════════════════════════════
   private activerProtectionAntiTriche(): void {
     this.visibilityChanges = 0;
 
@@ -290,7 +321,6 @@ export class FormationPlayerComponent
     this.quizBloque        = true;
     this.quizBloqueMessage = raison;
     this.retirerProtectionAntiTriche();
-    this.tentativesUtilisees++;
     this.sauvegarderTentatives();
 
     if (this.inscriptionId) {
@@ -321,9 +351,6 @@ export class FormationPlayerComponent
     });
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // YouTube IFrame API
-  // ══════════════════════════════════════════════════════════════
   private loadYouTubeAPI(cb: () => void): void {
     if (window.YT?.Player) { cb(); return; }
     if (document.getElementById('yt-api-script')) {
@@ -366,9 +393,7 @@ export class FormationPlayerComponent
     this.ytPlayer = null; this.playerReady = false;
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Navigation
-  // ══════════════════════════════════════════════════════════════
+
   setCurrentVideo(video: YoutubeVideo, index: number): void {
     this.currentVideoId = video.videoId;
     this.currentVideo   = video;
@@ -394,26 +419,51 @@ export class FormationPlayerComponent
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Progression
-  // ══════════════════════════════════════════════════════════════
   private loadExistingProgression(): void {
-    if (!this.inscriptionId || !this.playlistVideos.length) return;
+    if (!this.inscriptionId) return;
+    
+    // Pour une playlist on utilise sa longueur, pour une vidéo unique c'est 1
+    const total = this.isPlaylist ? this.playlistVideos.length : 1;
+    if (total === 0 && this.isPlaylist) return;
+
     this.http.get<any>(
       `${this.base}/video-progression/inscription/${this.inscriptionId}`
-      + `?totalVideos=${this.playlistVideos.length}`
+      + `?totalVideos=${total}`
     ).subscribe({
       next: (data) => {
+        // Filtrer pour ne garder que les vidéos qui font partie de la playlist ACTUELLE
+        const playlistIds = new Set(this.playlistVideos.map(v => v.videoId));
+        this.videosVues.clear(); // Reset avant de recharger proprement
+        
         (data.details || []).forEach((vp: any) => {
-          if (vp.vuComplete) this.videosVues.add(vp.videoId);
+          if (vp.vuComplete && (playlistIds.size === 0 || playlistIds.has(vp.videoId))) {
+            this.videosVues.add(vp.videoId);
+          }
         });
-        this.progression = data.progression || 0;
+
+        if (data.progression >= 100 || this.isAlreadyCompleted) {
+          this.progression = 100;
+          this.playlistVideos.forEach(v => this.videosVues.add(v.videoId));
+        } else {
+          this.progression = data.progression || 0;
+        }
+        this.tentativesUtilisees = data.tentativesUtilisees || 0;
+        
+        // Sécurité : si on a filtré et que ça change la progression réelle
+        if (this.isPlaylist && this.playlistVideos.length > 0) {
+           const calculated = Math.min(100, Math.round(this.videosVues.size / this.playlistVideos.length * 100));
+           this.progression = this.isAlreadyCompleted ? 100 : calculated;
+        }
+
         const first = this.playlistVideos.find(
           v => !this.videosVues.has(v.videoId))
           || this.playlistVideos[0];
         this.setCurrentVideo(first, this.playlistVideos.indexOf(first));
       },
-      error: () => this.setCurrentVideo(this.playlistVideos[0], 0)
+
+      error: () => {
+        this.setCurrentVideo(this.playlistVideos[0], 0);
+      }
     });
   }
 
@@ -431,11 +481,7 @@ export class FormationPlayerComponent
     }).subscribe({
       next: (resp) => {
         this.videosVues.add(video.videoId);
-        this.progression = resp.progression;
-        // ✅ FIX : lancer le quiz à 100% mais PAS le certificat
-        if (resp.formationTerminee || this.progression >= 100) {
-          setTimeout(() => this.lancerQuizFinal(), 1500);
-        }
+        this.recalculerLocal(); // Utilise le calcul filtré local pour l'UI
       },
       error: () => {
         this.videosVues.add(video.videoId);
@@ -446,17 +492,33 @@ export class FormationPlayerComponent
 
   private recalculerLocal(): void {
     const t = this.playlistVideos.length || 1;
-    this.progression = Math.round(this.videosVues.size / t * 100);
-    // ✅ FIX : lancer le quiz, pas le certificat directement
-    if (this.progression >= 100)
-      setTimeout(() => this.lancerQuizFinal(), 1500);
+    // On ne compte que les vidéos qui appartiennent à la playlist actuelle
+    const playlistIds = new Set(this.playlistVideos.map(v => v.videoId));
+    const validVuesCount = Array.from(this.videosVues).filter(id => playlistIds.has(id)).length;
+    
+    this.progression = Math.round(validVuesCount / t * 100);
+    if (this.progression >= 100 && !this.isAlreadyCompleted && !this.quizLaunched) {
+      this.quizLaunched = true;
+      setTimeout(() => this.lancerQuizFinal(), 2000);
+    }
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Quiz FINAL
-  // ══════════════════════════════════════════════════════════════
+
   lancerQuizFinal(): void {
-    if (!this.inscriptionId) return;
+    if (!this.inscriptionId || this.quizFinalLoading) return;
+    
+    // Si le quiz est déjà affiché et qu'on n'est pas en mode résultat/bloqué, on ignore
+    if (this.showQuizFinal && !this.quizFinalSubmitted && !this.quizBloque) return;
+
+    this.quizLaunched = true;
+
+    // Si on est dans un parcours, on redirige vers le quiz de niveau
+    // SAUF pour le niveau EXPERT qui utilise le quiz interne avec protection anti-triche
+    if (this.parcoursId && this.niveau && this.niveau !== 'EXPERT') {
+      this.router.navigate(['/formations/parcours', this.parcoursId, 'quiz', this.niveau]);
+      return;
+    }
+
     if (this.tentativesUtilisees >= this.MAX_TENTATIVES) return;
 
     this.quizBloque        = false;
@@ -477,7 +539,9 @@ export class FormationPlayerComponent
         titreFormation: this.formation.titre,
         categorie:      this.formation.categorie,
         playlistId:     this.formation.playlistId || '',
-        totalVideos:    this.playlistVideos.length
+        totalVideos:    this.playlistVideos.length,
+        niveau:         this.niveau,
+        parcoursId:     this.parcoursId
       }
     ).subscribe({
       next: (data) => {
@@ -485,6 +549,7 @@ export class FormationPlayerComponent
         this.quizFinalAnswers   =
           new Array(this.quizFinalQuestions.length).fill(-1);
         this.quizFinalLoading   = false;
+        this.tentativesUtilisees = data.tentativesUtilisees || 0;
         
         this.quizTimerRestant = 600; 
         this.demarrerTimer();
@@ -509,10 +574,8 @@ export class FormationPlayerComponent
     if (!this.inscriptionId) return;
 
     this.arreterTimer();
-    this.tentativesUtilisees++;
     this.sauvegarderTentatives();
 
-    // Calculer score
     let correct = 0;
     this.quizFinalQuestions.forEach((q: any, i: number) => {
       if (this.quizFinalAnswers[i] === q.correctIndex) correct++;
@@ -526,7 +589,9 @@ export class FormationPlayerComponent
     this.http.post<any>(
       `${this.base}/video-progression/quiz-final/soumettre`, {
         inscriptionId: this.inscriptionId,
-        score
+        score,
+        parcoursId:    this.parcoursId,
+        niveau:        this.niveau
       }
     ).subscribe({
       next: (resp) => {
@@ -534,8 +599,7 @@ export class FormationPlayerComponent
         this.quizFinalReussi    = resp.reussi;
         this.quizFinalMessage   = resp.message;
 
-        // ✅ FIX PRINCIPAL : certificat seulement si score >= 70%
-        if (resp.reussi && score >= this.SEUIL_CERTIFICAT) {
+        if (resp.reussi && score >= this.seuilQuiz) {
           this.showConfetti = true;
           setTimeout(() => { this.showConfetti = false; }, 4000);
 
@@ -546,12 +610,17 @@ export class FormationPlayerComponent
             error: () => {}
           });
         } else if (!resp.reussi) {
-          // ✅ Score insuffisant : message clair
-          this.quizFinalMessage =
-            `Score obtenu : ${score}% — Minimum requis : ${this.SEUIL_CERTIFICAT}%. ` +
-            (this.peutReessayer
-              ? `Il vous reste ${this.tentativesRestantes} tentative(s).`
-              : `Vous avez épuisé toutes vos tentatives.`);
+          if (this.MAX_TENTATIVES !== Infinity) {
+            this.quizFinalMessage =
+              `Score obtenu : ${score}% — Minimum requis : ${this.seuilQuiz}%. ` +
+              (this.peutReessayer
+                ? `Il vous reste ${this.tentativesRestantes} tentative(s) sur ${this.MAX_TENTATIVES}.`
+                : `Vous avez épuisé toutes vos tentatives.`);
+          } else {
+            this.quizFinalMessage =
+              `Score obtenu : ${score}% — Minimum requis : ${this.seuilQuiz}%. ` +
+              `Vous pouvez réessayer autant de fois que nécessaire.`;
+          }
         }
       }
     });
@@ -564,7 +633,6 @@ export class FormationPlayerComponent
   }
 
   fermerQuizFinal(): void {
-    if (this.quizFinalReussi) return;
     this.arreterTimer();
     this.retirerProtectionAntiTriche();
     this.showQuizFinal      = false;
@@ -594,9 +662,7 @@ export class FormationPlayerComponent
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Helpers
-  // ══════════════════════════════════════════════════════════════
+
   hasEditor(): boolean {
     if (this.formation.hasEditor !== undefined) return this.formation.hasEditor;
     return this.categoriesAvecEditeur.includes(this.formation.categorie);
@@ -620,8 +686,8 @@ export class FormationPlayerComponent
   }
 
   getProgressionColor(): string {
-    if (this.progression >= 100) return '#16a34a';
-    if (this.progression >= 50)  return '#0965A4';
-    return '#f59e0b';
+    if (this.progression >= 100) return '#16a34a'; // Green stays for completion
+    if (this.progression >= 50)  return '#fbbf24'; // Brighter amber/orange
+    return '#fcd34d'; // Lighter amber for low progression
   }
 }

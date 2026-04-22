@@ -192,17 +192,27 @@
       <input type="file" #docInput id="doc-upload" [accept]="ACCEPTED_FILE_TYPES"
         (change)="onDocumentSelected($event)" style="display: none;">
 
-      <button class="chatbot-upload-btn" (click)="imageInput.click()"
-        title="Joindre une image" type="button"
-        [class.active]="selectedImageBase64">
-        <i class="ri-image-add-line"></i>
-      </button>
+      <div class="chatbot-upload-group">
+        <button class="chatbot-upload-btn" type="button"
+          (click)="showUploadOptions = !showUploadOptions"
+          [class.active]="showUploadOptions"
+          title="Joindre une image ou un document">
+          <i class="ri-upload-cloud-line"></i>
+        </button>
+        <div class="upload-options" *ngIf="showUploadOptions">
+          <button class="upload-option-btn" type="button"
+            (click)="showUploadOptions = false; imageInput.click();">
+            <i class="ri-image-add-line"></i>
+            <span>Image</span>
+          </button>
+          <button class="upload-option-btn" type="button"
+            (click)="showUploadOptions = false; docInput.click();">
+            <i class="ri-file-add-line"></i>
+            <span>Document</span>
+          </button>
+        </div>
+      </div>
 
-      <button class="chatbot-upload-btn doc-btn" (click)="docInput.click()"
-        title="Joindre un document (PDF, Word, etc.)" type="button"
-        [class.active]="selectedFileName && !selectedImageBase64">
-        <i class="ri-file-add-line"></i>
-      </button>
 
       <button *ngIf="isSpeechSupported"
         class="chatbot-mic-btn"

@@ -57,10 +57,8 @@
                 <span class="detail-badge badge-blue">{{ formation.plateforme }}</span>
               </div>
 
-              <!-- ═════════ ACTION ZONE ═════════ -->
               <div class="action-zone">
 
-                <!-- ❌ NON INSCRIT -->
                 <ng-container *ngIf="!isAdmin && !inscrit">
                   <button type="button" class="btn-inscrire" (click)="sInscrire()"
                     [disabled]="inscribing || formation.statut === 'Bientôt'">
@@ -74,7 +72,6 @@
                   </button>
                 </ng-container>
 
-                <!-- ✅ INSCRIT -->
                 <ng-container *ngIf="!isAdmin && inscrit">
                   <div class="inscrit-badge">
                     <i class="ri-checkbox-circle-fill"></i>
@@ -90,7 +87,6 @@
                   </a>
                 </ng-container>
 
-                <!-- 👑 ADMIN -->
                 <div class="d-flex gap-2 flex-wrap" *ngIf="isAdmin">
                   <a [routerLink]="['/formations/admin/edit', formation.id]" class="btn-modifier">
                     <i class="ri-edit-line"></i> Modifier
@@ -106,12 +102,10 @@
                 </div>
 
               </div>
-              <!-- ═════════ END ACTION ZONE ═════════ -->
 
             </div>
           </div>
 
-          <!-- ══ MODAL CHOIX ACCÈS ══════════════════════════════════ -->
           <div class="modal-overlay" *ngIf="showAccessModal" (click)="closeAccessModal()">
             <div class="modal-choice-card" (click)="$event.stopPropagation()">
 
@@ -124,7 +118,6 @@
 
               <div class="modal-choice-body">
 
-                <!-- Choix 1 : Vidéo -->
                 <div class="choice-card" (click)="choisirVideo()">
                   <div class="choice-icon choice-icon-video">
                     <i class="ri-play-circle-fill"></i>
@@ -136,7 +129,6 @@
                   <i class="ri-arrow-right-line choice-arrow"></i>
                 </div>
 
-                <!-- Choix 2 : Formation écrite -->
                 <div class="choice-card" (click)="choisirFormationEcrite()">
                   <div class="choice-icon choice-icon-ecrite">
                     <i class="ri-book-read-fill"></i>
@@ -153,7 +145,6 @@
             </div>
           </div>
 
-          <!-- ══ Compétences ════════════════════════════════════════ -->
           <div class="competences-card" *ngIf="formation.competences?.length">
             <h3>Compétences acquises</h3>
             <ul class="competences-list">
@@ -161,7 +152,6 @@
             </ul>
           </div>
 
-          <!-- ══ Feedbacks ══════════════════════════════════════════ -->
           <div class="feedback-wrapper">
             <app-feedback-candidat [formationId]="formation.id"></app-feedback-candidat>
           </div>

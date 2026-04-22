@@ -30,7 +30,6 @@ export class FormationService {
 
   constructor(private http: HttpClient) {}
 
-  // ── Public ────────────────────────────────────────────────────
   getAllFormations(): Observable<Formation[]> {
     return this.http.get<Formation[]>(this.base);
   }
@@ -51,7 +50,6 @@ export class FormationService {
     return this.http.get<Formation[]>(`${this.base}/categorie/${categorie}`);
   }
 
-  // ── Admin ─────────────────────────────────────────────────────
   getAllFormationsAdmin(): Observable<Formation[]> {
     return this.http.get<Formation[]>(`${this.base}/admin/all`);
   }
@@ -80,7 +78,6 @@ export class FormationService {
     return this.http.put<Formation>(`${this.base}/${id}/desarchiver`, {});
   }
 
-  // ── Inscriptions ──────────────────────────────────────────────
   inscrire(candidatId: number, formationId: number): Observable<Inscription> {
     const payload: InscriptionCreatePayload = {
       candidat:  { id: candidatId },
@@ -89,7 +86,6 @@ export class FormationService {
     return this.http.post<Inscription>(`${this.api}/inscriptions`, payload);
   }
 
-  // ✅ FIX : envoie aussi statut "Terminé" quand progression >= 100
   updateProgression(inscriptionId: number, progression: number): Observable<Inscription> {
     const body: any = { progression };
     if (progression >= 100) {
@@ -106,13 +102,20 @@ export class FormationService {
     );
   }
 
+  getInscriptionByDetails(candidatId: number, formationId: number, parcoursId?: number): Observable<Inscription> {
+    let url = `${this.api}/inscriptions/candidat/${candidatId}/formation/${formationId}`;
+    if (parcoursId) {
+      url += `?parcoursId=${parcoursId}`;
+    }
+    return this.http.get<Inscription>(url);
+  }
+
   getInscriptionsByFormation(formationId: number): Observable<Inscription[]> {
     return this.http.get<Inscription[]>(
       `${this.api}/inscriptions/formation/${formationId}`
     );
   }
 
-  // ── Certificats ───────────────────────────────────────────────
   getMesCertificats(candidatId: number): Observable<Certificat[]> {
     return this.http.get<Certificat[]>(
       `${this.api}/certificats/candidat/${candidatId}`
@@ -132,7 +135,6 @@ export class FormationService {
     );
   }
 
-  // ── Stats JPQL & Keywords ──────────────────────────────────────
   getStats(): Observable<any[]> {
     return this.http.get<any[]>(`${this.base}/stats`);
   }

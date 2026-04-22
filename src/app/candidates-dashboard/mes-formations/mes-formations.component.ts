@@ -28,13 +28,11 @@ export class MesFormationsComponent implements OnInit {
     this.resolveCandidatIdAndLoad();
   }
 
-  // ── Voir la formation ──────────────────────────────────────────
   voirDetailsFormation(formationId: number): void {
     this.router.navigate(['/formations', formationId],
       { queryParams: { from: 'dashboard' } });
   }
 
-  // ── Télécharger certificat ─────────────────────────────────────
   telecharger(cert: Certificat): void {
     this.formationService.telechargerCertificat(cert.id).subscribe({
       next: (blob: Blob) => {
@@ -51,12 +49,10 @@ export class MesFormationsComponent implements OnInit {
     });
   }
 
-  // ── Progression affichée en entier ────────────────────────────
   getProgression(ins: Inscription): number {
     return Math.round(ins.progression || 0);
   }
 
-  // ── Label progression ─────────────────────────────────────────
   getProgressionLabel(ins: Inscription): string {
     const p = this.getProgression(ins);
     if (p === 0)   return 'Non commencée';
@@ -66,9 +62,7 @@ export class MesFormationsComponent implements OnInit {
     return 'En cours';
   }
 
-  // ── Résolution candidatId ──────────────────────────────────────
   private resolveCandidatIdAndLoad(): void {
-    // 1. Cache localStorage
     const cached = Number(localStorage.getItem('candidatId'));
     if (!Number.isNaN(cached) && cached > 0) {
       this.candidatId = cached;
@@ -80,7 +74,6 @@ export class MesFormationsComponent implements OnInit {
       .toUpperCase().replace(/^ROLE_/, '');
     if (role !== 'CANDIDAT') return;
 
-    // 2. Depuis le token JWT
     const token = localStorage.getItem('token');
     if (token) {
       try {
@@ -97,7 +90,6 @@ export class MesFormationsComponent implements OnInit {
       }
     }
 
-    // 3. Fallback HTTP
     const email = localStorage.getItem('userName') || '';
     if (!email) return;
 
@@ -123,7 +115,6 @@ export class MesFormationsComponent implements OnInit {
     this.formationService.getMesInscriptions(this.candidatId).subscribe({
       next: (data: Inscription[]) => {
         this.inscriptions = data;
-        // ✅ Stocker inscriptionId dans localStorage pour chaque formation
         data.forEach(ins => {
           if (ins.formation?.id && ins.id) {
             localStorage.setItem(

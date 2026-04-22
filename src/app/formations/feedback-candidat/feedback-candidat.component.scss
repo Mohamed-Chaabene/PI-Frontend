@@ -11,14 +11,12 @@ $bg-page:       #f8fafc;
 $radius:        14px;
 $shadow:        0 2px 12px rgba(0,0,0,0.06);
 
-// ── Conteneur principal ────────────────────────────────────────────────────
 .feedback-section {
   margin-top: 32px;
   padding-top: 28px;
   border-top: 1.5px solid $border;
 }
 
-// ── Header ─────────────────────────────────────────────────────────────────
 .feedback-header {
   display: flex;
   align-items: center;
@@ -59,7 +57,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   }
 }
 
-// Note moyenne dans le header
 .avg-display {
   display: flex;
   align-items: center;
@@ -91,7 +88,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   }
 }
 
-// ── Bouton "Donner mon avis" ────────────────────────────────────────────────
 .add-feedback-btn {
   display: inline-flex;
   align-items: center;
@@ -110,7 +106,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   &:hover { background: $primary-dark; transform: translateY(-1px); }
 }
 
-// ── Alertes ─────────────────────────────────────────────────────────────────
 .alert-success {
   display: flex;
   align-items: center;
@@ -139,7 +134,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   margin-bottom: 12px;
 }
 
-// ── Formulaire ──────────────────────────────────────────────────────────────
 .feedback-form-card {
   background: $bg-card;
   border: 1px solid $border;
@@ -167,7 +161,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   .required { color: #E24B4A; margin-left: 2px; }
 }
 
-// Étoiles interactives
 .stars-input-group {
   margin-bottom: 20px;
 }
@@ -269,7 +262,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   }
 }
 
-// ── Mon feedback (card spéciale) ────────────────────────────────────────────
 .my-feedback-card {
   background: $primary-light;
   border: 1.5px solid rgba($primary, 0.3);
@@ -334,7 +326,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   }
 }
 
-// ── Liste des feedbacks ──────────────────────────────────────────────────────
 .feedbacks-list {
   display: flex;
   flex-direction: column;
@@ -364,7 +355,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   font-size: 0.9rem;
 }
 
-// Card feedback individuel
 .feedback-card {
   background: $bg-card;
   border: 1px solid $border;
@@ -410,6 +400,31 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
     color: $text-main;
   }
 
+  .meta-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .level-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    background: #e0f2fe;
+    color: #0369a1;
+    border-radius: 6px;
+    border: 1px solid rgba(#0369a1, 0.1);
+
+    &.macro {
+      background: #fef3c7;
+      color: #92400e;
+      border-color: rgba(#92400e, 0.1);
+    }
+  }
+
   .feedback-date {
     font-size: 0.75rem;
     color: $text-light;
@@ -423,7 +438,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   }
 }
 
-// Badge note
 .note-chip {
   display: inline-block;
   padding: 2px 8px;
@@ -435,7 +449,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   margin-left: 6px;
 }
 
-// Badge modifié
 .edited-badge {
   display: inline-flex;
   align-items: center;
@@ -446,7 +459,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   i { font-size: 11px; }
 }
 
-// Carte du candidat connecté - feedback body
 .feedback-card-body {
   .stars-row { margin-bottom: 10px; }
   .feedback-comment {
@@ -457,7 +469,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   }
 }
 
-// ✅ Message informatif "Terminez la formation pour donner un avis"
 .info-terminer {
   display: flex;
   align-items: flex-start;
@@ -478,7 +489,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   }
 
   span { line-height: 1.5; }
-  // ── Champs invalides ──────────────────────────────────────────────
 .form-control.is-invalid {
   border-color: #dc2626 !important;
   background-image: none;
@@ -486,7 +496,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   &:focus { box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15); }
 }
 
-// ── Messages d'erreur ─────────────────────────────────────────────
 .invalid-feedback,
 .invalid-feedback-inline {
   display: block;
@@ -503,7 +512,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   }
 }
 
-// ── Alerte erreur globale ─────────────────────────────────────────
 .alert-error {
   display: flex;
   align-items: center;
@@ -519,14 +527,12 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   i { font-size: 16px; }
 }
 
-// ── Label required ────────────────────────────────────────────────
 .form-label.required::after {
   content: ' *';
   color: #dc2626;
   font-weight: 700;
 }
 
-// ── Compteur caractères ───────────────────────────────────────────
 .char-counter {
   font-size: 0.75rem;
   color: #9ca3af;
@@ -537,7 +543,6 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
   &.danger  { color: #dc2626; font-weight: 600; }
 }
 
-// ── Champ valide ──────────────────────────────────────────────────
 .form-control.ng-valid.ng-dirty:not([value=""]) {
   border-color: #16a34a;
 }

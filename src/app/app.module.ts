@@ -120,6 +120,10 @@ import { CdMessageMailboxComponent } from './candidates-dashboard/cd-message-mai
 import { MesFormationsComponent } from './candidates-dashboard/mes-formations/mes-formations.component';
 import { RdMessagesMailboxComponent } from './recruiter-dashboard/rd-messages-mailbox/rd-messages-mailbox.component';
 import { EvenementChatComponent } from './evenement-dashboard/evenement-chat/evenement-chat.component';
+import { ParcoursAdminComponent } from './admin-dashboard/parcours-admin/parcours-admin.component';
+import { ParcoursCreateComponent } from './admin-dashboard/parcours-create/parcours-create.component';
+import { CheckFormationsComponent } from './admin-dashboard/check-formations.component';
+import { ContentManagementComponent } from './admin-dashboard/content-management/content-management.component';
 // Banner components are now in SharedModule
 // participations
 
@@ -215,6 +219,10 @@ registerLocaleData(localeFr);
         RdMessagesMailboxComponent,
         ChatEvenementComponent,
         EvenementChatComponent,
+        ParcoursAdminComponent,
+        ParcoursCreateComponent,
+        CheckFormationsComponent,
+        ContentManagementComponent,
         
         
         

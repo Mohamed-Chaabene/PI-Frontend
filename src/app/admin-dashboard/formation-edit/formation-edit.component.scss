@@ -1,4 +1,3 @@
-// ─── Variables ────────────────────────────────────────────────────────────────
 $primary:       #667eea;
 $primary-light: #e0e7ff;
 $primary-dark:  #764ba2;
@@ -21,7 +20,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
   background: $bg-page;
   padding: 40px 0 80px;
 
-  // ─── Card formulaire ───────────────────────────────────────────────────────
   .form-card {
     background: $bg-card;
     border: none;
@@ -79,7 +77,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ─── Séparateurs de section ────────────────────────────────────────────────
   .form-section-title {
     display: flex;
     align-items: center;
@@ -113,7 +110,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ─── Champs ────────────────────────────────────────────────────────────────
   .form-group {
     margin-bottom: 18px;
 
@@ -181,7 +177,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ─── Boutons d'action ──────────────────────────────────────────────────────
   .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -239,7 +234,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ─── État chargement ───────────────────────────────────────────────────────
   .loading-state {
     text-align: center;
     padding: 60px 20px;
@@ -259,7 +253,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     p { margin: 0; }
   }
 
-  // ─── Sidebar ───────────────────────────────────────────────────────────────
   .sidebar-area {
     position: sticky;
     top: 24px;
@@ -327,7 +320,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     &:hover { color: $primary; }
   }
 
-  // ── Toggle switch ─────────────────────────────────────────────────
   .editor-toggle-row {
     display: flex;
     align-items: center;
@@ -394,7 +386,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ── Bouton vérifier YouTube ───────────────────────────────────────
   .btn-preview-yt {
     display: inline-flex;
     align-items: center;
@@ -411,7 +402,6 @@ $shadow-card:   0 25px 60px rgba(0, 0, 0, 0.2);
     &:hover { background: #b91c1c; color: #fff; }
   }
 
-  // ── Aperçu contenu ────────────────────────────────────────────────
   .content-preview {
     background: #f0fdf4;
     border: 1px solid #bbf7d0;

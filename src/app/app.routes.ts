@@ -54,7 +54,7 @@ import { OffreStatistiquesComponent } from './recruiter-dashboard/offre-statisti
 import { OffreRechercheAvanceeComponent } from './recruiter-dashboard/offre-recherche-avancee/offre-recherche-avancee.component';
 import { PublicTestPassPageComponent } from './pages/public-test-pass-page/public-test-pass-page.component';
 import { CandidateEntretiensPageComponent } from './pages/candidate-entretiens-page/candidate-entretiens-page.component';
-import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
+import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';
 import { EvenementDashboardComponent } from './evenement-dashboard/evenement-dashboard.component';
 import { EvenementTemplateComponent } from './evenement-dashboard/evenement-template/evenement-template.component';
 import { EvenementFormComponent } from './evenement-dashboard/evenement-form/evenement-form';
@@ -73,6 +73,22 @@ import { CandidatsListComponent } from './admin-dashboard/candidats-list/candida
 import { recruteurGuard, recruteurChildGuard } from './guards/recruteur.guard';
 import { PartenaireCandidatComponent } from './candidates-dashboard/partenaire-candidat/partenaire-candidat.component';
 import { OffreCandidatComponent } from './candidates-dashboard/offre-candidat/offre-candidat.component';
+import { EvenementDemandesComponent } from './evenement-dashboard/evenement-demandes/evenement-demandes.component'
+import { MesParticipationsComponent } from './candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component';
+import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';
+import { MaCalendarComponent } from './candidates-dashboard/evenement-candidat/ma-calendar/ma-calendar.component';
+import { MesFormationsComponent } from './candidates-dashboard/mes-formations/mes-formations.component';
+import { EvenementFeedbacksComponent } from './evenement-dashboard/evenement-feedback/evenement-feedbacks.component';
+import { FormationsAdminComponent } from './admin-dashboard/formations-admin/formations-admin.component';
+import { FormationCreateComponent } from './admin-dashboard/formation-create/formation-create.component';
+import { FormationEditComponent } from './admin-dashboard/formation-edit/formation-edit.component';
+import { FormationParticipantsComponent } from './admin-dashboard/formation-participants/formation-participants.component';
+import { FeedbackAdminComponent } from './admin-dashboard/feedback-admin/feedback-admin.component';
+import { ChatEvenementComponent } from './candidates-dashboard/evenement-candidat/evenement-chat/evenement-chat.component';
+import { EvenementChatComponent } from './evenement-dashboard/evenement-chat/evenement-chat.component';
+import { ParcoursAdminComponent } from './admin-dashboard/parcours-admin/parcours-admin.component';
+import { ParcoursCreateComponent } from './admin-dashboard/parcours-create/parcours-create.component';
+
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
     {path: 'login', component: HomeDemoOneComponent},
@@ -126,13 +142,14 @@ export const routes: Routes = [
     },
             {path: '', component: CDashboardComponent},
             {path: 'my-profile', component: CdProfileComponent},
-            { path: 'documents', component: CdDocumentsComponent },   //************************************** */
+            { path: 'documents', component: CdDocumentsComponent },
             {path: 'bookmarks', component: CdBookmarksComponent},
             {path: 'applied-jobs', component: CdAppliedJobsComponent},
             {path: 'alert-jobs', component: CdAlertJobsComponent},
             {path: 'news', component: CdNewsComponent},
             {path: 'message', component: CdMessageComponent},
             {path: 'change-password', component: CdChangePasswordComponent},
+            { path: 'mes-formations', component: MesFormationsComponent },
             { path: 'partenaires', component: PartenaireCandidatComponent },
             { path: 'partenaires/:id/offres', component: OffreCandidatComponent },
             { path: 'evenements', component: EvenementCandidatComponent },
@@ -170,28 +187,39 @@ export const routes: Routes = [
 },
 {path: 'evenement-dashboard', component: EvenementDashboardComponent,
         children: [
-      { path: '', component: EvenementTemplateComponent},
-      {path: 'ajouter', component: EvenementFormComponent}, 
-      {path: 'liste', component: EvenementListComponent},
-      {path: 'modifier/:id', component: EvenementEditComponent},
-      {path: 'detail/:id', component: EvenementDetailComponent},
-      
-    ]
-    }, 
-{
-    path: 'admin-dashboard',
-    component: AdminDashboardComponent,
-    children: [
-        { path: '', component: AdDashboardComponent },
-        { path: 'partenaires', component: PartenaireListComponent },
-        { path: 'partenaires/:id/offres', component: OffreListComponent },
-        { path: 'entrietiens', redirectTo: 'entretiens', pathMatch: 'full' },
-        { path: 'entretiens', component: EntretienListComponent },
-        { path: 'candidatures', component: CandidatureListComponent },
-        { path: 'formations', component: FormationsListComponent },
-        { path: 'evenements', component: EvenementListAdminComponent },
-        { path: 'candidats', component: CandidatsListComponent },
-    ]
+            { path: '', component: EvenementTemplateComponent },
+            { path: 'ajouter', component: EvenementFormComponent },
+            { path: 'liste', component: EvenementListComponent },
+            { path: 'modifier/:id', component: EvenementEditComponent },
+            { path: 'detail/:id', component: EvenementDetailComponent },
+            { path: 'demandes', component: EvenementDemandesComponent },
+            { path: 'calendrier', component: EvenementCalendrierComponent },
+            { path: 'feedbacks', component: EvenementFeedbacksComponent },
+            { path: 'chats', component: EvenementChatComponent },
+            { path: 'chat/:evenementId', component: ChatEvenementComponent }
+        ]
+    },
+    {
+        path: 'admin-dashboard',
+        component: AdminDashboardComponent,
+        children: [
+            { path: '', component: AdDashboardComponent },
+            { path: 'partenaires', component: PartenaireListComponent },
+            { path: 'partenaires/:id/offres', component: OffreListComponent },
+            { path: 'entrietiens', redirectTo: 'entretiens', pathMatch: 'full' },
+            { path: 'entretiens', component: EntretienListComponent },
+            { path: 'candidatures', component: CandidatureListComponent },
+            { path: 'evenements', component: EvenementListAdminComponent },
+            { path: 'candidats', component: CandidatsListComponent },
+            { path: 'formations', component: FormationsAdminComponent },
+            { path: 'formations/create', component: FormationCreateComponent },
+            { path: 'formations/edit/:id', component: FormationEditComponent },
+            { path: 'formations/:id/participants', component: FormationParticipantsComponent },
+            { path: 'formations/:id/feedbacks', component: FeedbackAdminComponent },
+            { path: 'parcours', component: ParcoursAdminComponent },
+            { path: 'parcours/create', component: ParcoursCreateComponent },
+            { path: 'parcours/:id/edit', component: ParcoursCreateComponent },
+        ]
     },
 
     {path: '**', component: NotFoundComponent}, // This line will remain down from the whole pages component list

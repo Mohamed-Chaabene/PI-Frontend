@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ApplicationRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ApplicationRef, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { ProfileUpdateService } from '../../services/profile-update.service';
@@ -118,6 +118,7 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
                                 type: notification.type,
                                 message: notification.message,
                                 senderId: notification.senderId,
+                                offreEmploiId: notification.offreEmploiId,
                                 createdAt: notification.createdAt,
                                 isRead: false
                             });
@@ -618,6 +619,10 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
             return 'ri-mail-line';
         }
 
+        if (notification?.type === 'PARCOURS_COMPLETED') {
+            return 'ri-trophy-line';
+        }
+
         return 'ri-notification-3-line';
     }
 
@@ -632,6 +637,10 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
     getNotificationTitle(notification: any): string {
         if (this.isReminderNotification(notification)) {
             return 'Rappel entretien';
+        }
+
+        if (notification?.type === 'PARCOURS_COMPLETED') {
+            return 'Parcours Terminé !';
         }
 
         return 'Notification';
@@ -677,43 +686,45 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
     }
 
     markNotificationAsRead(notificationId: number | string): void {
+        this.onNotificationClick(notificationId);
+    }
+
+    onNotificationClick(notificationId: number | string): void {
         const notification = this.notifications.find(n => n.id === notificationId || String(n.id) === String(notificationId));
         if (!notification) {
             return;
         }
 
+        // Marquer comme lu (logique existante)
         if (this.isReminderNotification(notification)) {
             notification.isRead = true;
             this.unreadNotifications = Math.max(0, this.unreadNotifications - 1);
             this.appRef.tick();
-            return;
-        }
-
-        if (!notificationId) return;
-
-        const numericNotificationId = Number(notificationId);
-        if (!Number.isFinite(numericNotificationId) || numericNotificationId <= 0) {
-            return;
-        }
-
-        this.apiService.markNotificationAsRead(numericNotificationId).subscribe({
-            next: (response: any) => {
-                console.log('✅ Notification marked as read:', notificationId);
-                
-                // Update the notification in the list
-                const notification = this.notifications.find(n => n.id === notificationId);
-                if (notification) {
-                    notification.isRead = true;
-                    this.unreadNotifications = Math.max(0, this.unreadNotifications - 1);
-                    
-                    // Trigger global change detection for badge update
-                    this.appRef.tick();
-                }
-            },
-            error: (error) => {
-                console.error('❌ Error marking notification as read:', error);
+        } else if (notificationId) {
+            const numericNotificationId = Number(notificationId);
+            if (Number.isFinite(numericNotificationId) && numericNotificationId > 0) {
+                this.apiService.markNotificationAsRead(numericNotificationId).subscribe({
+                    next: () => {
+                        notification.isRead = true;
+                        this.unreadNotifications = Math.max(0, this.unreadNotifications - 1);
+                        this.appRef.tick();
+                    }
+                });
             }
-        });
+        }
+
+        // Redirection spécifique selon le type
+        if (notification.type === 'PARCOURS_COMPLETED') {
+            this.showNotificationPanel = false;
+            // On supprime immédiatement de la liste locale pour éviter d'y revenir
+            this.notifications = this.notifications.filter(n => n.id !== notificationId && String(n.id) !== String(notificationId));
+            
+            // On récupère l'ID du parcours stocké (temporairement dans offreEmploiId ou autre)
+            const parcoursId = notification.offreEmploiId; 
+            if (parcoursId) {
+                this.router.navigate(['/formations/parcours', parcoursId, 'feedback']);
+            }
+        }
     }
 
     goToInterviewReminders(): void {
