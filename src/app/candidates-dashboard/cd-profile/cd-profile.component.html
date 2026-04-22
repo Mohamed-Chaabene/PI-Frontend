@@ -348,6 +348,81 @@
                         </div>
                     </div>
                     
+                    <h3 style="margin-top: 30px;">
+                        Skills & Competences
+                    </h3>
+
+                    <!-- View Mode -->
+                    <div *ngIf="!isEditingCompetences">
+                        <div *ngIf="candidateData.competences.length > 0">
+                            <div class="competences-list" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
+                                <span *ngFor="let comp of candidateData.competences" 
+                                      style="background-color: #85B7EB; color: white; padding: 6px 12px; border-radius: 20px; font-size: 13px;">
+                                    {{ comp }}
+                                </span>
+                            </div>
+                        </div>
+                        <p *ngIf="candidateData.competences.length === 0" style="font-style: italic; color: #999;">
+                            No skills added yet. Click "Edit" to add your professional skills.
+                        </p>
+                        <button *ngIf="!isViewingOtherCandidate" (click)="isEditingCompetences = true" class="default-btn" style="background-color: #85B7EB; color: white; font-weight: bold;">
+                            Edit Skills
+                        </button>
+                    </div>
+
+                    <!-- Edit Mode -->
+                    <div *ngIf="isEditingCompetences" style="margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label>Select a Skill to Add</label>
+                            <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                                <select class="form-control shadow-none" 
+                                        [(ngModel)]="selectedCompetence">
+                                    <option value="">-- Select a skill --</option>
+                                    <option *ngFor="let comp of availableCompetences" 
+                                            [value]="comp.nom"
+                                            [disabled]="candidateData.competences.includes(comp.nom)">
+                                        {{ comp.nom }} ({{ comp.type }})
+                                    </option>
+                                </select>
+                                <button (click)="addCompetence()" class="default-btn" style="background-color: #85B7EB; color: white; font-weight: bold; padding: 8px 16px; white-space: nowrap;">
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Skills List -->
+                        <div *ngIf="candidateData.competences.length > 0" class="competences-list" style="margin-bottom: 15px;">
+                            <p style="font-weight: bold; margin-bottom: 10px;">Your Skills ({{candidateData.competences.length}})</p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                <div *ngFor="let comp of candidateData.competences; let i = index" 
+                                     style="background-color: #f0f0f0; padding: 8px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px;">
+                                    <span>{{ comp }}</span>
+                                    <button (click)="removeCompetence(i)" style="background: none; border: none; cursor: pointer; color: #dc3545; font-weight: bold; padding: 0 4px;">
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div style="margin-top: 15px; display: flex; gap: 10px;">
+                            <button (click)="saveCompetences()" class="default-btn" [disabled]="isSaving" style="background-color: #85B7EB; color: white; font-weight: bold; flex: 1;">
+                                {{ isSaving ? 'Saving...' : 'Save Skills' }}
+                            </button>
+                            <button (click)="isEditingCompetences = false" class="default-btn" style="background-color: #999; flex: 1;" [disabled]="isSaving">
+                                Cancel
+                            </button>
+                        </div>
+
+                        <!-- Success/Error Messages -->
+                        <div *ngIf="successMessage" style="margin-top: 10px; padding: 10px; background-color: #d4edda; color: #155724; border-radius: 4px;">
+                            {{ successMessage }}
+                        </div>
+                        <div *ngIf="errorMessage" style="margin-top: 10px; padding: 10px; background-color: #f8d7da; color: #721c24; border-radius: 4px;">
+                            {{ errorMessage }}
+                        </div>
+                    </div>
+                    
                     <!-- Thank You Section -->
                     <div style="margin-top: 40px; padding: 30px; background: white; border-radius: 10px; color: #333; text-align: center; border: 2px solid #85B7EB;">
                         <h3 style="color: #85B7EB; margin-bottom: 15px;">Thank You for Using Matchy Khedma!</h3>

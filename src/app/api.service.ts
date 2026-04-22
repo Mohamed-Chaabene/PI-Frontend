@@ -324,7 +324,7 @@ export class ApiService {
       catchError(() => this.callExternalOpenSourceQuestionApi(retryPayload, 'simple').pipe(
         map((rows) => normalizeOrThrow(rows, retryPayload, true)),
         catchError(() => this.callExternalOpenSourceQuestionApi(retryPayload, 'raw').pipe(
-          map((rows) => normalizeOrThrow(rows, retryPayload, true)),
+          map((rows) => normalizeOrThrow(rows, retryPayload, false)),
           catchError(() => of(this.buildLocalQuestionFallback(retryPayload)))
         ))
       ))
@@ -520,6 +520,26 @@ export class ApiService {
     // Theme relevance guard: reject off-topic results for clear technical themes.
     const themeSignals: Record<string, string[]> = {
       angular: ['angular', 'component', 'directive', 'rxjs', 'typescript', 'template'],
+      informatique: [
+        'informatique',
+        'logiciel',
+        'programm',
+        'develop',
+        'code',
+        'donnee',
+        'donnees',
+        'reseau',
+        'securite',
+        'cloud',
+        'devops',
+        'application',
+        'systeme',
+        'architecture',
+        'api',
+        'base de donnee',
+        'bdd',
+        'algorithme'
+      ],
       javascript: ['javascript', 'js', 'closure', 'promise', 'async', 'await', 'event loop', 'prototype', 'callback'],
       java: ['java', 'jvm', 'jdk', 'jre', 'spring', 'hibernate'],
       sql: ['sql', 'join', 'index', 'transaction', 'requete', 'database', 'bdd'],
@@ -529,6 +549,7 @@ export class ApiService {
 
     const offTopicSignals: Record<string, string[]> = {
       angular: ['java', 'jvm', 'jdk', 'spring boot', 'hibernate'],
+      informatique: [],
       javascript: ['spring', 'hibernate', 'jvm', 'jdk', 'sql transaction'],
       java: ['angular', 'rxjs', 'typescript', 'template html'],
       sql: ['angular', 'typescript', 'component', 'java abstract'],
@@ -538,6 +559,9 @@ export class ApiService {
 
     const matchThemeKey = (): keyof typeof themeSignals | null => {
       if (normalizedThemeNoAccent.includes('angular')) return 'angular';
+      if (normalizedThemeNoAccent.includes('informatique') || normalizedThemeNoAccent.includes('it ') || normalizedThemeNoAccent === 'it') {
+        return 'informatique';
+      }
       if (normalizedThemeNoAccent.includes('javascript') || normalizedThemeNoAccent.includes('java script') || normalizedThemeNoAccent === 'js') return 'javascript';
       if (normalizedThemeNoAccent.includes('java')) return 'java';
       if (normalizedThemeNoAccent.includes('spring')) return 'spring';
@@ -556,7 +580,7 @@ export class ApiService {
     };
 
     const themeKey = matchThemeKey();
-    if (themeKey) {
+    if (themeKey && themeKey !== 'informatique') {
       const hasThemeSignal = reducedContents.filter((text) =>
         themeSignals[themeKey].some((signal) => text.includes(signal))
       ).length;
@@ -582,12 +606,28 @@ export class ApiService {
     return false;
   }
 
+  /** Réponse OpenAI-compatible (POST text.pollinations.ai/openai). */
+  private extractPollinationsOpenAiText(res: any): string {
+    if (res == null) {
+      return '';
+    }
+    if (typeof res === 'string') {
+      return res;
+    }
+    const c = res?.choices?.[0]?.message?.content;
+    if (typeof c === 'string') {
+      return c;
+    }
+    return '';
+  }
+
   private callExternalOpenSourceQuestionApi(payload: any, variant: 'full' | 'simple' | 'raw' = 'full'): Observable<any[]> {
     const type = this.normalizeQuestionType(payload?.type);
     const niveau = String(payload?.niveau || 'INTERMEDIAIRE').trim().toUpperCase();
     const categorie = String(payload?.categorie || 'TECHNIQUE').trim().toUpperCase();
     const nombre = Math.max(1, Math.min(10, Number(payload?.nombre) || 3));
     const theme = this.cleanThemeForGeneration(payload?.theme) || 'entretien technique';
+    const temperature = Math.max(0.1, Math.min(1.0, Number(payload?.temperature) || 0.7));
 
     const strictRules =
       `Tu dois retourner uniquement du JSON valide. Aucun texte hors JSON. Aucun markdown. Aucun commentaire. ` +
@@ -606,10 +646,19 @@ export class ApiService {
           `Pour QCM/QCU, chaque choix doit être plausible et distinct; pour VRAI_FAUX, fournir VRAI et FAUX. ` +
           `Schema: [{"contenu":"...","type":"${type}","niveau":"${niveau}","points":1,"ordre":1,"choix":[{"texte":"...","correcte":true,"ordre":1}]}].`;
 
-    const url = `/oss/${encodeURIComponent(prompt)}`;
-    return this.http.get(url, { responseType: 'text' }).pipe(
-      map((text) => {
-        const raw = String(text || '');
+    const body = {
+      model: 'openai',
+      messages: [{ role: 'user', content: prompt }],
+      temperature,
+      max_tokens: 8192,
+      stream: false
+    };
+
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    return this.http.post<any>('/oss/openai', body, { headers }).pipe(
+      map((res) => {
+        const raw = String(this.extractPollinationsOpenAiText(res) || '');
         const parsed = this.normalizeExternalQuestionsText(raw, { type, niveau, nombre, theme });
         if (parsed.length) {
           return parsed.map((row) => ({
@@ -621,7 +670,6 @@ export class ApiService {
           }));
         }
 
-        // If provider banners or formatting noise appear, try to salvage plain-text questions.
         const salvaged = this.extractQuestionsFromPlainText(raw, { type, niveau, nombre, theme });
         return salvaged.map((row) => ({
           ...row,
@@ -1503,6 +1551,24 @@ export class ApiService {
     return this.http.delete(`${this.apiUrl}/candidats/${id}`, { headers });
   }
 
+  updateCandidateCompetences(id: number, data: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.put(`${this.apiUrl}/candidats/${id}/competences`, data, { headers });
+  }
+
+  getAllCompetences(): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(`${this.apiUrl}/competences`, { headers });
+  }
+
   // Localisation methods
   getLocalisation(id: number): Observable<any> {
     const token = localStorage.getItem('token');
@@ -1548,12 +1614,38 @@ export class ApiService {
 
   // Candidatures
   getMesCandidatures(): Observable<any> {
-    const token = localStorage.getItem('token');
-    let headers = new HttpHeaders();
-    if (token && token !== 'undefined' && token !== 'null') {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+    const headers = this.buildAuthHeaders();
+
+    // Avoid guaranteed 401/403 calls when session is absent.
+    if (!headers.get('Authorization')) {
+      return of([]);
     }
-    return this.http.get(`${this.apiUrl}/candidatures/mes-candidatures`, { headers });
+
+    const primaryUrl = `${this.apiUrl}/candidatures/mes-candidatures`;
+    return this.http.get(primaryUrl, { headers }).pipe(
+      catchError((error) => {
+        // Some backend versions expose candidatures by candidate id instead.
+        if (error?.status !== 404) {
+          return throwError(() => error);
+        }
+
+        const candidatId = Number(localStorage.getItem('candidatId'));
+        if (!Number.isFinite(candidatId) || candidatId <= 0) {
+          return of([]);
+        }
+
+        return this.http
+          .get(`${this.apiUrl}/candidatures/candidat/${candidatId}`, { headers })
+          .pipe(
+            catchError((fallbackError) => {
+              if (fallbackError?.status === 404) {
+                return of([]);
+              }
+              return throwError(() => fallbackError);
+            })
+          );
+      })
+    );
   }
 
   getStatsCandidatures(): Observable<any> {
@@ -2257,19 +2349,30 @@ chatRecruiterAssistant(message: string, context?: { theme?: string; type?: strin
 
   const fallbackReply = this.buildChatServiceUnavailableReply();
 
-  const prompt =
+  const system =
     `Tu es un assistant conversationnel polyvalent en francais. ` +
     `Tu peux repondre a n importe quel sujet de facon claire, utile, precise et naturelle. ` +
     `Contexte optionnel entretien: theme="${theme}", type="${type}", niveau="${niveau}". ` +
     `Si la question n est pas liee au recrutement, reponds normalement sans ramener au theme. ` +
     `Ne retourne pas de JSON. ` +
-    `N invente pas de faits. Si l information est incertaine, dis-le explicitement. ` +
-    `Question: ${cleanMessage}`;
+    `N invente pas de faits. Si l information est incertaine, dis-le explicitement.`;
 
-  const url = `/oss/generate?prompt=${encodeURIComponent(prompt)}`;
-  return this.http.get(url, { responseType: 'text' }).pipe(
-    map((text) => {
-      const raw = String(text || '').trim();
+  const body = {
+    model: 'openai',
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: cleanMessage }
+    ],
+    temperature: 0.6,
+    max_tokens: 1200,
+    stream: false
+  };
+
+  const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+  return this.http.post<any>('/oss/openai', body, { headers }).pipe(
+    map((res) => {
+      const raw = String(this.extractPollinationsOpenAiText(res) || '').trim();
       if (!raw || this.isProviderNoticeText(raw)) {
         return fallbackReply;
       }

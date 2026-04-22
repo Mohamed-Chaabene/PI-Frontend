@@ -47,6 +47,7 @@ export class RdManageJobsComponent {
     offreEditee: any = null;
     decisionError = '';
     decisionReport: DecisionReport | null = null;
+    expandedOffreId: number | null = null;
 
     constructor(private apiService: ApiService, private router: Router) { }
 
@@ -330,7 +331,7 @@ export class RdManageJobsComponent {
             row.decision = this.buildDecisionLabel(row, index === 0);
             row.recommandation = this.buildRecommendation(row);
         });
-
+    
         return {
             offre,
             candidats: rows,

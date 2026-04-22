@@ -239,7 +239,22 @@ export class ParcoursDetailComponent implements OnInit {
 
   passerQuiz(): void {
     if (!this.parcours || !this.inscription) return;
-    this.router.navigate(['/formations/parcours', this.parcours.id, 'quiz', this.inscription.niveauActuel]);
+    const currentNiv = this.inscription.niveauActuel;
+    
+    if (currentNiv === 'EXPERT') {
+      const f = this.getFormationForNiveau('EXPERT');
+      if (f) {
+        this.router.navigate(['/formations', f.id], {
+          queryParams: {
+            parcoursId: this.parcours.id,
+            niveau: 'EXPERT'
+          }
+        });
+        return;
+      }
+    }
+    
+    this.router.navigate(['/formations/parcours', this.parcours.id, 'quiz', currentNiv]);
   }
 
   getIconEmoji(cat: string): string {

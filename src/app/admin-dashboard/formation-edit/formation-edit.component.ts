@@ -52,8 +52,8 @@ form = this.fb.nonNullable.group({
   duree:         ['', Validators.required],
   niveau:        ['Débutant', Validators.required],
   lienExterne:   [''],
-  playlistId:    [''],   // ✅ playlistId (remplace youtubeId)
-  youtubeId:     [''],   // Gardé pour compatibilité
+  playlistId:    [''],  
+  youtubeId:     [''],   
   hasEditor:     [false],
   stackBlitzUrl: [''],
   writtenUrl:    ['']

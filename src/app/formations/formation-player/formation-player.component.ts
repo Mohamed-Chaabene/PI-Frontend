@@ -86,7 +86,7 @@ export class FormationPlayerComponent
   private ytPlayer:    any = null;
   private playerReady      = false;
 
-  private readonly base = 'http://localhost:8080/api';
+  private readonly base = '/api';
 
   private readonly categoriesAvecEditeur = [
     'Frontend', 'Backend', 'Data', 'IA', 'Développement'
@@ -141,11 +141,22 @@ export class FormationPlayerComponent
     }
 
     if (!this.candidatId)
-
       this.candidatId = Number(localStorage.getItem('candidatId')) || null;
-    if (!this.inscriptionId) {
-      const s = localStorage.getItem('inscription_' + this.formation?.id);
-      this.inscriptionId = s ? Number(s) : null;
+
+    if (!this.inscriptionId && this.candidatId) {
+      const scopedKey = `candidat_${this.candidatId}_ins_${this.formation?.id}` + (this.parcoursId ? `_p${this.parcoursId}` : '');
+      const scoped = Number(localStorage.getItem(scopedKey)) || null;
+      if (scoped) {
+        this.inscriptionId = scoped;
+      } else {
+        // Fallback to legacy key, then wipe it so it won't persist for the next user
+        const legacy = Number(localStorage.getItem('inscription_' + this.formation?.id)) || null;
+        if (legacy) {
+          this.inscriptionId = legacy;
+          localStorage.setItem(scopedKey, String(legacy));
+        }
+        localStorage.removeItem('inscription_' + this.formation?.id);
+      }
     }
 
     this.chargerTentatives();

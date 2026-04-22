@@ -72,10 +72,17 @@ export class FormationDetailComponent implements OnInit {
 
     this.formationService.getMesInscriptions(this.candidatId).subscribe({
       next: (inscriptions) => {
-        const found = inscriptions.find(i => i.formation?.id === formationId);
+        // Only look at inscriptions matching parcoursId context
+        const found = inscriptions.find(i =>
+          i.formation?.id === formationId &&
+          (this.parcoursId ? i.parcoursId === this.parcoursId : !i.parcoursId)
+        ) || inscriptions.find(i => i.formation?.id === formationId);
         if (found) {
           this.inscrit = true;
           this.inscriptionId = found.id;
+          // Store with user-scoped key
+          const key = `candidat_${this.candidatId}_ins_${formationId}` + (this.parcoursId ? `_p${this.parcoursId}` : '');
+          localStorage.setItem(key, String(found.id));
         } else if (this.parcoursId) {
           this.autoInscrireDepuisParcours();
         }
@@ -115,10 +122,9 @@ sInscrire(): void {
     this.candidatId, this.formation.id
   ).subscribe({
     next: (inscription) => {
-      localStorage.setItem(
-        'inscription_' + this.formation.id,
-        String(inscription.id)
-      );
+      // Use user-scoped key to avoid data bleed between accounts
+      const key = `candidat_${this.candidatId}_ins_${this.formation.id}` + (this.parcoursId ? `_p${this.parcoursId}` : '');
+      localStorage.setItem(key, String(inscription.id));
 
       this.inscrit       = true;
       this.inscriptionId = inscription.id;
@@ -192,17 +198,41 @@ choisirFormationEcrite(): void {
   }
 
   private resolveCandidatId(onResolved?: () => void): void {
+    const role  = (localStorage.getItem('userRole') || '').toUpperCase().replace(/^ROLE_/, '');
+    const email = localStorage.getItem('userName') || '';
+
+    if (email && role === 'CANDIDAT') {
+      this.formationService.getCandidatByEmail(email).subscribe({
+        next: (candidat) => {
+          if (candidat?.id) {
+            this.candidatId = Number(candidat.id);
+            localStorage.setItem('candidatId', String(candidat.id));
+            onResolved?.();
+            return;
+          }
+          this.resolveCandidatIdFromCacheOrToken(onResolved);
+        },
+        error: () => this.resolveCandidatIdFromCacheOrToken(onResolved)
+      });
+      return;
+    }
+
+    this.resolveCandidatIdFromCacheOrToken(onResolved);
+  }
+
+  private resolveCandidatIdFromCacheOrToken(onResolved?: () => void): void {
     const cached = Number(localStorage.getItem('candidatId'));
     if (!Number.isNaN(cached) && cached > 0) {
       this.candidatId = cached;
       onResolved?.();
       return;
     }
+
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const id = Number(payload.id);
+        const id = Number(payload.candidatId || payload.idCandidat || payload.candidateId);
         if (!Number.isNaN(id) && id > 0) {
           this.candidatId = id;
           localStorage.setItem('candidatId', String(id));
@@ -211,19 +241,6 @@ choisirFormationEcrite(): void {
         }
       } catch {}
     }
-    const email = localStorage.getItem('userName') || '';
-    const role  = (localStorage.getItem('userRole') || '').toUpperCase().replace(/^ROLE_/, '');
-    if (!email || role !== 'CANDIDAT') return;
-    this.formationService.getCandidatByEmail(email).subscribe({
-      next: (candidat) => {
-        if (candidat?.id) {
-          this.candidatId = Number(candidat.id);
-          localStorage.setItem('candidatId', String(candidat.id));
-          onResolved?.();
-        }
-      },
-      error: () => {}
-    });
   }
   
 }

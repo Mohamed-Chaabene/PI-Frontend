@@ -111,18 +111,43 @@ export class FeedbackCandidatComponent implements OnInit {
   }
 
   private resolveCandidatId(): void {
+    const role = (localStorage.getItem('userRole') || '').toUpperCase().replace(/^ROLE_/, '');
+    const email = localStorage.getItem('userName') || '';
+
+    if (email && role === 'CANDIDAT') {
+      this.formationService.getCandidatByEmail(email).subscribe({
+        next: (candidat: any) => {
+          const id = Number(candidat?.id || 0);
+          if (id > 0) {
+            this.candidatId = id;
+            localStorage.setItem('candidatId', String(id));
+            this.loadData();
+            return;
+          }
+          this.resolveCandidatIdFromCacheOrToken();
+        },
+        error: () => this.resolveCandidatIdFromCacheOrToken()
+      });
+      return;
+    }
+
+    this.resolveCandidatIdFromCacheOrToken();
+  }
+
+  private resolveCandidatIdFromCacheOrToken(): void {
     const cached = Number(localStorage.getItem('candidatId'));
     if (!Number.isNaN(cached) && cached > 0) {
       this.candidatId = cached;
       this.loadData();
       return;
     }
+
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const id = Number(
-          payload.id || payload.sub || payload.candidatId || payload.userId
+          payload.candidatId || payload.idCandidat || payload.candidateId
         );
         if (!Number.isNaN(id) && id > 0) {
           this.candidatId = id;

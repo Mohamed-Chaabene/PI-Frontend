@@ -25,43 +25,46 @@ export class FormationVideoComponent implements OnInit {
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
 
-    this.candidatId    = Number(localStorage.getItem('candidatId')) || null;
-    this.inscriptionId = Number(
-      localStorage.getItem('inscription_' + id)) || null;
-
+    this.candidatId = Number(localStorage.getItem('candidatId')) || null;
     this.parcoursId = Number(this.route.snapshot.queryParamMap.get('parcoursId')) || null;
     this.niveau     = this.route.snapshot.queryParamMap.get('niveau');
-    
+
     const completedParam = this.route.snapshot.queryParamMap.get('completed');
     this.isAlreadyCompleted = completedParam === 'true';
 
+    // Try user-scoped key first, then fall back to legacy key (and then wipe it)
+    if (this.candidatId) {
+      const scopedKey = `candidat_${this.candidatId}_ins_${id}` + (this.parcoursId ? `_p${this.parcoursId}` : '');
+      const scoped = Number(localStorage.getItem(scopedKey)) || null;
+      if (scoped) {
+        this.inscriptionId = scoped;
+      }
+      // Remove any old non-scoped key so it doesn't pollute next user's session
+      localStorage.removeItem('inscription_' + id);
+    }
+
     this.formationService.getFormationById(id).subscribe({
-      next: (f) => { 
+      next: (f) => {
         this.formation = f;
-        
-        // Robust recovery of inscriptionId
+
+        // Always verify from backend for accuracy
         if (this.candidatId) {
-          // Si on est dans un parcours, on récupère l'inscription spécifique au parcours
-          // Sinon on cherche l'inscription classique
           this.formationService.getInscriptionByDetails(this.candidatId, f.id, this.parcoursId || undefined).subscribe({
             next: (found) => {
               if (found) {
                 this.inscriptionId = found.id;
-                // On ne met à jour le localStorage que si on n'est pas dans un parcours
-                // pour ne pas écraser l'ID de la formation standalone
-                if (!this.parcoursId) {
-                  localStorage.setItem('inscription_' + f.id, String(found.id));
-                }
+                // Persist with user-scoped key
+                const scopedKey = `candidat_${this.candidatId}_ins_${f.id}` + (this.parcoursId ? `_p${this.parcoursId}` : '');
+                localStorage.setItem(scopedKey, String(found.id));
               }
               this.loading = false;
             },
             error: () => {
-              // Fallback: si on n'a pas trouvé d'inscription spécifique, on garde l'ID du localStorage ou null
               this.loading = false;
             }
           });
         } else {
-          this.loading = false; 
+          this.loading = false;
         }
       },
       error: () => {
