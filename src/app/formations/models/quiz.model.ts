@@ -32,6 +32,7 @@ export interface QuizResultat {
   nextNiveauLabel: string | null;
   niveauSuivantDebloque: NiveauOrdre | null;
   message: string;
+  inscriptionId: number;
   corrections: CorrectionQuestion[];
 }
 

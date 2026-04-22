@@ -19,11 +19,11 @@ interface ChatMessage {
 }
 
 interface ChatSession {
-  id: number;
-  sessionId: string;
+  id:           number;
+  sessionId:    string;
   sessionTitle: string;
-  createdAt?: string;
-  messages: ChatMessage[];
+  createdAt?:   string;
+  messages:     ChatMessage[];
 }
 
 @Component({
@@ -49,8 +49,8 @@ export class ChatbotFormationComponent
   inputText = '';
   selectedImageBase64: string | null = null;
   selectedFileBase64: string | null = null;   // base64 du fichier (PDF/Word)
-  selectedFileName: string | null = null;   // nom du fichier
-  selectedFileText: string | null = null;   // texte extrait (PDF.js ou fallback)
+  selectedFileName: string | null = null;     // nom du fichier
+  selectedFileText: string | null = null;     // texte extrait (PDF.js ou fallback)
   isLoading = false;
   isRenamingSession = false;
   newSessionTitle = '';
@@ -93,15 +93,15 @@ export class ChatbotFormationComponent
     if (this.candidatId && this.formation?.id) {
       this.http.get<ChatSession[]>(`${this.base}/chatbot/history`, {
         params: {
-          candidatId: this.candidatId.toString(),
+          candidatId:  this.candidatId.toString(),
           formationId: this.formation.id.toString()
         }
       }).subscribe({
         next: (hist) => {
           if (hist && hist.length > 0) {
-            this.sessions = hist;
+            this.sessions         = hist;
             this.currentSessionId = hist[0].sessionId;
-            this.messages = hist[0].messages || [];
+            this.messages         = hist[0].messages || [];
             if (this.messages.length === 0) this.setInitialMessage();
             this.shouldScrollToBottom = true;
           } else {
@@ -117,7 +117,7 @@ export class ChatbotFormationComponent
 
   private setInitialMessage(): void {
     this.messages.push({
-      role: 'assistant',
+      role:    'assistant',
       content: `Bonjour ! Je suis votre assistant IA pour la formation **"${this.formation?.titre}"**.\n\nJe peux vous aider à :\n- Résumer des concepts\n- Expliquer des notions difficiles\n- Répondre à vos questions\n- Suggérer des exercices pratiques\n- Analyser des **images** liées à la formation\n- Analyser des **documents PDF ou Word** liés à la formation\n\nQue souhaitez-vous savoir ?`,
       isInitial: true
     });
@@ -155,29 +155,29 @@ export class ChatbotFormationComponent
   sendMessage(text?: string): void {
     const msg = (text || this.inputText).trim();
     const image = text ? null : this.selectedImageBase64;
-    const file = text ? null : this.selectedFileBase64;
+    const file  = text ? null : this.selectedFileBase64;
     const fname = text ? null : this.selectedFileName;
     const ftext = text ? null : this.selectedFileText;
 
     if (!msg && !image && !file) return;
 
     if (!text) {
-      this.inputText = '';
+      this.inputText           = '';
       this.selectedImageBase64 = null;
-      this.selectedFileBase64 = null;
-      this.selectedFileName = null;
-      this.selectedFileText = null;
+      this.selectedFileBase64  = null;
+      this.selectedFileName    = null;
+      this.selectedFileText    = null;
     }
 
     this.sendMessageWithAttachments(msg, image, file, fname, ftext);
   }
 
   sendMessageWithAttachments(
-    text: string,
+    text:        string,
     imageBase64: string | null,
-    fileBase64: string | null,
-    fileName: string | null,
-    fileText: string | null
+    fileBase64:  string | null,
+    fileName:    string | null,
+    fileText:    string | null
   ): void {
     let msg = text.trim();
     if (!msg && !imageBase64 && !fileBase64) return;
@@ -193,11 +193,11 @@ export class ChatbotFormationComponent
     }
 
     const userMsg: ChatMessage = {
-      role: 'user',
-      content: msg,
-      imageUrl: imageBase64 || undefined,
-      fileName: fileName || undefined,
-      fileExcerpt: fileText ? (fileText.length > 200 ? fileText.substring(0, 200) + '...' : fileText) : undefined
+      role:        'user',
+      content:     msg,
+      imageUrl:    imageBase64  || undefined,
+      fileName:    fileName     || undefined,
+      fileExcerpt: fileText     ? (fileText.length > 200 ? fileText.substring(0, 200) + '...' : fileText) : undefined
     };
     this.messages.push(userMsg);
     this.shouldScrollToBottom = true;
@@ -206,6 +206,8 @@ export class ChatbotFormationComponent
     this.messages.push(loadingMsg);
     this.isLoading = true;
 
+    // Historique pour le backend — les base64 bruts sont remplacés par des placeholders
+    // pour éviter des payloads de 20MB+ qui causent des erreurs 500
     const history = this.messages
       .filter(m => !m.loading && m.content)
       .slice(-10)
@@ -215,30 +217,32 @@ export class ChatbotFormationComponent
         if (m.imageUrl) {
           obj.imageUrl = m.imageUrl.startsWith('data:') ? '[image:base64]' : m.imageUrl;
         }
-        if (m.fileName) obj.fileName = m.fileName;
+        if (m.fileName)    obj.fileName    = m.fileName;
         if (m.fileExcerpt) obj.fileExcerpt = m.fileExcerpt;
         return obj;
       });
 
+    // Tronquer fileText à 15 000 chars pour éviter les payloads trop lourds
     const truncatedFileText = fileText
       ? (fileText.length > 15000 ? fileText.substring(0, 15000) + '\n...[document tronqué]' : fileText)
       : null;
 
+    // Ne pas envoyer le base64 brut si on a déjà le texte extrait (évite les payloads de 20MB+)
     const fileDataToSend = (truncatedFileText || !fileBase64) ? null : fileBase64;
 
     this.http.post<any>(`${this.base}/chatbot/formation`, {
-      message: msg,
-      imageUrl: imageBase64 || null,
-      fileData: fileDataToSend,              // base64 seulement si pas de texte extrait
-      fileName: fileName || null,
-      fileText: truncatedFileText || null,   // texte extrait (tronqué à 15k chars)
-      titreFormation: this.formation?.titre || '',
-      categorie: this.formation?.categorie || '',
-      niveau: this.formation?.niveau || '',
-      context: this.context,
-      formationId: this.formation?.id,
-      candidatId: this.candidatId,
-      sessionId: this.currentSessionId,
+      message:        msg,
+      imageUrl:       imageBase64       || null,
+      fileData:       fileDataToSend,              // base64 seulement si pas de texte extrait
+      fileName:       fileName          || null,
+      fileText:       truncatedFileText || null,   // texte extrait (tronqué à 15k chars)
+      titreFormation: this.formation?.titre     || '',
+      categorie:      this.formation?.categorie || '',
+      niveau:         this.formation?.niveau    || '',
+      context:        this.context,
+      formationId:    this.formation?.id,
+      candidatId:     this.candidatId,
+      sessionId:      this.currentSessionId,
       history
     }).subscribe({
       next: (resp) => {
@@ -283,6 +287,7 @@ export class ChatbotFormationComponent
     });
   }
 
+  // ── Compatibilité avec l'ancienne méthode (image seule) ──────
   sendMessageWithImage(text: string, imageBase64: string | null): void {
     this.sendMessageWithAttachments(text, imageBase64, null, null, null);
   }
@@ -295,12 +300,12 @@ export class ChatbotFormationComponent
   }
 
   clearChat(): void {
-    this.currentSessionId = null;
-    this.messages = [];
+    this.currentSessionId    = null;
+    this.messages            = [];
     this.selectedImageBase64 = null;
-    this.selectedFileBase64 = null;
-    this.selectedFileName = null;
-    this.selectedFileText = null;
+    this.selectedFileBase64  = null;
+    this.selectedFileName    = null;
+    this.selectedFileText    = null;
     this.stopSpeaking();
     this.setInitialMessage();
   }
@@ -336,8 +341,8 @@ export class ChatbotFormationComponent
           this.selectedImageBase64 = canvas.toDataURL('image/jpeg', 0.85);
           // Effacer le fichier si une image est sélectionnée
           this.selectedFileBase64 = null;
-          this.selectedFileName = null;
-          this.selectedFileText = null;
+          this.selectedFileName   = null;
+          this.selectedFileText   = null;
         }
       };
       img.src = e.target.result;
@@ -350,8 +355,9 @@ export class ChatbotFormationComponent
     const file: File = event.target.files[0];
     if (!file) return;
 
+    // Effacer l'image si un document est sélectionné
     this.selectedImageBase64 = null;
-    this.selectedFileName = file.name;
+    this.selectedFileName    = file.name;
 
     const ext = file.name.split('.').pop()?.toLowerCase();
 
@@ -359,12 +365,12 @@ export class ChatbotFormationComponent
       // Lire directement en texte
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.selectedFileText = e.target.result as string;
-        this.selectedFileBase64 = null;
+        this.selectedFileText   = e.target.result as string;
+        this.selectedFileBase64 = null; // pas besoin du base64 pour les fichiers texte
       };
       reader.readAsText(file);
     } else if (ext === 'pdf') {
-
+      // Lire en base64 ET tenter l'extraction via PDF.js (disponible en CDN)
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.selectedFileBase64 = e.target.result as string;
@@ -372,10 +378,12 @@ export class ChatbotFormationComponent
       };
       reader.readAsDataURL(file);
     } else {
+      // Word, Excel, PPT, etc. : on envoie juste le base64 + nom
+      // Le backend signalera que l'extraction n'est pas disponible
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.selectedFileBase64 = e.target.result as string;
-        this.selectedFileText = null;
+        this.selectedFileText   = null;
       };
       reader.readAsDataURL(file);
     }
@@ -383,10 +391,13 @@ export class ChatbotFormationComponent
     event.target.value = '';
   }
 
+  // ── Extraction texte PDF via PDF.js (CDN) ────────────────────
   private async extractPdfText(base64DataUrl: string): Promise<void> {
     try {
+      // Charger PDF.js dynamiquement si pas encore chargé
       const pdfjsLib = (window as any)['pdfjs-dist/build/pdf'];
       if (!pdfjsLib) {
+        // Si PDF.js n'est pas chargé, on envoie sans texte extrait
         this.selectedFileText = null;
         return;
       }
@@ -398,12 +409,12 @@ export class ChatbotFormationComponent
         bytes[i] = binaryStr.charCodeAt(i);
       }
 
-      const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
-      let text = '';
-      const maxPages = Math.min(pdf.numPages, 20);
+      const pdf  = await pdfjsLib.getDocument({ data: bytes }).promise;
+      let   text = '';
+      const maxPages = Math.min(pdf.numPages, 20); // max 20 pages
 
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
+        const page    = await pdf.getPage(pageNum);
         const content = await page.getTextContent();
         const pageText = content.items.map((item: any) => item.str).join(' ');
         text += pageText + '\n';
@@ -422,14 +433,15 @@ export class ChatbotFormationComponent
 
   removeSelectedFile(): void {
     this.selectedFileBase64 = null;
-    this.selectedFileName = null;
-    this.selectedFileText = null;
+    this.selectedFileName   = null;
+    this.selectedFileText   = null;
   }
 
+  // ── Obtenir l'icône selon l'extension du fichier ─────────────
   getFileIcon(fileName: string): string {
     const ext = fileName?.split('.').pop()?.toLowerCase();
     switch (ext) {
-      case 'pdf': return 'ri-file-pdf-line';
+      case 'pdf':  return 'ri-file-pdf-line';
       case 'doc':
       case 'docx': return 'ri-file-word-line';
       case 'xls':
@@ -437,9 +449,9 @@ export class ChatbotFormationComponent
       case 'ppt':
       case 'pptx': return 'ri-file-ppt-line';
       case 'txt':
-      case 'md': return 'ri-file-text-line';
-      case 'csv': return 'ri-file-chart-line';
-      default: return 'ri-file-line';
+      case 'md':   return 'ri-file-text-line';
+      case 'csv':  return 'ri-file-chart-line';
+      default:     return 'ri-file-line';
     }
   }
 
@@ -451,8 +463,8 @@ export class ChatbotFormationComponent
     }
     const session = this.sessions.find(s => s.sessionId === sessionId);
     if (session) {
-      this.currentSessionId = sessionId;
-      this.messages = session.messages || [];
+      this.currentSessionId     = sessionId;
+      this.messages             = session.messages || [];
       if (this.messages.length === 0) this.setInitialMessage();
       this.shouldScrollToBottom = true;
     }
@@ -462,7 +474,7 @@ export class ChatbotFormationComponent
     if (!this.currentSessionId) return;
     const session = this.sessions.find(s => s.sessionId === this.currentSessionId);
     if (session) {
-      this.newSessionTitle = session.sessionTitle;
+      this.newSessionTitle   = session.sessionTitle;
       this.isRenamingSession = true;
     }
   }
@@ -546,7 +558,7 @@ export class ChatbotFormationComponent
       if (m.imageUrl) {
         obj.imageUrl = m.imageUrl.startsWith('data:') ? '[image:base64]' : m.imageUrl;
       }
-      if (m.fileName) obj.fileName = m.fileName;
+      if (m.fileName)    obj.fileName    = m.fileName;
       if (m.fileExcerpt) obj.fileExcerpt = m.fileExcerpt;
       return obj;
     });
@@ -587,7 +599,7 @@ export class ChatbotFormationComponent
     this.recognition.interimResults = true;
     this.recognition.maxAlternatives = 1;
 
-    this.recognition.onstart = () => { this.isListening = true; };
+    this.recognition.onstart  = () => { this.isListening = true; };
 
     this.recognition.onresult = (event: any) => {
       const transcript = Array.from(event.results as SpeechRecognitionResultList)
@@ -634,14 +646,14 @@ export class ChatbotFormationComponent
 
     if (!clean) return;
 
-    const utterance = new SpeechSynthesisUtterance(clean);
-    utterance.lang = 'fr-FR';
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
+    const utterance    = new SpeechSynthesisUtterance(clean);
+    utterance.lang     = 'fr-FR';
+    utterance.rate     = 1.0;
+    utterance.pitch    = 1.0;
+    utterance.volume   = 1.0;
 
-    const voices = this.synth.getVoices();
-    const frVoices = voices.filter(v => v.lang.startsWith('fr'));
+    const voices    = this.synth.getVoices();
+    const frVoices  = voices.filter(v => v.lang.startsWith('fr'));
     const localVoice = frVoices.find(v => v.localService);
     utterance.voice = localVoice || frVoices[0] || null;
 

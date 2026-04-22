@@ -134,8 +134,8 @@
         <i class="ri-arrow-right-line"></i> Aller au niveau {{ LABELS[resultat.niveauSuivantDebloque] }}
       </button>
       <button class="btn-primary" *ngIf="resultat.reussi && !resultat.niveauSuivantDebloque"
-              (click)="retourParcours()">
-        <i class="ri-trophy-line"></i> Voir mon certificat
+              (click)="niveauSuivant()">
+        <i class="ri-trophy-line"></i> Obtenir mon certificat
       </button>
       <button class="btn-secondary" *ngIf="!resultat.reussi" (click)="reessayer()">
         <i class="ri-refresh-line"></i> Réessayer
@@ -172,11 +172,4 @@
     </div>
   </div>
 
-  <!-- Micro-Feedback Modal -->
-  <app-micro-feedback *ngIf="resultat?.reussi && resultat?.needsFeedback === 'MICRO'"
-                      [inscriptionId]="inscriptionParcoursId"
-                      [parcoursId]="parcoursId"
-                      [niveau]="niveau"
-                      (completed)="onMicroFeedbackCompleted()">
-  </app-micro-feedback>
 </div>

@@ -72,12 +72,15 @@
           <div class="quiz-final-progress-info">
             <span>{{ quizFinalQuestions.length }} questions</span>
             <span>•</span>
-            <span>Score minimum pour obtenir un certificat : {{ seuilQuiz }}%</span>
-            <span>•</span>
-            <span class="tentatives-badge"
-                  [class.warning]="tentativesUtilisees === 1">
-              Tentative {{ tentativesUtilisees + 1 }} / {{ MAX_TENTATIVES }}
-            </span>
+            <span>Score minimum pour obtenir un certificat : {{ seuilQuiz }}%</span>
+            <!-- Indicateur tentatives uniquement pour EXPERT -->
+            <ng-container *ngIf="niveau === 'EXPERT'">
+              <span>•</span>
+              <span class="tentatives-badge"
+                    [class.warning]="tentativesUtilisees === 2">
+                Tentative {{ tentativesUtilisees + 1 }} / 3
+              </span>
+            </ng-container>
             <span>•</span>
             <span class="timer-badge" [ngStyle]="{'color': quizTimerRestant <= 60 ? '#ef4444' : 'inherit', 'font-weight': 'bold'}">
               <i class="ri-timer-line"></i> {{ formattedTimer }}
@@ -153,10 +156,10 @@
           <h2>Score insuffisant</h2>
           <div class="result-score-circle fail">{{ quizFinalScore }}%</div>
           <p>{{ quizFinalMessage }}</p>
-          <div class="tentatives-info warning">
+          <div class="tentatives-info warning" *ngIf="niveau === 'EXPERT' && tentativesRestantes !== undefined">
             <i class="ri-error-warning-line"></i>
             Il vous reste <strong>{{ tentativesRestantes }}</strong>
-            tentative{{ tentativesRestantes > 1 ? 's' : '' }}.
+            tentative{{ tentativesRestantes > 1 ? 's' : '' }} sur 3.
           </div>
           <button class="btn-retry-final"
                   (click)="fermerQuizFinal()"
@@ -222,15 +225,15 @@
       <button class="btn-quiz-final-trigger"
               (click)="lancerQuizFinal()"
               type="button"
-              [disabled]="tentativesUtilisees >= MAX_TENTATIVES"
+              [disabled]="niveau === 'EXPERT' && tentativesUtilisees >= MAX_TENTATIVES"
               style="margin:0;padding:6px 14px;background:#16a34a;color:#fff;
                      border:none;border-radius:6px;font-weight:600;cursor:pointer;
                      display:flex;align-items:center;gap:6px">
         <i class="ri-medal-fill" style="font-size:16px"></i>
-        <ng-container *ngIf="tentativesUtilisees < MAX_TENTATIVES">
+        <ng-container *ngIf="niveau !== 'EXPERT' || tentativesUtilisees < MAX_TENTATIVES">
           Passer l'évaluation finale
         </ng-container>
-        <ng-container *ngIf="tentativesUtilisees >= MAX_TENTATIVES">
+        <ng-container *ngIf="niveau === 'EXPERT' && tentativesUtilisees >= MAX_TENTATIVES">
           Tentatives épuisées
         </ng-container>
       </button>

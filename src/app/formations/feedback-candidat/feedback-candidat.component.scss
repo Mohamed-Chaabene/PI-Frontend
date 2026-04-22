@@ -400,6 +400,31 @@ $shadow:        0 2px 12px rgba(0,0,0,0.06);
     color: $text-main;
   }
 
+  .meta-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .level-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    background: #e0f2fe;
+    color: #0369a1;
+    border-radius: 6px;
+    border: 1px solid rgba(#0369a1, 0.1);
+
+    &.macro {
+      background: #fef3c7;
+      color: #92400e;
+      border-color: rgba(#92400e, 0.1);
+    }
+  }
+
   .feedback-date {
     font-size: 0.75rem;
     color: $text-light;

@@ -9,26 +9,41 @@ import { HttpClient } from '@angular/common/http';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
-    <div class="feedback-container">
+    <div class="feedback-page">
       <div class="feedback-card">
-        <header>
-          <div class="badge-container">
-            <span class="status-badge">Parcours complet</span>
-          </div>
-          <h1>Votre expérience globale</h1>
-          <p class="subtitle">Quelques questions sur votre parcours complet — requis pour obtenir votre certificat.</p>
-          
-          <div class="progress-info">
-            <div class="progress-bar-bg">
-              <div class="progress-bar-fill" [style.width.%]="calculateProgress()"></div>
+
+        <!-- HEADER GRADIENT -->
+        <header class="card-header">
+          <div class="header-inner">
+            <div class="header-top">
+              <div class="badge-row">
+                <span class="status-badge">{{ isTransition ? 'Transition Niveau Expert' : 'Parcours complet' }}</span>
+              </div>
+              <a [routerLink]="['/formations/parcours', parcoursId]" class="btn-back-header">
+                <i class="bi bi-arrow-left"></i> Retour
+              </a>
             </div>
-            <span class="progress-text">{{ completedSteps() }} / 4</span>
+            <h1>Votre expérience sur ce parcours</h1>
+            <p class="subtitle">
+              Votre avis nous est précieux pour améliorer nos contenus. 
+              Merci de partager votre ressenti global !
+            </p>
           </div>
         </header>
 
+        <!-- PROGRESS BAR -->
+        <div class="progress-section">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="calculateProgress()"></div>
+          </div>
+          <span class="progress-label">{{ completedSteps() }} / 4 complétés</span>
+        </div>
+
+        <!-- FORM BODY -->
         <main class="form-body">
+
           <section class="question-block">
-            <label class="center-label">Note globale du parcours</label>
+            <label class="section-label center-label">Note globale du parcours</label>
             <div class="stars-centered">
               <span *ngFor="let s of [1,2,3,4,5]" 
                     (click)="formData.noteGlobale = s"
@@ -36,8 +51,10 @@ import { HttpClient } from '@angular/common/http';
             </div>
           </section>
 
+          <div class="divider"></div>
+
           <section class="question-block">
-            <label>La progression entre les niveaux était...</label>
+            <label class="section-label">La progression entre les niveaux était...</label>
             <div class="chips-grid">
               <button *ngFor="let opt of progressionOptions"
                       [class.active]="formData.progression === opt"
@@ -47,8 +64,10 @@ import { HttpClient } from '@angular/common/http';
             </div>
           </section>
 
+          <div class="divider"></div>
+
           <section class="question-block">
-            <label>Les quiz de validation étaient...</label>
+            <label class="section-label">Les quiz de validation étaient...</label>
             <div class="chips-grid">
               <button *ngFor="let opt of quizOptions"
                       [class.active]="formData.experienceQuiz === opt"
@@ -58,8 +77,10 @@ import { HttpClient } from '@angular/common/http';
             </div>
           </section>
 
+          <div class="divider"></div>
+
           <section class="question-block">
-            <label>Recommanderiez-vous ce parcours ?</label>
+            <label class="section-label">Recommanderiez-vous ce parcours ?</label>
             <div class="chips-grid">
               <button *ngFor="let opt of recommandationOptions"
                       [class.active]="formData.recommandation === opt"
@@ -69,91 +90,296 @@ import { HttpClient } from '@angular/common/http';
             </div>
           </section>
 
+          <div class="divider"></div>
+
           <section class="question-block">
             <div class="label-row">
-              <label>Commentaire libre</label>
-              <span class="optional">Optionnel</span>
+              <label class="section-label" style="margin-bottom:0">Commentaire libre</label>
+              <span class="optional-badge">Optionnel</span>
             </div>
             <textarea [(ngModel)]="formData.commentaireLibre" 
                       maxlength="500"
-                      placeholder="Ce que vous avez le plus apprécié, ce qui pourrait être amélioré, ce que vous aimeriez voir ensuite..."></textarea>
-            <div class="char-count">{{ formData.commentaireLibre.length }} / 500</div>
+                      placeholder="Ce que vous avez le plus apprécié, ce qui pourrait être amélioré..."></textarea>
+            <div class="char-count">{{ formData.commentaireLibre.length }} / 500</div>
           </section>
+
         </main>
 
-        <footer>
-          <div class="footer-info">
-            <p>Requis pour le certificat</p>
-          </div>
+        <!-- FOOTER -->
+        <footer class="card-footer">
+          <p class="footer-hint">
+            <i class="bi bi-heart-fill" style="color: #ef4444"></i>
+            Merci de nous aider à nous améliorer !
+          </p>
           <button class="btn-certif" 
                   [disabled]="!isFormValid() || submitting"
                   (click)="submit()">
-            {{ submitting ? 'Envoi...' : 'Obtenir mon certificat' }}
+            <i class="bi bi-chat-heart" *ngIf="!submitting"></i>
+            <i class="bi bi-arrow-repeat spin" *ngIf="submitting"></i>
+            {{ submitting ? 'Envoi en cours...' : 'Partager mon avis' }}
           </button>
         </footer>
+
       </div>
     </div>
   `,
   styles: [`
-    .feedback-container {
-      min-height: 100vh; background: #fafafb; display: flex; align-items: flex-start; justify-content: center; padding: 3rem 1rem;
-    }
-    .feedback-card {
-      background: white; width: 100%; max-width: 600px; padding: 2.5rem; border-radius: 24px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.04); font-family: 'Inter', sans-serif;
-    }
-    
-    header { text-align: center; margin-bottom: 2.5rem; }
-    .status-badge { 
-      background: #e8f5e9; color: #2e7d32; padding: 6px 16px; border-radius: 20px;
-      font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 1rem;
-    }
-    h1 { margin: 0 0 0.5rem; color: #1a1a1a; font-size: 1.75rem; font-weight: 800; }
-    .subtitle { color: #666; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem; }
-    
-    .progress-info { display: flex; align-items: center; gap: 12px; max-width: 200px; margin: 0 auto; }
-    .progress-bar-bg { flex: 1; height: 6px; background: #eee; border-radius: 10px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: #0061ff; transition: width 0.3s ease; }
-    .progress-text { font-size: 0.8rem; font-weight: 700; color: #999; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
 
-    .question-block { margin-bottom: 2rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 1.5rem; }
-    .question-block:last-child { border-bottom: none; }
-    .question-block label { display: block; margin-bottom: 1rem; font-weight: 600; color: #333; font-size: 1rem; }
+    :host { display: block; }
+
+    .feedback-page {
+      min-height: 100vh;
+      background: #f8fafc;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px 80px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .feedback-card {
+      background: #fff;
+      width: 100%;
+      max-width: 620px;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0,0,0,0.04);
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    .card-header {
+      background: linear-gradient(135deg, #0965a4 0%, #06b6d4 100%);
+      padding: 32px 32px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at top right, rgba(255,255,255,0.18), transparent 60%),
+                  radial-gradient(circle at bottom left, rgba(255,255,255,0.06), transparent 50%);
+    }
+    .header-inner { position: relative; z-index: 1; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+    .btn-back-header {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,0.25);
+      transition: all 0.2s;
+    }
+    .btn-back-header:hover {
+      background: #fff;
+      color: #0965a4;
+      transform: translateX(-4px);
+    }
+
+    .badge-row { margin: 0; }
+    .status-badge {
+      background: rgba(255,255,255,0.22);
+      color: #fff;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    h1 { margin: 0 0 6px; color: #fff; font-size: 1.75rem; font-weight: 900; letter-spacing: -0.8px; }
+    .subtitle { color: rgba(255,255,255,0.82); font-size: 0.92rem; margin: 0; line-height: 1.5; }
+
+    /* ── PROGRESS ── */
+    .progress-section {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 28px;
+      background: #f8fafc;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .progress-bar {
+      flex: 1;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0965a4, #06b6d4, #0965a4);
+      background-size: 200% 100%;
+      animation: gradientMove 3s linear infinite;
+      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 6px;
+    }
+    @keyframes gradientMove { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+    .progress-label { font-size: 0.78rem; font-weight: 800; color: #94a3b8; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── FORM BODY ── */
+    .form-body { padding: 8px 0; }
+
+    .question-block { padding: 24px 28px; }
+
+    .divider { height: 1px; background: #f1f5f9; margin: 0; }
+
+    .section-label {
+      display: block;
+      margin-bottom: 14px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: #1e293b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
     .center-label { text-align: center; }
 
-    .stars-centered { display: flex; justify-content: center; gap: 10px; font-size: 2.5rem; color: #e0e0e0; cursor: pointer; margin: 0.5rem 0; }
-    .stars-centered span { transition: all 0.2s; }
-    .stars-centered span.active { color: #ffc107; transform: scale(1.1); }
+    /* Stars */
+    .stars-centered {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      font-size: 2.6rem;
+      color: #e2e8f0;
+      cursor: pointer;
+      margin: 4px 0 8px;
+    }
+    .stars-centered span { transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .stars-centered span:hover { transform: scale(1.35); }
+    .stars-centered span.active {
+      color: #f59e0b;
+      transform: scale(1.2);
+      filter: drop-shadow(0 3px 8px rgba(245,158,11,0.45));
+    }
 
+    /* Chips */
     .chips-grid { display: flex; flex-wrap: wrap; gap: 10px; }
     .chips-grid button {
-      padding: 10px 20px; border: 1px solid #eee; background: white; border-radius: 10px;
-      font-size: 0.9rem; font-weight: 500; color: #555; cursor: pointer; transition: all 0.2s;
+      padding: 10px 18px;
+      border: 2px solid #f1f5f9;
+      background: #f8fafc;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.25s;
+      font-family: 'Inter', sans-serif;
     }
-    .chips-grid button:hover { background: #f8f9fa; border-color: #ddd; }
-    .chips-grid button.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+    .chips-grid button:hover {
+      border-color: #0965a4;
+      color: #0965a4;
+      background: #f0f9ff;
+      transform: translateY(-2px);
+    }
+    .chips-grid button.active {
+      background: linear-gradient(135deg, #0965a4, #06b6d4);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 6px 16px rgba(9,101,164,0.3);
+      transform: translateY(-2px);
+    }
 
-    .label-row { display: flex; justify-content: space-between; align-items: center; }
-    .optional { font-size: 0.8rem; color: #999; }
+    /* Label row */
+    .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .optional-badge {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      font-weight: 700;
+      background: #f1f5f9;
+      padding: 3px 10px;
+      border-radius: 8px;
+    }
 
+    /* Textarea */
     textarea {
-      width: 100%; min-height: 120px; padding: 1rem; border: 1px solid #eee; border-radius: 16px;
-      font-family: inherit; font-size: 0.95rem; line-height: 1.5; resize: none; transition: border-color 0.2s;
+      width: 100%;
+      min-height: 110px;
+      padding: 14px 16px;
+      border: 2px solid #f1f5f9;
+      border-radius: 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.93rem;
+      line-height: 1.6;
+      resize: none;
+      transition: all 0.2s;
+      color: #334155;
+      background: #f8fafc;
+      box-sizing: border-box;
     }
-    textarea:focus { border-color: #1a1a1a; outline: none; }
-    .char-count { text-align: right; font-size: 0.75rem; color: #999; margin-top: 6px; }
+    textarea:focus {
+      border-color: #0965a4;
+      outline: none;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(9,101,164,0.08);
+    }
+    textarea::placeholder { color: #94a3b8; }
+    .char-count { text-align: right; font-size: 0.72rem; color: #94a3b8; margin-top: 6px; font-weight: 700; }
 
-    footer { 
-      margin-top: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    /* ── FOOTER ── */
+    .card-footer {
+      padding: 20px 28px 28px;
+      border-top: 1px solid #f1f5f9;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
-    .footer-info p { margin: 0; color: #888; font-size: 0.85rem; font-weight: 500; }
+    .footer-hint {
+      margin: 0;
+      color: #94a3b8;
+      font-size: 0.83rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-hint i { color: #10b981; }
+
     .btn-certif {
-      width: 100%; padding: 16px; border: none; border-radius: 16px; background: #0061ff;
-      color: white; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
-      box-shadow: 0 4px 15px rgba(0,97,255,0.2);
+      width: 100%;
+      max-width: 400px;
+      padding: 16px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #0965a4, #06b6d4);
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: all 0.4s;
+      box-shadow: 0 10px 28px rgba(9,101,164,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: 'Inter', sans-serif;
     }
-    .btn-certif:hover { background: #0056e0; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,97,255,0.3); }
-    .btn-certif:disabled { opacity: 0.5; transform: none; box-shadow: none; filter: grayscale(1); cursor: not-allowed; }
+    .btn-certif:hover:not(:disabled) {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 40px rgba(9,101,164,0.5);
+    }
+    .btn-certif:disabled {
+      opacity: 0.5;
+      transform: none;
+      box-shadow: none;
+      filter: grayscale(0.4);
+      cursor: not-allowed;
+    }
+
+    .spin { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   `]
 })
 export class MacroFeedbackComponent implements OnInit {
@@ -168,6 +394,11 @@ export class MacroFeedbackComponent implements OnInit {
     commentaireLibre: ''
   };
 
+  isTransition = false;
+  nextNiveau: string | null = null;
+  mode: string | null = null;
+  formationId: number | null = null;
+
   progressionOptions = ['Très fluide', 'Correcte', 'Parfois abrupte', 'Trop rapide'];
   quizOptions = ['Très pertinents', 'Adaptés', 'Trop faciles', 'Trop difficiles'];
   recommandationOptions = ['Absolument', 'Probablement', 'Pas sûr(e)', 'Non'];
@@ -180,6 +411,13 @@ export class MacroFeedbackComponent implements OnInit {
 
   ngOnInit(): void {
     this.parcoursId = Number(this.route.snapshot.paramMap.get('id'));
+    this.route.queryParams.subscribe(params => {
+      this.mode = params['mode'] || null;
+      this.formationId = params['formationId'] ? Number(params['formationId']) : null;
+      
+      this.isTransition = params['from'] === 'quiz' && params['niveau'] === 'AVANCE';
+      this.nextNiveau = params['nextNiveau'] || null;
+    });
   }
 
   completedSteps(): number {
@@ -202,10 +440,17 @@ export class MacroFeedbackComponent implements OnInit {
   submit(): void {
     if (!this.isFormValid()) return;
 
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const inscription = JSON.parse(localStorage.getItem('currentParcoursInscription') || '{}');
+    const userStr = localStorage.getItem('user');
+    const candidatId = localStorage.getItem('candidatId');
+    const user = userStr ? JSON.parse(userStr) : {};
+    
+    const inscriptionStr = localStorage.getItem('currentParcoursInscription');
+    const inscription = inscriptionStr ? JSON.parse(inscriptionStr) : {};
 
-    if (!user.id || !inscription.id) {
+    const finalCandidatId = user.id || candidatId;
+
+    if (!finalCandidatId || !inscription.id) {
+       console.error("Session data missing:", { finalCandidatId, inscriptionId: inscription.id });
        alert("Erreur de session. Veuillez vous reconnecter.");
        return;
     }
@@ -213,16 +458,16 @@ export class MacroFeedbackComponent implements OnInit {
     this.submitting = true;
     const payload = {
       ...this.formData,
-      candidatId: user.id,
+      candidatId: Number(finalCandidatId),
       parcoursId: this.parcoursId,
-      inscriptionId: inscription.id
+      inscriptionId: Number(inscription.id)
     };
 
     this.http.post('http://localhost:8080/api/feedbacks/macro', payload)
       .subscribe({
         next: () => {
-          alert("Merci ! Votre parcours est validé et votre certificat est prêt.");
-          this.router.navigate(['/candidat-dashboard']); 
+          alert("Merci pour votre avis ! Votre parcours est validé.");
+          this.router.navigate(['/formations/parcours', this.parcoursId]); 
         },
         error: (err) => {
           console.error(err);

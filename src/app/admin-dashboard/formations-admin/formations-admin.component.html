@@ -168,8 +168,7 @@
               <td><span class="tag" [ngClass]="getStatutTag(item.statut)">{{ item.statut }}</span></td>
               <td>
                 <span *ngIf="item.badge" class="badge text-white px-2 py-1 rounded shadow-sm" [ngStyle]="{'background-color': item.scorePopularite && item.scorePopularite >= 70 ? '#8b5cf6' : (item.badge === 'Populaire' ? '#3b82f6' : (item.badge === 'En progression' ? '#f59e0b' : '#10b981'))}">{{ item.badge }}</span>
-                <span *ngIf="!item.badge && item.type === 'formation'" class="text-muted small">-</span>
-                <span *ngIf="item.type === 'parcours'" class="text-muted small">-</span>
+                <span *ngIf="!item.badge" class="text-muted small">-</span>
               </td>
               <td>
                 <div *ngIf="item.scorePopularite !== undefined" class="d-flex flex-column lh-1 mt-1" style="font-size: 0.75rem">

@@ -281,4 +281,35 @@ export class ParcoursDetailComponent implements OnInit {
       default: return 'badge-grey';
     }
   }
+
+  getParcoursBadge(): string | null {
+    if (!this.parcours) return null;
+    return this.parcours.niveauDebutant?.badge 
+        || this.parcours.niveauIntermediaire?.badge 
+        || this.parcours.niveauAvance?.badge 
+        || this.parcours.niveauExpert?.badge 
+        || null;
+  }
+
+  getBadgeColor(badge: string | null): string {
+    const map: Record<string, string> = {
+      'Tendance':       'badge-purple',
+      'Populaire':      'badge-blue',
+      'Top noté':       'badge-green',
+      'Bien noté':      'badge-teal',
+      'En progression': 'badge-amber'
+    };
+    return badge ? (map[badge] || 'badge-gray') : '';
+  }
+
+  getParcoursIcon(badge: string | null): string {
+    const map: Record<string, string> = {
+      'Tendance':       '🔥',
+      'Populaire':      '⭐',
+      'Top noté':       '🏆',
+      'Bien noté':      '👍',
+      'En progression': '📈'
+    };
+    return badge ? (map[badge] || '') : '';
+  }
 }

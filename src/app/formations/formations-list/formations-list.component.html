@@ -62,16 +62,13 @@
               <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'all'" (click)="onTypeChange('all')">Tout</button>
               <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'formation'" (click)="onTypeChange('formation')">Formations</button>
               <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'parcours'" (click)="onTypeChange('parcours')">Parcours complets</button>
-              
-              <div class="filter-divider" style="width: 2px; height: 24px; background: #e5e7eb; margin: 0 10px;"></div>
-
+            </div>
+            <div class="filters-row d-flex gap-3">
               <select class="form-select form-select-sm premium-select" [(ngModel)]="activeFilter" (change)="applySearch()" style="width: auto;">
                 <option *ngFor="let f of filters" [value]="f">
                   {{ f === 'Toutes' ? 'Tous les niveaux' : f }}
                 </option>
               </select>
-            </div>
-            <div class="filters-row d-flex gap-3">
               <select class="form-select form-select-sm premium-select" (change)="onBadgeChange($any($event.target).value)">
                 <option *ngFor="let b of badges" [value]="b">{{ b || 'Tous les badges' }}</option>
               </select>
@@ -210,14 +207,11 @@
               <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'all'" (click)="onTypeChange('all')">Tout</button>
               <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'formation'" (click)="onTypeChange('formation')">Formations</button>
               <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'parcours'" (click)="onTypeChange('parcours')">Parcours complets</button>
-              
-              <div class="filter-divider" style="width: 2px; height: 24px; background: #e5e7eb; margin: 0 10px;"></div>
-              
+            </div>
+            <div class="filters-row d-flex gap-3">
               <select class="form-select form-select-sm premium-select" [(ngModel)]="activeFilter" (change)="applySearch()" style="width: auto;">
                 <option *ngFor="let f of filters" [value]="f">{{ f === 'Toutes' ? 'Tous les niveaux' : f }}</option>
               </select>
-            </div>
-            <div class="filters-row d-flex gap-3">
               <select class="form-select form-select-sm premium-select" (change)="onBadgeChange($any($event.target).value)">
                 <option *ngFor="let b of badges" [value]="b">{{ b || 'Tous les badges' }}</option>
               </select>

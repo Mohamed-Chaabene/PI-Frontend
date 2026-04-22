@@ -11,6 +11,79 @@
     </button>
 </div>
 
+<!-- ========== SECTION DASHBOARD ANALYTIQUE ========== -->
+<div class="test-buttons-section" style="background: #1e293b; border-radius: 16px; padding: 24px; margin-bottom: 30px;">
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h3 style="color: white; margin: 0 0 5px 0; font-size: 18px; font-weight: 600;">
+            <i class="ri-dashboard-line" style="color: #3b82f6;"></i>
+            Tableau de bord analytique
+        </h3>
+        <p style="color: #94a3b8; margin: 0; font-size: 12px;">Visualisez et analysez vos documents candidature</p>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        
+        <!-- Carte 1: Documents -->
+        <div style="background: #0f172a; border-radius: 12px; padding: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <i class="ri-folder-open-line" style="color: #60a5fa; font-size: 18px;"></i>
+                <h5 style="color: white; margin: 0; font-size: 13px; font-weight: 600;">Gestion documentaire</h5>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+               
+                <button (click)="afficherCVsAvecCandidatures()" style="background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; text-align: left;">
+                    📊 Performance des CVs
+                </button>
+                <button (click)="afficherStatistiquesParNiveau()" style="background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; text-align: left;">
+                    📈 Répartition par niveau
+                </button>
+            </div>
+        </div>
+        
+        <!-- Carte 2: Recherche -->
+        <div style="background: #0f172a; border-radius: 12px; padding: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <i class="ri-search-eye-line" style="color: #60a5fa; font-size: 18px;"></i>
+                <h5 style="color: white; margin: 0; font-size: 13px; font-weight: 600;">Moteur de recherche</h5>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button (click)="rechercherSimple()" style="background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; text-align: left;">
+                    🔍 Recherche simple
+                </button>
+                
+            </div>
+        </div>
+        
+        <!-- Carte 3: Keywords Spring Data -->
+        <div style="background: #0f172a; border-radius: 12px; padding: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <i class="ri-code-line" style="color: #60a5fa; font-size: 18px;"></i>
+                <h5 style="color: white; margin: 0; font-size: 13px; font-weight: 600;">API intelligente</h5>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button (click)="testerRechercheParNomContenant()" style="background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; text-align: left;">
+                    🔍 Recherche par nom
+                </button>
+                <button (click)="testerExistsDocument()" style="background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; text-align: left;">
+                    ✓ Vérification d'existence
+                </button>
+                <button (click)="testerCompterDocuments()" style="background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; text-align: left;">
+                    🔢 Comptage documents
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer explicatif -->
+    <div style="margin-top: 16px; text-align: center;">
+        <span style="background: #0f172a; color: #94a3b8; padding: 6px 12px; border-radius: 20px; font-size: 10px;">
+            ⚡ Données en temps réel | Requêtes optimisées | Base de données relationnelle
+        </span>
+    </div>
+</div>
+
+
 <!-- Loading -->
 <div *ngIf="isLoading" class="text-center py-5">
     <div class="spinner-border text-primary" role="status">
@@ -205,6 +278,74 @@
     </div>
 </div>
 
+<!-- ==================== MODALE RÉSULTATS ==================== -->
+<div class="modal-overlay" *ngIf="showResultModal" (click)="closeResultModal()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 28px 28px 0 0;">
+            <h3 style="color: white; margin: 0;">
+                <i class="ri-bar-chart-2-line"></i> {{ modalTitle }}
+            </h3>
+            <button class="modal-close" style="color: white; background: rgba(255,255,255,0.2); border-radius: 50%; width: 32px; height: 32px;" 
+                    (click)="closeResultModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+            
+            <!-- Message d'erreur -->
+            <div *ngIf="modalData?.error" class="alert alert-danger">
+                <i class="ri-error-warning-line"></i> {{ modalData.error }}
+            </div>
+            
+            <!-- Résultats sous forme de cartes -->
+            <div *ngIf="modalData && !modalData.error">
+                
+                <!-- Nombre de résultats -->
+                <div class="result-count" style="margin-bottom: 20px; padding: 10px; background: #f0fdf4; border-radius: 12px; text-align: center;">
+                    <i class="ri-database-2-line"></i> 
+                    <strong>{{ modalData.length }}</strong> résultat(s) trouvé(s)
+                </div>
+                
+                <!-- Grille de cartes -->
+                <div style="display: grid; gap: 15px;">
+                    <div *ngFor="let item of modalData" 
+                         class="result-card" 
+                         style="background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #667eea; transition: all 0.3s;">
+                        
+                        <!-- Pour chaque propriété de l'objet -->
+                        <div *ngFor="let key of getObjectKeys(item)" 
+                             style="margin-bottom: 8px; display: flex; flex-wrap: wrap;">
+                            <span style="font-weight: 600; color: #4a5568; min-width: 180px;">
+                                <i class="ri-information-line"></i> {{ formatKey(key) }} :
+                            </span>
+                            <span style="color: #2d3748; word-break: break-word;">
+                                {{ item[key] }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Message si aucun résultat -->
+                <div *ngIf="modalData.length === 0" class="empty-state" style="text-align: center; padding: 40px;">
+                    <i class="ri-inbox-line" style="font-size: 48px; color: #ccc;"></i>
+                    <p style="margin-top: 16px; color: #6b7280;">Aucun résultat trouvé</p>
+                </div>
+            </div>
+            
+            <!-- Format JSON brut (optionnel, en bas) -->
+            <details style="margin-top: 20px;">
+                <summary style="cursor: pointer; color: #667eea; font-size: 12px;">
+                    📋 Voir les données brutes (JSON)
+                </summary>
+                <pre style="background: #1e1e2e; color: #fff; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 11px; margin-top: 10px;">{{ modalData | json }}</pre>
+            </details>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid #e9ecef;">
+            <button class="btn-cancel" (click)="closeResultModal()" style="padding: 10px 20px; border-radius: 10px;">
+                Fermer
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL OPTIMISATION CV -->
 <div class="modal-overlay" *ngIf="showOptimiseModal" (click)="showOptimiseModal=false">
     <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
@@ -302,7 +443,89 @@
         </div>
     </div>
 </div>
-
+<!-- MODALE CONFIRMATION PHOTO PROFESSIONNELLE -->
+<div class="modal-overlay" *ngIf="showPhotoConfirmationModal" (click)="showPhotoConfirmationModal=false">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header" style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 28px 28px 0 0;">
+            <h3 style="color: white; margin: 0;">
+                <i class="ri-magic-line"></i> Photo professionnalisée
+            </h3>
+            <button class="modal-close" style="color: white; background: rgba(255,255,255,0.2);" 
+                    (click)="showPhotoConfirmationModal=false">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+            
+            <!-- Message de succès -->
+            <div class="alert alert-success" style="background: #d1fae5; border-radius: 12px; padding: 12px; margin-bottom: 20px;">
+                <i class="ri-checkbox-circle-line"></i> 
+                Votre photo a été améliorée avec l'IA !
+            </div>
+            
+            <!-- Comparaison avant/après -->
+            <div class="photo-comparison">
+                <div class="comparison-item">
+                    <div class="comparison-label">📸 Photo originale</div>
+                    <div class="photo-frame">
+                        <img [src]="originalPhoto" alt="Photo originale" class="comparison-photo">
+                    </div>
+                </div>
+                
+                <div class="comparison-arrow">
+                    <i class="ri-arrow-right-line"></i>
+                </div>
+                
+                <div class="comparison-item" *ngIf="!isProcessingPhoto">
+                    <div class="comparison-label">✨ Photo professionnelle</div>
+                    <div class="photo-frame professional">
+                        <img [src]="processedPhoto" alt="Photo professionnelle" class="comparison-photo">
+                        <div class="professional-badge">
+                            <i class="ri-star-fill"></i> IA
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="comparison-item" *ngIf="isProcessingPhoto">
+                    <div class="comparison-label">✨ Traitement en cours...</div>
+                    <div class="photo-frame loading">
+                        <div class="spinner-border text-success"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Améliorations apportées -->
+            <div class="improvements-list" style="margin-top: 24px; padding: 16px; background: #f0fdf4; border-radius: 16px;">
+                <h4 style="margin: 0 0 12px 0; color: #065f46;">
+                    <i class="ri-sparkling-line"></i> Améliorations appliquées :
+                </h4>
+                <ul style="margin: 0; padding-left: 20px;">
+                    <li>🎯 Fond blanc professionnel</li>
+                    <li>💡 Éclairage optimisé</li>
+                    <li>📷 Netteté améliorée</li>
+                    <li>🎨 Contraste ajusté</li>
+                    <li>✨ Filtre de douceur élégant</li>
+                </ul>
+            </div>
+            
+            <!-- Actions -->
+            <div class="confirmation-actions" style="display: flex; gap: 12px; margin-top: 24px; justify-content: center;">
+                <button class="btn-retake-photo" (click)="retakeFromConfirmation()" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 40px; cursor: pointer; font-weight: 600;">
+                    <i class="ri-refresh-line"></i> Reprendre la photo
+                </button>
+                <button class="btn-keep-original" (click)="rejectProcessedPhoto()" style="background: #e5e7eb; color: #374151; border: none; padding: 12px 24px; border-radius: 40px; cursor: pointer; font-weight: 600;">
+                    <i class="ri-close-line"></i> Garder l'originale
+                </button>
+                <button class="btn-confirm" (click)="confirmProcessedPhoto()" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px 32px; border-radius: 40px; cursor: pointer; font-weight: 600;">
+                    <i class="ri-check-line"></i> Utiliser cette photo
+                </button>
+            </div>
+            
+            <!-- Note -->
+            <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #6b7280;">
+                <i class="ri-information-line"></i> La photo sera affichée sur votre CV avec un rendu professionnel
+            </p>
+        </div>
+    </div>
+</div>
 <!-- ==================== MODAL CREATE (CRÉER) ==================== -->
 <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
     <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
@@ -328,14 +551,80 @@
             <!-- FORMULAIRE CV -->
             <div *ngIf="selectedType === 'CV'" class="form-cv">
                 <h4>Informations personnelles</h4>
-                <div class="form-group">
-        <label>Photo de profil</label>
+           <!-- Dans le formulaire CV, remplacez la section photo existante -->
+<div class="form-group">
+    <label>Photo de profil</label>
+    <div class="photo-upload-group">
         <input type="file" 
                accept="image/*" 
                (change)="onPhotoSelected($event)" 
-               class="form-control">
-        <small class="text-muted" *ngIf="cvData.photo">Photo sélectionnée : {{ cvData.photoName || 'image.jpg' }}</small>
+               class="form-control"
+               style="flex: 1;">
+        <button type="button" class="btn-camera" (click)="openCameraModal()" title="Prendre une photo">
+            <i class="ri-camera-line"></i> Caméra
+        </button>
     </div>
+    <small class="text-muted" *ngIf="cvData.photo">Photo sélectionnée : {{ cvData.photoName || 'image.jpg' }}</small>
+</div>
+<!-- MODAL CAMERA PROFESSIONNELLE -->
+<div class="modal-overlay" *ngIf="showCameraModal" (click)="closeCameraModal()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6, #6366f1); border-radius: 28px 28px 0 0;">
+            <h3 style="color: white;">
+                <i class="ri-camera-line"></i> Photo professionnelle
+            </h3>
+            <button class="modal-close" style="color: white; background: rgba(255,255,255,0.2);" 
+                    (click)="closeCameraModal()">&times;</button>
+        </div>
+        <div class="modal-body camera-body">
+            <div class="camera-container">
+                <!-- Vidéo caméra -->
+                <video #videoElement id="videoElement" autoplay playsinline></video>
+                
+                <!-- Canvas pour traitement -->
+                <canvas #canvasElement id="canvasElement" style="display: none;"></canvas>
+                
+                <!-- Interface de capture -->
+                <div class="camera-controls" *ngIf="!capturedImage">
+                    <div class="camera-guidelines">
+                        <div class="guideline-frame"></div>
+                        <p class="guideline-text">Cadrez votre visage dans le cadre</p>
+                    </div>
+                    <button class="btn-capture" (click)="capturePhoto()">
+                        <i class="ri-camera-line"></i> Capturer
+                    </button>
+                </div>
+                
+                <!-- Aperçu et traitement -->
+                <div class="preview-controls" *ngIf="capturedImage && !isProcessing">
+                    <img [src]="capturedImage" alt="Photo capturée" class="captured-preview">
+                    <div class="action-buttons">
+                        <button class="btn-retake" (click)="retakePhoto()">
+                            <i class="ri-refresh-line"></i> Reprendre
+                        </button>
+                        <button class="btn-validate" (click)="processPhotoWithML()">
+                            <i class="ri-magic-line"></i> Professionnaliser
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Traitement en cours -->
+                <div *ngIf="isProcessing" class="processing-overlay">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Traitement...</span>
+                    </div>
+                    <p>Application du fond blanc professionnel...</p>
+                    <div class="processing-steps">
+                        <span [class.completed]="processingStep >= 1">📸 Capture</span>
+                        <span [class.completed]="processingStep >= 2">🎨 Détection contour</span>
+                        <span [class.completed]="processingStep >= 3">✨ Fond blanc</span>
+                        <span [class.completed]="processingStep >= 4">💡 Optimisation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
                 <div class="form-row">
                     <div class="form-group"><label>Prénom *</label><input type="text" class="form-control" [(ngModel)]="cvData.prenom"></div>
                     <div class="form-group"><label>Nom *</label><input type="text" class="form-control" [(ngModel)]="cvData.nom"></div>
@@ -520,25 +809,7 @@
         </div>
     </div>
 </div>
-<!-- ==================== MODAL EDIT (MODIFIER) ==================== -->
-<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3><i class="ri-edit-line"></i> Modifier le document</h3>
-            <button class="modal-close" (click)="closeEditModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group"><label>Nom</label><input type="text" class="form-control" [(ngModel)]="editingDocument.nom"></div>
-            <div class="form-group"><label>Type</label><select class="form-control" [(ngModel)]="editingDocument.type"><option *ngFor="let t of types" [value]="t">{{ getTypeLabel(t) }}</option></select></div>
-            <div class="form-group"><label>Contenu</label><textarea class="form-control" rows="10" [(ngModel)]="editingDocument.contenu"></textarea></div>
-            <div class="form-group checkbox"><label><input type="checkbox" [(ngModel)]="editingDocument.compatibleATS"> Compatible ATS</label></div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-cancel" (click)="closeEditModal()">Annuler</button>
-            <button class="btn-submit" (click)="updateDocument()" [disabled]="isUpdating">{{ isUpdating ? 'Enregistrement...' : 'Enregistrer' }}</button>
-        </div>
-    </div>
-</div>
+
 
 <!-- ==================== MODAL APERÇU DU DOCUMENT GÉNÉRÉ ==================== -->
 <div class="modal-overlay" *ngIf="showPreviewModal" (click)="closePreviewModal()">

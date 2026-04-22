@@ -56,6 +56,9 @@
                 <span class="detail-badge badge-blue">Multi-niveaux</span>
                 <span class="detail-badge badge-green" *ngIf="(parcours.statut || 'Disponible') !== 'Archivée'">Disponible</span>
                 <span class="detail-badge badge-amber" *ngIf="parcours.statut === 'Archivée'">Archivé</span>
+                <span class="detail-badge" [ngClass]="getBadgeColor(getParcoursBadge())" *ngIf="getParcoursBadge()">
+                   {{ getParcoursIcon(getParcoursBadge()) }} {{ getParcoursBadge() }}
+                </span>
               </div>
 
               <div class="card-progression-large mt-3">
@@ -116,10 +119,10 @@
                     <p *ngIf="!isFeedbackPending()">Tous les niveaux validés · Votre certificat est disponible.</p>
                     
                     <div class="feedback-pending-card" *ngIf="isFeedbackPending()">
-                      <p>Une dernière étape : partagez votre expérience pour obtenir votre certificat !</p>
+                      <p>Félicitations ! Vous avez terminé le parcours. Partagez votre expérience avec nous !</p>
                       <button class="btn-certif-pending" (click)="allerAuFeedback()">
-                        <i class="ri-medal-line me-2"></i>
-                        Finaliser & Obtenir le certificat
+                        <i class="ri-chat-heart-line me-2"></i>
+                        Laisser mon avis global
                       </button>
                     </div>
                   </div>
@@ -157,10 +160,6 @@
             </div>
           </div>
 
-          <!-- Feedback Section -->
-          <div class="feedback-wrapper mt-3">
-            <app-feedback-candidat [parcoursId]="parcours.id"></app-feedback-candidat>
-          </div>
 
         </div>
       </div>

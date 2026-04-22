@@ -170,10 +170,6 @@ export class QuizNiveauComponent implements OnInit {
     });
   }
 
-  onMicroFeedbackCompleted(): void {
-    this.resultat!.needsFeedback = 'NONE';
-    this.niveauSuivant();
-  }
 
   // ── Résultat actions ──────────────────────────────────
   reessayer(): void {
@@ -190,12 +186,6 @@ export class QuizNiveauComponent implements OnInit {
 
   niveauSuivant(): void {
     if (!this.resultat) return;
-
-    // Redirection vers le Macro-Feedback si requis
-    if (this.resultat.needsFeedback === 'MACRO') {
-       this.router.navigate(['/formations/parcours', this.parcoursId, 'feedback']);
-       return;
-    }
 
     // Gestion du niveau suivant
     if (this.resultat.reussi && this.resultat.niveauSuivantDebloque && this.parcours) {

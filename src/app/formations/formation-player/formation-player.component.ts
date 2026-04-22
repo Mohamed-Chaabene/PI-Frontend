@@ -3,7 +3,7 @@ import {
 } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute, Params } from '@angular/router';
 import { Formation, YoutubeVideo } from '../models/formation.model';
 import { FormationService } from '../services/formation.service';
 
@@ -32,6 +32,7 @@ export class FormationPlayerComponent
   private http             = inject(HttpClient);
   private ngZone           = inject(NgZone);
   private router           = inject(Router);
+  private route            = inject(ActivatedRoute);
 
   safeStackBlitzUrl: SafeResourceUrl | null = null;
   isPlaylist      = false;
@@ -58,7 +59,10 @@ export class FormationPlayerComponent
 
   tentativesUtilisees = 0;
 
-  readonly MAX_TENTATIVES = 3;
+  /** 3 tentatives pour EXPERT, illimité pour les autres niveaux */
+  get MAX_TENTATIVES(): number {
+    return this.niveau === 'EXPERT' ? 3 : Infinity;
+  }
 
   quizBloque         = false;
   quizBloqueMessage  = '';
@@ -102,6 +106,7 @@ export class FormationPlayerComponent
   }
 
   get tentativesRestantes(): number {
+    if (this.MAX_TENTATIVES === Infinity) return Infinity;
     return Math.max(0, this.MAX_TENTATIVES - this.tentativesUtilisees);
   }
 
@@ -121,6 +126,12 @@ export class FormationPlayerComponent
 
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe((params: Params) => {
+      if (params['startQuiz'] === 'true') {
+        setTimeout(() => this.lancerQuizFinal(), 1000);
+      }
+    });
+
     if (this.niveau === 'EXPERT') {
       this.seuilQuiz = 80;
     } else {
@@ -408,10 +419,24 @@ export class FormationPlayerComponent
       + `?totalVideos=${total}`
     ).subscribe({
       next: (data) => {
+        // Filtrer pour ne garder que les vidéos qui font partie de la playlist ACTUELLE
+        const playlistIds = new Set(this.playlistVideos.map(v => v.videoId));
+        this.videosVues.clear(); // Reset avant de recharger proprement
+        
         (data.details || []).forEach((vp: any) => {
-          if (vp.vuComplete) this.videosVues.add(vp.videoId);
+          if (vp.vuComplete && (playlistIds.size === 0 || playlistIds.has(vp.videoId))) {
+            this.videosVues.add(vp.videoId);
+          }
         });
+
         this.progression = data.progression || 0;
+        this.tentativesUtilisees = data.tentativesUtilisees || 0;
+        
+        // Sécurité : si on a filtré et que ça change la progression réelle
+        if (this.isPlaylist && this.playlistVideos.length > 0) {
+           this.progression = Math.min(100, Math.round(this.videosVues.size / this.playlistVideos.length * 100));
+        }
+
         const first = this.playlistVideos.find(
           v => !this.videosVues.has(v.videoId))
           || this.playlistVideos[0];
@@ -438,10 +463,7 @@ export class FormationPlayerComponent
     }).subscribe({
       next: (resp) => {
         this.videosVues.add(video.videoId);
-        this.progression = resp.progression;
-        if ((resp.formationTerminee || this.progression >= 100) && !this.isAlreadyCompleted) {
-          setTimeout(() => this.lancerQuizFinal(), 2000);
-        }
+        this.recalculerLocal(); // Utilise le calcul filtré local pour l'UI
       },
       error: () => {
         this.videosVues.add(video.videoId);
@@ -452,7 +474,11 @@ export class FormationPlayerComponent
 
   private recalculerLocal(): void {
     const t = this.playlistVideos.length || 1;
-    this.progression = Math.round(this.videosVues.size / t * 100);
+    // On ne compte que les vidéos qui appartiennent à la playlist actuelle
+    const playlistIds = new Set(this.playlistVideos.map(v => v.videoId));
+    const validVuesCount = Array.from(this.videosVues).filter(id => playlistIds.has(id)).length;
+    
+    this.progression = Math.round(validVuesCount / t * 100);
     if (this.progression >= 100 && !this.isAlreadyCompleted) {
       setTimeout(() => this.lancerQuizFinal(), 2000);
     }
@@ -499,6 +525,7 @@ export class FormationPlayerComponent
         this.quizFinalAnswers   =
           new Array(this.quizFinalQuestions.length).fill(-1);
         this.quizFinalLoading   = false;
+        this.tentativesUtilisees = data.tentativesUtilisees || 0;
         
         this.quizTimerRestant = 600; 
         this.demarrerTimer();
@@ -560,11 +587,17 @@ export class FormationPlayerComponent
             error: () => {}
           });
         } else if (!resp.reussi) {
-          this.quizFinalMessage =
-            `Score obtenu : ${score}% — Minimum requis : ${this.seuilQuiz}%. ` +
-            (this.peutReessayer
-              ? `Il vous reste ${this.tentativesRestantes} tentative(s).`
-              : `Vous avez épuisé toutes vos tentatives.`);
+          if (this.niveau === 'EXPERT') {
+            this.quizFinalMessage =
+              `Score obtenu : ${score}% — Minimum requis : ${this.seuilQuiz}%. ` +
+              (this.peutReessayer
+                ? `Il vous reste ${this.tentativesRestantes} tentative(s) sur 3.`
+                : `Vous avez épuisé toutes vos tentatives.`);
+          } else {
+            this.quizFinalMessage =
+              `Score obtenu : ${score}% — Minimum requis : ${this.seuilQuiz}%. ` +
+              `Vous pouvez réessayer autant de fois que nécessaire.`;
+          }
         }
       }
     });

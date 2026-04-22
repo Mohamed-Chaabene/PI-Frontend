@@ -126,6 +126,8 @@
                     </div>
                 </div>
 
+
+                
                 <!-- Assistant IA -->
                 <div class="feature-card assistant-card" (click)="ouvrirAssistant()">
                     <div class="feature-icon">💬</div>
@@ -567,14 +569,14 @@
             </p>
             <div *ngFor="let c of rappels" class="rappel-item">
                 <div class="rappel-left">
-                    <div class="rappel-dot" [style.background]="getNiveauRappelColor(c.joursEcoules)"></div>
+                    <div class="rappel-dot" [style.background]="c.niveauRappel"></div>
                     <div>
                         <div class="rappel-nom">{{ c.nomComplet || 'Sans nom' }}</div>
                         <div class="rappel-info">{{ c.email }} · envoyé le {{ formatDate(c.dateEnvoi) }}</div>
                     </div>
                 </div>
                 <div class="rappel-right">
-                    <span class="rappel-jours" [style.color]="getNiveauRappelColor(c.joursEcoules)">
+                    <span class="rappel-jours" [style.color]="c.couleurRappel">
                         {{ c.joursEcoules }}j
                     </span>
                     <button class="btn-copy-relance" (click)="copierMessageRelance(c)" title="Copier message de relance">

@@ -50,7 +50,7 @@ export class ApiService {
     headers = headers.set('Pragma', 'no-cache');
     const timestamp = Date.now();
     const url = `${this.apiUrl}/users/search?name=${query}&t=${timestamp}`;
-    console.log('🌐 Calling API search endpoint:', url);
+    console.log('Calling API search endpoint:', url);
     return this.http.get<any[]>(url, { headers });
   }
 
@@ -104,53 +104,42 @@ export class ApiService {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const cleanEmail = String(user?.email || '').trim();
     const cleanRole = String(user?.role || 'CANDIDAT').replace(/^ROLE_/, '').toUpperCase() || 'CANDIDAT';
-    const cleanPassword = user?.password ?? user?.motDePasse ?? user?.rawPassword ?? '';
+    const cleanPassword = user?.motDePasse ?? '';
 
+    // Payload minimaliste - seulement les champs attendus par le backend
     const normalizedUser: any = {
       nom: user?.nom ?? '',
-      prenom: user?.prenom ?? '',
       email: cleanEmail,
       role: cleanRole,
-      roleString: user?.roleString ?? undefined,
-      cv: user?.cv ?? undefined,
-      niveauEtude: user?.niveauEtude ?? undefined,
-      competences: user?.competences ?? undefined,
-      experience: user?.experience ?? undefined,
-      entreprise: user?.entreprise ?? undefined,
-      poste: user?.poste ?? undefined,
-      secteur: user?.secteur ?? undefined,
-      budget: user?.budget ?? undefined,
-      organisation: user?.organisation ?? undefined,
-      adresse: user?.adresse ?? undefined,
-      descriptionProjet: user?.descriptionProjet ?? undefined,
-      password: cleanPassword,
-      rawPassword: cleanPassword,
       motDePasse: cleanPassword,
     };
 
+    // Ajouter les champs optionnels s'ils existent
+    if (user?.cv) normalizedUser.cv = user.cv;
+    if (user?.niveauEtude) normalizedUser.niveauEtude = user.niveauEtude;
+    if (user?.experience) normalizedUser.experience = user.experience;
+    if (user?.entreprise) normalizedUser.entreprise = user.entreprise;
+    if (user?.poste) normalizedUser.poste = user.poste;
+    if (user?.secteur) normalizedUser.secteur = user.secteur;
+    if (user?.budget) normalizedUser.budget = user.budget;
+    if (user?.organisation) normalizedUser.organisation = user.organisation;
+    if (user?.adresse) normalizedUser.adresse = user.adresse;
+    if (user?.descriptionProjet) normalizedUser.descriptionProjet = user.descriptionProjet;
+
     return this.http.post(`${this.apiUrl}/auth/register`, normalizedUser, { headers }).pipe(
       catchError((firstError) => {
-        if (firstError?.status === 400 || firstError?.status === 403) {
-          const minimalPayload = {
-            nom: normalizedUser.nom,
-            email: normalizedUser.email,
-            role: cleanRole,
-            motDePasse: cleanPassword,
-            password: cleanPassword,
-            rawPassword: cleanPassword,
-          };
-          return this.http.post(`${this.apiUrl}/auth/register`, minimalPayload, { headers }).pipe(
-            catchError((secondError) => {
-              if (secondError?.status === 403 && cleanRole !== 'CANDIDAT') {
-                // Last fallback when backend rejects non-candidate self-signup.
-                const candidatePayload = { ...minimalPayload, role: 'CANDIDAT' };
-                return this.http.post(`${this.apiUrl}/auth/register`, candidatePayload, { headers });
-              }
-              return throwError(() => secondError);
-            })
-          );
-        }
-        return throwError(() => firstError);
+        // Si erreur, essayer avec payload minimal
+        const minimalPayload = {
+          nom: normalizedUser.nom,
+          email: normalizedUser.email,
+          role: cleanRole,
+          motDePasse: cleanPassword,
+        };
+        return this.http.post(`${this.apiUrl}/auth/register`, minimalPayload, { headers }).pipe(
+          catchError((secondError) => {
+            return throwError(() => secondError);
+          })
+        );
       })
     );
   }
@@ -161,39 +150,20 @@ export class ApiService {
     const email = String(credentials?.email ?? credentials?.username ?? '').trim();
     const password = String(credentials?.password ?? credentials?.motDePasse ?? credentials?.rawPassword ?? '');
 
-    // Try the most likely backend contract first to avoid server-side deserialization issues.
-    const primaryPayload = {
+    // Send payload matching backend LoginRequest DTO expectations
+    const payload = {
       email,
       motDePasse: password,
     };
 
-    return this.http.post(`${this.apiUrl}/auth/login`, primaryPayload, { headers }).pipe(
-      catchError((firstError) => {
-        if (firstError?.status === 400 || firstError?.status === 401 || firstError?.status === 403 || firstError?.status === 500) {
-          const fallbackPasswordPayload = {
-            email,
-            password,
-          };
-
-          return this.http.post(`${this.apiUrl}/auth/login`, fallbackPasswordPayload, { headers }).pipe(
-            catchError((secondError) => {
-              if (secondError?.status === 400 || secondError?.status === 401 || secondError?.status === 403 || secondError?.status === 500) {
-                const fallbackUsernamePayload = {
-                  username: email,
-                  password,
-                };
-                return this.http.post(`${this.apiUrl}/auth/login`, fallbackUsernamePayload, { headers });
-              }
-              return throwError(() => secondError);
-            })
-          );
-        }
-        return throwError(() => firstError);
-      })
-    );
+    return this.http.post(`${this.apiUrl}/auth/login`, payload, { headers });
   }
 
-  // Reset Password
+  changePassword(payload: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(`${this.apiUrl}/auth/change-password`, payload, { headers });
+  }
+
   resetPassword(phone: string): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post(`${this.apiUrl}/auth/reset-password`, { phone }, { headers });
@@ -1997,6 +1967,15 @@ supprimerDocument(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/documents/${id}`, { headers });
 }
 
+traiterPhoto(formData: FormData): Observable<any> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post(`${this.apiUrl}/documents/traiter-photo`, formData, { headers });
+}
+
   quickApply(candidatureData: any): Observable<any> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -2193,8 +2172,69 @@ getTimeline(): Observable<any> {
   }
 
 
+getAlertesCandidatures(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/candidatures/alertes`);
+}
+
+getDoublonsCandidatures(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/candidatures/doublons`);
+}
+
+getAnalyseProfil(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/candidatures/analyse-profil`);
+}
 
 
+
+// ============ NOUVELLES MÉTHODES ============
+
+getMesDocumentsAvecInfos(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/documents/jpql/mes-documents-avec-infos`);
+}
+
+getMesCVsAvecCandidatures(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/documents/jpql/mes-cvs-candidatures`);
+}
+
+getMesStatistiques(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/documents/jpql/mes-statistiques`);
+}
+
+rechercherParMotCle(mot: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/documents/keywords/recherche?mot=${mot}`);
+}
+
+rechercherMultiMotsCles(motsCles: string[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/documents/keywords/multi-recherche`, motsCles);
+}
+
+
+// ============ NOUVELLES MÉTHODES SPRING DATA JPA KEYWORDS ============
+
+// Recherche par nom contenant (IgnoreCase)
+rechercherParNomContenant(nom: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/documents/keywords/jpa/by-nom?nom=${nom}`);
+}
+
+// Recherche par type ET nom
+rechercherParTypeEtNom(type: string, nom: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/documents/keywords/jpa/by-type-and-nom?type=${type}&nom=${nom}`);
+}
+
+// Vérifier existence document par candidat et type
+existsDocumentParCandidat(candidatId: number, type: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/documents/keywords/jpa/exists-by-candidat?candidatId=${candidatId}&type=${type}`);
+}
+
+// Compter documents par candidat
+compterDocumentsParCandidat(candidatId: number): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/documents/keywords/jpa/count-by-candidat?candidatId=${candidatId}`);
+}
+
+// Top 5 documents récents par candidat
+getTop5DocumentsRecents(candidatId: number, mot: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/documents/keywords/jpa/top5-recents?candidatId=${candidatId}&mot=${mot}`);
+}
 
 //  CHATBOT
 chatWithML(message: string, cvContent: string): Observable<any> {
@@ -2287,6 +2327,28 @@ chatRecruiterAssistant(message: string, context?: { theme?: string; type?: strin
     }
 
     return `Sur "${themeLabel}", je peux vous répondre de façon concrète. Donnez-moi un point précis à clarifier ou un candidat à évaluer, et je vous aide immédiatement.`;
+  }
+
+  // ==================== CONNECTION STATISTICS ====================
+
+  getConnectionCount(userId: number): Observable<any> {
+    const headers = this.buildAuthHeaders();
+    return this.http.get(`${this.apiUrl}/connections/count/${userId}`, { headers });
+  }
+
+  getConnectionStats(userId: number): Observable<any> {
+    const headers = this.buildAuthHeaders();
+    return this.http.get(`${this.apiUrl}/connections/stats/${userId}`, { headers });
+  }
+
+  getLoginHistory(userId: number): Observable<any[]> {
+    const headers = this.buildAuthHeaders();
+    return this.http.get<any[]>(`${this.apiUrl}/connections/history/${userId}`, { headers });
+  }
+
+  getAllConnectionStats(): Observable<any[]> {
+    const headers = this.buildAuthHeaders();
+    return this.http.get<any[]>(`${this.apiUrl}/connections/all-stats`, { headers });
   }
 
 

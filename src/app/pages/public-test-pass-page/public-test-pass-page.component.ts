@@ -815,3 +815,4 @@ export class PublicTestPassPageComponent {
     this.remainingSeconds = this.dureeMinutes * 60;
   }
 }
+

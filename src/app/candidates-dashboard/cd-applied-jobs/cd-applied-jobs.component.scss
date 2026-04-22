@@ -2920,3 +2920,120 @@ $modal-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         transform: translateY(0);
     }
 }
+
+
+// Styles pour les alertes de validation
+.validation-alert-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.validation-alert-modal {
+    background: white;
+    border-radius: 24px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: slideUp 0.3s ease;
+    overflow: hidden;
+}
+
+.validation-alert-modal .alert-header {
+    background: linear-gradient(135deg, #FF6B6B 0%, #EE5A5A 100%);
+    padding: 24px;
+    text-align: center;
+    color: white;
+}
+
+.validation-alert-modal .alert-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.validation-alert-modal .alert-header h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.validation-alert-modal .alert-body {
+    padding: 24px;
+}
+
+.validation-alert-modal .alert-body p {
+    color: #374151;
+    margin-bottom: 16px;
+    font-weight: 500;
+}
+
+.validation-alert-modal .error-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.validation-alert-modal .error-list li {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: #FEF2F2;
+    border-left: 3px solid #EF4444;
+    border-radius: 8px;
+    color: #DC2626;
+    font-size: 14px;
+}
+
+.validation-alert-modal .alert-footer {
+    padding: 16px 24px 24px;
+    border-top: 1px solid #E5E7EB;
+}
+
+.validation-alert-modal .btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+// Style pour les champs en erreur
+.is-invalid, .error-border {
+    border-color: #ef4444 !important;
+    border-width: 2px !important;
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 4px;
+}
+

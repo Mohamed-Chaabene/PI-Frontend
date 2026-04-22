@@ -85,11 +85,7 @@ export class FormationsListComponent implements OnInit {
 
   loadFormations(): void {
     this.loading = true;
-    const req = this.badgeFilter
-      ? this.formationService.getFormationsParBadge(this.badgeFilter)
-      : this.formationService.getAllFormations();
-
-    req.subscribe({
+    this.formationService.getAllFormations().subscribe({
       next: (data: Formation[]) => {
         this.formations = data.filter(f => f.statut !== 'Archivée');
         this.filtered   = [...this.formations];
@@ -141,18 +137,52 @@ export class FormationsListComponent implements OnInit {
   }
 
   private loadRatings(): void {
-    this.formations.forEach(f => {
-      this.feedbackService.getStats(f.id).subscribe({
-        next:  (s) => { this.ratings[f.id] = s; },
-        error: ()  => { this.ratings[f.id] = { moyenne: 0, total: 0 }; }
+    // 1. Collecter tous les IDs de formations (simples + parcours)
+    const allIds = new Set<number>();
+    this.formations.forEach(f => allIds.add(f.id));
+    this.parcours.forEach(p => {
+      if (p.niveauDebutant?.id)      allIds.add(p.niveauDebutant.id);
+      if (p.niveauIntermediaire?.id) allIds.add(p.niveauIntermediaire.id);
+      if (p.niveauAvance?.id)        allIds.add(p.niveauAvance.id);
+      if (p.niveauExpert?.id)        allIds.add(p.niveauExpert.id);
+    });
+
+    // 2. Charger les ratings
+    allIds.forEach(id => {
+      this.feedbackService.getStats(id).subscribe({
+        next:  (s) => { this.ratings[id] = s; this.applySearch(); },
+        error: ()  => { this.ratings[id] = { moyenne: 0, total: 0 }; }
       });
     });
+  }
+
+  getParcoursRating(p: ParcoursFormation): { moyenne: number; total: number } {
+    let sum = 0;
+    let count = 0;
+    let totalAvis = 0;
+
+    const levels = [p.niveauDebutant, p.niveauIntermediaire, p.niveauAvance, p.niveauExpert];
+    levels.forEach(f => {
+      if (f && this.ratings[f.id]) {
+        const r = this.ratings[f.id];
+        if (r.total > 0) {
+          sum += r.moyenne;
+          count++;
+          totalAvis += r.total;
+        }
+      }
+    });
+
+    return {
+      moyenne: count > 0 ? Math.round((sum / count) * 10) / 10 : 0,
+      total: totalAvis
+    };
   }
 
 
   onBadgeChange(badge: string): void {
     this.badgeFilter = badge;
-    this.loadFormations();
+    this.applySearch();
   }
 
   onCategorieChange(cat: string): void {
@@ -182,45 +212,57 @@ export class FormationsListComponent implements OnInit {
 
       const matchNiv = this.activeFilter === 'Toutes' || f.niveau === this.activeFilter;
       const matchCat = !this.categorieFilter || f.categorie === this.categorieFilter;
+      const matchBadge = !this.badgeFilter || f.badge === this.badgeFilter;
       const matchTerm = !term || f.titre.toLowerCase().includes(term) || f.categorie.toLowerCase().includes(term);
       
-      return matchNiv && matchCat && matchTerm;
+      return matchNiv && matchCat && matchBadge && matchTerm;
     });
 
     // 2. Filtrer les parcours
     let filteredParcours = this.parcours.filter(p => {
       const matchCat = !this.categorieFilter || p.categorie === this.categorieFilter;
+      const matchBadge = !this.badgeFilter || this.getParcoursBadge(p) === this.badgeFilter;
       const matchTerm = !term || p.titre.toLowerCase().includes(term) || p.categorie.toLowerCase().includes(term);
       // Les parcours n'ont pas de niveau unique (ils sont multi-niveaux)
       const matchNiv = this.activeFilter === 'Toutes'; 
       
-      return matchCat && matchTerm && matchNiv;
+      return matchCat && matchBadge && matchTerm && matchNiv;
     });
 
     // 3. Appliquer le filtre de TYPE
     if (this.contentTypeFilter === 'formation') {
       this.unifiedFiltered = filteredFormations.map(f => ({ ...f, type: 'formation' }));
     } else if (this.contentTypeFilter === 'parcours') {
-      this.unifiedFiltered = filteredParcours.map(p => ({ 
-        ...p, 
-        type: 'parcours',
-        plateforme: 'Parcours', 
-        niveau: 'Multi-niveaux',
-        duree: '4 niveaux',
-        totalInscrits: (p as any).totalInscrits || 0,
-        noteMoyenne: (p as any).noteMoyenne || 0
-      }));
+      this.unifiedFiltered = filteredParcours.map(p => {
+        const pRating = this.getParcoursRating(p);
+        return { 
+          ...p, 
+          type: 'parcours',
+          plateforme: 'Parcours', 
+          niveau: 'Multi-niveaux',
+          duree: '4 niveaux',
+          totalInscrits: (p as any).totalInscrits || 0,
+          noteMoyenne: pRating.moyenne,
+          nbAvis: pRating.total,
+          badge: this.getParcoursBadge(p)
+        };
+      });
     } else {
       // Conserver l'ordre : Parcours d'abord, puis formations
-      const pItems = filteredParcours.map(p => ({ 
-        ...p, 
-        type: 'parcours',
-        plateforme: 'Parcours',
-        niveau: 'Multi-niveaux',
-        duree: '4 niveaux',
-        totalInscrits: (p as any).totalInscrits || 0,
-        noteMoyenne: (p as any).noteMoyenne || 0
-      }));
+      const pItems = filteredParcours.map(p => {
+        const pRating = this.getParcoursRating(p);
+        return { 
+          ...p, 
+          type: 'parcours',
+          plateforme: 'Parcours',
+          niveau: 'Multi-niveaux',
+          duree: '4 niveaux',
+          totalInscrits: (p as any).totalInscrits || 0,
+          noteMoyenne: pRating.moyenne,
+          nbAvis: pRating.total,
+          badge: this.getParcoursBadge(p)
+        };
+      });
       const fItems = filteredFormations.map(f => ({ ...f, type: 'formation' }));
       this.unifiedFiltered = [...pItems, ...fItems];
     }
@@ -346,5 +388,12 @@ export class FormationsListComponent implements OnInit {
       'En progression': '📈'
     };
     return badge ? (map[badge] || '') : '';
+  }
+
+  getParcoursBadge(p: ParcoursFormation): string | undefined {
+    return p.niveauDebutant?.badge 
+        || p.niveauIntermediaire?.badge 
+        || p.niveauAvance?.badge 
+        || p.niveauExpert?.badge;
   }
 }

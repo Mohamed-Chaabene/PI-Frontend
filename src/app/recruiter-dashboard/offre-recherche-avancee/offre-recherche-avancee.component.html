@@ -1,4 +1,4 @@
-<div class="recherche-avancee-container">
+﻿<div class="recherche-avancee-container">
   <!-- En-tête -->
   <div class="recherche-header">
     <h1>🔍 Recherche Avancée d'Offres d'Emploi</h1>
@@ -9,7 +9,7 @@
   <div class="search-type-selector">
     <div class="search-type-buttons">
       <button
-        *ngFor="let type of ['simple', 'advanced', 'company', 'popular']"
+        *ngFor="let type of searchTypes"
         [class.active]="searchType === type"
         (click)="searchType = type"
         class="type-btn">
@@ -271,3 +271,4 @@
     <p>👋 Commencez votre recherche en utilisant les critères ci-dessus</p>
   </div>
 </div>
+

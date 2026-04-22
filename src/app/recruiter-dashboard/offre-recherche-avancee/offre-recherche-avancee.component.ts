@@ -21,7 +21,8 @@ export class OffreRechercheAvanceeComponent implements OnInit, OnDestroy {
   errorMessage = '';
 
   // Paramètres de recherche
-  searchType = 'simple';
+  searchType: 'simple' | 'advanced' | 'company' | 'popular' = 'simple';
+  searchTypes: Array<'simple' | 'advanced' | 'company' | 'popular'> = ['simple', 'advanced', 'company', 'popular'];
   keyword = '';
   location = '';
   minSalaire: number | null = null;
@@ -313,3 +314,4 @@ export class OffreRechercheAvanceeComponent implements OnInit, OnDestroy {
     return this.offreSearchService.getCandidaturesClass(count);
   }
 }
+

@@ -50,7 +50,19 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
     followingUsers: Set<number> = new Set();
     currentUserId: number | null = null;
     currentCandidateId: number | null = null;
+
+/* === VERSION HEAD ==== */
+
+/* === VERSION MERGE ==== */
     showDeleteAccountModal = false;
+    showChangePasswordModal = false;
+    
+    changePasswordForm = {
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    };
+/* === FIN VERSIONS === */
     
     // Notification panel properties
     showNotificationPanel = false;
@@ -271,11 +283,9 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         this.searchTerm = '';
         this.resetSearch();
     }
-
-    toggleNotification() {
+ toggleNotification() {
         this.unreadNotifications = 0;
     }
-
     toggleDropdown(menu: string) {
         this.activeDropdown = this.activeDropdown === menu ? null : menu;
     }
@@ -608,6 +618,10 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
             return 'ri-mail-line';
         }
 
+        if (notification?.type === 'PARCOURS_COMPLETED') {
+            return 'ri-trophy-line';
+        }
+
         return 'ri-notification-3-line';
     }
 
@@ -624,6 +638,10 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
             return 'Rappel entretien';
         }
 
+        if (notification?.type === 'PARCOURS_COMPLETED') {
+            return 'Parcours Terminé !';
+        }
+
         return 'Notification';
     }
 
@@ -635,8 +653,8 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         return this.formatDate(notification?.createdAt || '');
     }
 
-    // ==================== NOTIFICATION PANEL METHODS ====================
-
+    // ==================== NOTIFICATION PANEL METHODS =============
+/* === VERSION MERGE ==== */
     toggleNotificationPanel(): void {
         this.showNotificationPanel = !this.showNotificationPanel;
         
@@ -667,43 +685,42 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
     }
 
     markNotificationAsRead(notificationId: number | string): void {
+        this.onNotificationClick(notificationId);
+    }
+
+    onNotificationClick(notificationId: number | string): void {
         const notification = this.notifications.find(n => n.id === notificationId || String(n.id) === String(notificationId));
         if (!notification) {
             return;
         }
 
+        // Marquer comme lu (logique existante)
         if (this.isReminderNotification(notification)) {
             notification.isRead = true;
             this.unreadNotifications = Math.max(0, this.unreadNotifications - 1);
             this.appRef.tick();
-            return;
-        }
-
-        if (!notificationId) return;
-
-        const numericNotificationId = Number(notificationId);
-        if (!Number.isFinite(numericNotificationId) || numericNotificationId <= 0) {
-            return;
-        }
-
-        this.apiService.markNotificationAsRead(numericNotificationId).subscribe({
-            next: (response: any) => {
-                console.log('✅ Notification marked as read:', notificationId);
-                
-                // Update the notification in the list
-                const notification = this.notifications.find(n => n.id === notificationId);
-                if (notification) {
-                    notification.isRead = true;
-                    this.unreadNotifications = Math.max(0, this.unreadNotifications - 1);
-                    
-                    // Trigger global change detection for badge update
-                    this.appRef.tick();
-                }
-            },
-            error: (error) => {
-                console.error('❌ Error marking notification as read:', error);
+        } else if (notificationId) {
+            const numericNotificationId = Number(notificationId);
+            if (Number.isFinite(numericNotificationId) && numericNotificationId > 0) {
+                this.apiService.markNotificationAsRead(numericNotificationId).subscribe({
+                    next: () => {
+                        notification.isRead = true;
+                        this.unreadNotifications = Math.max(0, this.unreadNotifications - 1);
+                        this.appRef.tick();
+                    }
+                });
             }
-        });
+        }
+
+        // Redirection spécifique selon le type
+        if (notification.type === 'PARCOURS_COMPLETED') {
+            this.showNotificationPanel = false;
+            // On récupère l'ID du parcours stocké (temporairement dans offreEmploiId ou autre)
+            const parcoursId = notification.offreEmploiId; 
+            if (parcoursId) {
+                this.router.navigate(['/formations/parcours', parcoursId]);
+            }
+        }
     }
 
     goToInterviewReminders(): void {
@@ -794,8 +811,8 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         }, 0);
     }
 
-    // ==================== DELETE ACCOUNT METHODS ====================
-
+    // ==================== DELETE ACCOUNT METHODS =============
+/* === VERSION MERGE ==== */
     openDeleteAccountModal(): void {
         // Show confirmation alert instead of modal
         const confirmed = window.confirm(
@@ -819,44 +836,101 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         const userId = this.currentUserId;
 
         if (!token || !userId) {
-            console.error('❌ Missing token or user ID');
+            console.error('Missing token or user ID');
             alert('Error: Cannot delete account. Please log in again.');
             return;
         }
 
-        console.log('🗑️ Deleting account for user ID:', userId);
+        console.log('Deleting account for user ID:', userId);
 
         this.apiService.deleteAccount(userId, token).subscribe({
             next: (response: any) => {
-                console.log('✅ Account deleted successfully:', response);
+                console.log('Account deleted successfully:', response);
                 
-                // Clear localStorage
                 localStorage.removeItem('token');
                 localStorage.removeItem('candidatId');
                 localStorage.removeItem('currentUser');
                 localStorage.removeItem('userEmail');
                 localStorage.removeItem('userName');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('recruteurId');
                 
-                // Show success message
-                alert('✅ Your account has been deleted successfully.\n\nYou will be redirected to the login page.');
+                alert('Your account has been deleted successfully.\n\nYou will be redirected to the login page.');
                 
-                // Redirect to login
                 this.router.navigate(['/login']);
             },
             error: (error: any) => {
-                console.error('❌ Error deleting account:', error);
+                console.error('Error deleting account:', error);
                 
                 const errorMessage = error?.error?.message || 'Failed to delete account. Please try again.';
-                alert('❌ Error: ' + errorMessage);
+                alert('Error: ' + errorMessage);
             }
         });
     }
 
+/* === VERSION HEAD ==== */
+
+/* === VERSION MERGE ==== */
     closeDeleteAccountModal(): void {
         this.showDeleteAccountModal = false;
     }
 
     confirmDeleteAccount(): void {
-        // This method is no longer used with alert-based confirmation
     }
+
+    openChangePasswordModal(): void {
+        this.showChangePasswordModal = true;
+        this.changePasswordForm = {
+            oldPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+        };
+    }
+
+    closeChangePasswordModal(): void {
+        this.showChangePasswordModal = false;
+        this.changePasswordForm = {
+            oldPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+        };
+    }
+
+    submitChangePassword(): void {
+        if (!this.changePasswordForm.oldPassword || !this.changePasswordForm.newPassword || !this.changePasswordForm.confirmPassword) {
+            alert('All fields are required.');
+            return;
+        }
+
+        if (this.changePasswordForm.newPassword !== this.changePasswordForm.confirmPassword) {
+            alert('New password and confirm password do not match.');
+            return;
+        }
+
+        const userId = this.currentUserId;
+        if (!userId) {
+            alert('Error: User ID not found.');
+            return;
+        }
+
+        const payload = {
+            userId: userId,
+            oldPassword: this.changePasswordForm.oldPassword,
+            newPassword: this.changePasswordForm.newPassword
+        };
+
+        this.apiService.changePassword(payload).subscribe({
+            next: (response: any) => {
+                alert('Password changed successfully.');
+                this.closeChangePasswordModal();
+            },
+            error: (error: any) => {
+                const errorMessage = error?.error?.message || 'Failed to change password. Please try again.';
+                alert('Error: ' + errorMessage);
+            }
+        });
+    }
+
+/* === FIN VERSIONS === */
 }
+

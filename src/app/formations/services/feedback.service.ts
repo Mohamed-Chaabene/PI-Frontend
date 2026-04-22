@@ -53,4 +53,8 @@ export class FeedbackService {
   getAll(): Observable<Feedback[]> {
     return this.http.get<Feedback[]>(this.api);
   }
+
+  getMacrosByParcours(parcoursId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.api}/parcours/${parcoursId}/macro`);
+  }
 }

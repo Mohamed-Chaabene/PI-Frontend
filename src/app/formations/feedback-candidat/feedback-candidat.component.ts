@@ -20,8 +20,8 @@ export class FeedbackCandidatComponent implements OnInit {
   @Input() formationId!: number;
   @Input() parcoursId?: number;
 
-  feedbacks:    Feedback[]      = [];
-  myFeedback:   Feedback | null = null;
+  feedbacks:    any[]           = [];
+  myFeedback:   any             = null;
   candidatId:   number | null   = null;
   loading       = false;
   saving        = false;
@@ -157,31 +157,77 @@ export class FeedbackCandidatComponent implements OnInit {
     });
   }
 
+  formatNiveauLabel(niv: string): string {
+    if (!niv) return 'Niveau';
+    const mapping: any = {
+      'DEBUTANT': 'Débutant',
+      'INTERMEDIAIRE': 'Intermédiaire',
+      'AVANCE': 'Avancé',
+      'EXPERT': 'Expert'
+    };
+    return mapping[niv.toUpperCase()] || niv;
+  }
+
+  unifiedFeedbacks: any[] = [];
+
   private loadData(): void {
     this.loading         = true;
     this.checkingTermine = true;
 
-    // 1. Charger les feedbacks (Form ou Parcours)
-    const obs = this.parcoursId 
-      ? this.feedbackService.getByParcours(this.parcoursId)
-      : this.feedbackService.getByFormation(this.formationId);
+    if (this.parcoursId) {
+      // Pour un parcours, on récupère les feedbacks des niveaux ET le macro-feedback
+      import('rxjs').then(({ forkJoin }) => {
+        forkJoin({
+          levels: this.feedbackService.getByParcours(this.parcoursId!),
+          macros: this.feedbackService.getMacrosByParcours(this.parcoursId!)
+        }).subscribe({
+          next: (res) => {
+            const levelFeedbacks = res.levels.map((f: any) => ({
+              ...f,
+              type: 'LEVEL',
+              displayLevel: this.formatNiveauLabel(f.formation?.niveau)
+            }));
+            const macroFeedbacks = res.macros.map((m: any) => ({
+              ...m,
+              type: 'MACRO',
+              note: m.noteGlobale,
+              commentaire: m.commentaireLibre,
+              displayLevel: 'Parcours Complet'
+            }));
 
-    obs.subscribe({
-      next: (data: any) => {
-        this.feedbacks  = data;
-        this.myFeedback = this.candidatId
-          ? data.find((f: any) => Number(f.candidat?.id) === Number(this.candidatId)) || null
-          : null;
-        this.loading = false;
-      },
-      error: (err) => { 
-        this.loading = false;
-        if (err.status === 403) {
-          console.warn('Accès aux feedbacks du parcours restreint ou endpoint manquant.');
-          this.feedbacks = [];
-        }
-      }
-    });
+            this.unifiedFeedbacks = [...levelFeedbacks, ...macroFeedbacks].sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            
+            this.feedbacks = this.unifiedFeedbacks; // Fallback pour la compatibilité template
+            
+            // Sur un parcours, on ne met en "Mon avis" (avec Edit/Delete) que le feedback MACRO
+            // Les feedbacks de niveaux restent dans la liste normale
+            this.myFeedback = this.candidatId
+              ? this.unifiedFeedbacks.find((f: any) => 
+                  Number(f.candidat?.id) === Number(this.candidatId) && f.type === 'MACRO'
+                ) || null
+              : null;
+            
+            this.loading = false;
+          },
+          error: () => { this.loading = false; }
+        });
+      });
+    } else {
+      // Pour une formation simple
+      this.feedbackService.getByFormation(this.formationId).subscribe({
+        next: (data: any) => {
+          this.feedbacks = data.map((f: any) => ({ ...f, type: 'LEVEL' }));
+          this.unifiedFeedbacks = this.feedbacks;
+          this.myFeedback = this.candidatId
+            ? data.find((f: any) => Number(f.candidat?.id) === Number(this.candidatId)) || null
+            : null;
+          this.loading = false;
+        },
+        error: () => { this.loading = false; }
+      });
+    }
 
     // 2. Vérifier si terminé pour autoriser le feedback
     if (this.candidatId) {

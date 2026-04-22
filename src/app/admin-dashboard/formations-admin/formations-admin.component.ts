@@ -118,7 +118,8 @@ export class FormationsAdminComponent implements OnInit {
           expert: p.niveauExpert
         },
         scorePopularite: p.scorePopularite || 0,
-        totalInscrits: p.totalInscrits || 0
+        totalInscrits: p.totalInscrits || 0,
+        badge: p.niveauDebutant?.badge || p.niveauIntermediaire?.badge || p.niveauAvance?.badge || p.niveauExpert?.badge
       });
     });
 
@@ -279,20 +280,23 @@ export class FormationsAdminComponent implements OnInit {
 
 
   getCount(statut: string): number {
-    const formationsCount = this.allFormations.filter(f => f.statut === statut).length;
-    // Each parcours counts as 4 formations
+    const usedIds = this.parcoursFormationIds;
+    const formationsCount = this.allFormations.filter(f => f.statut === statut && !usedIds.has(Number(f.id))).length;
     const parcoursCount = this.parcours.filter(p => p.statut === statut || (statut === 'Disponible' && !p.statut)).length;
-    return formationsCount + (parcoursCount * 4);
+    return formationsCount + parcoursCount;
   }
 
   get totalFormations(): number {
-    return this.allFormations.length + (this.parcours.length * 4);
+    const usedIds = this.parcoursFormationIds;
+    const standaloneCount = this.allFormations.filter(f => !usedIds.has(Number(f.id))).length;
+    return standaloneCount + this.parcours.length;
   }
 
   get archivedCount(): number {
-    const formationsArchived = this.allFormations.filter(f => f.statut === 'Archivée').length;
+    const usedIds = this.parcoursFormationIds;
+    const formationsArchived = this.allFormations.filter(f => f.statut === 'Archivée' && !usedIds.has(Number(f.id))).length;
     const parcoursArchived = this.parcours.filter(p => p.statut === 'Archivée').length;
-    return formationsArchived + (parcoursArchived * 4);
+    return formationsArchived + parcoursArchived;
   }
 
   getNiveauTag(niveau: string): string {

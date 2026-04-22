@@ -124,7 +124,8 @@ export class CdAppliedJobsComponent implements OnInit {
     offresNouvelles: number = 347;
     
     searchEntreprise: string = '';
-
+showArchives: boolean = false;
+archivesCount: number = 0;
 
 
     // Fonctionnalités avancées - Variables
@@ -219,7 +220,7 @@ navigateToDocuments(): void {
     }
 
     validateTelephone(telephone: string): boolean {
-    const telRegex = /^(\+215)?[\s]?[0-9]{8}$|^[0-9]{8}$/;
+    const telRegex = /^(\+216)?[\s]?[0-9]{8}$|^[0-9]{8}$/;
         return telRegex.test(telephone);
     }
 
@@ -249,7 +250,7 @@ navigateToDocuments(): void {
                 
             case 'telephone':
     if (value && !this.validateTelephone(value)) {
-        this.createErrors.telephone = 'Format invalide. Exemples: +215 55 555 555, +21555555555, 55555555';
+        this.createErrors.telephone = 'Format invalide. Exemples: +216 55 555 555, +21655555555, 55555555';
     } else {
         this.createErrors.telephone = '';
     }
@@ -328,10 +329,10 @@ navigateToDocuments(): void {
     // Validation du téléphone (optionnel mais format doit être valide)
     if (this.newCandidature.telephone && this.newCandidature.telephone.trim() !== '') {
         if (!this.validateTelephone(this.newCandidature.telephone)) {
-            this.createErrors.telephone = 'Format de téléphone invalide. Exemples: +215 55 555 555, 55555555';
+            this.createErrors.telephone = 'Format de téléphone invalide. Exemples: +216 55 555 555, 55555555';
             this.touchedFields.telephone = true;
             isValid = false;
-            errorMessages.push('• Format de téléphone invalide. Exemple: +215 55 555 555');
+            errorMessages.push('• Format de téléphone invalide. Exemple: +216 55 555 555');
         } else {
             this.createErrors.telephone = '';
         }
@@ -732,11 +733,17 @@ addAlertStyles(): void {
 }
 
     calculateStats(): void {
-        this.stats.total = this.candidatures.length;
-        this.stats.enAttente = this.candidatures.filter(c => c.statut === 'EN_ATTENTE').length;
-        this.stats.acceptees = this.candidatures.filter(c => c.statut === 'ACCEPTEE').length;
-        this.stats.refusees = this.candidatures.filter(c => c.statut === 'REFUSEE').length;
-    }
+    this.apiService.getStatsCandidatures().subscribe({
+        next: (data) => {
+            if (data) {
+                this.stats = data;
+                this.candidaturesCeMois = data.candidaturesCeMois || 0;
+                this.entretiensObtenus = data.entretiens || 0;
+            }
+        },
+        error: () => {}
+    });
+}
 
     
     // ==================== CREATE ====================
@@ -1046,55 +1053,14 @@ getPreavisLabel(preavis: string): string {
     }
 
     chargerAlertes(): void {
-        this.alertes = [];
-        
-        if (this.stats.enAttente > 5) {
-            this.alertes.push({
-                type: 'warning',
-                icon: 'ri-alert-line',
-                titre: 'Candidatures en attente',
-                message: `Vous avez ${this.stats.enAttente} candidatures en attente de réponse.`,
-                bouton: 'Voir conseils',
-                action: 'relancer'
-            });
-        }
-        
-        if (this.stats.acceptees > 0) {
-            this.alertes.push({
-                type: 'success',
-                icon: 'ri-checkbox-circle-line',
-                titre: 'Félicitations !',
-                message: `Vous avez ${this.stats.acceptees} candidature(s) acceptée(s).`,
-                bouton: 'Préparer entretien',
-                action: 'entretien'
-            });
-        }
-        
-        if (this.candidatures.length === 0) {
-            this.isNewCandidate = true;
-            this.alertes.push({
-                type: 'info',
-                icon: 'ri-lightbulb-line',
-                titre: 'Commencez votre recherche',
-                message: 'Découvrez les offres qui correspondent à vos compétences.',
-                bouton: 'Voir les offres',
-                action: 'offres'
-            });
-        } else {
-            this.isNewCandidate = false;
-        }
-        
-        if (this.stats.refusees > 2) {
-            this.alertes.push({
-                type: 'info',
-                icon: 'ri-question-line',
-                titre: 'Besoin d\'aide ?',
-                message: 'Plusieurs candidatures refusées. Conseils pour améliorer votre CV.',
-                bouton: 'Améliorer mon CV',
-                action: 'cv'
-            });
-        }
-    }
+    this.apiService.getAlertesCandidatures().subscribe({
+        next: (data) => {
+            this.alertes = data;
+            this.isNewCandidate = this.alertes.some(a => a.action === 'offres');
+        },
+        error: () => {}
+    });
+}
 
     profilIncomplet(): boolean {
         return false;
@@ -1258,31 +1224,20 @@ ${nom}
         this.showAnalyseModal = false;
     }
 
-    analyserProfil(): void {
-        const competences = JSON.parse(localStorage.getItem('competences') || '[]');
-        const experience = localStorage.getItem('experience') || '';
-        const cv = localStorage.getItem('cvUrl') || '';
-        
-        this.profil = {
-            competences: competences.length > 0,
-            experience: experience !== '',
-            cv: cv !== ''
-        };
-        
-        let score = 0;
-        this.conseils = [];
-        
-        if (this.profil.competences) score += 35;
-        else this.conseils.push('Ajoutez vos compétences clés');
-        
-        if (this.profil.experience) score += 35;
-        else this.conseils.push('Renseignez votre expérience professionnelle');
-        
-        if (this.profil.cv) score += 30;
-        else this.conseils.push('Téléchargez votre CV');
-        
-        this.scoreProfil = score;
-    }
+   analyserProfil(): void {
+    this.apiService.getAnalyseProfil().subscribe({
+        next: (data) => {
+            this.scoreProfil = data.scoreProfil;
+            this.conseils = data.conseils;
+            this.profil = {
+                competences: data.profilCompetences,
+                experience: data.profilExperience,
+                cv: data.profilCV
+            };
+        },
+        error: () => {}
+    });
+}
 
     allerCompleterProfil(): void {
         this.closeAnalyseModal();
@@ -2208,18 +2163,20 @@ hasNote(candidatureId: number): boolean {
 
 // ==================== RAPPELS ====================
 calculerRappels(): void {
-    const today = new Date();
-    this.rappels = this.candidatures
-        .filter(c => c.statut === 'EN_ATTENTE')
-        .map(c => {
-            const dateEnvoi = new Date(c.dateEnvoi);
-            const joursEcoules = Math.floor(
-                (today.getTime() - dateEnvoi.getTime()) / (1000 * 60 * 60 * 24)
-            );
-            return { ...c, joursEcoules };
-        })
-        .filter(c => c.joursEcoules >= 7)
-        .sort((a, b) => b.joursEcoules - a.joursEcoules);
+    this.apiService.getRelances().subscribe({
+        next: (data) => {
+            this.rappels = data.filter((c: any) => c.joursEcoules >= 7);
+        },
+        error: () => {}
+    });
+}
+/*
+getNiveauRappel(jours: number): string {
+    return ''; // Le backend renvoie déjà niveauRappel dans l'objet
+}
+
+getNiveauRappelColor(jours: number): string {
+    return ''; // Le backend renvoie déjà couleurRappel dans l'objet
 }
 
 getNiveauRappel(jours: number): string {
@@ -2232,7 +2189,7 @@ getNiveauRappelColor(jours: number): string {
     if (jours >= 21) return '#ef4444';
     if (jours >= 14) return '#f59e0b';
     return '#3b82f6';
-}
+}*/
 
 copierMessageRelance(candidature: any): void {
     const msg = `Objet : Suivi de ma candidature — ${candidature.poste || candidature.offreTitre || 'Candidature spontanée'}
@@ -2253,18 +2210,10 @@ ${candidature.nomComplet}`;
 
 // ==================== DOUBLONS ====================
 detecterDoublons(): void {
-    const emailCount: { [email: string]: any[] } = {};
-
-    this.candidatures.forEach(c => {
-        const email = (c.email || '').toLowerCase().trim();
-        if (email) {
-            if (!emailCount[email]) emailCount[email] = [];
-            emailCount[email].push(c);
-        }
+    this.apiService.getDoublonsCandidatures().subscribe({
+        next: (data) => { this.doublons = data; },
+        error: () => {}
     });
-
-    this.doublons = Object.values(emailCount)
-        .filter(group => group.length > 1);
 }
 
 ouvrirDoublons(): void {
