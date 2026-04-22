@@ -330,7 +330,7 @@ export class RdManageJobsComponent {
             row.decision = this.buildDecisionLabel(row, index === 0);
             row.recommandation = this.buildRecommendation(row);
         });
-
+    
         return {
             offre,
             candidats: rows,

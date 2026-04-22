@@ -26,7 +26,7 @@ export class FormationEcriteComponent implements OnInit {
   private formationService = inject(FormationService);
   private http             = inject(HttpClient);
 
-  private readonly base = 'http://localhost:8080/api';
+  private readonly base = '/api';
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));

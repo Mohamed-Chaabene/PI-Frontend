@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, Subscription, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs/operators';
 
 interface QuestionForm {
   contenu: string;
@@ -56,7 +58,7 @@ interface ChatRequestHints {
   templateUrl: './rd-add-questions.html',
   styleUrls: ['./rd-add-questions.scss'],
 })
-export class RdAddQuestions implements OnInit {
+export class RdAddQuestions implements OnInit, OnDestroy {
   entretienId = 0;
   domaines: any[] = [
     { id: 1, nom: 'INFORMATIQUE' },
@@ -94,7 +96,9 @@ export class RdAddQuestions implements OnInit {
   chatMessages: ChatMessage[] = [
     {
       sender: 'assistant',
-      text: 'Bonjour. Je peux vous aider a generer des questions pertinentes pour cet entretien.',
+      text:
+        'Renseignez type, theme (au moins 3 caracteres), categorie, niveau : les propositions sont generees automatiquement via l API. ' +
+        'Le bouton Generer force une mise a jour immediate. Utilisez Envoyer pour une conversation libre avec l assistant.',
       timestamp: new Date()
     }
   ];
@@ -114,6 +118,9 @@ export class RdAddQuestions implements OnInit {
     'Soft skills et communication'
   ];
 
+  private readonly autoGenerate$ = new Subject<void>();
+  private autoGenerateSub: Subscription | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -130,6 +137,102 @@ export class RdAddQuestions implements OnInit {
     }
     this.loadDomaines();
     this.loadQuestions();
+    this.setupAutoAiGeneration();
+  }
+
+  ngOnDestroy(): void {
+    this.autoGenerateSub?.unsubscribe();
+    this.autoGenerateSub = null;
+  }
+
+  /** Declenche une generation API debounced quand les champs changent (panneau ouvert). */
+  scheduleAutoAiGeneration(): void {
+    if (!this.isChatbotOpen) {
+      return;
+    }
+    this.autoGenerate$.next();
+  }
+
+  private setupAutoAiGeneration(): void {
+    this.autoGenerateSub?.unsubscribe();
+    this.autoGenerateSub = this.autoGenerate$
+      .pipe(
+        debounceTime(650),
+        map(() => this.buildAiGenerationPayload(3)),
+        tap((built) => {
+          if (!built) {
+            this.aiSuggestions = [];
+            this.aiError = '';
+          }
+        }),
+        filter((built): built is { payload: any; theme: string } => built !== null),
+        distinctUntilChanged((a, b) => JSON.stringify(a.payload) === JSON.stringify(b.payload)),
+        switchMap((built) => {
+          this.isAiGenerating = true;
+          this.aiError = '';
+          return this.apiService.generateAiQuestionSuggestions(this.entretienId, built.payload).pipe(
+            map((data) => ({ ok: true as const, data })),
+            catchError((error) => of({ ok: false as const, error }))
+          );
+        })
+      )
+      .subscribe((result) => {
+        this.isAiGenerating = false;
+        if (result.ok) {
+          this.aiSuggestions = Array.isArray(result.data) ? result.data : [];
+          if (!this.aiSuggestions.length) {
+            this.aiError = 'Aucune suggestion IA recue.';
+            this.addChatMessage('assistant', this.aiError);
+          } else {
+            this.aiError = '';
+          }
+        } else {
+          const err = result.error;
+          const backendMessage =
+            typeof err?.error === 'string'
+              ? err.error
+              : (err?.error?.message || err?.error?.detail || err?.message || 'Erreur inconnue');
+          const status = err?.status ?? '?';
+          this.aiError = `Erreur IA (${status}): ${backendMessage}`;
+          this.aiSuggestions = [];
+          this.addChatMessage('assistant', this.aiError);
+        }
+      });
+  }
+
+  /**
+   * Construit le payload pour l API de generation.
+   * @param minThemeLength longueur minimale du theme (1 = clic manuel Generer, 3 = saisie auto)
+   */
+  private buildAiGenerationPayload(minThemeLength: number): { payload: any; theme: string } | null {
+    if (this.newQuestion.type) {
+      this.aiForm.type = this.newQuestion.type;
+    }
+    if (this.newQuestion.niveau) {
+      this.aiForm.niveau = this.newQuestion.niveau;
+    }
+
+    const currentTheme = String(this.aiForm.theme || '').trim();
+    if (!currentTheme || currentTheme.length < minThemeLength) {
+      return null;
+    }
+
+    const effectiveTheme = currentTheme || this.extractThemeFromMessage(this.chatUserInput);
+    const normalizedTheme = this.normalizeThemeForApi(effectiveTheme);
+    this.aiForm.theme = normalizedTheme;
+
+    const nombre = Number(this.aiForm.nombre);
+    const temperature = Number(this.aiForm.temperature);
+    const payload = {
+      categorie: String(this.aiForm.categorie || 'TECHNIQUE').trim().toUpperCase(),
+      niveau: String(this.aiForm.niveau || 'INTERMEDIAIRE').trim().toUpperCase(),
+      type: this.normalizeAiType(this.aiForm.type),
+      theme: normalizedTheme,
+      nombre: Number.isFinite(nombre) ? Math.max(1, Math.min(10, Math.trunc(nombre))) : 3,
+      temperature: Number.isFinite(temperature) ? Math.max(0.1, Math.min(1.0, temperature)) : 0.4
+    };
+
+    return { payload, theme: normalizedTheme };
   }
 
   loadDomaines(): void {
@@ -659,26 +762,16 @@ export class RdAddQuestions implements OnInit {
 
   generateAiSuggestions(): void {
     this.aiError = '';
+    const built = this.buildAiGenerationPayload(1);
+    if (!built) {
+      this.aiError = 'Indiquez un theme (ex: SQL, Angular, gestion d equipe) avant de generer.';
+      this.addChatMessage('assistant', this.aiError);
+      return;
+    }
+
     this.isAiGenerating = true;
 
-    const nombre = Number(this.aiForm.nombre);
-    const temperature = Number(this.aiForm.temperature);
-    const currentTheme = String(this.aiForm.theme || '').trim();
-    const effectiveTheme = currentTheme || this.extractThemeFromMessage(this.chatUserInput);
-    const normalizedTheme = this.normalizeThemeForApi(effectiveTheme);
-
-    this.aiForm.theme = normalizedTheme;
-
-    const payload = {
-      categorie: String(this.aiForm.categorie || 'TECHNIQUE').trim().toUpperCase(),
-      niveau: String(this.aiForm.niveau || 'INTERMEDIAIRE').trim().toUpperCase(),
-      type: this.normalizeAiType(this.aiForm.type),
-      theme: normalizedTheme,
-      nombre: Number.isFinite(nombre) ? Math.max(1, Math.min(10, Math.trunc(nombre))) : 3,
-      temperature: Number.isFinite(temperature) ? Math.max(0.1, Math.min(1.0, temperature)) : 0.4
-    };
-
-    this.apiService.generateAiQuestionSuggestions(this.entretienId, payload).subscribe({
+    this.apiService.generateAiQuestionSuggestions(this.entretienId, built.payload).subscribe({
       next: (data) => {
         this.aiSuggestions = Array.isArray(data) ? data : [];
         if (!this.aiSuggestions.length) {
@@ -751,6 +844,7 @@ export class RdAddQuestions implements OnInit {
     this.chatUserInput = value;
     this.aiForm.theme = value;
     this.isChatbotOpen = true;
+    this.scheduleAutoAiGeneration();
   }
 
   private extractThemeFromMessage(message: string): string {
@@ -903,6 +997,9 @@ export class RdAddQuestions implements OnInit {
 
   toggleChatbot(): void {
     this.isChatbotOpen = !this.isChatbotOpen;
+    if (this.isChatbotOpen) {
+      setTimeout(() => this.scheduleAutoAiGeneration(), 0);
+    }
   }
 
   closeChatbot(): void {

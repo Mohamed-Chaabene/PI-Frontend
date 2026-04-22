@@ -28,6 +28,8 @@ import { CompaniesComponent } from '../common/companies/companies.component';
 import { FeaturesComponent } from '../common/features/features.component';
 import { FunfactsComponent } from '../common/funfacts/funfacts.component';
 
+// Emotion Detector
+
 // Recruiter Dashboard components
 import { RdHeaderComponent } from '../recruiter-dashboard/rd-header/rd-header.component';
 import { RdFooterComponent } from '../recruiter-dashboard/rd-footer/rd-footer.component';

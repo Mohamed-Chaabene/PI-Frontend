@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { SharedModule } from '../../shared/shared.module';
+import { EmotionDetectorComponent } from '../../shared/emotion-detector/emotion-detector.component';
 
 declare global {
   interface Window {
@@ -13,7 +14,7 @@ declare global {
 @Component({
   selector: 'app-video-interview-room-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, SharedModule],
+  imports: [CommonModule, RouterLink, SharedModule, EmotionDetectorComponent],
   templateUrl: './video-interview-room-page.component.html',
   styleUrls: ['./video-interview-room-page.component.scss']
 })
@@ -26,12 +27,19 @@ export class VideoInterviewRoomPageComponent implements OnInit, OnDestroy {
   errorMessage = '';
   meetingLink = '';
 
+  emotionAnalysisEnabled = true;
+
+  /** Flux getUserMedia pour l’analyse (démarré après connexion à la réunion Jitsi) */
+  conferenceAnalysisStream: MediaStream | null = null;
+  analysisMediaError = '';
+
   private jitsiApi: any;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -47,9 +55,34 @@ export class VideoInterviewRoomPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.releaseConferenceAnalysisStream();
     if (this.jitsiApi && typeof this.jitsiApi.dispose === 'function') {
       this.jitsiApi.dispose();
     }
+  }
+
+  private async acquireConferenceAnalysisStream(): Promise<void> {
+    if (this.conferenceAnalysisStream) {
+      return;
+    }
+    this.analysisMediaError = '';
+    try {
+      this.conferenceAnalysisStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: true
+      });
+    } catch {
+      this.analysisMediaError =
+        'Impossible d’accéder à la caméra ou au micro pour l’analyse en direct. Vérifiez les permissions du navigateur.';
+    }
+  }
+
+  private releaseConferenceAnalysisStream(): void {
+    if (this.conferenceAnalysisStream) {
+      this.conferenceAnalysisStream.getTracks().forEach((t) => t.stop());
+      this.conferenceAnalysisStream = null;
+    }
+    this.analysisMediaError = '';
   }
 
   private loadEntretien(): void {
@@ -163,6 +196,13 @@ export class VideoInterviewRoomPageComponent implements OnInit, OnDestroy {
         MOBILE_APP_PROMO: false,
         SHOW_JITSI_WATERMARK: false
       }
+    });
+
+    this.jitsiApi.on('videoConferenceJoined', () => {
+      this.ngZone.run(() => void this.acquireConferenceAnalysisStream());
+    });
+    this.jitsiApi.on('readyToClose', () => {
+      this.ngZone.run(() => this.releaseConferenceAnalysisStream());
     });
   }
 

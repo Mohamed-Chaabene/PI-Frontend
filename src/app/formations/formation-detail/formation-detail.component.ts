@@ -152,17 +152,41 @@ choisirFormationEcrite(): void {
 
   // ── Résolution candidatId ─────────────────────────────────────────
   private resolveCandidatId(onResolved?: () => void): void {
+    const role  = (localStorage.getItem('userRole') || '').toUpperCase().replace(/^ROLE_/, '');
+    const email = localStorage.getItem('userName') || '';
+
+    if (email && role === 'CANDIDAT') {
+      this.formationService.getCandidatByEmail(email).subscribe({
+        next: (candidat) => {
+          if (candidat?.id) {
+            this.candidatId = Number(candidat.id);
+            localStorage.setItem('candidatId', String(candidat.id));
+            onResolved?.();
+            return;
+          }
+          this.resolveCandidatIdFromCacheOrToken(onResolved);
+        },
+        error: () => this.resolveCandidatIdFromCacheOrToken(onResolved)
+      });
+      return;
+    }
+
+    this.resolveCandidatIdFromCacheOrToken(onResolved);
+  }
+
+  private resolveCandidatIdFromCacheOrToken(onResolved?: () => void): void {
     const cached = Number(localStorage.getItem('candidatId'));
     if (!Number.isNaN(cached) && cached > 0) {
       this.candidatId = cached;
       onResolved?.();
       return;
     }
+
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const id = Number(payload.id);
+        const id = Number(payload.candidatId || payload.idCandidat || payload.candidateId);
         if (!Number.isNaN(id) && id > 0) {
           this.candidatId = id;
           localStorage.setItem('candidatId', String(id));
@@ -171,19 +195,6 @@ choisirFormationEcrite(): void {
         }
       } catch {}
     }
-    const email = localStorage.getItem('userName') || '';
-    const role  = (localStorage.getItem('userRole') || '').toUpperCase().replace(/^ROLE_/, '');
-    if (!email || role !== 'CANDIDAT') return;
-    this.formationService.getCandidatByEmail(email).subscribe({
-      next: (candidat) => {
-        if (candidat?.id) {
-          this.candidatId = Number(candidat.id);
-          localStorage.setItem('candidatId', String(candidat.id));
-          onResolved?.();
-        }
-      },
-      error: () => {}
-    });
   }
   
 }

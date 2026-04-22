@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ApiService } from '../../api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
 import { ActivatedRoute, Router } from '@angular/router';
+import { EmotionAnalysisService } from '../../services/emotion-analysis.service';
 
 interface EntretienForm {
   titre: string;
@@ -26,7 +27,7 @@ interface EntretienForm {
   templateUrl: './rd-interviews.html',
   styleUrls: ['./rd-interviews.scss'],
 })
-export class RdInterviews implements OnInit {
+export class RdInterviews implements OnInit, OnDestroy {
   entretiens: any[] = [];
   searchTerm = '';
   filterType = 'TOUS';
@@ -34,6 +35,11 @@ export class RdInterviews implements OnInit {
   filterStatus = 'TOUS';
   selectedEntretienDetails: any | null = null;
   showEntretienDetailsModal = false;
+  showEmotionRealtimeModal = false;
+  selectedEmotionEntretien: any | null = null;
+  emotionRealtimeData: any | null = null;
+  emotionRealtimeError = '';
+  emotionRealtimeLastUpdated: Date | null = null;
   candidats: any[] = [];
   candidaturesOffre: any[] = [];
   selectedOffreLabel = '';
@@ -72,8 +78,15 @@ export class RdInterviews implements OnInit {
   } | null = null;
   private candidateEmailForInterview: string | null = null;
   private candidateNameForInterview: string | null = null;
+  private emotionRealtimeIntervalId: number | null = null;
+  private emotionRealtimeErrorStreak = 0;
 
-  constructor(private apiService: ApiService, private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private apiService: ApiService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private emotionAnalysisService: EmotionAnalysisService
+  ) {}
 
   ngOnInit(): void {
     if (!this.isRecruteurSession()) {
@@ -87,6 +100,10 @@ export class RdInterviews implements OnInit {
     this.loadEntretiens();
     this.loadCandidats();
     this.loadDomaines();
+  }
+
+  ngOnDestroy(): void {
+    this.stopEmotionRealtimePolling();
   }
 
   get filteredEntretiens(): any[] {
@@ -450,7 +467,14 @@ export class RdInterviews implements OnInit {
       payload.seuilReussite = this.newEntretien.seuilReussite ?? 70;
     }
 
-    if (this.newEntretien.offreId !== null && this.newEntretien.offreId !== undefined) {
+    const isVideoMode = String(this.newEntretien.mode || '').toUpperCase() === 'VIDEO';
+
+    if (isVideoMode) {
+      if (this.newEntretien.offreId !== null && this.newEntretien.offreId !== undefined) {
+        payload.offreId = this.newEntretien.offreId;
+      }
+      payload.candidatId = this.newEntretien.candidatId;
+    } else if (this.newEntretien.offreId !== null && this.newEntretien.offreId !== undefined) {
       payload.offreId = this.newEntretien.offreId;
     } else if (this.newEntretien.candidatId !== null && this.newEntretien.candidatId !== undefined) {
       payload.candidatId = this.newEntretien.candidatId;
@@ -677,12 +701,25 @@ L'équipe de recrutement`,
       next: () => {
         const entretien = this.entretiens.find(e => e.id === id);
         if (entretien) entretien.completed = true;
+
+        if (entretien && this.isVideoEntretien(entretien)) {
+          this.emotionAnalysisService.completeEmotionAnalysis(id).subscribe({
+            next: () => console.log('Emotion analysis marked as completed for interview', id),
+            error: (emotionError) => console.warn('Unable to complete emotion analysis automatically:', emotionError)
+          });
+        }
       },
       error: (error) => console.error('Error completing entretien', error)
     });
   }
 
-  viewResult(id: number): void {
+  viewResult(entretien: any): void {
+    if (this.isVideoEntretien(entretien)) {
+      this.openEmotionRealtime(entretien);
+      return;
+    }
+
+    const id = Number(entretien?.id);
     this.apiService.getResultat(id).subscribe({
       next: (result: any) => {
         const scoreText = result?.score != null ? `${result.score}%` : 'N/A';
@@ -691,6 +728,132 @@ L'équipe de recrutement`,
         alert(`Score: ${scoreText}, Decision: ${decisionText}${reportText}`);
       },
       error: (error: any) => console.error('Error getting result', error)
+    });
+  }
+
+  openEmotionRealtime(entretien: any): void {
+    if (!this.isVideoEntretien(entretien)) {
+      alert('Le suivi émotionnel en temps réel est disponible uniquement pour les entretiens vidéo.');
+      return;
+    }
+
+    const entretienId = Number(entretien?.id);
+    if (!Number.isFinite(entretienId) || entretienId <= 0) {
+      alert('Identifiant entretien invalide.');
+      return;
+    }
+
+    this.selectedEmotionEntretien = entretien;
+    this.showEmotionRealtimeModal = true;
+    this.emotionRealtimeError = '';
+    this.emotionRealtimeErrorStreak = 0;
+    this.loadEmotionRealtime(entretienId);
+
+    this.stopEmotionRealtimePolling();
+    this.emotionRealtimeIntervalId = window.setInterval(() => {
+      this.loadEmotionRealtime(entretienId);
+    }, 4000);
+  }
+
+  closeEmotionRealtime(): void {
+    this.showEmotionRealtimeModal = false;
+    this.selectedEmotionEntretien = null;
+    this.stopEmotionRealtimePolling();
+  }
+
+  private stopEmotionRealtimePolling(): void {
+    if (this.emotionRealtimeIntervalId != null) {
+      window.clearInterval(this.emotionRealtimeIntervalId);
+      this.emotionRealtimeIntervalId = null;
+    }
+  }
+
+  private loadEmotionRealtime(entretienId: number): void {
+    this.emotionAnalysisService.getEmotionAnalysis(entretienId).subscribe({
+      next: (response: any) => {
+        this.emotionRealtimeData = response?.data || response || null;
+        this.emotionRealtimeLastUpdated = new Date();
+        this.emotionRealtimeError = '';
+        this.emotionRealtimeErrorStreak = 0;
+      },
+      error: (error: any) => {
+        this.emotionRealtimeErrorStreak += 1;
+        this.emotionRealtimeError = `Resultat emotion non disponible (${error?.status || 'erreur'}).`;
+
+        if (this.emotionRealtimeErrorStreak >= 3) {
+          this.emotionRealtimeError = `Resultat emotion non disponible (${error?.status || 'erreur'}). Le rafraichissement auto a ete suspendu.`;
+          this.stopEmotionRealtimePolling();
+        }
+      }
+    });
+  }
+
+  formatPercent(value: any): string {
+    const n = Number(value);
+    return Number.isFinite(n) ? `${n.toFixed(0)}%` : 'N/A';
+  }
+
+  async downloadEmotionPdf(entretien: any): Promise<void> {
+    if (!this.isVideoEntretien(entretien)) {
+      alert('Le PDF émotion est disponible uniquement pour les entretiens vidéo.');
+      return;
+    }
+
+    const entretienId = Number(entretien?.id);
+    if (!Number.isFinite(entretienId) || entretienId <= 0) {
+      alert('Identifiant entretien invalide.');
+      return;
+    }
+
+    this.emotionAnalysisService.getEmotionAnalysis(entretienId).subscribe({
+      next: async (response: any) => {
+        const data = response?.data || response;
+        if (!data) {
+          alert('Aucune donnée émotion disponible pour générer le PDF.');
+          return;
+        }
+
+        const { jsPDF } = await import('jspdf');
+        const doc = new jsPDF();
+        const title = `Rapport Emotion - Entretien #${entretienId}`;
+        const generatedAt = new Date().toLocaleString('fr-FR');
+
+        doc.setFontSize(16);
+        doc.text(title, 14, 16);
+
+        doc.setFontSize(11);
+        doc.text(`Genere le: ${generatedAt}`, 14, 24);
+        doc.text(`Titre entretien: ${entretien?.titre || 'Sans titre'}`, 14, 31);
+
+        let y = 42;
+        const line = (label: string, value: string) => {
+          doc.text(`${label}: ${value}`, 14, y);
+          y += 8;
+        };
+
+        line('Etat analyse', String(data?.status || 'N/A'));
+        line('Emotion dominante', String(data?.dominantEmotion || 'N/A'));
+        line('Engagement', this.formatPercent(data?.engagementScore));
+        line('Confiance moyenne', this.formatPercent(data?.averageConfidence));
+        line('Stress moyen', this.formatPercent(data?.averageStressLevel));
+        line('Joie moyenne', this.formatPercent(data?.averageJoy));
+        line('Neutralite moyenne', this.formatPercent(data?.averageNeutral));
+        line('Frames traites', String(data?.processedFrames ?? 'N/A'));
+
+        y += 4;
+        doc.setFontSize(12);
+        doc.text('Synthese', 14, y);
+        y += 7;
+        doc.setFontSize(10);
+        const assessment = String(data?.overallAssessment || 'Aucune synthese disponible.');
+        const wrapped = doc.splitTextToSize(assessment, 180);
+        doc.text(wrapped, 14, y);
+
+        doc.save(`emotion-result-entretien-${entretienId}.pdf`);
+      },
+      error: (error: any) => {
+        alert(`Impossible de generer le PDF (${error?.status || 'erreur'}).`);
+      }
     });
   }
 
@@ -745,6 +908,32 @@ L'équipe de recrutement`,
 
   goToAddQuestions(entretienId: number): void {
     this.loadQuestions(entretienId);
+  }
+
+  isVideoEntretien(entretien: any): boolean {
+    const mode = String(entretien?.mode || entretien?.modeEntretien || '').toUpperCase();
+    return mode === 'VIDEO';
+  }
+
+  openVideoRoom(entretien: any): void {
+    if (!this.isVideoEntretien(entretien)) {
+      alert('Cet entretien n est pas en mode video.');
+      return;
+    }
+
+    const entretienId = Number(entretien?.id);
+    if (Number.isFinite(entretienId) && entretienId > 0) {
+      this.router.navigate(['/entretiens/video', entretienId]);
+      return;
+    }
+
+    const meetingLink = this.resolveMeetingLink(entretien);
+    if (meetingLink) {
+      window.open(meetingLink, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    alert('Impossible d ouvrir la salle video: identifiant ou lien manquant.');
   }
 
   editEntretien(entretien: any): void {
@@ -907,6 +1096,24 @@ L'équipe de recrutement`,
       if (!/^https?:\/\//i.test(link)) {
         alert('Le lien de réunion doit commencer par http:// ou https://');
         return false;
+      }
+
+      const selectedCandidateId = Number(this.newEntretien.candidatId);
+      if (!Number.isFinite(selectedCandidateId) || selectedCandidateId <= 0) {
+        alert('Pour un entretien vidéo, veuillez sélectionner un seul candidat accepté.');
+        return false;
+      }
+
+      if (this.newEntretien.offreId && this.candidaturesOffre.length > 0) {
+        const selectedIsAccepted = this.candidaturesOffre.some((candidature: any) => {
+          const raw = candidature?.candidatId ?? candidature?.candidat?.id ?? candidature?.idCandidat;
+          return Number(raw) === selectedCandidateId;
+        });
+
+        if (!selectedIsAccepted) {
+          alert('Le candidat sélectionné doit appartenir à la liste des candidats acceptés.');
+          return false;
+        }
       }
     }
 

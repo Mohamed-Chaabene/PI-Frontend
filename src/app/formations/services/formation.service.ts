@@ -25,8 +25,8 @@ export type FormationUpdatePayload = Partial<FormationCreatePayload>;
 @Injectable({ providedIn: 'root' })
 export class FormationService {
 
-  private readonly base = 'http://localhost:8080/api/formations';
-  private readonly api  = 'http://localhost:8080/api';
+  private readonly base = '/api/formations';
+  private readonly api  = '/api';
 
   constructor(private http: HttpClient) {}
 

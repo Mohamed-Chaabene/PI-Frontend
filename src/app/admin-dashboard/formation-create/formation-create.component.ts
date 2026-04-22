@@ -118,7 +118,7 @@ export class FormationCreateComponent implements OnInit {
         this.loading     = true;
         this.suggestions = [];
         return this.http.get<FormationSuggestion[]>(
-          `http://localhost:8080/api/suggestions/formations`
+          `/api/suggestions/formations`
           + `?titre=${encodeURIComponent(titre)}`
         );
       })

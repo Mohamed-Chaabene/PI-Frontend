@@ -65,7 +65,7 @@ export class ChatbotFormationComponent
   private synth: SpeechSynthesis = window.speechSynthesis;
   private voicesLoaded = false;
 
-  private readonly base = 'http://localhost:8080/api';
+  private readonly base = '/api';
 
   // ── Extensions de fichiers acceptées ────────────────────────
   readonly ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.txt,.md,.ppt,.pptx,.xls,.xlsx,.csv';

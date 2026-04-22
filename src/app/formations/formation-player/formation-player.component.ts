@@ -80,7 +80,7 @@ export class FormationPlayerComponent
   private ytPlayer:    any = null;
   private playerReady      = false;
 
-  private readonly base = 'http://localhost:8080/api';
+  private readonly base = '/api';
 
   private readonly categoriesAvecEditeur = [
     'Frontend', 'Backend', 'Data', 'IA', 'Développement'
