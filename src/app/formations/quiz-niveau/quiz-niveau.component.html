@@ -47,7 +47,10 @@
         <h2>Quiz {{ LABELS[niveau] }}</h2>
         <span class="seuil-info">Seuil de réussite : {{ quiz.seuilRequis }}%</span>
       </div>
-      <span class="tentative-badge">Tentative #{{ quiz.tentative }}</span>
+      <span class="tentative-badge">
+        Tentative #{{ quiz.tentative }}
+        <ng-container *ngIf="niveau === 'EXPERT'">/ 3</ng-container>
+      </span>
     </div>
 
     <!-- Progress Bar -->

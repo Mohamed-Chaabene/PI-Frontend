@@ -56,12 +56,14 @@ export class FormationPlayerComponent
   certificatId:       number | null = null;
 
   seuilQuiz = 70;
+  private quizLaunched = false;
 
   tentativesUtilisees = 0;
+  readonly INFINITY = Infinity;
 
-  /** 3 tentatives pour EXPERT, illimité pour les autres niveaux */
+  /** 3 tentatives pour EXPERT ou formation simple, illimité pour les autres niveaux d'un parcours */
   get MAX_TENTATIVES(): number {
-    return this.niveau === 'EXPERT' ? 3 : Infinity;
+    return (this.niveau === 'EXPERT' || !this.parcoursId) ? 3 : Infinity;
   }
 
   quizBloque         = false;
@@ -308,7 +310,6 @@ export class FormationPlayerComponent
     this.quizBloque        = true;
     this.quizBloqueMessage = raison;
     this.retirerProtectionAntiTriche();
-    this.tentativesUtilisees++;
     this.sauvegarderTentatives();
 
     if (this.inscriptionId) {
@@ -485,14 +486,20 @@ export class FormationPlayerComponent
     const validVuesCount = Array.from(this.videosVues).filter(id => playlistIds.has(id)).length;
     
     this.progression = Math.round(validVuesCount / t * 100);
-    if (this.progression >= 100 && !this.isAlreadyCompleted) {
+    if (this.progression >= 100 && !this.isAlreadyCompleted && !this.quizLaunched) {
+      this.quizLaunched = true;
       setTimeout(() => this.lancerQuizFinal(), 2000);
     }
   }
 
 
   lancerQuizFinal(): void {
-    if (!this.inscriptionId) return;
+    if (!this.inscriptionId || this.quizFinalLoading) return;
+    
+    // Si le quiz est déjà affiché et qu'on n'est pas en mode résultat/bloqué, on ignore
+    if (this.showQuizFinal && !this.quizFinalSubmitted && !this.quizBloque) return;
+
+    this.quizLaunched = true;
 
     // Si on est dans un parcours, on redirige vers le quiz de niveau
     // SAUF pour le niveau EXPERT qui utilise le quiz interne avec protection anti-triche
@@ -556,7 +563,6 @@ export class FormationPlayerComponent
     if (!this.inscriptionId) return;
 
     this.arreterTimer();
-    this.tentativesUtilisees++;
     this.sauvegarderTentatives();
 
     let correct = 0;
@@ -593,11 +599,11 @@ export class FormationPlayerComponent
             error: () => {}
           });
         } else if (!resp.reussi) {
-          if (this.niveau === 'EXPERT') {
+          if (this.MAX_TENTATIVES !== Infinity) {
             this.quizFinalMessage =
               `Score obtenu : ${score}% — Minimum requis : ${this.seuilQuiz}%. ` +
               (this.peutReessayer
-                ? `Il vous reste ${this.tentativesRestantes} tentative(s) sur 3.`
+                ? `Il vous reste ${this.tentativesRestantes} tentative(s) sur ${this.MAX_TENTATIVES}.`
                 : `Vous avez épuisé toutes vos tentatives.`);
           } else {
             this.quizFinalMessage =
