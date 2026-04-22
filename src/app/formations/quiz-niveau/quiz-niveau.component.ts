@@ -17,6 +17,7 @@ export class QuizNiveauComponent implements OnInit {
   phase: 'loading' | 'quiz' | 'resultat' = 'loading';
   quiz: QuizNiveau | null = null;
   resultat: QuizResultat | null = null;
+  isReviewMode: boolean = false;
   error: string = '';
 
   // Quiz navigation
@@ -43,7 +44,15 @@ export class QuizNiveauComponent implements OnInit {
     this.parcoursId = Number(this.route.snapshot.paramMap.get('parcoursId'));
     this.niveau = (this.route.snapshot.paramMap.get('niveau') || 'DEBUTANT') as NiveauOrdre;
 
-    // Get inscription ID
+    // Check if we are in review mode
+    const reviewId = this.route.snapshot.queryParamMap.get('reviewId');
+    if (reviewId) {
+      this.isReviewMode = true;
+      this.loadResultat(Number(reviewId));
+      return;
+    }
+
+    // Normal quiz mode: get inscription ID
     const candidatId = Number(localStorage.getItem('candidatId'));
     if (!candidatId || !this.parcoursId) {
       this.error = 'Données manquantes. Veuillez vous connecter.';
@@ -58,6 +67,32 @@ export class QuizNiveauComponent implements OnInit {
       },
       error: () => {
         this.error = 'Inscription au parcours non trouvée.';
+      }
+    });
+  }
+
+  private loadResultat(quizId: number): void {
+    this.phase = 'loading';
+    
+    // Charger le résultat
+    this.quizService.getResultat(quizId).subscribe({
+      next: (res) => {
+        this.resultat = res;
+        this.niveau = res.niveau;
+        this.phase = 'resultat';
+        this.inscriptionParcoursId = res.inscriptionId;
+
+        // Charger l'inscription pour avoir les infos du parcours (titres, etc.)
+        const candidatId = Number(localStorage.getItem('candidatId'));
+        if (candidatId) {
+          this.parcoursService.getInscription(candidatId, this.parcoursId).subscribe({
+            next: (insc) => this.parcours = insc.parcours
+          });
+        }
+      },
+      error: (err) => {
+        this.error = err.error?.error || 'Erreur lors du chargement du résultat.';
+        this.phase = 'resultat';
       }
     });
   }
@@ -94,7 +129,16 @@ export class QuizNiveauComponent implements OnInit {
         this.phase = 'quiz';
       },
       error: (err) => {
-        this.error = err.error?.error || 'Erreur lors de la génération du quiz.';
+        const errorMsg = err.error?.error || '';
+        if (errorMsg.startsWith('ALREADY_PASSED:')) {
+          const quizId = Number(errorMsg.split(':')[1]);
+          if (quizId > 0) {
+            this.isReviewMode = true;
+            this.loadResultat(quizId);
+            return;
+          }
+        }
+        this.error = errorMsg || 'Erreur lors de la génération du quiz.';
         this.phase = 'quiz';
       }
     });

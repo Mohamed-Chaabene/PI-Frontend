@@ -31,6 +31,7 @@ export interface QuizResultat {
   needsFeedback: 'NONE' | 'MICRO' | 'MACRO';
   nextNiveauLabel: string | null;
   niveauSuivantDebloque: NiveauOrdre | null;
+  niveau: NiveauOrdre;
   message: string;
   inscriptionId: number;
   corrections: CorrectionQuestion[];

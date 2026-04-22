@@ -429,12 +429,17 @@ export class FormationPlayerComponent
           }
         });
 
-        this.progression = data.progression || 0;
+        if (data.progression >= 100 || this.isAlreadyCompleted) {
+          this.progression = 100;
+        } else {
+          this.progression = data.progression || 0;
+        }
         this.tentativesUtilisees = data.tentativesUtilisees || 0;
         
         // Sécurité : si on a filtré et que ça change la progression réelle
         if (this.isPlaylist && this.playlistVideos.length > 0) {
-           this.progression = Math.min(100, Math.round(this.videosVues.size / this.playlistVideos.length * 100));
+           const calculated = Math.min(100, Math.round(this.videosVues.size / this.playlistVideos.length * 100));
+           this.progression = this.isAlreadyCompleted ? 100 : calculated;
         }
 
         const first = this.playlistVideos.find(

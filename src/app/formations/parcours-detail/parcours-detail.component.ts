@@ -20,7 +20,6 @@ export class ParcoursDetailComponent implements OnInit {
   formationActuelle: Formation | null = null;
   candidatId: number | null = null;
   loading = true;
-  quizHistorique: QuizHistorique[] = [];
 
   NIVEAUX = NIVEAUX_ORDERED;
   LABELS = NIVEAUX_LABELS;
@@ -100,6 +99,7 @@ export class ParcoursDetailComponent implements OnInit {
 
     this.parcoursService.getInscription(this.candidatId, parcoursId).subscribe({
       next: (insc) => {
+        console.log('📦 Inscription chargée:', insc);
         this.inscription = insc;
         this.loadFormationActuelle(insc.id);
         this.loadQuizHistorique(insc.id);
@@ -132,10 +132,6 @@ export class ParcoursDetailComponent implements OnInit {
   }
 
   private loadQuizHistorique(inscriptionId: number): void {
-    this.quizService.getHistoriqueQuiz(inscriptionId).subscribe({
-      next: (hist) => this.quizHistorique = hist,
-      error: () => {}
-    });
   }
 
   inscrire(): void {
@@ -248,7 +244,8 @@ export class ParcoursDetailComponent implements OnInit {
 
   getIconEmoji(cat: string): string {
     const map: any = {
-      'Développement': '💻', 'Design': '🎨', 'Marketing': '📈', 'Data Science': '🧪',
+      'Développement': '💻', 'Frontend': '⚛️', 'Backend': '⚙️',
+      'Design': '🎨', 'Marketing': '📈', 'Data Science': '🧪',
       'Finance': '💰', 'Langues': '🌎', 'Soft Skills': '🤝', 'DevOps': '🐳'
     };
     return map[cat] || '📚';
@@ -256,7 +253,8 @@ export class ParcoursDetailComponent implements OnInit {
 
   getCatClass(cat: string): string {
     const map: any = {
-      'Développement': 'cat-dev', 'Design': 'cat-design', 'Marketing': 'cat-mkt',
+      'Développement': 'cat-dev', 'Frontend': 'cat-dev', 'Backend': 'cat-dev',
+      'Design': 'cat-design', 'Marketing': 'cat-mkt',
       'Data Science': 'cat-data', 'Finance': 'cat-fin', 'Langues': 'cat-lang',
       'Soft Skills': 'cat-soft', 'DevOps': 'cat-devops'
     };

@@ -99,27 +99,28 @@
 
                 <!-- Candidat inscrit : afficher progression et accès -->
                 <ng-container *ngIf="!isAdmin && inscription">
-                  <div class="inscrit-badge">
-                    <i class="ri-checkbox-circle-fill"></i>
-                    Inscrit · Niveau actuel : <strong>{{ LABELS[inscription.niveauActuel] }}</strong>
+                  <div class="inscrit-info-wrapper">
+                    <div class="inscrit-badge">
+                      <i class="ri-checkbox-circle-fill"></i>
+                      Inscrit · Niveau actuel : <strong>{{ LABELS[inscription.niveauActuel] }}</strong>
+                    </div>
+                    
+                    <div class="completion-banner-small" *ngIf="isParcoursTermine()">
+                      <i class="ri-trophy-line"></i>
+                      <span>Félicitations ! Parcours terminé. Tous les niveaux sont validés.</span>
+                    </div>
                   </div>
 
-                  <div class="d-flex gap-3 flex-wrap" *ngIf="!isParcoursTermine()">
+                  <div class="d-flex gap-3 flex-wrap mt-3" *ngIf="!isParcoursTermine()">
                     <button type="button" class="btn-acceder" (click)="accederFormation()">
                       <i class="ri-play-circle-line me-2"></i>
                       Accéder au cours — {{ LABELS[inscription.niveauActuel] }}
                     </button>
-
                   </div>
 
-                  <div class="parcours-complete-message" *ngIf="isParcoursTermine()">
-                    <i class="ri-trophy-line"></i>
-                    <h4>Félicitations ! Parcours terminé.</h4>
-                    
-                    <p *ngIf="!isFeedbackPending()">Tous les niveaux validés · Votre certificat est disponible.</p>
-                    
-                    <div class="feedback-pending-card" *ngIf="isFeedbackPending()">
-                      <p>Félicitations ! Vous avez terminé le parcours. Partagez votre expérience avec nous !</p>
+                  <div class="feedback-pending-zone mt-3" *ngIf="isParcoursTermine() && isFeedbackPending()">
+                    <div class="feedback-pending-card">
+                      <p>Vous avez terminé le parcours. Partagez votre expérience avec nous !</p>
                       <button class="btn-certif-pending" (click)="allerAuFeedback()">
                         <i class="ri-chat-heart-line me-2"></i>
                         Laisser mon avis global
@@ -142,27 +143,8 @@
             <p>{{ parcours.description }}</p>
           </div>
 
-          <!-- History Section -->
-          <div class="quiz-history-card mt-3" *ngIf="quizHistorique.length > 0">
-            <h3><i class="ri-history-line me-2"></i>Historique de vos tentatives</h3>
-            <div class="history-grid">
-              <div class="history-item" *ngFor="let q of quizHistorique" [class.success]="q.reussi" [class.fail]="!q.reussi">
-                <div class="h-icon"><i [class]="q.reussi ? 'ri-checkbox-circle-line' : 'ri-error-warning-line'"></i></div>
-                <div class="h-info">
-                  <span class="h-level">{{ LABELS[q.niveau] }}</span>
-                  <span class="h-score">Score: {{ q.score }}%</span>
-                </div>
-                <div class="h-meta">
-                  <span class="h-date">{{ q.dateTentative | date:'dd MMM yyyy' }}</span>
-                  <span class="h-status">{{ q.reussi ? 'Réussi' : 'Échec' }}</span>
-                </div>
-              </div>
-            </div>
           </div>
-
-
         </div>
       </div>
     </div>
   </div>
-</div>

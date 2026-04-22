@@ -129,11 +129,11 @@
 
     <!-- Actions -->
     <div class="resultat-actions">
-      <button class="btn-primary" *ngIf="resultat.reussi && resultat.niveauSuivantDebloque"
+      <button class="btn-primary" *ngIf="resultat.reussi && resultat.niveauSuivantDebloque && !isReviewMode"
               (click)="niveauSuivant()">
         <i class="ri-arrow-right-line"></i> Aller au niveau {{ LABELS[resultat.niveauSuivantDebloque] }}
       </button>
-      <button class="btn-primary" *ngIf="resultat.reussi && !resultat.niveauSuivantDebloque"
+      <button class="btn-primary" *ngIf="resultat.reussi && !resultat.niveauSuivantDebloque && !isReviewMode"
               (click)="niveauSuivant()">
         <i class="ri-trophy-line"></i> Obtenir mon certificat
       </button>

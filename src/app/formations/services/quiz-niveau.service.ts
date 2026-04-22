@@ -22,6 +22,10 @@ export class QuizNiveauService {
     return this.http.post<QuizResultat>(`${this.api}/soumettre`, dto);
   }
 
+  getResultat(id: number): Observable<QuizResultat> {
+    return this.http.get<QuizResultat>(`${this.api}/${id}/resultat`);
+  }
+
   getHistoriqueQuiz(inscriptionParcoursId: number): Observable<QuizHistorique[]> {
     return this.http.get<QuizHistorique[]>(`${this.api}/inscription/${inscriptionParcoursId}`);
   }

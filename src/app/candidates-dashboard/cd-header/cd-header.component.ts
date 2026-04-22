@@ -118,6 +118,7 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
                                 type: notification.type,
                                 message: notification.message,
                                 senderId: notification.senderId,
+                                offreEmploiId: notification.offreEmploiId,
                                 createdAt: notification.createdAt,
                                 isRead: false
                             });
@@ -718,7 +719,7 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
             // On récupère l'ID du parcours stocké (temporairement dans offreEmploiId ou autre)
             const parcoursId = notification.offreEmploiId; 
             if (parcoursId) {
-                this.router.navigate(['/formations/parcours', parcoursId]);
+                this.router.navigate(['/formations/parcours', parcoursId, 'feedback']);
             }
         }
     }

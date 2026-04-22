@@ -329,27 +329,55 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
       i { font-size: 1.2rem; }
     }
 
-    .parcours-complete-message {
-      text-align: center;
-      padding: 40px 30px;
-      background: #f0f7ff;
-      border-radius: 24px;
-      border: 1px solid rgba($primary, 0.2);
-      i { font-size: 50px; color: #f1c40f; margin-bottom: 15px; display: block; }
-      h4 { margin: 0 0 10px; color: $text-main; font-weight: 800; font-size: 1.3rem; }
-      p { margin: 0; color: $text-muted; font-size: 0.95rem; }
+    .inscrit-info-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
 
+    .completion-banner-small {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      background: #f0fdf4;
+      color: #16a34a;
+      border: 1px solid #dcfce7;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      animation: fadeInDown 0.5s ease;
+      i { font-size: 1.2rem; color: #f1c40f; }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback-pending-zone {
+      width: 100%;
       .feedback-pending-card {
-        margin-top: 25px;
-        padding-top: 20px;
-        border-top: 1px solid rgba($primary, 0.1);
-        p { margin-bottom: 15px; font-weight: 600; color: $text-main; }
+        background: #f0f7ff;
+        border: 1px dashed $primary;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        
+        p { 
+          margin-bottom: 12px; 
+          font-weight: 600; 
+          color: $text-main; 
+          font-size: 0.9rem;
+        }
         
         .btn-certif-pending {
           background: linear-gradient(135deg, $primary 0%, #06b6d4 100%);
           color: #fff;
           border: none;
-          padding: 8px 18px;
+          padding: 10px 20px;
           border-radius: 30px;
           font-weight: 700;
           font-size: 0.85rem;
@@ -365,7 +393,6 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
             box-shadow: 0 6px 20px rgba($primary, 0.4);
             filter: brightness(1.1);
           }
-
           i { font-size: 1.1rem; }
         }
       }
@@ -438,7 +465,10 @@ $shadow-card:   0 2px 12px rgba(0,0,0,0.06);
         .h-icon, .h-status { color: #dc2626; }
       }
       
-      &:hover { transform: scale(1.02); }
+      &:hover { 
+        transform: translateY(-3px); 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      }
     }
   }
 

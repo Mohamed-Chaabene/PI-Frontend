@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { ParcoursService } from '../services/parcours.service';
 
 @Component({
   selector: 'app-macro-feedback',
@@ -406,11 +407,24 @@ export class MacroFeedbackComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private parcoursService: ParcoursService
   ) {}
 
   ngOnInit(): void {
     this.parcoursId = Number(this.route.snapshot.paramMap.get('id'));
+    
+    // Charger l'inscription si elle n'est pas déjà en mémoire
+    const candidatId = localStorage.getItem('candidatId') || JSON.parse(localStorage.getItem('user') || '{}').id;
+    if (candidatId && this.parcoursId) {
+      this.parcoursService.getInscription(Number(candidatId), this.parcoursId).subscribe({
+        next: (insc) => {
+          localStorage.setItem('currentParcoursInscription', JSON.stringify(insc));
+        },
+        error: (err) => console.error("Erreur chargement inscription feedback:", err)
+      });
+    }
+
     this.route.queryParams.subscribe(params => {
       this.mode = params['mode'] || null;
       this.formationId = params['formationId'] ? Number(params['formationId']) : null;
