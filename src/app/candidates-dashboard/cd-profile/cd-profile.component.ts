@@ -37,6 +37,7 @@ export class CdProfileComponent implements OnInit {
     isEditingEducation = false;
     isEditingBackground = false;
     isEditingPassion = false;
+    isEditingCompetences = false;
     isDescriptionFormSubmitted = false;
     isEducationFormSubmitted = false;
     isBackgroundFormSubmitted = false;
@@ -46,6 +47,9 @@ export class CdProfileComponent implements OnInit {
     isContactInfoSaved = false;
     isPassionSaved = false;
     passionAndGoals = '';
+    newCompetence = '';
+    availableCompetences: any[] = [];
+    selectedCompetence: string = '';
     contactData: any = {
         prenom: ''
     };
@@ -425,6 +429,7 @@ export class CdProfileComponent implements OnInit {
     ngOnInit() {
         const storedUserName = localStorage.getItem('userName');
         this.currentUserName = storedUserName || 'Candidat';
+        this.loadAvailableCompetences();
         this.loadCandidateData();
     }
 
@@ -541,6 +546,22 @@ export class CdProfileComponent implements OnInit {
             }
         }
         return '';
+    }
+
+    loadAvailableCompetences(): void {
+        this.apiService.getAllCompetences().subscribe({
+            next: (data: any) => {
+                if (Array.isArray(data)) {
+                    this.availableCompetences = data;
+                } else if (Array.isArray(data.data)) {
+                    this.availableCompetences = data.data;
+                }
+            },
+            error: (err) => {
+                console.error('Error loading competences:', err);
+                this.availableCompetences = [];
+            }
+        });
     }
 
     private ensureCandidateId(onReady: () => void): void {
@@ -1376,6 +1397,46 @@ export class CdProfileComponent implements OnInit {
         if (this.cvUrl) {
             window.open(this.cvUrl, '_blank');
         }
+    }
+
+    addCompetence(): void {
+        if (this.selectedCompetence && this.selectedCompetence.trim().length > 0) {
+            if (!this.candidateData.competences) {
+                this.candidateData.competences = [];
+            }
+            // Check if competence is not already added
+            if (!this.candidateData.competences.includes(this.selectedCompetence.trim())) {
+                this.candidateData.competences.push(this.selectedCompetence.trim());
+            }
+            this.selectedCompetence = '';
+        }
+    }
+
+    removeCompetence(index: number): void {
+        if (index >= 0 && index < this.candidateData.competences.length) {
+            this.candidateData.competences.splice(index, 1);
+        }
+    }
+
+    saveCompetences(): void {
+        this.ensureCandidateId(() => {
+            this.isSaving = true;
+            this.errorMessage = '';
+            this.successMessage = '';
+            const competencesPayload = { competences: this.candidateData.competences || [] };
+            this.apiService.updateCandidateCompetences(this.candidateData.id, competencesPayload).subscribe({
+                next: () => {
+                    this.isSaving = false;
+                    this.successMessage = 'Compétences sauvegardées avec succès!';
+                    this.isEditingCompetences = false;
+                    setTimeout(() => this.successMessage = '', 3000);
+                },
+                error: (error) => {
+                    this.isSaving = false;
+                    this.errorMessage = `Erreur lors de la sauvegarde des compétences: ${error.message || error.statusText}`;
+                }
+            });
+        });
     }
 }
 

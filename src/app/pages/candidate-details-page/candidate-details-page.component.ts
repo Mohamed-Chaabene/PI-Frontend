@@ -95,6 +95,8 @@ export class CandidateDetailsPageComponent implements OnInit {
     isDescriptionSaved = false;
     isContactInfoSaved = false;
     isPassionSaved = false;
+    isEditingCompetences = false;
+    newCompetence = '';
     
     // For viewing other candidates' profiles
     viewingCandidateId: number | null = null;
@@ -1716,5 +1718,74 @@ export class CandidateDetailsPageComponent implements OnInit {
             // Fallback: open in new window
             window.open(this.cvUrl, '_blank');
         }
+    }
+
+    /**
+     * Add a new competence skill
+     */
+    addCompetence(): void {
+        if (this.newCompetence.trim() === '') {
+            this.errorMessage = 'Please enter a skill name';
+            return;
+        }
+
+        // Check if competence already exists
+        if (this.candidateData.competences.includes(this.newCompetence.trim())) {
+            this.errorMessage = 'This skill already exists';
+            return;
+        }
+
+        this.candidateData.competences.push(this.newCompetence.trim());
+        this.newCompetence = '';
+        this.errorMessage = '';
+        this.successMessage = 'Skill added successfully!';
+        setTimeout(() => {
+            this.successMessage = '';
+        }, 2000);
+    }
+
+    /**
+     * Remove a competence skill
+     */
+    removeCompetence(index: number): void {
+        this.candidateData.competences.splice(index, 1);
+        this.successMessage = 'Skill removed successfully!';
+        setTimeout(() => {
+            this.successMessage = '';
+        }, 2000);
+    }
+
+    /**
+     * Save competences to the backend
+     */
+    saveCompetences(): void {
+        if (!this.candidateData.id) {
+            this.errorMessage = 'Please save your profile first before adding skills';
+            return;
+        }
+
+        this.isSaving = true;
+        this.errorMessage = '';
+        this.successMessage = '';
+
+        const payload = {
+            competences: this.candidateData.competences
+        };
+
+        this.apiService.updateCandidateCompetences(this.candidateData.id, payload).subscribe({
+            next: (response: any) => {
+                this.isSaving = false;
+                this.successMessage = 'Skills saved successfully!';
+                this.isEditingCompetences = false;
+                setTimeout(() => {
+                    this.successMessage = '';
+                }, 3000);
+            },
+            error: (error: any) => {
+                this.isSaving = false;
+                console.error('Error saving competences:', error);
+                this.errorMessage = `Error saving skills: ${error.error?.message || error.message || 'Unknown error'}`;
+            }
+        });
     }
 }
