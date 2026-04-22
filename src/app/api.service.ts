@@ -318,7 +318,7 @@ export class ApiService {
       temperature: Math.max(0.6, Number(payload?.temperature) || 0.7),
     };
 
-    // OSS-only flow: avoid backend /api route here because it can be auth-protected (403).
+    // Utilise uniquement l'API externe (Pollinations)
     return this.callExternalOpenSourceQuestionApi(generationContext, 'full').pipe(
       map((rows) => normalizeOrThrow(rows, generationContext, true)),
       catchError(() => this.callExternalOpenSourceQuestionApi(retryPayload, 'simple').pipe(
@@ -2100,10 +2100,20 @@ traiterPhoto(formData: FormData): Observable<any> {
   getMessagesForCurrentUser(): Observable<any[]> {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+    if (!token || token === 'undefined' || token === 'null') {
+      // Pas de token : on évite l'appel et on retourne un tableau vide
+      return of([]);
     }
-    return this.http.get<any[]>(`${this.apiUrl}/messages/mes-messages`, { headers });
+    headers = headers.set('Authorization', `Bearer ${token}`);
+    return this.http.get<any[]>(`${this.apiUrl}/messages/mes-messages`, { headers }).pipe(
+      catchError((err) => {
+        if (err.status === 403 || err.status === 401) {
+          // Si non autorisé, on retourne un tableau vide sans bloquer l'UI
+          return of([]);
+        }
+        return throwError(() => err);
+      })
+    );
   }
 
   // Alias conservé pour compatibilité avec l'existant

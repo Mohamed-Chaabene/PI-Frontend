@@ -49,6 +49,9 @@ import { RdProfileComponent } from './recruiter-dashboard/rd-profile/rd-profile.
 import { RdChangePasswordComponent } from './recruiter-dashboard/rd-change-password/rd-change-password.component';
 import { RdInterviews } from './recruiter-dashboard/rd-interviews/rd-interviews';
 import { RdAddQuestions } from './recruiter-dashboard/rd-add-questions/rd-add-questions';
+import { RdCandidaturesListComponent } from './recruiter-dashboard/rd-candidatures-list/rd-candidatures-list.component';
+import { OffreStatistiquesComponent } from './recruiter-dashboard/offre-statistiques/offre-statistiques.component';
+import { OffreRechercheAvanceeComponent } from './recruiter-dashboard/offre-recherche-avancee/offre-recherche-avancee.component';
 import { PublicTestPassPageComponent } from './pages/public-test-pass-page/public-test-pass-page.component';
 import { CandidateEntretiensPageComponent } from './pages/candidate-entretiens-page/candidate-entretiens-page.component';
 import { CdDocumentsComponent } from './candidates-dashboard/cd-documents/cd-documents.component';  
@@ -80,6 +83,7 @@ export const routes: Routes = [
     {path: 'pricing', component: PricingPageComponent},
     {path: 'jobs-grid', component: JobsGridPageComponent},
     {path: 'jobs-listing', component: JobsListingPageComponent},
+    {path: 'job-details/:id', component: JobDetailsPageComponent},
     {path: 'job-details', component: JobDetailsPageComponent},
     {path: 'categories', component: CategoriesPageComponent},
     {path: 'candidates', component: CandidatesPageComponent},
@@ -149,6 +153,9 @@ export const routes: Routes = [
             {path: 'change-password', component: RdChangePasswordComponent},
             {path: 'interviews', component: RdInterviews},
             {path: 'interviews/add-questions/:id', component: RdAddQuestions},
+            {path: 'candidatures', component: RdCandidaturesListComponent},
+            {path: 'offre-statistiques', component: OffreStatistiquesComponent},
+            {path: 'offre-recherche-avancee', component: OffreRechercheAvanceeComponent},
         ]
 
     },{
