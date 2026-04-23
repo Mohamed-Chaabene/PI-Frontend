@@ -1,0 +1,270 @@
+<div class="navbar-area" [ngClass]="{'white-navbar': router.url === '/index-2', 'sticky': isSticky}">
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg" [class.active]="classApplied">
+            <!-- Logo -->
+            <a class="navbar-brand" routerLink="/" [ngClass]="{'d-none': router.url === '/index-2'}">
+                <img src="images/logo.png" alt="logo">
+            </a>
+            @if (router.url === '/index-2') {
+                <a class="navbar-brand" routerLink="/">
+                    <img src="images/white-logo2.png" alt="white-logo">
+                </a>
+            }
+
+            <button class="navbar-toggler" type="button" (click)="toggleClass()">
+                <span class="burger-menu">
+                    <span class="top-bar"></span>
+                    <span class="middle-bar"></span>
+                    <span class="bottom-bar"></span>
+                </span>
+            </button>
+
+            <div class="collapse navbar-collapse" [ngClass]="{'style-two': router.url === '/index-3'}">
+                <!-- Categories (only on index-3) -->
+                @if (router.url === '/index-3') {
+                    <div class="navbar-categories d-none d-xl-block">
+                        <button type="button" class="d-inline-block bg-transparent position-relative border-0">
+                            <i class="ri-grid-fill"></i> Browse Category
+                        </button>
+                        <ul class="categories-menu mb-0 list-unstyled">
+                            <li><a routerLink="/">Engineering</a></li>
+                            <li><a routerLink="/">Banking</a></li>
+                            <li><a routerLink="/">Beauty Care</a></li>
+                            <li><a routerLink="/">Cleaning</a></li>
+                            <li><a routerLink="/">Construction</a></li>
+                            <li><a routerLink="/">Finance</a></li>
+                            <li><a routerLink="/">Technology</a></li>
+                            <li><a routerLink="/">Healthcare</a></li>
+                            <li><a routerLink="/">IT Consultant</a></li>
+                        </ul>
+                    </div>
+                }
+
+                <ul class="navbar-nav">
+                    <!-- Home -->
+                    <li class="nav-item">
+                        <a href="javascript:void(0)" class="dropdown-toggle nav-link">Home</a>
+                        <ul class="dropdown-menu">
+                            <li><a routerLink="/" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home Demo - 1</a></li>
+                            <li><a routerLink="/index-2" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home Demo - 2</a></li>
+                            <li><a routerLink="/index-3" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home Demo - 3</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Jobs -->
+                    <li class="nav-item">
+                        <a href="javascript:void(0)" class="dropdown-toggle nav-link">Jobs</a>
+                        <ul class="dropdown-menu">
+                            <li><a routerLink="/jobs-grid" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Jobs Grid</a></li>
+                            <li><a routerLink="/jobs-listing" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Jobs Listing</a></li>
+                            <li><a routerLink="/job-details" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Job Details</a></li>
+                            <li><a routerLink="/categories" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Categories</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Formations -->
+                    <li class="nav-item">
+                        <a href="javascript:void(0)" class="dropdown-toggle nav-link">Formations</a>
+                        <ul class="dropdown-menu">
+                            <li><a routerLink="/formations" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Liste des formations</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Freelance (New) -->
+                    <li class="nav-item">
+                        <a routerLink="/freelance" class="nav-link" routerLinkActive="active">Freelance</a>
+                    </li>
+
+                    <!-- Candidates -->
+                    <li class="nav-item">
+                        <a href="javascript:void(0)" class="dropdown-toggle nav-link">Candidates</a>
+                        <ul class="dropdown-menu">
+                            <li><a routerLink="/candidates" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Candidates</a></li>
+                            <li *ngIf="normalizedRole === 'CANDIDAT'">
+                                <a routerLink="/candidates-dashboard" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">My Dashboard</a>
+                            </li>
+                            <li *ngIf="normalizedRole === 'CANDIDAT'">
+                                <a routerLink="/candidate-entretiens" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Mes Entretiens</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <div class="others-option d-md-flex align-items-center">
+                    <!-- Not Logged In -->
+                    <div class="option-item" *ngIf="!isLoggedIn">
+                        <span class="d-block login-register" (click)="openPopup()">
+                            <i class="ri-user-line"></i> Login / Register
+                        </span>
+                    </div>
+
+                    <!-- Logged In - All Roles -->
+                    <div class="option-item" *ngIf="isLoggedIn">
+                        <div class="dropdown position-relative">
+                            <button class="candidate-badge" type="button" (click)="toggleUserDropdown()" [title]="userName">
+                                <i class="ri-user-line"></i>
+                                <span class="ms-1">{{ userName | slice:0:12 }}{{ userName.length > 12 ? '...' : '' }}</span>
+                            </button>
+
+                            <ul class="dropdown-menu" [ngClass]="{'show': userDropdownOpen}">
+                                <li class="user-info-item">
+                                    <strong>{{ userName }}</strong><br>
+                                    <small class="text-muted">{{ normalizedRole }}</small>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+
+                                <!-- Role-based Dashboard Links -->
+                                <li *ngIf="normalizedRole === 'CANDIDAT'">
+                                    <a class="dropdown-item" routerLink="/candidates-dashboard" (click)="closeUserDropdown()">
+                                        <i class="ri-dashboard-line"></i> Dashboard Candidat
+                                    </a>
+                                </li>
+                                <li *ngIf="normalizedRole === 'RECRUTEUR'">
+                                    <a class="dropdown-item" routerLink="/recruiter-dashboard" (click)="closeUserDropdown()">
+                                        <i class="ri-dashboard-line"></i> Dashboard Recruteur
+                                    </a>
+                                </li>
+                                <li *ngIf="normalizedRole === 'CLIENT_FREELANCE'">
+                                    <a class="dropdown-item" routerLink="/freelance" (click)="closeUserDropdown()">
+                                        <i class="ri-briefcase-line"></i> Espace Freelance
+                                    </a>
+                                </li>
+                                <li *ngIf="normalizedRole === 'ORGANISATEUR'">
+                                    <a class="dropdown-item" routerLink="/evenement-dashboard" (click)="closeUserDropdown()">
+                                        <i class="ri-calendar-line"></i> Dashboard Événements
+                                    </a>
+                                </li>
+                                <li *ngIf="normalizedRole === 'ADMIN'">
+                                    <a class="dropdown-item" routerLink="/admin-dashboard" (click)="closeUserDropdown()">
+                                        <i class="ri-shield-line"></i> Admin Dashboard
+                                    </a>
+                                </li>
+
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" (click)="deleteAccount(); closeUserDropdown()" style="cursor: pointer;">
+                                        <i class="ri-delete-bin-line"></i> Supprimer le compte
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" (click)="logout(); closeUserDropdown()" style="cursor: pointer;">
+                                        <i class="ri-logout-box-line"></i> Déconnexion
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Hotline -->
+                    <div class="option-item" [ngClass]="{'d-none': router.url === '/index-2' || router.url === '/index-3'}">
+                        <a href="tel:+1 (514) 312-5678" class="d-inline-block hotline fw-medium">
+                            <i class="ri-phone-line"></i>
+                            <span class="d-block fw-normal">Call Us</span>
+                            +1 (514) 312-5678
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<!-- Login / Register Modal -->
+@if (isOpen) {
+    <div class="modal fade loginRegisterModal show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.6);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <button type="button" class="btn-close position-absolute" style="top: 15px; right: 15px; z-index: 10;" (click)="closePopup()"></button>
+
+                <div class="modal-body p-5">
+                    <!-- Login Tab -->
+                    @if (currentTab === 'tab1') {
+                        <div class="text-center mb-4">
+                            <img src="images/logo.png" alt="logo" style="max-height: 70px;">
+                            <h4 class="mt-3 fw-bold">Connexion</h4>
+                        </div>
+                        <form (ngSubmit)="login()">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" [(ngModel)]="loginData.email" name="email" placeholder="Votre email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" [(ngModel)]="loginData.motDePasse" name="motDePasse" placeholder="Mot de passe" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-2">Se connecter</button>
+                            <div class="text-center mt-3">
+                                <button type="button" class="btn btn-link" (click)="switchTab($event, 'tab2')">Créer un compte</button>
+                                <span class="mx-2">•</span>
+                                <button type="button" class="btn btn-link" (click)="switchTab($event, 'tab3')">Mot de passe oublié ?</button>
+                            </div>
+                        </form>
+                    }
+
+                    <!-- Register Tab -->
+                    @if (currentTab === 'tab2') {
+                        <div class="text-center mb-4">
+                            <img src="images/logo.png" alt="logo" style="max-height: 70px;">
+                            <h4 class="mt-3 fw-bold">Créer un compte</h4>
+                        </div>
+
+                        <!-- Role Selection Cards -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-6" *ngFor="let role of roles">
+                                <button type="button" class="btn w-100 py-3" 
+                                        [ngClass]="{'btn-primary text-white': registerRole === role.key, 'btn-outline-primary': registerRole !== role.key}"
+                                        (click)="registerRole = role.key">
+                                    {{ role.label }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <form (ngSubmit)="register()">
+                            <div class="mb-3">
+                                <label class="form-label">Nom complet</label>
+                                <input type="text" class="form-control" [(ngModel)]="registerData.nom" name="nom" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" [(ngModel)]="registerData.email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" [(ngModel)]="registerData.motDePasse" name="motDePasse" required>
+                            </div>
+
+                            <!-- Extra fields based on role -->
+                            <div *ngIf="registerRole === 'ROLE_CLIENT_FREELANCE'">
+                                <div class="mb-3">
+                                    <label>Entreprise</label>
+                                    <input type="text" class="form-control" [(ngModel)]="registerData.entreprise" name="entreprise">
+                                </div>
+                                <div class="mb-3">
+                                    <label>Budget (TND)</label>
+                                    <input type="number" class="form-control" [(ngModel)]="registerData.budget" name="budget">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2">S'inscrire</button>
+                        </form>
+                    }
+
+                    <!-- Forgot Password Tab -->
+                    @if (currentTab === 'tab3') {
+                        <div class="text-center mb-4">
+                            <h4>Mot de passe oublié</h4>
+                            <p class="text-muted">Entrez votre numéro de téléphone</p>
+                        </div>
+                        <form (ngSubmit)="resetPassword()">
+                            <div class="mb-3">
+                                <input type="tel" class="form-control" [(ngModel)]="forgotPasswordData.phone" name="phone" placeholder="Numéro de téléphone" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Envoyer le nouveau mot de passe</button>
+                            <button type="button" class="btn btn-link w-100 mt-2" (click)="switchTab($event, 'tab1')">Retour</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}

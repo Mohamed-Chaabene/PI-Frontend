@@ -1,0 +1,160 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4>Ajouter des Questions à l'Entretien #{{ entretienId }}</h4>
+          <div>
+            <button class="btn btn-info btn-sm me-2" (click)="testAuth()">Test Auth</button>
+            <button class="btn btn-secondary" (click)="goBack()">Retour aux Entretiens</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Form to add question -->
+          <div class="mb-4 p-3 border rounded">
+            <h5 *ngIf="!editingQuestion">Ajouter une Nouvelle Question</h5>
+            <h5 *ngIf="editingQuestion" class="text-warning">Modifier la Question</h5>
+            <form (ngSubmit)="saveQuestion()">
+              <!-- Row 1: Contenu (Full Width) -->
+              <div class="row">
+                <div class="col-md-12 mb-3" data-validation-field="contenu">
+                  <label for="contenu" class="form-label">Contenu de la Question <span class="text-danger">*</span></label>
+                  <textarea class="form-control" [class.is-invalid]="hasFieldError('contenu')" id="contenu" [(ngModel)]="newQuestion.contenu" name="contenu" rows="3" required placeholder="Minimum 10 caractères, maximum 1000"></textarea>
+                  <div class="invalid-feedback d-block" *ngFor="let error of getFieldErrors('contenu')">
+                    <i class="ri-error-warning-line"></i> {{ error }}
+                  </div>
+                  <small class="form-text text-muted">Caractères: {{ newQuestion.contenu.length }} / 1000</small>
+                </div>
+              </div>
+
+              <!-- Row 2: Type, Niveau, Points (3 colonnes égales) -->
+              <div class="row">
+                <div class="col-md-4 mb-3" data-validation-field="type">
+                  <label for="type" class="form-label">Type de Question <span class="text-danger">*</span></label>
+                  <select class="form-control" [class.is-invalid]="hasFieldError('type')" id="type" [(ngModel)]="newQuestion.type" name="type" required (change)="onQuestionTypeChange()">
+                    <option value="">-- Sélectionner --</option>
+                    <option *ngFor="let type of typesQuestion" [value]="type">{{ type }}</option>
+                  </select>
+                  <div class="invalid-feedback d-block" *ngFor="let error of getFieldErrors('type')">
+                    <i class="ri-error-warning-line"></i> {{ error }}
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3" data-validation-field="niveau">
+                  <label for="niveau" class="form-label">Niveau <span class="text-danger">*</span></label>
+                  <select class="form-control" [class.is-invalid]="hasFieldError('niveau')" id="niveau" [(ngModel)]="newQuestion.niveau" name="niveau" required>
+                    <option value="">-- Sélectionner --</option>
+                    <option *ngFor="let niveau of niveaux" [value]="niveau">{{ niveau }}</option>
+                  </select>
+                  <div class="invalid-feedback d-block" *ngFor="let error of getFieldErrors('niveau')">
+                    <i class="ri-error-warning-line"></i> {{ error }}
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3" data-validation-field="points">
+                  <label for="points" class="form-label">Points <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" [class.is-invalid]="hasFieldError('points')" id="points" [(ngModel)]="newQuestion.points" name="points" min="1" max="100" required>
+                  <div class="invalid-feedback d-block" *ngFor="let error of getFieldErrors('points')">
+                    <i class="ri-error-warning-line"></i> {{ error }}
+                  </div>
+                  <small class="form-text text-muted d-block">Points: 1-100</small>
+                </div>
+              </div>
+
+              <!-- Row 3: Domaine (Full Width) -->
+              <div class="row">
+
+              </div>
+
+              <!-- Choices for QCM/QCU -->
+              <div *ngIf="newQuestion.type !== 'VRAI_FAUX'" class="mb-3" data-validation-field="choix">
+                <label class="form-label">Réponses Possibles</label>
+                <div *ngFor="let choice of newQuestion.choix; let i = index; trackBy: trackByIndex" class="input-group mb-2">
+                  <input type="text" class="form-control" [(ngModel)]="newQuestion.choix[i]" [name]="'choice' + i" placeholder="Réponse {{ i + 1 }}">
+                  <button type="button" class="btn btn-outline-danger" (click)="removeChoice(i)" *ngIf="newQuestion.choix.length > 2">
+                    <i class="ri-delete-bin-line"></i>
+                  </button>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" (click)="addChoice()">
+                  <i class="ri-add-line"></i> Ajouter une réponse
+                </button>
+                <div class="invalid-feedback d-block" *ngFor="let error of getFieldErrors('choix')">
+                  <i class="ri-error-warning-line"></i> {{ error }}
+                </div>
+              </div>
+
+              <div class="mb-3" data-validation-field="bonneReponse">
+                <label for="bonneReponse" class="form-label">Bonne réponse <span class="text-danger">*</span></label>
+                <ng-container *ngIf="newQuestion.type === 'VRAI_FAUX'">
+                  <select class="form-control" [class.is-invalid]="hasFieldError('bonneReponse')" id="bonneReponse" [(ngModel)]="newQuestion.bonneReponse" name="bonneReponse" required>
+                    <option value="">-- Choisir --</option>
+                    <option value="VRAI">VRAI</option>
+                    <option value="FAUX">FAUX</option>
+                  </select>
+                </ng-container>
+                <ng-container *ngIf="newQuestion.type === 'QCU'">
+                  <select class="form-control" [class.is-invalid]="hasFieldError('bonneReponse')" id="bonneReponse" [(ngModel)]="newQuestion.bonneReponse" name="bonneReponse" required>
+                    <option value="">-- Choisir --</option>
+                    <option *ngFor="let choice of newQuestion.choix; let i = index" [value]="choice" [disabled]="!choice.trim()">{{ choice || ('Réponse ' + (i + 1)) }}</option>
+                  </select>
+                </ng-container>
+                <ng-container *ngIf="newQuestion.type === 'QCM'" class="ms-2">
+                  <div class="form-text mb-2">Sélectionnez toutes les réponses correctes pour QCM :</div>
+                  <div class="form-check" *ngFor="let choice of newQuestion.choix; let i = index; trackBy: trackByIndex">
+                    <input class="form-check-input" type="checkbox" [id]="'correctChoice' + i" [checked]="newQuestion.bonneReponses.includes(i)" (change)="toggleCorrectChoice(i)" [disabled]="!choice.trim()">
+                    <label class="form-check-label" [for]="'correctChoice' + i">{{ choice || ('Réponse ' + (i + 1)) }}</label>
+                  </div>
+                </ng-container>
+                <div class="invalid-feedback d-block" *ngFor="let error of getFieldErrors('bonneReponse')">
+                  <i class="ri-error-warning-line"></i> {{ error }}
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-success">
+                <ng-container *ngIf="!editingQuestion">Ajouter la Question</ng-container>
+                <ng-container *ngIf="editingQuestion">Modifier la Question</ng-container>
+              </button>
+              <button *ngIf="editingQuestion" type="button" class="btn btn-secondary ms-2" (click)="cancelEdit()">Annuler</button>
+            </form>
+          </div>
+
+          <!-- List of existing questions -->
+          <div class="table-responsive">
+            <h5>Questions Existantes</h5>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Contenu</th>
+                  <th>Type</th>
+                  <th>Domaine</th>
+                  <th>Niveau</th>
+                  <th>Points</th>
+                  <th>Bonne réponse</th>
+                  <th>Réponses</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let question of questions">
+                  <td>{{ question.contenu }}</td>
+                  <td>{{ question.type }}</td>
+                  <td>{{ question.domaine?.nom || question.domaine || '-' }}</td>
+                  <td>{{ question.niveau || '-' }}</td>
+                  <td>{{ question.points || 1 }}</td>
+                  <td>{{ getCorrectAnswers(question) }}</td>
+                  <td>
+                    <ul class="list-unstyled mb-0">
+                      <li *ngFor="let choix of (question.choix || [])">{{ getChoiceText(choix) }}</li>
+                    </ul>
+                  </td>
+                  <td>
+                    <button class="btn btn-warning btn-sm me-1" type="button" (click)="editQuestion(question)">Modifier</button>
+                    <button class="btn btn-danger btn-sm" type="button" (click)="deleteQuestion(question.id)">Supprimer</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

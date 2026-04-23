@@ -1,0 +1,44 @@
+<div class="freelance-wrapper">
+  <div class="fl-espace-badge">Mode Client</div>
+  <a routerLink="/freelance/client" class="fl-back-link">← Retour au dashboard client</a>
+  <h1 class="fl-title">Publier une nouvelle mission</h1>
+
+  <div class="fl-form-card" *ngIf="!soumis" [formGroup]="form">
+    <div *ngIf="erreur" class="fl-error" style="margin-bottom:16px">{{ erreur }}</div>
+
+    <div class="fl-form-group">
+      <label class="fl-label">Titre de la mission <span class="fl-required">*</span></label>
+      <input type="text" formControlName="titre"
+             class="fl-input" placeholder="Ex : Développeur Angular senior"/>
+    </div>
+
+    <div class="fl-form-group">
+      <label class="fl-label">Description <span class="fl-required">*</span></label>
+      <textarea formControlName="description" rows="4"
+                class="fl-input" placeholder="Décrivez la mission en détail..."></textarea>
+    </div>
+
+    <div class="fl-form-group">
+      <label class="fl-label">Budget (TND) <span class="fl-required">*</span></label>
+      <input type="number" formControlName="budget"
+             class="fl-input" placeholder="Ex : 5000"/>
+    </div>
+
+    <div class="fl-form-group">
+      <label class="fl-label">
+        Compétences requises <span class="fl-required">*</span>
+        <span class="fl-hint"> — séparées par virgule</span>
+      </label>
+      <input type="text" formControlName="competences"
+             class="fl-input" placeholder="Angular, Java, PostgreSQL"/>
+    </div>
+
+    <button class="fl-primary-btn" (click)="soumettre()" [disabled]="form.invalid">
+      Publier la mission
+    </button>
+  </div>
+
+  <div class="fl-success-card" *ngIf="soumis">
+    Mission publiée avec succès ! Redirection...
+  </div>
+</div>

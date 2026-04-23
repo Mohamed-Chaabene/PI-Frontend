@@ -1,0 +1,36 @@
+<div class="freelance-wrapper">
+  <div class="fl-espace-badge">Espace Freelance</div>
+  <div class="fl-page-header">
+    <h1 class="fl-title">Mes Candidatures</h1>
+    <a routerLink="/freelance" class="fl-back-btn">← Tableau de bord</a>
+  </div>
+
+  <div *ngIf="loading" class="fl-loading">Chargement des candidatures...</div>
+  <div *ngIf="erreur" class="fl-error">{{ erreur }}</div>
+
+  <div class="fl-missions-list" *ngIf="!loading && !erreur">
+    <div *ngIf="candidatures.length === 0" class="fl-empty">
+      Vous n'avez pas encore postulé à une mission.
+      <a routerLink="/freelance/projects">Parcourir les missions disponibles →</a>
+    </div>
+
+    <div class="fl-mission-card" *ngFor="let c of candidatures">
+      <div class="fl-mission-header">
+        <span class="fl-mission-title">{{ c.missionTitre || 'Mission #' + c.missionId }}</span>
+        <span class="fl-status-badge" [ngClass]="{
+          'fl-open':     c.statut === 'EN_ATTENTE',
+          'fl-accepted': c.statut === 'ACCEPTEE',
+          'fl-rejected': c.statut === 'REJETEE'
+        }">{{ c.statut }}</span>
+      </div>
+      <div class="fl-mission-footer">
+        <span class="fl-budget" *ngIf="c.datePostulation">
+          Postulé le {{ c.datePostulation | date:'dd/MM/yyyy HH:mm' }}
+        </span>
+        <a [routerLink]="['/freelance/projects', c.missionId]" class="fl-secondary-btn">
+          Voir la mission
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

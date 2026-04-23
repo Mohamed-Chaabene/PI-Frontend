@@ -1,0 +1,1082 @@
+﻿npx : - Generating browser application bundles (phase: setup)...
+At line:1 char:1
++ npx ng build --configuration development 2> build_errors.txt
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (- Generating br...hase: setup)...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ÔêÜ Browser application bundle generation complete.
+ÔêÜ Browser application bundle generation complete.
+- Copying assets...
+ÔêÜ Copying assets complete.
+- Generating index html...
+ÔêÜ Index html generation complete.
+[1m[33m
+./src/app/admin-dashboard/formation-create/formation-create.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 482, column 23 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/admin-dashboard/forma
+tion-create/formation-create.component.scss:482:23:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+482 |         small { color: darken($primary-light, 30%); }
+
+
+src\app\admin-dashboard\formation-create\formation-create.component.scss 483:24  root stylesheet
+
+
+./src/app/admin-dashboard/formation-create/formation-create.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 482, column 23 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/admin-dashboard/forma
+tion-create/formation-create.component.scss:482:23:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -31.9415448852%)
+color.adjust($color, $lightness: -30%)
+
+More info: https://sass-lang.com/d/color-functions
+
+482 |         small { color: darken($primary-light, 30%); }
+
+
+src\app\admin-dashboard\formation-create\formation-create.component.scss 483:24  root stylesheet
+
+
+./src/app/admin-dashboard/formations-admin/formations-admin.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 576, column 28 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/admin-dashboard/forma
+tions-admin/formations-admin.component.scss:576:28:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+576 |       &:hover { background: darken($primary-light, 4%); border-color: $primary; }
+
+
+src\app\admin-dashboard\formations-admin\formations-admin.component.scss 577:29  root stylesheet
+
+
+./src/app/admin-dashboard/formations-admin/formations-admin.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 576, column 28 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/admin-dashboard/forma
+tions-admin/formations-admin.component.scss:576:28:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -4.2588726514%)
+color.adjust($color, $lightness: -4%)
+
+More info: https://sass-lang.com/d/color-functions
+
+576 |       &:hover { background: darken($primary-light, 4%); border-color: $primary; }
+
+
+src\app\admin-dashboard\formations-admin\formations-admin.component.scss 577:29  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component.scss?ngResource - Warning: Module Warning 
+(from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 2051, column 30 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard
+/cd-applied-jobs/cd-applied-jobs.component.scss:2051:30:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+2051 |         &:hover { background: darken(#6c5ce7, 8%); }
+
+
+src\app\candidates-dashboard\cd-applied-jobs\cd-applied-jobs.component.scss 2052:31  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-applied-jobs/cd-applied-jobs.component.scss?ngResource - Warning: Module Warning 
+(from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 2051, column 30 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard
+/cd-applied-jobs/cd-applied-jobs.component.scss:2051:30:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -12.6315789474%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+2051 |         &:hover { background: darken(#6c5ce7, 8%); }
+
+
+src\app\candidates-dashboard\cd-applied-jobs\cd-applied-jobs.component.scss 2052:31  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 46, column 20 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/c
+d-documents/cd-documents.component.scss:46:20:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+46 |         background: darken($primary, 8%);
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 47:21  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 46, column 20 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/c
+d-documents/cd-documents.component.scss:46:20:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -12.6315789474%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+46 |         background: darken($primary, 8%);
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 47:21  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 356, column 38 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+cd-documents/cd-documents.component.scss:356:38:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+356 |                 &:hover { background: darken($primary, 8%); transform: translateY(-1px); }
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 357:39  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 356, column 38 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+cd-documents/cd-documents.component.scss:356:38:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -12.6315789474%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+356 |                 &:hover { background: darken($primary, 8%); transform: translateY(-1px); }
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 357:39  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 407, column 38 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+cd-documents/cd-documents.component.scss:407:38:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+407 |                 &:hover { background: darken($primary, 8%); transform: translateY(-2px); }
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 408:39  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 407, column 38 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+cd-documents/cd-documents.component.scss:407:38:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -12.6315789474%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+407 |                 &:hover { background: darken($primary, 8%); transform: translateY(-2px); }
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 408:39  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 469, column 38 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+cd-documents/cd-documents.component.scss:469:38:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+469 |                 &:hover { background: darken($primary, 8%); }
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 470:39  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 469, column 38 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+cd-documents/cd-documents.component.scss:469:38:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -12.6315789474%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+469 |                 &:hover { background: darken($primary, 8%); }
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 470:39  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 642, column 30 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+cd-documents/cd-documents.component.scss:642:30:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+642 |         &:hover { background: darken($primary, 8%); }
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 643:31  root stylesheet
+
+
+./src/app/candidates-dashboard/cd-documents/cd-documents.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 642, column 30 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+cd-documents/cd-documents.component.scss:642:30:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -12.6315789474%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+642 |         &:hover { background: darken($primary, 8%); }
+
+
+src\app\candidates-dashboard\cd-documents\cd-documents.component.scss 643:31  root stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/ma-calendar/ma-calendar.component.scss?ngResource - Warning: Module 
+Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 484, column 15 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/ma-calendar/ma-calendar.component.scss:484:15:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+484 |         color: darken($warning, 20%);
+
+
+src\app\candidates-dashboard\evenement-candidat\ma-calendar\ma-calendar.component.scss 485:16  root stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/ma-calendar/ma-calendar.component.scss?ngResource - Warning: Module 
+Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 484, column 15 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/ma-calendar/ma-calendar.component.scss:484:15:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -39.84375%)
+color.adjust($color, $lightness: -20%)
+
+More info: https://sass-lang.com/d/color-functions
+
+484 |         color: darken($warning, 20%);
+
+
+src\app\candidates-dashboard\evenement-candidat\ma-calendar\ma-calendar.component.scss 485:16  root stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/ma-calendar/ma-calendar.component.scss?ngResource - Warning: Module 
+Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 491, column 15 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/ma-calendar/ma-calendar.component.scss:491:15:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+491 |         color: darken($danger, 10%);
+
+
+src\app\candidates-dashboard\evenement-candidat\ma-calendar\ma-calendar.component.scss 492:16  root stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/ma-calendar/ma-calendar.component.scss?ngResource - Warning: Module 
+Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 491, column 15 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/ma-calendar/ma-calendar.component.scss:491:15:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -16.6123778502%)
+color.adjust($color, $lightness: -10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+491 |         color: darken($danger, 10%);
+
+
+src\app\candidates-dashboard\evenement-candidat\ma-calendar\ma-calendar.component.scss 492:16  root stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component.scss?ngResource - 
+Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 260, column 19 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/mes-participations/mes-participations.component.scss:260:19:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+260 |             color: darken($warning, 15%);
+
+
+src\app\candidates-dashboard\evenement-candidat\mes-participations\mes-participations.component.scss 261:20  root 
+stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component.scss?ngResource - 
+Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 260, column 19 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/mes-participations/mes-participations.component.scss:260:19:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -29.8828125%)
+color.adjust($color, $lightness: -15%)
+
+More info: https://sass-lang.com/d/color-functions
+
+260 |             color: darken($warning, 15%);
+
+
+src\app\candidates-dashboard\evenement-candidat\mes-participations\mes-participations.component.scss 261:20  root 
+stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component.scss?ngResource - 
+Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 266, column 19 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/mes-participations/mes-participations.component.scss:266:19:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+266 |             color: darken($danger, 10%);
+
+
+src\app\candidates-dashboard\evenement-candidat\mes-participations\mes-participations.component.scss 267:20  root 
+stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component.scss?ngResource - 
+Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 266, column 19 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/mes-participations/mes-participations.component.scss:266:19:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -16.6123778502%)
+color.adjust($color, $lightness: -10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+266 |             color: darken($danger, 10%);
+
+
+src\app\candidates-dashboard\evenement-candidat\mes-participations\mes-participations.component.scss 267:20  root 
+stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component.scss?ngResource - 
+Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 315, column 59 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/mes-participations/mes-participations.component.scss:315:59:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+315 |     &.statut-attente  { background: $warning-soft;  color: darken($warning, 15%); }
+
+
+src\app\candidates-dashboard\evenement-candidat\mes-participations\mes-participations.component.scss 316:60  root 
+stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component.scss?ngResource - 
+Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 315, column 59 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/mes-participations/mes-participations.component.scss:315:59:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -29.8828125%)
+color.adjust($color, $lightness: -15%)
+
+More info: https://sass-lang.com/d/color-functions
+
+315 |     &.statut-attente  { background: $warning-soft;  color: darken($warning, 15%); }
+
+
+src\app\candidates-dashboard\evenement-candidat\mes-participations\mes-participations.component.scss 316:60  root 
+stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component.scss?ngResource - 
+Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 316, column 59 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/mes-participations/mes-participations.component.scss:316:59:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+316 |     &.statut-refuse   { background: $danger-soft;   color: darken($danger, 10%); }
+
+
+src\app\candidates-dashboard\evenement-candidat\mes-participations\mes-participations.component.scss 317:60  root 
+stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component.scss?ngResource - 
+Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 316, column 59 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/mes-participations/mes-participations.component.scss:316:59:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -16.6123778502%)
+color.adjust($color, $lightness: -10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+316 |     &.statut-refuse   { background: $danger-soft;   color: darken($danger, 10%); }
+
+
+src\app\candidates-dashboard\evenement-candidat\mes-participations\mes-participations.component.scss 317:60  root 
+stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component.scss?ngResource - 
+Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 405, column 11 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/mes-participations/mes-participations.component.scss:405:11:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+405 |     color: darken($warning, 15%);
+
+
+src\app\candidates-dashboard\evenement-candidat\mes-participations\mes-participations.component.scss 406:12  root 
+stylesheet
+
+
+./src/app/candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component.scss?ngResource - 
+Warning: Module Warning (from ./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 405, column 11 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+evenement-candidat/mes-participations/mes-participations.component.scss:405:11:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -29.8828125%)
+color.adjust($color, $lightness: -15%)
+
+More info: https://sass-lang.com/d/color-functions
+
+405 |     color: darken($warning, 15%);
+
+
+src\app\candidates-dashboard\evenement-candidat\mes-participations\mes-participations.component.scss 406:12  root 
+stylesheet
+
+
+./src/app/candidates-dashboard/mes-formations/mes-formations.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 221, column 20 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+mes-formations/mes-formations.component.scss:221:20:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+221 |         background: darken($primary, 6%);
+
+
+src\app\candidates-dashboard\mes-formations\mes-formations.component.scss 222:21  root stylesheet
+
+
+./src/app/candidates-dashboard/mes-formations/mes-formations.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 221, column 20 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+mes-formations/mes-formations.component.scss:221:20:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -17.6878612717%)
+color.adjust($color, $lightness: -6%)
+
+More info: https://sass-lang.com/d/color-functions
+
+221 |         background: darken($primary, 6%);
+
+
+src\app\candidates-dashboard\mes-formations\mes-formations.component.scss 222:21  root stylesheet
+
+
+./src/app/candidates-dashboard/mes-formations/mes-formations.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 475, column 22 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+mes-formations/mes-formations.component.scss:475:22:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+475 |           background: darken($primary, 6%);
+
+
+src\app\candidates-dashboard\mes-formations\mes-formations.component.scss 476:23  root stylesheet
+
+
+./src/app/candidates-dashboard/mes-formations/mes-formations.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 475, column 22 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+mes-formations/mes-formations.component.scss:475:22:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -17.6878612717%)
+color.adjust($color, $lightness: -6%)
+
+More info: https://sass-lang.com/d/color-functions
+
+475 |           background: darken($primary, 6%);
+
+
+src\app\candidates-dashboard\mes-formations\mes-formations.component.scss 476:23  root stylesheet
+
+
+./src/app/candidates-dashboard/mes-formations/mes-formations.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 528, column 24 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+mes-formations/mes-formations.component.scss:528:24:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+528 |   &:hover { background: darken(#0965A4, 8%); color: #fff; }
+
+
+src\app\candidates-dashboard\mes-formations\mes-formations.component.scss 529:25  root stylesheet
+
+
+./src/app/candidates-dashboard/mes-formations/mes-formations.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 528, column 24 of file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/
+mes-formations/mes-formations.component.scss:528:24:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -23.5838150289%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+528 |   &:hover { background: darken(#0965A4, 8%); color: #fff; }
+
+
+src\app\candidates-dashboard\mes-formations\mes-formations.component.scss 529:25  root stylesheet
+
+
+./src/app/formations/formation-ecrite/formation-ecrite.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 113, column 21 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-ecrite/formation-ecrite.component.scss:113:21:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+113 |     &:hover { color: darken($primary, 10%); }
+
+
+src\app\formations\formation-ecrite\formation-ecrite.component.scss 114:22  root stylesheet
+
+
+./src/app/formations/formation-ecrite/formation-ecrite.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 113, column 21 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-ecrite/formation-ecrite.component.scss:113:21:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -29.4797687861%)
+color.adjust($color, $lightness: -10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+113 |     &:hover { color: darken($primary, 10%); }
+
+
+src\app\formations\formation-ecrite\formation-ecrite.component.scss 114:22  root stylesheet
+
+
+./src/app/formations/formation-ecrite/formation-ecrite.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 164, column 11 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-ecrite/formation-ecrite.component.scss:164:11:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+164 |     color: darken($primary, 10%);
+
+
+src\app\formations\formation-ecrite\formation-ecrite.component.scss 165:12  root stylesheet
+
+
+./src/app/formations/formation-ecrite/formation-ecrite.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 164, column 11 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-ecrite/formation-ecrite.component.scss:164:11:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -29.4797687861%)
+color.adjust($color, $lightness: -10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+164 |     color: darken($primary, 10%);
+
+
+src\app\formations\formation-ecrite\formation-ecrite.component.scss 165:12  root stylesheet
+
+
+./src/app/formations/formation-ecrite/formation-ecrite.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 179, column 24 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-ecrite/formation-ecrite.component.scss:179:24:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+179 |       border: 1px solid lighten($primary, 40%);
+
+
+src\app\formations\formation-ecrite\formation-ecrite.component.scss 180:25  root stylesheet
+
+
+./src/app/formations/formation-ecrite/formation-ecrite.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 179, column 24 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-ecrite/formation-ecrite.component.scss:179:24:
+lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 60.5341246291%)
+color.adjust($color, $lightness: 40%)
+
+More info: https://sass-lang.com/d/color-functions
+
+179 |       border: 1px solid lighten($primary, 40%);
+
+
+src\app\formations\formation-ecrite\formation-ecrite.component.scss 180:25  root stylesheet
+
+
+./src/app/formations/formation-player/formation-player.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 420, column 26 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-player/formation-player.component.scss:420:26:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+420 |     &:hover { background: darken(#0965A4, 8%); }
+
+
+src\app\formations\formation-player\formation-player.component.scss 421:27  root stylesheet
+
+
+./src/app/formations/formation-player/formation-player.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 420, column 26 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-player/formation-player.component.scss:420:26:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -23.5838150289%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+420 |     &:hover { background: darken(#0965A4, 8%); }
+
+
+src\app\formations\formation-player\formation-player.component.scss 421:27  root stylesheet
+
+
+./src/app/formations/formation-player/formation-player.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 662, column 26 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-player/formation-player.component.scss:662:26:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+662 |     &:hover { background: darken(#0965A4, 8%); }
+
+
+src\app\formations\formation-player\formation-player.component.scss 663:27  root stylesheet
+
+
+./src/app/formations/formation-player/formation-player.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 662, column 26 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-player/formation-player.component.scss:662:26:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -23.5838150289%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+662 |     &:hover { background: darken(#0965A4, 8%); }
+
+
+src\app\formations\formation-player\formation-player.component.scss 663:27  root stylesheet
+
+
+./src/app/formations/formation-player/formation-player.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 718, column 24 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-player/formation-player.component.scss:718:24:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+718 |   &:hover { background: darken(#16a34a, 8%); }
+
+
+src\app\formations\formation-player\formation-player.component.scss 719:25  root stylesheet
+
+
+./src/app/formations/formation-player/formation-player.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 718, column 24 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formation-player/formation-player.component.scss:718:24:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -22.0540540541%)
+color.adjust($color, $lightness: -8%)
+
+More info: https://sass-lang.com/d/color-functions
+
+718 |   &:hover { background: darken(#16a34a, 8%); }
+
+
+src\app\formations\formation-player\formation-player.component.scss 719:25  root stylesheet
+
+
+./src/app/formations/formations-list/formations-list.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 410, column 32 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formations-list/formations-list.component.scss:410:32:
+Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+410 |           &:hover { background: darken($primary, 6%); transform: translateY(-1px); color: #fff; }
+
+
+src\app\formations\formations-list\formations-list.component.scss 411:33  root stylesheet
+
+
+./src/app/formations/formations-list/formations-list.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 410, column 32 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/formations/formations-list/formations-list.component.scss:410:32:
+darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -17.6878612717%)
+color.adjust($color, $lightness: -6%)
+
+More info: https://sass-lang.com/d/color-functions
+
+410 |           &:hover { background: darken($primary, 6%); transform: translateY(-1px); color: #fff; }
+
+
+src\app\formations\formations-list\formations-list.component.scss 411:33  root stylesheet
+
+
+./src/app/pages/categories-page/categories-page.component.scss?ngResource - Warning: Module Warning (from 
+./node_modules/sass-loader/dist/cjs.js):
+Deprecation Warning on line 0, column 8 of 
+file:///C:/Users/Mega-PC/Desktop/pi3/front3/src/app/pages/categories-page/categories-page.component.scss:0:8:
+Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+0 | @import "../../common/categories/categories.component.scss";
+
+src\app\pages\categories-page\categories-page.component.scss 1:9  root stylesheet
+
+
+Warning: [96msrc/app/candidates-dashboard/cd-mailbox/cd-mailbox.component.ts[0m:[93m12[0m:[93m40[0m - 
+[93mwarning[0m[90m NG8113: [0mFilterPipe is not used within the template of CdMailboxComponent
+
+[7m12[0m   imports: [CommonModule, FormsModule, FilterPipe],
+[7m  [0m [93m                                       ~~~~~~~~~~[0m
+
+
+Warning: [96msrc/app/formations/chatbot-formation/chatbot-formation.component.html[0m:[93m22[0m:[93m27[0m - 
+[93mwarning[0m[90m NG8107: [0mThe left side of this optional chain operation does not include 'null' or 
+'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.
+
+[7m22[0m             {{ formation?.titre | slice:0:30 }}...
+[7m  [0m [93m                          ~~~~~[0m
+
+  [96msrc/app/formations/chatbot-formation/chatbot-formation.component.ts[0m:[93m30[0m:[93m16[0m
+    [7m30[0m   templateUrl: './chatbot-formation.component.html',
+    [7m  [0m [96m               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    Warning occurs in the template of component ChatbotFormationComponent.
+
+
+Warning: [96msrc/app/formations/formation-detail/formation-detail.component.html[0m:[93m5[0m:[93m27[0m - 
+[93mwarning[0m[90m NG8107: [0mThe left side of this optional chain operation does not include 'null' or 
+'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.
+
+[7m5[0m         <h1>{{ formation?.titre || 'Formation' }}</h1>
+[7m [0m [93m                          ~~~~~[0m
+
+  [96msrc/app/formations/formation-detail/formation-detail.component.ts[0m:[93m9[0m:[93m16[0m
+    [7m9[0m   templateUrl: './formation-detail.component.html',
+    [7m [0m [96m               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    Warning occurs in the template of component FormationDetailComponent.
+
+
+Warning: [96msrc/app/formations/formation-ecrite/formation-ecrite.component.html[0m:[93m5[0m:[93m51[0m - 
+[93mwarning[0m[90m NG8107: [0mThe left side of this optional chain operation does not include 'null' or 
+'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.
+
+[7m5[0m       <a [routerLink]="['/formations', formation?.id]" class="back-link">
+[7m [0m [93m                                                  ~~[0m
+
+  [96msrc/app/formations/formation-ecrite/formation-ecrite.component.ts[0m:[93m11[0m:[93m16[0m
+    [7m11[0m   templateUrl: './formation-ecrite.component.html',
+    [7m  [0m [96m               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    Warning occurs in the template of component FormationEcriteComponent.
+
+
+Warning: [96msrc/app/freelance/freelance-workspace.component.html[0m:[93m197[0m:[93m36[0m - 
+[93mwarning[0m[90m NG8107: [0mThe left side of this optional chain operation does not include 'null' or 
+'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.
+
+[7m197[0m               {{ selectedContract?.missionTitre }}
+[7m   [0m [93m                                   ~~~~~~~~~~~~[0m
+
+  [96msrc/app/freelance/freelance-workspace.component.ts[0m:[93m28[0m:[93m16[0m
+    [7m28[0m   templateUrl: './freelance-workspace.component.html'
+    [7m  [0m [96m               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    Warning occurs in the template of component FreelanceWorkspaceComponent.
+
+
+Warning: [96msrc/app/freelance/freelance-workspace.component.html[0m:[93m223[0m:[93m108[0m - 
+[93mwarning[0m[90m NG8107: [0mThe left side of this optional chain operation does not include 'null' or 
+'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.
+
+[7m223[0m                [class.fl-message-mine]="(mode === 'CLIENT_FREELANCE' && msg.senderId === 
+selectedContract?.clientId) ||
+[7m   [0m [93m                                                                                                      
+     ~~~~~~~~[0m
+
+  [96msrc/app/freelance/freelance-workspace.component.ts[0m:[93m28[0m:[93m16[0m
+    [7m28[0m   templateUrl: './freelance-workspace.component.html'
+    [7m  [0m [96m               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    Warning occurs in the template of component FreelanceWorkspaceComponent.
+
+
+Warning: [96msrc/app/freelance/freelance-workspace.component.html[0m:[93m224[0m:[93m102[0m - 
+[93mwarning[0m[90m NG8107: [0mThe left side of this optional chain operation does not include 'null' or 
+'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.
+
+[7m224[0m                                         (mode === 'FREELANCER' && msg.senderId === 
+selectedContract?.freelancerId)">
+[7m   [0m [93m                                                                                                     
+~~~~~~~~~~~~[0m
+
+  [96msrc/app/freelance/freelance-workspace.component.ts[0m:[93m28[0m:[93m16[0m
+    [7m28[0m   templateUrl: './freelance-workspace.component.html'
+    [7m  [0m [96m               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    Warning occurs in the template of component FreelanceWorkspaceComponent.
+
+
+Warning: [96msrc/app/freelance/freelance-workspace.component.html[0m:[93m229[0m:[93m33[0m - 
+[93mwarning[0m[90m NG8107: [0mThe left side of this optional chain operation does not include 'null' or 
+'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.
+
+[7m229[0m               {{ msg.senderNom?.charAt(0) | uppercase }}
+[7m   [0m [93m                                ~~~~~~[0m
+
+  [96msrc/app/freelance/freelance-workspace.component.ts[0m:[93m28[0m:[93m16[0m
+    [7m28[0m   templateUrl: './freelance-workspace.component.html'
+    [7m  [0m [96m               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    Warning occurs in the template of component FreelanceWorkspaceComponent.
+
+
+Warning: 
+[96msrc/app/pages/candidate-entretiens-page/candidate-entretiens-page.component.ts[0m:[93m23[0m:[93m27[0m - 
+[93mwarning[0m[90m NG8113: [0mRouterLink is not used within the template of CandidateEntretiensPageComponent
+
+[7m23[0m   imports: [CommonModule, RouterLink, SharedModule],
+[7m  [0m [93m                          ~~~~~~~~~~[0m
+
+
+Warning: [96msrc/app/pages/job-details-page/job-details-page.component.html[0m:[93m100[0m:[93m103[0m - 
+[93mwarning[0m[90m NG8107: [0mThe left side of this optional chain operation does not include 'null' or 
+'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.
+
+[7m100[0m                                     <span class="fw-medium">Published on:</span> {{ 
+formatDate(offre?.datePublication) }}
+[7m   [0m [93m                                                                                                      
+~~~~~~~~~~~~~~~[0m
+
+  [96msrc/app/pages/job-details-page/job-details-page.component.ts[0m:[93m40[0m:[93m18[0m
+    [7m40[0m     templateUrl: './job-details-page.component.html',
+    [7m  [0m [96m                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    Warning occurs in the template of component JobDetailsPageComponent.
+
+
+Warning: [96msrc/app/pages/public-test-pass-page/public-test-pass-page.component.ts[0m:[93m39[0m:[93m40[0m - 
+[93mwarning[0m[90m NG8113: [0mRouterLink is not used within the template of PublicTestPassPageComponent
+
+[7m39[0m   imports: [CommonModule, FormsModule, RouterLink, SharedModule],
+[7m  [0m [93m                                       ~~~~~~~~~~[0m
+
+
+Warning: C:/Users/Mega-PC/Desktop/pi3/front3/src/app/app.config.server.ts is part of the TypeScript compilation but 
+it's unused.
+Add only entry points to the 'files' or 'include' properties in your tsconfig.
+
+Warning: C:/Users/Mega-PC/Desktop/pi3/front3/src/app/app.config.ts is part of the TypeScript compilation but it's 
+unused.
+Add only entry points to the 'files' or 'include' properties in your tsconfig.
+
+Warning: C:/Users/Mega-PC/Desktop/pi3/front3/src/app/app.routes.server.ts is part of the TypeScript compilation but 
+it's unused.
+Add only entry points to the 'files' or 'include' properties in your tsconfig.
+
+Warning: C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/cd-applied-jobs/safe-url.pipe.ts is part of 
+the TypeScript compilation but it's unused.
+Add only entry points to the 'files' or 'include' properties in your tsconfig.
+
+Warning: C:/Users/Mega-PC/Desktop/pi3/front3/src/app/candidates-dashboard/cd-mailbox/cd-mailbox.component.ts is part 
+of the TypeScript compilation but it's unused.
+Add only entry points to the 'files' or 'include' properties in your tsconfig.
+
+Warning: C:/Users/Mega-PC/Desktop/pi3/front3/src/app/models/user.model.ts is part of the TypeScript compilation but 
+it's unused.
+Add only entry points to the 'files' or 'include' properties in your tsconfig.
+
+Warning: C:/Users/Mega-PC/Desktop/pi3/front3/src/app/pages/home-demo-four/home-demo-four.component.ts is part of the 
+TypeScript compilation but it's unused.
+Add only entry points to the 'files' or 'include' properties in your tsconfig.
+
+Warning: C:/Users/Mega-PC/Desktop/pi3/front3/src/app/pipes/filter.pipe.ts is part of the TypeScript compilation but 
+it's unused.
+Add only entry points to the 'files' or 'include' properties in your tsconfig.
+
+Warning: 
+C:/Users/Mega-PC/Desktop/pi3/front3/src/app/recruiter-dashboard/rd-candidatures-list/rd-candidatures-list.component.ts 
+is part of the TypeScript compilation but it's unused.
+Add only entry points to the 'files' or 'include' properties in your tsconfig.
+
+Warning: C:/Users/Mega-PC/Desktop/pi3/front3/src/app/services/notification-partenaire.service.ts is part of the 
+TypeScript compilation but it's unused.
+Add only entry points to the 'files' or 'include' properties in your tsconfig.
+
+Warning: C:/Users/Mega-PC/Desktop/pi3/front3/src/server.ts is part of the TypeScript compilation but it's unused.
+Add only entry points to the 'files' or 'include' properties in your tsconfig.
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.array.index-of.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.array.iterator.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.array.reduce.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.array.reverse.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.promise.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.regexp.to-string.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.string.ends-with.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.string.includes.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.string.match.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.string.replace.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.string.split.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.string.starts-with.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/es.string.trim.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 
+'core-js/modules/web.dom-collections.iterator.js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 'raf'. CommonJS or AMD 
+dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\node_modules\canvg\lib\index.es.js depends on 'rgbcolor'. CommonJS or AMD 
+dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+Warning: C:\Users\Mega-PC\Desktop\pi3\front3\src\app\freelance\freelance-workspace.component.ts depends on 
+'html2canvas'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+[39m[22m

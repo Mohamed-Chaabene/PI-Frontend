@@ -1,0 +1,83 @@
+<!-- Header Section -->
+<div class="bookmarks-header">
+    <div class="header-content">
+        <h1>Offres d'emploi</h1>
+        <p>Découvrez les opportunités qui vous correspondent</p>
+    </div>
+</div>
+
+<!-- Message de notification -->
+<div *ngIf="message" class="notification" [ngClass]="{
+    'notification-success': messageType === 'success',
+    'notification-error': messageType === 'error'
+}">
+    <i class="ri-information-line"></i>
+    <span>{{ message }}</span>
+    <button class="close-btn" (click)="message = ''">×</button>
+</div>
+
+<!-- Loading -->
+<div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Chargement des opportunités...</p>
+</div>
+
+<!-- Jobs Grid - Design Moderne -->
+<div *ngIf="!isLoading && offres.length > 0" class="jobs-grid">
+    <div class="job-card" *ngFor="let offre of offres">
+        <div class="card-badge" [ngClass]="{'badge-closed': offre.statut === 'CLOSED'}">
+            {{ offre.statut === 'CLOSED' ? 'Clôturée' : 'Active' }}
+        </div>
+        <div class="card-header">
+            <div class="company-logo">
+                <img [src]="'images/companies/' + offre.image" alt="company">
+            </div>
+            <div class="company-info">
+                <h3>{{ offre.titre }}</h3>
+                <p class="company-name">
+                    <i class="ri-building-line"></i> {{ offre.entreprise }}
+                </p>
+                <p class="location">
+                    <i class="ri-map-pin-line"></i> {{ offre.location }}
+                </p>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="job-type">
+                <i class="ri-briefcase-line"></i> {{ offre.typeContrat }}
+            </div>
+            <div class="salary">
+                <i class="ri-money-euro-circle-line"></i>
+                <span>{{ offre.salary }}</span>
+                <span class="period">/{{ offre.typeContrat === 'Hourly' ? 'heure' : 'mois' }}</span>
+            </div>
+            <div class="dates">
+                <div class="date-item">
+                    <i class="ri-calendar-line"></i>
+                    <span>Publiée: {{ offre.created }}</span>
+                </div>
+                <div class="date-item deadline">
+                    <i class="ri-time-line"></i>
+                    <span>Date limite: {{ offre.deadline }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="card-actions">
+            <button class="btn-view" [routerLink]="['/job-details']" [queryParams]="{id: offre.id}">
+                <i class="ri-eye-line"></i> Voir détails
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Empty state -->
+<div *ngIf="!isLoading && offres.length === 0" class="empty-state">
+    <div class="empty-icon">
+        <i class="ri-briefcase-line"></i>
+    </div>
+    <h3>Aucune offre postulee</h3>
+    <p>Cette page affiche uniquement les offres pour lesquelles vous avez deja depose une candidature.</p>
+    <button class="btn-refresh" (click)="loadOffres()">
+        <i class="ri-refresh-line"></i> Actualiser
+    </button>
+</div>
