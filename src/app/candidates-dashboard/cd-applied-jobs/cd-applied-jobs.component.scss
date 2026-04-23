@@ -3037,3 +3037,311 @@ $modal-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     margin-top: 4px;
 }
 
+// ==================== BOUTON ARCHIVES MODERNE ====================
+.btn-archives-modern {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 8px 16px 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 12px;
+    
+    .btn-archives-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        i {
+            font-size: 18px;
+            color: white;
+        }
+    }
+    
+    .btn-archives-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        
+        .btn-title {
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-count {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            line-height: 1.2;
+        }
+    }
+    
+    i.ri-arrow-down-s-line {
+        font-size: 20px;
+        color: rgba(255, 255, 255, 0.6);
+        transition: transform 0.3s ease;
+        
+        &.rotated {
+            transform: rotate(180deg);
+        }
+    }
+    
+    &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    &.active {
+        background: rgba(99, 102, 241, 0.3);
+        border-color: #6366f1;
+        
+        .btn-archives-icon {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        }
+    }
+}
+
+// ==================== SECTION ARCHIVES ====================
+.archives-section {
+    margin-top: 32px;
+    
+    .archives-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #e5e7eb;
+        
+        .archives-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            
+            i {
+                font-size: 28px;
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+                font-weight: 600;
+                color: #1f2937;
+                margin: 0;
+            }
+            
+            .archives-badge {
+                background: #e5e7eb;
+                color: #6b7280;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 500;
+            }
+        }
+        
+        .btn-back-active {
+            background: transparent;
+            border: 1px solid #e5e7eb;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: #4b5563;
+            transition: all 0.2s;
+            
+            &:hover {
+                background: #f3f4f6;
+                border-color: #d1d5db;
+            }
+            
+            i {
+                font-size: 18px;
+            }
+        }
+    }
+    
+    .archives-stats {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 16px;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+            
+            i {
+                font-size: 32px;
+                color: #6366f1;
+            }
+            
+            .stat-info {
+                h4 {
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #1f2937;
+                    margin: 0;
+                }
+                
+                p {
+                    font-size: 13px;
+                    color: #6b7280;
+                    margin: 4px 0 0 0;
+                }
+            }
+        }
+    }
+}
+
+// ==================== CARTES ARCHIVÉES ====================
+.candidature-card.archived-card-modern {
+    background: linear-gradient(135deg, #ffffff, #fafafa);
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(135deg, #9ca3af, #6b7280);
+    }
+    
+    &:hover {
+        transform: translateX(4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+        
+        .company-info {
+            h3 {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: #374151;
+                margin: 0 0 4px 0;
+            }
+            
+            p {
+                font-size: 0.85rem;
+                color: #6b7280;
+                margin: 0;
+            }
+        }
+        
+        .archive-badge-modern {
+            background: #f3f4f6;
+            padding: 6px 14px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+            
+            i {
+                font-size: 14px;
+            }
+        }
+    }
+    
+    .card-body {
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: #6b7280;
+            
+            i {
+                font-size: 16px;
+                width: 20px;
+            }
+        }
+    }
+    
+    .card-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #f0f0f0;
+        
+        .btn-restore-modern {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            }
+        }
+        
+        .btn-delete-modern {
+            background: transparent;
+            border: 1px solid #e5e7eb;
+            padding: 8px 16px;
+            border-radius: 12px;
+            color: #ef4444;
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            
+            &:hover {
+                background: #fef2f2;
+                border-color: #ef4444;
+            }
+        }
+    }
+}
+

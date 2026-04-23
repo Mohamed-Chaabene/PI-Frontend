@@ -13,6 +13,18 @@
                     <i class="ri-add-line"></i>
                     <span>New application</span>
                 </button>
+                
+                <!-- NOUVEAU BOUTON ARCHIVES MODERNE -->
+                <button class="btn-archives-modern" (click)="toggleShowArchives()" [class.active]="showArchives">
+                    <div class="btn-archives-icon">
+                        <i class="ri-archive-stack-line"></i>
+                    </div>
+                    <div class="btn-archives-text">
+                        <span class="btn-title">Archives</span>
+                        <span class="btn-count">{{ archivesCount }}</span>
+                    </div>
+                    <i class="ri-arrow-down-s-line" [class.rotated]="showArchives"></i>
+                </button>
             </div>
         </div>
 
@@ -126,8 +138,6 @@
                     </div>
                 </div>
 
-
-                
                 <!-- Assistant IA -->
                 <div class="feature-card assistant-card" (click)="ouvrirAssistant()">
                     <div class="feature-icon">💬</div>
@@ -229,44 +239,56 @@
             </div>
         </div>
 
-        <!-- Empty State -->
-        <div *ngIf="!isLoading && !errorMessage && getCandidaturesFiltrees().length === 0 && candidatures.length === 0" class="empty-state-modern">
-            <div class="empty-illustration">
-                <i class="ri-file-list-line"></i>
+        <!-- ==================== SECTION ARCHIVES AMÉLIORÉE ==================== -->
+        <div *ngIf="showArchives" class="archives-section">
+            <div class="archives-header">
+                <div class="archives-title">
+                    <i class="ri-archive-stack-line"></i>
+                    <h2>Espace Archives</h2>
+                    <span class="archives-badge">{{ getArchivesCount() }} documents</span>
+                </div>
+                <button class="btn-back-active" (click)="toggleShowArchives()">
+                    <i class="ri-arrow-left-line"></i>
+                    Retour aux candidatures actives
+                </button>
             </div>
-            <h3>Aucune candidature pour le moment</h3>
-            <p>Commencez votre recherche d'emploi en postulant à des offres qui vous correspondent.</p>
-            <button class="btn-outline-primary" (click)="openCreateModal()">
-                <i class="ri-add-line"></i> Postuler maintenant
-            </button>
-        </div>
-
-        <!-- Empty State pour filtres -->
-        <div *ngIf="!isLoading && !errorMessage && getCandidaturesFiltrees().length === 0 && candidatures.length > 0" class="empty-state-modern">
-            <div class="empty-illustration">
-                <i class="ri-filter-line"></i>
-            </div>
-            <h3>Aucune candidature avec ces filtres</h3>
-            <p>Essayez d'autres tags ou effacez les filtres.</p>
-            <button class="btn-outline-primary" (click)="activeTagFilter = []">
-                <i class="ri-close-line"></i> Effacer les filtres
-            </button>
-        </div>
-
-        <!-- Liste des candidatures -->
-        <div *ngIf="!isLoading && !errorMessage && getCandidaturesFiltrees().length > 0" class="candidatures-grid">
-            <div class="candidature-card" *ngFor="let c of getCandidaturesFiltrees()">
-                <div class="card-header">
-                    <div class="company-icon">
-                        <i class="ri-building-line"></i>
+            
+            <!-- Statistiques des archives -->
+            <div class="archives-stats">
+                <div class="stat-card">
+                    <i class="ri-calendar-line"></i>
+                    <div class="stat-info">
+                        <h4>30+</h4>
+                        <p>jours d'archivage</p>
                     </div>
+                </div>
+                <div class="stat-card">
+                    <i class="ri-restart-line"></i>
+                    <div class="stat-info">
+                        <h4>Restaurable</h4>
+                        <p>à tout moment</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Liste des archives -->
+            <div *ngIf="getArchivesCount() === 0" class="empty-state-modern">
+                <div class="empty-illustration">
+                    <i class="ri-archive-line"></i>
+                </div>
+                <h3>Archive vide</h3>
+                <p>Les candidatures de plus de 7 jours seront automatiquement déplacées ici.</p>
+            </div>
+            
+            <div *ngFor="let c of getCandidaturesArchivees()" class="candidature-card archived-card-modern">
+                <div class="card-header">
                     <div class="company-info">
                         <h3>{{ c.nomComplet || 'Candidat' }}</h3>
                         <p>{{ c.offreTitre || c.poste || 'Candidature spontanée' }}</p>
                     </div>
-                    <div class="status-indicator" [ngClass]="getStatusClass(c.statut)">
-                        <span class="status-dot"></span>
-                        <span class="status-text">{{ getStatusLabel(c.statut) }}</span>
+                    <div class="archive-badge-modern">
+                        <i class="ri-archive-line"></i>
+                        Archivée
                     </div>
                 </div>
                 <div class="card-body">
@@ -274,59 +296,129 @@
                         <i class="ri-calendar-line"></i>
                         <span>Postulé le {{ formatDate(c.dateEnvoi) }}</span>
                     </div>
+                    <div class="info-row" *ngIf="c.archiveDate">
+                        <i class="ri-archive-line"></i>
+                        <span>Archivée le {{ formatDate(c.archiveDate) }}</span>
+                    </div>
                     <div class="info-row" *ngIf="c.email">
                         <i class="ri-mail-line"></i>
                         <span>{{ c.email }}</span>
                     </div>
-                    <div class="skills-preview" *ngIf="c.competences">
-                        <i class="ri-flashlight-line"></i>
-                        <span>{{ c.competences | slice:0:60 }}{{ c.competences.length > 60 ? '...' : '' }}</span>
-                    </div>
-
-                    <!-- Tags affichés -->
-                    <div class="card-tags" *ngIf="getTagsForCandidature(c.id).length > 0">
-                        <span *ngFor="let tag of getTagsForCandidature(c.id)"
-                              class="tag-badge"
-                              [style.background]="getTagColor(tag) + '20'"
-                              [style.color]="getTagColor(tag)">
-                            {{ tag }}
-                        </span>
-                    </div>
-
-                    <!-- Indicateur note -->
-                    <div class="note-preview" *ngIf="hasNote(c.id)">
-                        <i class="ri-sticky-note-line"></i>
-                        {{ getNote(c.id) | slice:0:60 }}{{ getNote(c.id).length > 60 ? '...' : '' }}
-                    </div>
                 </div>
                 <div class="card-footer">
-                    <button class="btn-icon" (click)="viewCandidature(c)" title="Voir détails">
-                        <i class="ri-eye-line"></i>
+                    <button class="btn-restore-modern" (click)="restaurerCandidature(c)">
+                        <i class="ri-restart-line"></i>
+                        Restaurer
                     </button>
-                    <button class="btn-icon" (click)="openEditModal(c)" title="Modifier">
-                        <i class="ri-edit-line"></i>
-                    </button>
-                    <button class="btn-icon" (click)="toggleTagMenu(c.id, $event)" title="Tags" style="position: relative;">
-                        <i class="ri-price-tag-3-line"></i>
-                    </button>
-                    <button class="btn-icon" [class.has-note]="hasNote(c.id)" (click)="ouvrirNote(c)" title="Note">
-                        <i class="ri-sticky-note-line"></i>
-                    </button>
-                    <button class="btn-icon danger" (click)="deleteCandidature(c.id)" title="Supprimer">
+                    <button class="btn-delete-modern" (click)="deleteCandidature(c.id)">
                         <i class="ri-delete-bin-line"></i>
+                        Supprimer
                     </button>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Menu tags dropdown -->
-                    <div class="tag-dropdown" *ngIf="showTagMenu === c.id" (click)="$event.stopPropagation()">
-                        <div class="tag-dropdown-title">Ajouter un tag</div>
-                        <div *ngFor="let tag of availableTags"
-                             class="tag-option"
-                             [class.selected]="hasTag(c.id, tag)"
-                             [style.color]="getTagColor(tag)"
-                             (click)="toggleTag(c.id, tag)">
-                            <i class="ri-check-line" *ngIf="hasTag(c.id, tag)"></i>
-                            <i class="ri-add-line" *ngIf="!hasTag(c.id, tag)"></i>
-                            {{ tag }}
+        <!-- Affichage des candidatures ACTIVES (uniquement quand showArchives = false) -->
+        <div *ngIf="!showArchives">
+            <!-- Empty State -->
+            <div *ngIf="!isLoading && !errorMessage && getCandidaturesActives().length === 0 && candidatures.length === 0" class="empty-state-modern">
+                <div class="empty-illustration">
+                    <i class="ri-file-list-line"></i>
+                </div>
+                <h3>Aucune candidature pour le moment</h3>
+                <p>Commencez votre recherche d'emploi en postulant à des offres qui vous correspondent.</p>
+                <button class="btn-outline-primary" (click)="openCreateModal()">
+                    <i class="ri-add-line"></i> Postuler maintenant
+                </button>
+            </div>
+
+            <!-- Empty State pour filtres -->
+            <div *ngIf="!isLoading && !errorMessage && getCandidaturesActives().length > 0 && getCandidaturesFiltrees().length === 0" class="empty-state-modern">
+                <div class="empty-illustration">
+                    <i class="ri-filter-line"></i>
+                </div>
+                <h3>Aucune candidature avec ces filtres</h3>
+                <p>Essayez d'autres tags ou effacez les filtres.</p>
+                <button class="btn-outline-primary" (click)="activeTagFilter = []">
+                    <i class="ri-close-line"></i> Effacer les filtres
+                </button>
+            </div>
+
+            <!-- Liste des candidatures actives -->
+            <div *ngIf="!isLoading && !errorMessage && getCandidaturesFiltrees().length > 0" class="candidatures-grid">
+                <div class="candidature-card" *ngFor="let c of getCandidaturesFiltrees()">
+                    <div class="card-header">
+                        <div class="company-icon">
+                            <i class="ri-building-line"></i>
+                        </div>
+                        <div class="company-info">
+                            <h3>{{ c.nomComplet || 'Candidat' }}</h3>
+                            <p>{{ c.offreTitre || c.poste || 'Candidature spontanée' }}</p>
+                        </div>
+                        <div class="status-indicator" [ngClass]="getStatusClass(c.statut)">
+                            <span class="status-dot"></span>
+                            <span class="status-text">{{ getStatusLabel(c.statut) }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <i class="ri-calendar-line"></i>
+                            <span>Postulé le {{ formatDate(c.dateEnvoi) }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="c.email">
+                            <i class="ri-mail-line"></i>
+                            <span>{{ c.email }}</span>
+                        </div>
+                        <div class="skills-preview" *ngIf="c.competences">
+                            <i class="ri-flashlight-line"></i>
+                            <span>{{ c.competences | slice:0:60 }}{{ c.competences.length > 60 ? '...' : '' }}</span>
+                        </div>
+
+                        <!-- Tags affichés -->
+                        <div class="card-tags" *ngIf="getTagsForCandidature(c.id).length > 0">
+                            <span *ngFor="let tag of getTagsForCandidature(c.id)"
+                                  class="tag-badge"
+                                  [style.background]="getTagColor(tag) + '20'"
+                                  [style.color]="getTagColor(tag)">
+                                {{ tag }}
+                            </span>
+                        </div>
+
+                        <!-- Indicateur note -->
+                        <div class="note-preview" *ngIf="hasNote(c.id)">
+                            <i class="ri-sticky-note-line"></i>
+                            {{ getNote(c.id) | slice:0:60 }}{{ getNote(c.id).length > 60 ? '...' : '' }}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-icon" (click)="viewCandidature(c)" title="Voir détails">
+                            <i class="ri-eye-line"></i>
+                        </button>
+                        <button class="btn-icon" (click)="openEditModal(c)" title="Modifier">
+                            <i class="ri-edit-line"></i>
+                        </button>
+                        <button class="btn-icon" (click)="toggleTagMenu(c.id, $event)" title="Tags" style="position: relative;">
+                            <i class="ri-price-tag-3-line"></i>
+                        </button>
+                        <button class="btn-icon" [class.has-note]="hasNote(c.id)" (click)="ouvrirNote(c)" title="Note">
+                            <i class="ri-sticky-note-line"></i>
+                        </button>
+                        <button class="btn-icon danger" (click)="deleteCandidature(c.id)" title="Supprimer">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+
+                        <!-- Menu tags dropdown -->
+                        <div class="tag-dropdown" *ngIf="showTagMenu === c.id" (click)="$event.stopPropagation()">
+                            <div class="tag-dropdown-title">Ajouter un tag</div>
+                            <div *ngFor="let tag of availableTags"
+                                 class="tag-option"
+                                 [class.selected]="hasTag(c.id, tag)"
+                                 [style.color]="getTagColor(tag)"
+                                 (click)="toggleTag(c.id, tag)">
+                                <i class="ri-check-line" *ngIf="hasTag(c.id, tag)"></i>
+                                <i class="ri-add-line" *ngIf="!hasTag(c.id, tag)"></i>
+                                {{ tag }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -358,6 +450,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- ==================== MODAL GAMIFICATION ==================== -->
 <div class="modal-overlay" *ngIf="showGamificationModal" (click)="showGamificationModal=false">

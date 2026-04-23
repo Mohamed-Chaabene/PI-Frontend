@@ -906,7 +906,17 @@ compterDocumentsParCandidat(candidatId: number): Observable<number> {
 getTop5DocumentsRecents(candidatId: number, mot: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/documents/keywords/jpa/top5-recents?candidatId=${candidatId}&mot=${mot}`);
 }
+// Dans api.service.ts
+archiverCandidature(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/candidatures/${id}/archiver`, {});
+}
 
+restaurerCandidature(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/candidatures/${id}/restaurer`, {});
+}
+traiterPhotoProfessionnelle(formData: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/documents/traiter-photo`, formData);
+}
 //  CHATBOT
 chatWithML(message: string, cvContent: string): Observable<any> {
     // Appel direct au serveur FastAPI sur le port 8000

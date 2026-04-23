@@ -125,7 +125,16 @@ export class CdDocumentsComponent implements OnInit {
     optimisationResult: any = null;
     offreEmploiInput: string = '';
     documentEnCours: any = null;
+message: string = '';
+messageType: string = '';
 
+showMessage(msg: string, type: string): void {
+    this.message = msg;
+    this.messageType = type;
+    setTimeout(() => {
+        this.message = '';
+    }, 5000);
+}
     // URL de l'API ML
     private readonly ML_API_URL = 'http://localhost:8000';
 
@@ -194,23 +203,7 @@ export class CdDocumentsComponent implements OnInit {
         this.autreData = { titre: '', contenu: '' };
     }
 
-    // ==================== PHOTO ====================
-    onPhotoSelected(event: any): void {
-        const file = event.target.files[0];
-        if (!file) return;
-        if (!file.type.startsWith('image/')) {
-            alert("Veuillez sélectionner une image (JPG, PNG, etc.)");
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-            this.cvData.photo = e.target.result;
-            this.cvData.photoName = file.name;
-            alert('✅ Photo importée avec succès !');
-        };
-        reader.readAsDataURL(file);
-    }
+
 
     // ==================== GESTION CV ====================
     addExperience(): void {
@@ -278,149 +271,133 @@ export class CdDocumentsComponent implements OnInit {
     }
 
     // ==================== CRÉATION / MODIFICATION ====================
-    createDocument(): void {
-        if (this.selectedType === 'CV') {
-            if (this.newExperience.poste && this.newExperience.entreprise) {
-                this.addExperience();
-            }
-            if (this.newFormation.diplome && this.newFormation.institution) {
-                this.addFormation();
-            }
-            if (this.newLangue.langue && this.newLangue.niveau) {
-                this.addLangue();
-            }
-        }
-
-        const contenu = this.genererAIConstenu();
-        const nom = this.getNomDocument();
-
-        if (!nom) {
-            alert('Veuillez remplir les informations nécessaires');
-            return;
-        }
-
-        if (this.editingDocumentId) {
-            console.log('📝 MODIFICATION du document ID:', this.editingDocumentId);
-            
-            const updateData: any = {
-                nom: nom,
-                type: this.selectedType,
-                contenu: contenu,
-                template: this.getTemplateName(),
-                compatibleATS: true,
-                ajouterPhoto: this.selectedType === 'CV' && !!this.cvData.photo,
-            };
-
-            if (this.selectedType === 'CV') {
-                updateData.prenom = this.cvData.prenom || null;
-                updateData.titre = this.cvData.titre || null;
-                updateData.email = this.cvData.email || null;
-                updateData.telephone = this.cvData.telephone || null;
-                updateData.adresse = this.cvData.adresse || null;
-                updateData.profil = this.cvData.profil || null;
-                updateData.photoName = this.cvData.photoName || null;
-                updateData.competences = JSON.stringify(this.cvData.competences || []);
-                updateData.langues = JSON.stringify(this.cvData.langues || []);
-                updateData.centresInteret = JSON.stringify(this.cvData.centresInteret || []);
-                updateData.experiences = JSON.stringify(this.cvData.experiences || []);
-                updateData.formations = JSON.stringify(this.cvData.formations || []);
-            }
-
-            this.isUpdating = true;
-            this.apiService.modifierDocument(this.editingDocumentId, updateData).subscribe({
-                next: () => {
-                    console.log('✅ Document modifié avec succès');
-                    this.closeCreateModal();
-                    this.loadDocuments();
-                    this.isUpdating = false;
-                    this.editingDocumentId = null;
-                    alert('Document modifié avec succès !');
-                },
-                error: (err) => {
-                    console.error('Erreur lors de la modification:', err);
-                    alert('Erreur lors de la modification du document.');
-                    this.isUpdating = false;
-                }
-            });
-        } else {
-            console.log('➕ CRÉATION d\'un nouveau document');
-            
-            this.savedCvData = JSON.parse(JSON.stringify(this.cvData));
-            this.savedSelectedType = this.selectedType;
-            this.savedLettreData = JSON.parse(JSON.stringify(this.lettreData));
-            this.savedPortfolioData = JSON.parse(JSON.stringify(this.portfolioData));
-            this.savedAutreData = JSON.parse(JSON.stringify(this.autreData));
-
-            this.generatedDocument = {
-                nom: nom,
-                type: this.selectedType,
-                contenu: contenu
-            };
-
-            this.closeCreateModal();
-            this.showPreviewModal = true;
-        }
+   createDocument(): void {
+    // Appel de la validation AVANT tout traitement
+    if (this.selectedType === 'CV' && !this.validateCvForm()) {
+        return;
     }
 
-    saveGeneratedDocument(): void {
-        if (!this.generatedDocument) {
-            alert("Aucun document à sauvegarder");
-            return;
-        }
+    if (this.selectedType === 'CV') {
+        if (this.newExperience.poste && this.newExperience.entreprise) this.addExperience();
+        if (this.newFormation.diplome && this.newFormation.institution) this.addFormation();
+        if (this.newLangue.langue && this.newLangue.niveau) this.addLangue();
+    }
 
-        this.isCreating = true;
+    const contenu = this.genererAIConstenu();
+    const nomFichier = this.getNomDocument(); // ex: "Ahmed_Ben_Ali_CV"
 
-        const cv = this.savedCvData || this.cvData;
-        const type = this.savedSelectedType || this.selectedType;
+    if (!nomFichier) {
+        alert('Veuillez remplir les informations nécessaires');
+        return;
+    }
 
-        let dataToSend: any = {
-            nom: this.generatedDocument.nom,
-            type: this.generatedDocument.type,
-            contenu: this.generatedDocument.contenu,
+    if (this.editingDocumentId) {
+        const updateData: any = {
+            nomFichier: nomFichier,          // ← titre du fichier
+            nom: this.cvData.nom,            // ← vrai nom de famille
+            type: this.selectedType,
+            contenu: contenu,
             template: this.getTemplateName(),
             compatibleATS: true,
-            ajouterPhoto: type === 'CV' && !!cv.photo,
+            ajouterPhoto: this.selectedType === 'CV' && !!this.cvData.photo,
         };
 
-        if (type === 'CV') {
-            dataToSend = {
-                ...dataToSend,
-                prenom: cv.prenom || null,
-                titre: cv.titre || null,
-                email: cv.email || null,
-                telephone: cv.telephone || null,
-                adresse: cv.adresse || null,
-                profil: cv.profil || null,
-                photoName: cv.photoName || null,
-                competences: JSON.stringify(cv.competences || []),
-                langues: JSON.stringify(cv.langues || []),
-                centresInteret: JSON.stringify(cv.centresInteret || []),
-                experiences: JSON.stringify(cv.experiences || []),
-                formations: JSON.stringify(cv.formations || []),
-            };
+        if (this.selectedType === 'CV') {
+            updateData.prenom      = this.cvData.prenom      || null;
+            updateData.titre       = this.cvData.titre        || null;
+            updateData.email       = this.cvData.email        || null;
+            updateData.telephone   = this.cvData.telephone    || null;
+            updateData.adresse     = this.cvData.adresse      || null;
+            updateData.profil      = this.cvData.profil       || null;
+            updateData.photoName   = this.cvData.photoName    || null;
+            updateData.competences   = JSON.stringify(this.cvData.competences   || []);
+            updateData.langues       = JSON.stringify(this.cvData.langues       || []);
+            updateData.centresInteret= JSON.stringify(this.cvData.centresInteret|| []);
+            updateData.experiences   = JSON.stringify(this.cvData.experiences   || []);
+            updateData.formations    = JSON.stringify(this.cvData.formations    || []);
         }
 
-        console.log('➕ Création - Data envoyée au backend:', dataToSend);
-
-        this.apiService.creerDocument(dataToSend).subscribe({
-            next: (savedDocument) => {
-                console.log('Document créé avec succès:', savedDocument);
-                this.closePreviewModal();
+        this.isUpdating = true;
+        this.apiService.modifierDocument(this.editingDocumentId, updateData).subscribe({
+            next: () => {
+                this.closeCreateModal();
                 this.loadDocuments();
-                this.isCreating = false;
-                this.savedCvData = null;
-                this.savedLettreData = null;
-                this.savedPortfolioData = null;
-                this.savedAutreData = null;
-                alert('Document créé avec succès !');
+                this.isUpdating = false;
+                this.editingDocumentId = null;
+                this.showMessage('Document modifié avec succès !', 'success');
             },
             error: (err) => {
-                console.error('Erreur lors de la création:', err);
-                alert('Erreur lors de la création du document.');
-                this.isCreating = false;
+                console.error('Erreur modification:', err);
+                this.showMessage('Erreur lors de la modification.', 'error');
+                this.isUpdating = false;
             }
         });
+    } else {
+        this.savedCvData         = JSON.parse(JSON.stringify(this.cvData));
+        this.savedSelectedType   = this.selectedType;
+        this.savedLettreData     = JSON.parse(JSON.stringify(this.lettreData));
+        this.savedPortfolioData  = JSON.parse(JSON.stringify(this.portfolioData));
+        this.savedAutreData      = JSON.parse(JSON.stringify(this.autreData));
+
+        this.generatedDocument = { nom: nomFichier, type: this.selectedType, contenu };
+        this.closeCreateModal();
+        this.showPreviewModal = true;
     }
+}
+
+  saveGeneratedDocument(): void {
+    if (!this.generatedDocument) {
+        alert("Aucun document à sauvegarder");
+        return;
+    }
+
+    this.isCreating = true;
+    const cv   = this.savedCvData   || this.cvData;
+    const type = this.savedSelectedType || this.selectedType;
+
+    let dataToSend: any = {
+        nomFichier: this.generatedDocument.nom,  // ← titre fichier
+        nom: cv.nom,                              // ← nom de famille
+        type: this.generatedDocument.type,
+        contenu: this.generatedDocument.contenu,
+        template: this.getTemplateName(),
+        compatibleATS: true,
+        ajouterPhoto: type === 'CV' && !!cv.photo,
+    };
+
+    if (type === 'CV') {
+        dataToSend = {
+            ...dataToSend,
+            prenom:         cv.prenom        || null,
+            titre:          cv.titre         || null,
+            email:          cv.email         || null,
+            telephone:      cv.telephone     || null,
+            adresse:        cv.adresse       || null,
+            profil:         cv.profil        || null,
+            photoName:      cv.photoName     || null,
+            competences:    JSON.stringify(cv.competences    || []),
+            langues:        JSON.stringify(cv.langues        || []),
+            centresInteret: JSON.stringify(cv.centresInteret || []),
+            experiences:    JSON.stringify(cv.experiences    || []),
+            formations:     JSON.stringify(cv.formations     || []),
+        };
+    }
+
+    this.apiService.creerDocument(dataToSend).subscribe({
+        next: () => {
+            this.closePreviewModal();
+            this.loadDocuments();
+            this.isCreating = false;
+            this.savedCvData = this.savedLettreData = this.savedPortfolioData = this.savedAutreData = null;
+            this.showMessage('Document créé avec succès !', 'success');
+        },
+        error: (err) => {
+            console.error('Erreur création:', err);
+            this.showMessage('Erreur lors de la création.', 'error');
+            this.isCreating = false;
+        }
+    });
+}
 
     closePreviewModal(): void {
         this.showPreviewModal = false;
@@ -958,166 +935,12 @@ export class CdDocumentsComponent implements OnInit {
         return text.length;
     }
 
-    // ==================== CAMERA ML PROFESSIONNELLE AVEC CONFIRMATION ====================
+    
 
-    async openCameraModal() {
-        this.showCameraModal = true;
-        this.capturedImage = null;
-        this.isProcessing = false;
-        this.processingStep = 0;
-        
-        setTimeout(async () => {
-            await this.initCamera();
-        }, 100);
-    }
 
-    async initCamera() {
-        try {
-            this.stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { 
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    facingMode: 'user'
-                } 
-            });
-            
-            if (this.videoElement) {
-                this.videoElement.nativeElement.srcObject = this.stream;
-                await this.videoElement.nativeElement.play();
-            }
-        } catch (err) {
-            console.error('Erreur accès caméra:', err);
-            alert('Impossible d\'accéder à la caméra. Vérifiez les permissions.');
-            this.closeCameraModal();
-        }
-    }
+    
 
-    capturePhoto() {
-        const video = this.videoElement.nativeElement;
-        const canvas = this.canvasElement.nativeElement;
-        
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        this.capturedImage = canvas.toDataURL('image/jpeg', 0.95);
-    }
-
-    async processPhotoWithML() {
-        if (!this.capturedImage) return;
-        
-        this.isProcessing = true;
-        this.processingStep = 1;
-        this.photoProcessingError = null;
-        
-        try {
-            this.processingStep = 1;
-            await this.delay(300);
-            
-            this.processingStep = 2;
-            
-            // Sauvegarder l'originale
-            this.originalPhoto = this.capturedImage;
-            
-            const response = await fetch(`${this.ML_API_URL}/photo/professionalize`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image_base64: this.capturedImage })
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                this.processingStep = 3;
-                await this.delay(200);
-                
-                this.processingStep = 4;
-                await this.delay(200);
-                
-                // Sauvegarder la photo traitée
-                this.processedPhoto = result.image_professionnelle;
-                
-                // Fermer la modale caméra et ouvrir la modale de confirmation
-                this.closeCameraModal();
-                
-                // Ouvrir la modale de confirmation
-                this.showPhotoConfirmationModal = true;
-                
-            } else {
-                throw new Error(result.message || 'Erreur traitement');
-            }
-            
-        } catch (error) {
-            console.error('Erreur traitement photo:', error);
-            this.photoProcessingError = 'Erreur lors du traitement. Voulez-vous utiliser la photo originale ?';
-            
-            if (confirm('❌ Erreur de traitement. Utiliser la photo originale ?')) {
-                this.cvData.photo = this.capturedImage;
-                this.cvData.photoName = 'photo_camera.jpg';
-                this.closeCameraModal();
-            }
-            
-        } finally {
-            this.isProcessing = false;
-            this.processingStep = 0;
-        }
-    }
-
-    // Nouvelle méthode pour confirmer la photo traitée
-    confirmProcessedPhoto(): void {
-        if (this.processedPhoto) {
-            this.cvData.photo = this.processedPhoto;
-            this.cvData.photoName = 'photo_professionnelle.jpg';
-            this.showPhotoConfirmationModal = false;
-            this.originalPhoto = null;
-            this.processedPhoto = null;
-            alert('✅ Photo professionnelle appliquée avec succès !');
-        }
-    }
-
-    // Nouvelle méthode pour refuser la photo traitée et garder l'originale
-    rejectProcessedPhoto(): void {
-        if (this.originalPhoto) {
-            this.cvData.photo = this.originalPhoto;
-            this.cvData.photoName = 'photo_originale.jpg';
-            this.showPhotoConfirmationModal = false;
-            this.originalPhoto = null;
-            this.processedPhoto = null;
-            alert('📸 Photo originale conservée.');
-        }
-    }
-
-    // Nouvelle méthode pour recommencer la capture
-    retakeFromConfirmation(): void {
-        this.showPhotoConfirmationModal = false;
-        this.originalPhoto = null;
-        this.processedPhoto = null;
-        // Rouvrir la caméra
-        this.openCameraModal();
-    }
-
-    delay(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    retakePhoto() {
-        this.capturedImage = null;
-        this.processingStep = 0;
-    }
-
-    closeCameraModal() {
-        this.showCameraModal = false;
-        this.capturedImage = null;
-        this.isProcessing = false;
-        this.processingStep = 0;
-        
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => track.stop());
-            this.stream = null;
-        }
-    }
+   
 
     // ============ MÉTHODES POUR LES TESTS ============
     afficherTousDocumentsAvecCandidat(): void {
@@ -1378,4 +1201,444 @@ testerTop5DocumentsRecents(): void {
 }
 
 
+// ==================== MÉTHODES PHOTO PROFESSIONNELLE ====================
+
+/**
+ * Ouvrir la caméra pour prendre une photo
+ */
+openCameraModal(): void {
+    this.showCameraModal = true;
+    this.capturedImage = null;
+    this.processingStep = 0;
+    this.photoProcessingError = null;
+    setTimeout(() => {
+        this.startCamera();
+    }, 100);
+}
+
+/**
+ * Démarrer la caméra
+ */
+async startCamera(): Promise<void> {
+    try {
+        this.stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'user'
+            } 
+        });
+        if (this.videoElement?.nativeElement) {
+            this.videoElement.nativeElement.srcObject = this.stream;
+            await this.videoElement.nativeElement.play();
+        }
+    } catch (err) {
+        console.error('Erreur accès caméra:', err);
+        alert('Impossible d\'accéder à la caméra. Vérifiez les permissions.');
+        this.closeCameraModal();
+    }
+}
+
+/**
+ * Capturer la photo
+ */
+capturePhoto(): void {
+    const video = this.videoElement?.nativeElement;
+    const canvas = this.canvasElement?.nativeElement;
+    
+    if (video && canvas) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const context = canvas.getContext('2d');
+        if (context) {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            this.capturedImage = canvas.toDataURL('image/jpeg', 0.9);
+        }
+        this.stopCamera();
+    }
+}
+
+/**
+ * Reprendre la photo (recommencer)
+ */
+retakePhoto(): void {
+    this.capturedImage = null;
+    this.startCamera();
+}
+
+/**
+ * Arrêter la caméra
+ */
+stopCamera(): void {
+    if (this.stream) {
+        this.stream.getTracks().forEach(track => track.stop());
+        this.stream = null;
+    }
+}
+
+/**
+ * Fermer le modal caméra
+ */
+closeCameraModal(): void {
+    this.stopCamera();
+    this.showCameraModal = false;
+    this.capturedImage = null;
+    this.isProcessing = false;
+    this.processingStep = 0;
+}
+
+/**
+ * Traiter la photo avec l'API ML (fond blanc professionnel)
+ */
+async processPhotoWithML(): Promise<void> {
+    if (!this.capturedImage) return;
+    
+    this.isProcessing = true;
+    this.processingStep = 1;
+    this.photoProcessingError = null;
+    
+    try {
+        // Étape 1: Capture
+        this.processingStep = 1;
+        await this.delay(300);
+        
+        // Étape 2: Conversion en Blob
+        this.processingStep = 2;
+        const blob = this.dataURLtoBlob(this.capturedImage);
+        const formData = new FormData();
+        formData.append('photo', blob, 'photo.jpg');
+        
+        // Sauvegarder l'originale
+        this.originalPhoto = this.capturedImage;
+        
+        // Étape 3: Appel API
+        this.processingStep = 3;
+        
+        // Appel au backend Spring Boot
+        this.apiService.traiterPhotoProfessionnelle(formData).subscribe({
+            next: (result) => {
+                this.processingStep = 4;
+                
+                if (result.success !== false) {
+                    // Sauvegarder la photo traitée
+                    this.processedPhoto = result.photoUrl || result.image_professionnelle;
+                    
+                    // Fermer le modal caméra
+                    this.closeCameraModal();
+                    
+                    // Ouvrir le modal de confirmation
+                    setTimeout(() => {
+                        this.showPhotoConfirmationModal = true;
+                    }, 100);
+                } else {
+                    throw new Error(result.message || 'Erreur traitement');
+                }
+                
+                this.isProcessing = false;
+            },
+            error: (err) => {
+                console.error('Erreur API:', err);
+                this.photoProcessingError = 'Erreur lors du traitement. Utiliser la photo originale ?';
+                
+                if (confirm('❌ Erreur de traitement. Utiliser la photo originale ?')) {
+if (this.capturedImage) {
+    this.cvData.photo = this.capturedImage;
+}                    this.cvData.photoName = 'photo_camera.jpg';
+                    this.closeCameraModal();
+                }
+                this.isProcessing = false;
+                this.processingStep = 0;
+            }
+        });
+        
+    } catch (error) {
+        console.error('Erreur traitement photo:', error);
+        this.photoProcessingError = 'Erreur lors du traitement.';
+        this.isProcessing = false;
+        this.processingStep = 0;
+    }
+}
+
+/**
+ * Confirmer l'utilisation de la photo traitée
+ */
+confirmProcessedPhoto(): void {
+    if (this.processedPhoto) {
+        this.cvData.photo = this.processedPhoto;
+        this.cvData.photoName = 'photo_professionnelle.jpg';
+        this.showPhotoConfirmationModal = false;
+        this.originalPhoto = null;
+        this.processedPhoto = null;
+        alert('✅ Photo professionnelle appliquée avec succès !');
+    }
+}
+
+/**
+ * Refuser la photo traitée et garder l'originale
+ */
+rejectProcessedPhoto(): void {
+    if (this.originalPhoto) {
+        this.cvData.photo = this.originalPhoto;
+        this.cvData.photoName = 'photo_originale.jpg';
+        this.showPhotoConfirmationModal = false;
+        this.originalPhoto = null;
+        this.processedPhoto = null;
+        alert('📸 Photo originale conservée.');
+    }
+}
+
+/**
+ * Reprendre la photo depuis la confirmation
+ */
+retakeFromConfirmation(): void {
+    this.showPhotoConfirmationModal = false;
+    this.originalPhoto = null;
+    this.processedPhoto = null;
+    setTimeout(() => {
+        this.openCameraModal();
+    }, 100);
+}
+
+
+
+/**
+ * Convertir dataURL en Blob
+ */
+dataURLtoBlob(dataURL: string): Blob {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+}
+
+/**
+ * Délai pour simulation
+ */
+delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+/**
+ * Sélectionner une photo depuis le fichier (avec compression et confirmation automatique)
+ */
+async onPhotoSelected(event: any): Promise<void> {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+        alert("Veuillez sélectionner une image (JPG, PNG, etc.)");
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) {
+        alert("L'image est très grande, elle va être compressée automatiquement.");
+    }
+    
+    // Afficher un indicateur de chargement
+    this.isProcessingPhoto = true;
+    
+    try {
+        // Compresser l'image
+        const compressedImage = await this.compressImage(file, 400, 400, 0.7);
+        this.originalPhoto = compressedImage;
+        
+        const blob = this.dataURLtoBlob(compressedImage);
+        const formData = new FormData();
+        formData.append('photo', blob, 'photo_compressée.jpg');
+        
+        // Appel au backend pour le traitement ML
+        this.apiService.traiterPhotoProfessionnelle(formData).subscribe({
+            next: (result) => {
+                this.processedPhoto = result.photoUrl || result.image_professionnelle;
+                this.isProcessingPhoto = false;
+                
+                // Ouvrir automatiquement la modale de confirmation
+                this.showPhotoConfirmationModal = true;
+            },
+            error: (err) => {
+                console.error('Erreur ML:', err);
+                // Fallback: utiliser l'image compressée originale
+                if (this.originalPhoto) {
+                    this.cvData.photo = this.originalPhoto;
+                    this.cvData.photoName = file.name.replace(/\.[^/.]+$/, '') + '_compressée.jpg';
+                }
+                alert('Photo ajoutée (version compressée)');
+                this.isProcessingPhoto = false;
+            }
+        });
+        
+    } catch (error) {
+        console.error('Erreur compression:', error);
+        alert('Erreur lors du traitement de l\'image');
+        this.isProcessingPhoto = false;
+    }
+}
+
+// ==================== COMPRESSION D'IMAGE ====================
+
+/**
+ * Redimensionner et compresser une image depuis un fichier
+ * @param file - Le fichier image à compresser
+ * @param maxWidth - Largeur maximale (défaut: 400px)
+ * @param maxHeight - Hauteur maximale (défaut: 400px)
+ * @param quality - Qualité JPEG (0.1 à 1.0, défaut: 0.7)
+ * @returns Promise avec le base64 compressé
+ */
+compressImage(file: File, maxWidth: number = 400, maxHeight: number = 400, quality: number = 0.7): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = (e: any) => {
+            const img = new Image();
+            img.onload = () => {
+                // Calculer les nouvelles dimensions
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+                }
+                
+                // Créer un canvas pour redimensionner
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                
+                // Convertir en JPEG compressé
+                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                resolve(compressedBase64);
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+/**
+ * Redimensionner une image depuis base64 (pour la caméra)
+ * @param base64 - L'image en base64
+ * @param maxWidth - Largeur maximale
+ * @param maxHeight - Hauteur maximale
+ * @param quality - Qualité JPEG
+ * @returns Promise avec le base64 compressé
+ */
+compressImageFromBase64(base64: string, maxWidth: number = 400, maxHeight: number = 400, quality: number = 0.7): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+            } else {
+                if (height > maxHeight) {
+                    width = (width * maxHeight) / height;
+                    height = maxHeight;
+                }
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, width, height);
+            
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = base64;
+    });
+}
+
+// Ajoutez cette méthode de validation
+validateCvForm(): boolean {
+    const errors: string[] = [];
+    
+    // 1. Vérification du nom
+    if (!this.cvData.nom || this.cvData.nom.trim() === '') {
+        errors.push('❌ Le nom est obligatoire');
+    } else if (this.cvData.nom.length < 2) {
+        errors.push('❌ Le nom doit contenir au moins 2 caractères');
+    } else if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(this.cvData.nom)) {
+        errors.push('❌ Le nom ne doit contenir que des lettres');
+    }
+    
+    // 2. Vérification du prénom
+    if (!this.cvData.prenom || this.cvData.prenom.trim() === '') {
+        errors.push('❌ Le prénom est obligatoire');
+    } else if (this.cvData.prenom.length < 2) {
+        errors.push('❌ Le prénom doit contenir au moins 2 caractères');
+    } else if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(this.cvData.prenom)) {
+        errors.push('❌ Le prénom ne doit contenir que des lettres');
+    }
+    
+    // 3. Vérification de l'email
+    if (!this.cvData.email || this.cvData.email.trim() === '') {
+        errors.push('❌ L\'email est obligatoire');
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(this.cvData.email)) {
+        errors.push('❌ Format d\'email invalide (ex: nom@domaine.com)');
+    }
+    
+    // 4. Vérification du téléphone (optionnel mais format doit être valide si présent)
+    if (this.cvData.telephone && this.cvData.telephone.trim() !== '') {
+        if (!/^(\+216)?[\s]?[0-9]{8}$|^[0-9]{8}$/.test(this.cvData.telephone)) {
+            errors.push('❌ Format téléphone invalide (ex: +216 55 555 555, 55555555)');
+        }
+    }
+    
+    // 5. Vérification du profil
+    if (!this.cvData.profil || this.cvData.profil.trim() === '') {
+        errors.push('❌ Le profil est obligatoire');
+    } else if (this.cvData.profil.length < 20) {
+        errors.push('❌ Le profil doit contenir au moins 20 caractères');
+    }
+    
+    // 6. Vérification des compétences
+    if (this.cvData.competences.length === 0) {
+        errors.push('❌ Ajoutez au moins une compétence');
+    }
+    
+    // 7. Vérification des expériences
+    if (this.cvData.experiences.length === 0) {
+        errors.push('❌ Ajoutez au moins une expérience professionnelle');
+    }
+    
+    // 8. Vérification des formations
+    if (this.cvData.formations.length === 0) {
+        errors.push('❌ Ajoutez au moins une formation');
+    }
+    
+    // Afficher les erreurs
+    if (errors.length > 0) {
+        this.showMessage(errors.join('\n'), 'error');
+        return false;
+    }
+    
+    return true;
+}
 }

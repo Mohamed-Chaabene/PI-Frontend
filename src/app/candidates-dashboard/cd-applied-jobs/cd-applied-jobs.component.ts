@@ -214,180 +214,161 @@ navigateToDocuments(): void {
     }
 
     
-    validateEmail(email: string): boolean {
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return emailRegex.test(email);
-    }
+   // ==================== VALIDATION ====================
 
-    validateTelephone(telephone: string): boolean {
-    const telRegex = /^(\+216)?[\s]?[0-9]{8}$|^[0-9]{8}$/;
-        return telRegex.test(telephone);
-    }
+validateEmail(email: string): boolean {
+    return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+}
 
-    validateField(field: string, value: any): void {
-        switch(field) {
-            case 'nomComplet':
-                if (!value || value.trim() === '') {
-                    this.createErrors.nomComplet = 'Le nom complet est obligatoire';
-                } else if (value.length < 2) {
-                    this.createErrors.nomComplet = 'Le nom doit contenir au moins 2 caractères';
-                } else if (value.length > 100) {
-                    this.createErrors.nomComplet = 'Le nom ne peut pas dépasser 100 caractères';
-                } else if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(value)) {
-                    this.createErrors.nomComplet = 'Le nom ne doit contenir que des lettres, espaces, tirets ou apostrophes';
-                } else {
-                    this.createErrors.nomComplet = '';
-                }
-                break;
-                
-            case 'email':
-                if (value && !this.validateEmail(value)) {
-                    this.createErrors.email = 'Veuillez entrer une adresse email valide (ex: nom@domaine.com)';
-                } else {
-                    this.createErrors.email = '';
-                }
-                break;
-                
-            case 'telephone':
-    if (value && !this.validateTelephone(value)) {
-        this.createErrors.telephone = 'Format invalide. Exemples: +216 55 555 555, +21655555555, 55555555';
-    } else {
-        this.createErrors.telephone = '';
-    }
-    break;
-                
-            case 'competences':
-                if (this.newCandidature.competences.length === 0) {
-                    this.createErrors.competences = 'Ajoutez au moins une compétence';
-                } else {
-                    this.createErrors.competences = '';
-                }
-                break;
-                
-            case 'cv':
-                if (!this.newCandidature.cv && !this.cvUrl) {
-                    this.createErrors.cv = 'Le CV est obligatoire';
-                } else {
-                    this.createErrors.cv = '';
-                }
-                break;
-                
-            case 'acceptRGPD':
-                if (!value) {
-                    this.createErrors.acceptRGPD = 'Vous devez accepter les conditions RGPD';
-                } else {
-                    this.createErrors.acceptRGPD = '';
-                }
-                break;
-        }
-    }
+validateTelephone(telephone: string): boolean {
+    // Accepte: +216 55 555 555 / +21655555555 / 55555555 / 55 555 555
+    return /^(\+216[\s]?)?[0-9]{2}[\s]?[0-9]{3}[\s]?[0-9]{3}$/.test(telephone.trim());
+}
 
-  validateAllFields(): boolean {
-    let isValid = true;
-    let errorMessages: string[] = [];
-    
-    // Validation du nom complet
-    if (!this.newCandidature.nomComplet || this.newCandidature.nomComplet.trim() === '') {
-        this.createErrors.nomComplet = 'Le nom complet est obligatoire';
-        this.touchedFields.nomComplet = true;
-        isValid = false;
-        errorMessages.push('• Nom complet est obligatoire');
-    } else if (this.newCandidature.nomComplet.length < 2) {
-        this.createErrors.nomComplet = 'Le nom doit contenir au moins 2 caractères';
-        this.touchedFields.nomComplet = true;
-        isValid = false;
-        errorMessages.push('• Le nom doit contenir au moins 2 caractères');
-    } else if (this.newCandidature.nomComplet.length > 100) {
-        this.createErrors.nomComplet = 'Le nom ne peut pas dépasser 100 caractères';
-        this.touchedFields.nomComplet = true;
-        isValid = false;
-        errorMessages.push('• Le nom ne peut pas dépasser 100 caractères');
-    } else if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(this.newCandidature.nomComplet)) {
-        this.createErrors.nomComplet = 'Le nom ne doit contenir que des lettres, espaces, tirets ou apostrophes';
-        this.touchedFields.nomComplet = true;
-        isValid = false;
-        errorMessages.push('• Le nom ne doit contenir que des lettres');
-    } else {
-        this.createErrors.nomComplet = '';
+validateNomComplet(nom: string): string {
+    if (!nom || nom.trim() === '')
+        return 'Le nom complet est obligatoire';
+    if (nom.trim().length < 2)
+        return 'Le nom doit contenir au moins 2 caractères';
+    if (nom.trim().length > 100)
+        return 'Le nom ne peut pas dépasser 100 caractères';
+    if (/\d/.test(nom))
+        return 'Le nom ne doit pas contenir de chiffres';
+    if (!/^[a-zA-ZÀ-ÿ\s'\-]+$/.test(nom.trim()))
+        return 'Le nom ne doit contenir que des lettres, espaces, tirets ou apostrophes';
+    if (/\s{2,}/.test(nom))
+        return 'Le nom ne doit pas contenir plusieurs espaces consécutifs';
+    const parts = nom.trim().split(/\s+/);
+    if (parts.length < 2)
+        return 'Veuillez entrer votre prénom et nom';
+    return '';
+}
+
+validateField(field: string, value: any): void {
+    switch (field) {
+        case 'nomComplet':
+            this.createErrors.nomComplet = this.validateNomComplet(value);
+            break;
+
+        case 'email':
+            if (!value || value.trim() === '') {
+                this.createErrors.email = "L'email est obligatoire";
+            } else if (!this.validateEmail(value)) {
+                this.createErrors.email = 'Format invalide — ex: prenom.nom@domaine.com';
+            } else {
+                this.createErrors.email = '';
+            }
+            break;
+
+        case 'telephone':
+            if (value && value.trim() !== '') {
+                if (!this.validateTelephone(value)) {
+                    this.createErrors.telephone =
+                        'Format invalide — ex: +216 55 555 555 ou 55555555';
+                } else {
+                    this.createErrors.telephone = '';
+                }
+            } else {
+                this.createErrors.telephone = '';
+            }
+            break;
+
+        case 'competences':
+            this.createErrors.competences =
+                this.newCandidature.competences.length === 0
+                    ? 'Ajoutez au moins une compétence'
+                    : '';
+            break;
+
+        case 'cv':
+            this.createErrors.cv =
+                !this.newCandidature.cv && !this.cvUrl ? 'Le CV est obligatoire' : '';
+            break;
+
+        case 'acceptRGPD':
+            this.createErrors.acceptRGPD = !value
+                ? 'Vous devez accepter les conditions RGPD'
+                : '';
+            break;
     }
-    
-    // Validation de l'email (obligatoire)
+}
+
+validateAllFields(): boolean {
+    const errors: string[] = [];
+
+    // Nom complet
+    const nomError = this.validateNomComplet(this.newCandidature.nomComplet);
+    this.createErrors.nomComplet = nomError;
+    this.touchedFields.nomComplet = true;
+    if (nomError) errors.push(nomError);
+
+    // Email
     if (!this.newCandidature.email || this.newCandidature.email.trim() === '') {
-        this.createErrors.email = 'L\'email est obligatoire';
+        this.createErrors.email = "L'email est obligatoire";
         this.touchedFields.email = true;
-        isValid = false;
-        errorMessages.push('• L\'email est obligatoire');
+        errors.push("L'email est obligatoire");
     } else if (!this.validateEmail(this.newCandidature.email)) {
-        this.createErrors.email = 'Format d\'email invalide. Exemple: nom@domaine.com';
+        this.createErrors.email = 'Format email invalide — ex: prenom.nom@domaine.com';
         this.touchedFields.email = true;
-        isValid = false;
-        errorMessages.push('• Format d\'email invalide. Exemple: nom@domaine.com');
+        errors.push('Format email invalide');
     } else {
         this.createErrors.email = '';
     }
-    
-    // Validation du téléphone (optionnel mais format doit être valide)
-    if (this.newCandidature.telephone && this.newCandidature.telephone.trim() !== '') {
+
+    // Téléphone (optionnel)
+    if (this.newCandidature.telephone?.trim()) {
         if (!this.validateTelephone(this.newCandidature.telephone)) {
-            this.createErrors.telephone = 'Format de téléphone invalide. Exemples: +216 55 555 555, 55555555';
+            this.createErrors.telephone =
+                'Format invalide — ex: +216 55 555 555 ou 55555555';
             this.touchedFields.telephone = true;
-            isValid = false;
-            errorMessages.push('• Format de téléphone invalide. Exemple: +216 55 555 555');
+            errors.push('Format téléphone invalide');
         } else {
             this.createErrors.telephone = '';
         }
-    } else {
-        this.createErrors.telephone = '';
     }
-    
-    // Validation des compétences
+
+    // Compétences
     if (this.newCandidature.competences.length === 0) {
         this.createErrors.competences = 'Ajoutez au moins une compétence';
         this.touchedFields.competences = true;
-        isValid = false;
-        errorMessages.push('• Ajoutez au moins une compétence');
+        errors.push('Au moins une compétence requise');
     } else {
         this.createErrors.competences = '';
     }
-    
-    // Validation du CV
+
+    // CV
     if (!this.newCandidature.cv && !this.cvUrl) {
         this.createErrors.cv = 'Le CV est obligatoire';
         this.touchedFields.cv = true;
-        isValid = false;
-        errorMessages.push('• Le CV est obligatoire');
+        errors.push('CV obligatoire');
     } else {
         this.createErrors.cv = '';
     }
-    
-    // Validation du RGPD
+
+    // RGPD
     if (!this.newCandidature.acceptRGPD) {
         this.createErrors.acceptRGPD = 'Vous devez accepter les conditions RGPD';
         this.touchedFields.acceptRGPD = true;
-        isValid = false;
-        errorMessages.push('• Vous devez accepter les conditions RGPD');
+        errors.push('Acceptation RGPD obligatoire');
     } else {
         this.createErrors.acceptRGPD = '';
     }
-    
-    // Validation de la date de disponibilité 
+
+    // Date de disponibilité
     if (this.newCandidature.dateDisponibilite) {
-        const selectedDate = new Date(this.newCandidature.dateDisponibilite);
+        const selected = new Date(this.newCandidature.dateDisponibilite);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
-        if (selectedDate < today) {
-            this.createErrors.dateDisponibilite = 'La date de disponibilité doit être dans le futur';
-            errorMessages.push('• La date de disponibilité doit être dans le futur');
-            isValid = false;
+        if (selected < today) {
+            errors.push('La date de disponibilité doit être dans le futur');
         }
     }
-    
-    if (!isValid) {
-        this.showProfessionalAlert(errorMessages);
+
+    if (errors.length > 0) {
+        this.showProfessionalAlert(errors);
     }
-    
-    return isValid;
+
+    return errors.length === 0;
 }
 
 showProfessionalAlert(errors: string[]): void {
@@ -2222,7 +2203,73 @@ ouvrirDoublons(): void {
 }
 
 
+ // ==================== GESTION DES ARCHIVES ====================
 
+    /**
+     * Récupérer les candidatures actives (non archivées)
+     */
+    getCandidaturesActives(): any[] {
+        return this.candidatures.filter(c => !c.archive);
+    }
+
+    /**
+     * Récupérer les candidatures archivées
+     */
+    getCandidaturesArchivees(): any[] {
+        return this.candidatures.filter(c => c.archive === true);
+    }
+
+    /**
+     * Compter les candidatures archivées
+     */
+    getArchivesCount(): number {
+        return this.getCandidaturesArchivees().length;
+    }
+
+    /**
+     * Basculer entre vue active et archives
+     */
+    toggleShowArchives(): void {
+        this.showArchives = !this.showArchives;
+    }
+
+    /**
+     * Archiver manuellement une candidature
+     */
+    archiverCandidature(candidature: any): void {
+        if (confirm(`Archiver la candidature de ${candidature.nomComplet} ?`)) {
+            this.apiService.archiverCandidature(candidature.id).subscribe({
+                next: () => {
+                    this.showMessage('Candidature archivée avec succès', 'success');
+                    this.loadData();
+                },
+                error: (err) => {
+                    console.error('Erreur archiving:', err);
+                    this.showMessage('Erreur lors de l\'archivage', 'error');
+                }
+            });
+        }
+    }
+
+    /**
+     * Restaurer une candidature archivée
+     */
+    restaurerCandidature(candidature: any): void {
+        if (confirm(`Restaurer la candidature de ${candidature.nomComplet} ?`)) {
+            this.apiService.restaurerCandidature(candidature.id).subscribe({
+                next: () => {
+                    this.showMessage('Candidature restaurée avec succès', 'success');
+                    this.loadData();
+                },
+                error: (err) => {
+                    console.error('Erreur restoring:', err);
+                    this.showMessage('Erreur lors de la restauration', 'error');
+                }
+            });
+        }
+    }
+
+    
 
 
 }
