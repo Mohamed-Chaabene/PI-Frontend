@@ -25,12 +25,11 @@ export type FormationUpdatePayload = Partial<FormationCreatePayload>;
 @Injectable({ providedIn: 'root' })
 export class FormationService {
 
-  private readonly base = 'http://localhost:8080/api/formations';
-  private readonly api  = 'http://localhost:8080/api';
+  private readonly base = '/api/formations';
+  private readonly api  = '/api';
 
   constructor(private http: HttpClient) {}
 
-  // ── Public ────────────────────────────────────────────────────
   getAllFormations(): Observable<Formation[]> {
     return this.http.get<Formation[]>(this.base);
   }
@@ -51,7 +50,6 @@ export class FormationService {
     return this.http.get<Formation[]>(`${this.base}/categorie/${categorie}`);
   }
 
-  // ── Admin ─────────────────────────────────────────────────────
   getAllFormationsAdmin(): Observable<Formation[]> {
     return this.http.get<Formation[]>(`${this.base}/admin/all`);
   }
@@ -80,7 +78,6 @@ export class FormationService {
     return this.http.put<Formation>(`${this.base}/${id}/desarchiver`, {});
   }
 
-  // ── Inscriptions ──────────────────────────────────────────────
   inscrire(candidatId: number, formationId: number): Observable<Inscription> {
     const payload: InscriptionCreatePayload = {
       candidat:  { id: candidatId },
@@ -89,7 +86,6 @@ export class FormationService {
     return this.http.post<Inscription>(`${this.api}/inscriptions`, payload);
   }
 
-  // ✅ FIX : envoie aussi statut "Terminé" quand progression >= 100
   updateProgression(inscriptionId: number, progression: number): Observable<Inscription> {
     const body: any = { progression };
     if (progression >= 100) {
@@ -106,13 +102,20 @@ export class FormationService {
     );
   }
 
+  getInscriptionByDetails(candidatId: number, formationId: number, parcoursId?: number): Observable<Inscription> {
+    let url = `${this.api}/inscriptions/candidat/${candidatId}/formation/${formationId}`;
+    if (parcoursId) {
+      url += `?parcoursId=${parcoursId}`;
+    }
+    return this.http.get<Inscription>(url);
+  }
+
   getInscriptionsByFormation(formationId: number): Observable<Inscription[]> {
     return this.http.get<Inscription[]>(
       `${this.api}/inscriptions/formation/${formationId}`
     );
   }
 
-  // ── Certificats ───────────────────────────────────────────────
   getMesCertificats(candidatId: number): Observable<Certificat[]> {
     return this.http.get<Certificat[]>(
       `${this.api}/certificats/candidat/${candidatId}`
@@ -126,10 +129,33 @@ export class FormationService {
     );
   }
 
-  // ── Candidat ──────────────────────────────────────────────────
   getCandidatByEmail(email: string): Observable<{ id: number }> {
     return this.http.get<{ id: number }>(
       `${this.api}/candidats/email/${encodeURIComponent(email)}`
     );
+  }
+
+  getStats(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/stats`);
+  }
+
+  getStatsByCategorie(categorie: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/stats/categorie/${categorie}`);
+  }
+
+  getTopFormations(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/top`);
+  }
+
+  refreshScoresAndBadges(): Observable<any> {
+    return this.http.post<any>(`${this.base}/refresh`, {});
+  }
+
+  getFormationsParBadge(badge: string): Observable<Formation[]> {
+    return this.http.get<Formation[]>(`${this.base}/badge/${badge}`);
+  }
+
+  getFormationsPopulaires(scoreMin: number = 50): Observable<Formation[]> {
+    return this.http.get<Formation[]>(`${this.base}/populaires?scoreMin=${scoreMin}`);
   }
 }

@@ -207,6 +207,93 @@
   }
 }
 
+.reminder-panel {
+  background: #fff;
+  border: 1px solid rgba(9, 101, 164, 0.2);
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(7, 77, 130, 0.08);
+  padding: 16px;
+  margin: 16px 0 20px;
+  display: grid;
+  gap: 10px;
+}
+
+.reminder-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  h3 {
+    margin: 0;
+    color: #074d82;
+    font-size: 1.06rem;
+  }
+
+  span {
+    color: #4a5f79;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+}
+
+.reminder-item {
+  border-radius: 12px;
+  border: 1px solid #dce8f4;
+  background: #fafdff;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+
+  &.level-today {
+    border-color: rgba(220, 38, 38, 0.35);
+    background: #fff5f5;
+  }
+
+  &.level-soon {
+    border-color: rgba(234, 88, 12, 0.35);
+    background: #fff9f2;
+  }
+
+  &.level-planned {
+    border-color: rgba(9, 101, 164, 0.24);
+    background: #f4f9ff;
+  }
+}
+
+.reminder-badge {
+  align-self: flex-start;
+  border-radius: 999px;
+  background: #074d82;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+}
+
+.level-today .reminder-badge {
+  background: #b42323;
+}
+
+.level-soon .reminder-badge {
+  background: #c34f08;
+}
+
+.reminder-content {
+  h4 {
+    margin: 0 0 4px;
+    color: #103d61;
+    font-size: 0.98rem;
+  }
+
+  p {
+    margin: 0;
+    color: #35526f;
+    line-height: 1.4;
+  }
+}
+
 .entretiens-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

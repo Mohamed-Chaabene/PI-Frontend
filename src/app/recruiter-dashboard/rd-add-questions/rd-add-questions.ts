@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, Subscription, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs/operators';
 
 interface QuestionForm {
   contenu: string;
@@ -26,13 +28,37 @@ interface ValidationErrors {
   general?: string[];
 }
 
+interface AiAssistantForm {
+  categorie: string;
+  niveau: string;
+  type: string;
+  theme: string;
+  nombre: number;
+  temperature: number;
+}
+
+interface ChatMessage {
+  sender: 'assistant' | 'user';
+  text: string;
+  timestamp: Date;
+}
+
+interface ChatRequestHints {
+  wantsGeneration: boolean;
+  type?: 'QCM' | 'QCU' | 'VRAI_FAUX';
+  niveau?: 'DEBUTANT' | 'INTERMEDIAIRE' | 'AVANCE' | 'EXPERT';
+  categorie?: 'TECHNIQUE' | 'RH' | 'MANAGERIAL' | 'FINAL' | 'PRESELECTION' | 'TEST';
+  nombre?: number;
+  theme?: string;
+}
+
 @Component({
   selector: 'app-rd-add-questions',
   imports: [CommonModule, FormsModule],
   templateUrl: './rd-add-questions.html',
   styleUrls: ['./rd-add-questions.scss'],
 })
-export class RdAddQuestions implements OnInit {
+export class RdAddQuestions implements OnInit, OnDestroy {
   entretienId = 0;
   domaines: any[] = [
     { id: 1, nom: 'INFORMATIQUE' },
@@ -47,6 +73,7 @@ export class RdAddQuestions implements OnInit {
     { id: 10, nom: 'AUTRE' }
   ];
   typesQuestion = ['QCM', 'QCU', 'VRAI_FAUX'];
+  categoriesEntretien = ['TECHNIQUE', 'RH', 'MANAGERIAL', 'FINAL', 'PRESELECTION', 'TEST'];
   niveaux = ['DEBUTANT', 'INTERMEDIAIRE', 'AVANCE', 'EXPERT'];
   newQuestion: QuestionForm = {
     contenu: '',
@@ -61,6 +88,38 @@ export class RdAddQuestions implements OnInit {
   validationErrors: ValidationErrors = {};
   questions: any[] = [];
   editingQuestion: any = null;
+  aiSuggestions: any[] = [];
+  isAiGenerating = false;
+  aiError = '';
+  isChatbotOpen = false;
+  chatUserInput = '';
+  chatMessages: ChatMessage[] = [
+    {
+      sender: 'assistant',
+      text:
+        'Renseignez type, theme (au moins 3 caracteres), categorie, niveau : les propositions sont generees automatiquement via l API. ' +
+        'Le bouton Generer force une mise a jour immediate. Utilisez Envoyer pour une conversation libre avec l assistant.',
+      timestamp: new Date()
+    }
+  ];
+  aiForm: AiAssistantForm = {
+    categorie: 'TECHNIQUE',
+    niveau: 'INTERMEDIAIRE',
+    type: 'QCM',
+    theme: '',
+    nombre: 3,
+    temperature: 0.4
+  };
+  quickThemes = [
+    'SQL et optimisation des requetes',
+    'API REST Java Spring Boot',
+    'Angular TypeScript architecture',
+    'Tests unitaires et integration',
+    'Soft skills et communication'
+  ];
+
+  private readonly autoGenerate$ = new Subject<void>();
+  private autoGenerateSub: Subscription | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -78,6 +137,102 @@ export class RdAddQuestions implements OnInit {
     }
     this.loadDomaines();
     this.loadQuestions();
+    this.setupAutoAiGeneration();
+  }
+
+  ngOnDestroy(): void {
+    this.autoGenerateSub?.unsubscribe();
+    this.autoGenerateSub = null;
+  }
+
+  /** Declenche une generation API debounced quand les champs changent (panneau ouvert). */
+  scheduleAutoAiGeneration(): void {
+    if (!this.isChatbotOpen) {
+      return;
+    }
+    this.autoGenerate$.next();
+  }
+
+  private setupAutoAiGeneration(): void {
+    this.autoGenerateSub?.unsubscribe();
+    this.autoGenerateSub = this.autoGenerate$
+      .pipe(
+        debounceTime(650),
+        map(() => this.buildAiGenerationPayload(3)),
+        tap((built) => {
+          if (!built) {
+            this.aiSuggestions = [];
+            this.aiError = '';
+          }
+        }),
+        filter((built): built is { payload: any; theme: string } => built !== null),
+        distinctUntilChanged((a, b) => JSON.stringify(a.payload) === JSON.stringify(b.payload)),
+        switchMap((built) => {
+          this.isAiGenerating = true;
+          this.aiError = '';
+          return this.apiService.generateAiQuestionSuggestions(this.entretienId, built.payload).pipe(
+            map((data) => ({ ok: true as const, data })),
+            catchError((error) => of({ ok: false as const, error }))
+          );
+        })
+      )
+      .subscribe((result) => {
+        this.isAiGenerating = false;
+        if (result.ok) {
+          this.aiSuggestions = Array.isArray(result.data) ? result.data : [];
+          if (!this.aiSuggestions.length) {
+            this.aiError = 'Aucune suggestion IA recue.';
+            this.addChatMessage('assistant', this.aiError);
+          } else {
+            this.aiError = '';
+          }
+        } else {
+          const err = result.error;
+          const backendMessage =
+            typeof err?.error === 'string'
+              ? err.error
+              : (err?.error?.message || err?.error?.detail || err?.message || 'Erreur inconnue');
+          const status = err?.status ?? '?';
+          this.aiError = `Erreur IA (${status}): ${backendMessage}`;
+          this.aiSuggestions = [];
+          this.addChatMessage('assistant', this.aiError);
+        }
+      });
+  }
+
+  /**
+   * Construit le payload pour l API de generation.
+   * @param minThemeLength longueur minimale du theme (1 = clic manuel Generer, 3 = saisie auto)
+   */
+  private buildAiGenerationPayload(minThemeLength: number): { payload: any; theme: string } | null {
+    if (this.newQuestion.type) {
+      this.aiForm.type = this.newQuestion.type;
+    }
+    if (this.newQuestion.niveau) {
+      this.aiForm.niveau = this.newQuestion.niveau;
+    }
+
+    const currentTheme = String(this.aiForm.theme || '').trim();
+    if (!currentTheme || currentTheme.length < minThemeLength) {
+      return null;
+    }
+
+    const effectiveTheme = currentTheme || this.extractThemeFromMessage(this.chatUserInput);
+    const normalizedTheme = this.normalizeThemeForApi(effectiveTheme);
+    this.aiForm.theme = normalizedTheme;
+
+    const nombre = Number(this.aiForm.nombre);
+    const temperature = Number(this.aiForm.temperature);
+    const payload = {
+      categorie: String(this.aiForm.categorie || 'TECHNIQUE').trim().toUpperCase(),
+      niveau: String(this.aiForm.niveau || 'INTERMEDIAIRE').trim().toUpperCase(),
+      type: this.normalizeAiType(this.aiForm.type),
+      theme: normalizedTheme,
+      nombre: Number.isFinite(nombre) ? Math.max(1, Math.min(10, Math.trunc(nombre))) : 3,
+      temperature: Number.isFinite(temperature) ? Math.max(0.1, Math.min(1.0, temperature)) : 0.4
+    };
+
+    return { payload, theme: normalizedTheme };
   }
 
   loadDomaines(): void {
@@ -187,6 +342,31 @@ export class RdAddQuestions implements OnInit {
       return choice;
     }
     return choice.texte || choice.contenu || JSON.stringify(choice);
+  }
+
+  getSuggestionTypeLabel(suggestion: any): string {
+    return this.normalizeDisplayType(suggestion?.type || this.aiForm.type || 'QCM');
+  }
+
+  getSuggestionChoices(suggestion: any): string[] {
+    const choices = Array.isArray(suggestion?.choix) ? suggestion.choix : [];
+    return choices
+      .map((choice: any) => this.getChoiceText(choice))
+      .filter((text: string) => !!String(text || '').trim());
+  }
+
+  getSuggestionCorrectAnswers(suggestion: any): string {
+    const choices = Array.isArray(suggestion?.choix) ? suggestion.choix : [];
+    const correctChoices = choices
+      .filter((choice: any) => choice?.correcte === true || choice?.correct === true || choice?.isCorrecte === true)
+      .map((choice: any) => this.getChoiceText(choice))
+      .filter((text: string) => !!String(text || '').trim());
+
+    if (correctChoices.length) {
+      return correctChoices.join(', ');
+    }
+
+    return '-';
   }
 
   editQuestion(question: any): void {
@@ -523,6 +703,7 @@ export class RdAddQuestions implements OnInit {
   }
 
   onQuestionTypeChange(): void {
+    this.aiForm.type = this.newQuestion.type || this.aiForm.type;
     if (this.newQuestion.type !== 'QCM') {
       this.newQuestion.bonneReponses = [];
     }
@@ -531,6 +712,363 @@ export class RdAddQuestions implements OnInit {
     } else if (this.newQuestion.type !== 'VRAI_FAUX' && this.newQuestion.choix.length < 2) {
       this.newQuestion.choix = ['', '', '', ''];
     }
+  }
+
+  private normalizeAiType(type: string): string {
+    const normalized = String(type || '').trim().toUpperCase();
+    if (normalized === 'VRAI_FAUX') {
+      return 'VF';
+    }
+    return normalized || 'QCM';
+  }
+
+  private normalizeDisplayType(type: string): string {
+    const normalized = String(type || '').trim().toUpperCase();
+    if (normalized === 'VF') {
+      return 'VRAI_FAUX';
+    }
+    return normalized || 'QCM';
+  }
+
+  private normalizeThemeForApi(theme: string): string {
+    const value = String(theme || '').trim();
+    if (!value || this.isGreetingOrSmallTalk(value)) {
+      return 'Entretien technique';
+    }
+    return value;
+  }
+
+  private isGreetingOrSmallTalk(message: string): boolean {
+    const normalized = String(message || '').trim().toLowerCase();
+    if (!normalized) {
+      return true;
+    }
+
+    const smallTalkPatterns = [
+      /^bonjour!?$/,
+      /^salut!?$/,
+      /^hello!?$/,
+      /^hi!?$/,
+      /^coucou!?$/,
+      /^bonsoir!?$/,
+      /^merci!?$/,
+      /^ok!?$/,
+      /^ca va\??$/,
+      /^salam!?$/
+    ];
+
+    return smallTalkPatterns.some((pattern) => pattern.test(normalized));
+  }
+
+  generateAiSuggestions(): void {
+    this.aiError = '';
+    const built = this.buildAiGenerationPayload(1);
+    if (!built) {
+      this.aiError = 'Indiquez un theme (ex: SQL, Angular, gestion d equipe) avant de generer.';
+      this.addChatMessage('assistant', this.aiError);
+      return;
+    }
+
+    this.isAiGenerating = true;
+
+    this.apiService.generateAiQuestionSuggestions(this.entretienId, built.payload).subscribe({
+      next: (data) => {
+        this.aiSuggestions = Array.isArray(data) ? data : [];
+        if (!this.aiSuggestions.length) {
+          this.aiError = 'Aucune suggestion IA recue.';
+          this.addChatMessage('assistant', this.aiError);
+        } else {
+          this.addChatMessage('assistant', `${this.aiSuggestions.length} proposition(s) generee(s). Cliquez sur Utiliser pour remplir le formulaire.`);
+        }
+        this.isAiGenerating = false;
+      },
+      error: (error) => {
+        const backendMessage = typeof error?.error === 'string'
+          ? error.error
+          : (error?.error?.message || error?.error?.detail || error?.message || 'Erreur inconnue');
+        const status = error?.status ?? '?';
+        this.aiError = `Erreur IA (${status}): ${backendMessage}`;
+        this.aiSuggestions = [];
+        this.isAiGenerating = false;
+        this.addChatMessage('assistant', this.aiError);
+      }
+    });
+  }
+
+  applyAiSuggestion(suggestion: any): void {
+    const type = this.normalizeDisplayType(suggestion?.type || 'QCM');
+    const choix = Array.isArray(suggestion?.choix) ? suggestion.choix : [];
+    const normalizedChoices = choix.map((c: any) => this.getChoiceText(c)).filter((text: string) => !!text.trim());
+
+    this.newQuestion.contenu = suggestion?.contenu || '';
+    this.newQuestion.type = type;
+    this.newQuestion.niveau = suggestion?.niveau || this.aiForm.niveau;
+    this.newQuestion.points = suggestion?.points || 1;
+    this.newQuestion.ordre = suggestion?.ordre || (this.questions.length + 1);
+
+    if (type === 'VRAI_FAUX') {
+      const firstCorrect = choix.find((c: any) => c?.correcte === true || c?.correct === true || c?.isCorrecte === true);
+      this.newQuestion.choix = [];
+      this.newQuestion.bonneReponses = [];
+      this.newQuestion.bonneReponse = firstCorrect ? this.getChoiceText(firstCorrect).toUpperCase() : 'VRAI';
+    } else if (type === 'QCU') {
+      const firstCorrect = choix.find((c: any) => c?.correcte === true || c?.correct === true || c?.isCorrecte === true);
+      this.newQuestion.choix = normalizedChoices.length ? normalizedChoices : ['', ''];
+      this.newQuestion.bonneReponses = [];
+      this.newQuestion.bonneReponse = firstCorrect ? this.getChoiceText(firstCorrect) : (this.newQuestion.choix[0] || '');
+    } else {
+      this.newQuestion.choix = normalizedChoices.length ? normalizedChoices : ['', '', ''];
+      this.newQuestion.bonneReponse = '';
+      this.newQuestion.bonneReponses = [];
+      choix.forEach((c: any, index: number) => {
+        if (c?.correcte === true || c?.correct === true || c?.isCorrecte === true) {
+          this.newQuestion.bonneReponses.push(index);
+        }
+      });
+      if (!this.newQuestion.bonneReponses.length && this.newQuestion.choix.length) {
+        this.newQuestion.bonneReponses = [0];
+      }
+    }
+
+    this.validationErrors = {};
+    this.editingQuestion = null;
+    this.addChatMessage('assistant', 'Proposition appliquee dans le formulaire. Vous pouvez maintenant enregistrer la question.');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  applyQuickPrompt(prompt: string): void {
+    const value = String(prompt || '').trim();
+    if (!value) {
+      return;
+    }
+    this.chatUserInput = value;
+    this.aiForm.theme = value;
+    this.isChatbotOpen = true;
+    this.scheduleAutoAiGeneration();
+  }
+
+  private extractThemeFromMessage(message: string): string {
+    const raw = String(message || '').trim();
+    if (!raw) {
+      return 'Entretien technique';
+    }
+
+    const lowered = raw.toLowerCase();
+    const cleaned = lowered
+      .replace(/\b(genere|génère|cree|crée|donne|donnez|propose|produis|fais|faites)\b/g, ' ')
+      .replace(/\b(question|questions|qcm|qcu|vf|vrai faux|vrai\/faux|entretien|chatbot|ia|assistant)\b/g, ' ')
+      .replace(/\b(sur|de|des|du|pour|avec|niveau|theme|thème|type|categorie|catégorie)\b/g, ' ')
+      .replace(/\b(debutant|débutant|intermediaire|intermédiaire|avance|avancé|expert|junior|senior)\b/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleaned || cleaned.length < 3) {
+      return '';
+    }
+
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+
+  private normalizeForIntent(value: string): string {
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s/_-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private parseNombreFromMessage(normalizedMessage: string): number | undefined {
+    const explicit = normalizedMessage.match(/\b(?:genere|cree|donne|produis|fais)\s+(\d{1,2})\b/);
+    const generic = normalizedMessage.match(/\b(10|[1-9])\b/);
+    const raw = explicit?.[1] || generic?.[1];
+    if (!raw) {
+      const wordsMap: Record<string, number> = {
+        un: 1,
+        une: 1,
+        deux: 2,
+        trois: 3,
+        quatre: 4,
+        cinq: 5,
+        six: 6,
+        sept: 7,
+        huit: 8,
+        neuf: 9,
+        dix: 10
+      };
+      const key = Object.keys(wordsMap).find((word) => new RegExp(`\\b${word}\\b`).test(normalizedMessage));
+      if (!key) {
+        return undefined;
+      }
+      return wordsMap[key];
+    }
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed)) {
+      return undefined;
+    }
+    return Math.max(1, Math.min(10, Math.trunc(parsed)));
+  }
+
+  private parseChatRequestHints(message: string): ChatRequestHints {
+    const normalized = this.normalizeForIntent(message);
+    const wantsGeneration = /\b(genere|generer|cree|creer|donne|produis|fais|fabrique|propose|question|questions|qcm|qcu|vf|vrai faux)\b/.test(normalized);
+
+    let type: ChatRequestHints['type'];
+    if (/\b(vrai faux|vrai_faux|vrai\/faux|\bvf\b|true false)\b/.test(normalized)) {
+      type = 'VRAI_FAUX';
+    } else if (/\b(qcu|choix unique|une seule bonne reponse)\b/.test(normalized)) {
+      type = 'QCU';
+    } else if (/\b(qcm|choix multiple|choix multiples|plusieurs bonnes reponses)\b/.test(normalized)) {
+      type = 'QCM';
+    }
+
+    let niveau: ChatRequestHints['niveau'];
+    if (/\b(debutant|junior|facile)\b/.test(normalized)) {
+      niveau = 'DEBUTANT';
+    } else if (/\b(intermediaire|moyen)\b/.test(normalized)) {
+      niveau = 'INTERMEDIAIRE';
+    } else if (/\b(avance|senior|confirme)\b/.test(normalized)) {
+      niveau = 'AVANCE';
+    } else if (/\b(expert|tres avance)\b/.test(normalized)) {
+      niveau = 'EXPERT';
+    }
+
+    let categorie: ChatRequestHints['categorie'];
+    if (/\b(rh|recrutement|soft skills?)\b/.test(normalized)) {
+      categorie = 'RH';
+    } else if (/\b(managerial|management|leadership)\b/.test(normalized)) {
+      categorie = 'MANAGERIAL';
+    } else if (/\b(test|evaluation|quiz)\b/.test(normalized)) {
+      categorie = 'TEST';
+    } else if (/\b(technique|dev|developpement|code|programmation)\b/.test(normalized)) {
+      categorie = 'TECHNIQUE';
+    }
+
+    const nombre = this.parseNombreFromMessage(normalized);
+    const extractedTheme = this.extractThemeFromMessage(message);
+    const normalizedExtractedTheme = this.normalizeForIntent(extractedTheme);
+    const invalidThemeCandidate = /\b(genere|generer|generation|question|questions|qcm|qcu|vf|vrai faux|assistant|chatbot)\b/.test(normalizedExtractedTheme);
+    const hasThemeInMessage = extractedTheme
+      && extractedTheme.trim().length >= 3
+      && !this.isGreetingOrSmallTalk(extractedTheme)
+      && !invalidThemeCandidate;
+
+    return {
+      wantsGeneration,
+      type,
+      niveau,
+      categorie,
+      nombre,
+      theme: hasThemeInMessage ? extractedTheme : undefined
+    };
+  }
+
+  private isDefaultTheme(theme: string): boolean {
+    const normalized = this.normalizeForIntent(theme);
+    return !normalized || normalized === 'entretien technique';
+  }
+
+  private isLikelyConversationText(value: string): boolean {
+    const raw = String(value || '').trim();
+    if (!raw) {
+      return true;
+    }
+
+    const normalized = this.normalizeForIntent(raw);
+    if (!normalized) {
+      return true;
+    }
+
+    if (raw.includes('?')) {
+      return true;
+    }
+
+    return /\b(tu|vous|je|moi|toi|comment|pourquoi|quel|quelle|quoi|peux|peut|repond|parle|aide|aider|bonjour|salut|hello)\b/.test(normalized);
+  }
+
+  private resolveConversationTheme(selectedTheme: string): string {
+    const value = String(selectedTheme || '').trim();
+    if (!value || this.isDefaultTheme(value) || this.isLikelyConversationText(value)) {
+      return 'Entretien technique';
+    }
+    return value;
+  }
+
+  toggleChatbot(): void {
+    this.isChatbotOpen = !this.isChatbotOpen;
+    if (this.isChatbotOpen) {
+      setTimeout(() => this.scheduleAutoAiGeneration(), 0);
+    }
+  }
+
+  closeChatbot(): void {
+    this.isChatbotOpen = false;
+  }
+
+  sendChatMessage(): void {
+    const message = this.chatUserInput.trim();
+    if (!message) {
+      return;
+    }
+
+    this.addChatMessage('user', message);
+    this.chatUserInput = '';
+
+    const selectedTheme = String(this.aiForm.theme || '').trim();
+    const hints = this.parseChatRequestHints(message);
+
+    if (hints.wantsGeneration) {
+      if (hints.type) {
+        this.aiForm.type = hints.type;
+      }
+      if (hints.niveau) {
+        this.aiForm.niveau = hints.niveau;
+      }
+      if (hints.categorie) {
+        this.aiForm.categorie = hints.categorie;
+      }
+      if (hints.nombre) {
+        this.aiForm.nombre = hints.nombre;
+      }
+
+      const hintedTheme = String(hints.theme || '').trim();
+      if (hintedTheme) {
+        this.aiForm.theme = hintedTheme;
+      }
+
+      const effectiveTheme = String(this.aiForm.theme || '').trim();
+      if (!effectiveTheme) {
+        this.addChatMessage('assistant', 'Pour generer des questions, precisez d abord un theme (ex: developpement mobile, SQL JOIN, Angular services).');
+        return;
+      }
+
+      this.addChatMessage('assistant', `Je lance la generation de questions sur "${effectiveTheme}".`);
+      this.generateAiSuggestions();
+      return;
+    }
+
+    const conversationalTheme = this.resolveConversationTheme(selectedTheme);
+
+    this.isAiGenerating = true;
+    this.apiService.chatRecruiterAssistant(message, {
+      theme: conversationalTheme,
+      type: this.aiForm.type,
+      niveau: this.aiForm.niveau
+    }).subscribe({
+      next: (reply: string) => {
+        this.addChatMessage('assistant', reply || 'Je suis la pour vous aider.');
+        this.isAiGenerating = false;
+      },
+      error: () => {
+        this.addChatMessage('assistant', 'Je n ai pas pu traiter votre demande pour le moment. Reessayez dans quelques instants.');
+        this.isAiGenerating = false;
+      }
+    });
+  }
+
+  private addChatMessage(sender: 'assistant' | 'user', text: string): void {
+    this.chatMessages.push({ sender, text, timestamp: new Date() });
   }
 
   goBack(): void {

@@ -18,7 +18,6 @@
         <table class="table">
           <thead>
             <tr>
-              <th>#</th>
               <th>Titre</th>
               <th>Type</th>
               <th>Recruteur</th>
@@ -29,7 +28,6 @@
           </thead>
           <tbody>
             <tr *ngFor="let e of entretiens; let i = index">
-              <td>{{ i + 1 }}</td>
               <td><strong>{{ e.titre || '-' }}</strong></td>
               <td>{{ e.type || e.categorie || '-' }}</td>
               <td>{{ getRecruteur(e) }}</td>
@@ -63,7 +61,7 @@
             </tr>
 
             <tr *ngIf="entretiens.length === 0">
-              <td colspan="7" class="empty-row">
+              <td colspan="6" class="empty-row">
                 <i class="ri-inbox-line"></i>
                 <p>Aucun entretien trouvé</p>
               </td>

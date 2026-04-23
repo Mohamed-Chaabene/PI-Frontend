@@ -29,6 +29,11 @@
                             {
                                 "glob": "**/*",
                                 "input": "public"
+                            },
+                            {
+                                "glob": "**/*",
+                                "input": "src/assets",
+                                "output": "assets"
                             }
                         ],
                         "styles": [
@@ -69,7 +74,8 @@
                 "serve": {
                     "builder": "@angular/build:dev-server",
                     "options": {
-                        "proxyConfig": "src/proxy.conf.json"
+                        "proxyConfig": "src/proxy.conf.json",
+                        "prebundle": false
                     },
                     "configurations": {
                         "production": {
@@ -77,7 +83,7 @@
                         },
                         "development": {
                             "buildTarget": "jove:build:development",
-                            "proxyConfig": "proxy.conf.json"
+                            "proxyConfig": "src/proxy.conf.json"
                         }
                     },
                     "defaultConfiguration": "development"
@@ -98,6 +104,11 @@
                             {
                                 "glob": "**/*",
                                 "input": "public"
+                            },
+                            {
+                                "glob": "**/*",
+                                "input": "src/assets",
+                                "output": "assets"
                             }
                         ],
                         "styles": [

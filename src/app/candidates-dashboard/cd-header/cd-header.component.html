@@ -139,15 +139,17 @@
                                  *ngFor="let notif of notifications; let i = index"
                                  [class.unread]="!notif.isRead"
                                  [class.new-notification]="i === 0 && !notif.isRead"
+                                 [class.reminder-today]="notif.type === 'interview_reminder' && notif.reminderLevel === 'today'"
+                                 [class.reminder-soon]="notif.type === 'interview_reminder' && notif.reminderLevel === 'soon'"
+                                 [class.reminder-planned]="notif.type === 'interview_reminder' && notif.reminderLevel === 'planned'"
                                  (click)="markNotificationAsRead(notif.id)">
-                                <div class="notification-icon">
-                                    <i class="ri-user-follow-line" *ngIf="notif.type === 'follow'"></i>
-                                    <i class="ri-briefcase-line" *ngIf="notif.type === 'new_job_posted'"></i>
-                                    <i class="ri-mail-line" *ngIf="notif.type === 'message'"></i>
+                                <div class="notification-icon" [ngClass]="getNotificationLevelClass(notif)">
+                                    <i [class]="getNotificationIcon(notif)"></i>
                                 </div>
                                 <div class="notification-content">
+                                    <p class="notification-title">{{ getNotificationTitle(notif) }}</p>
                                     <p class="notification-message">{{ notif.message }}</p>
-                                    <span class="notification-time">{{ formatDate(notif.createdAt) }}</span>
+                                    <span class="notification-time">{{ getNotificationTime(notif) }}</span>
                                 </div>
                                 <div class="notification-status">
                                     <span class="unread-dot" *ngIf="!notif.isRead"></span>
@@ -178,6 +180,18 @@
 
                 <ul class="header-dropdown-menu" [class.show]="activeDropdown === 'profile'">
                     <li>
+                        <button type="button" class="dropdown-item" (click)="openChangePasswordModal()">
+                            <i class="ri-lock-2-line"></i>
+                            Change Password
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item" (click)="openDeleteAccountModal()">
+                            <i class="ri-delete-bin-line"></i>
+                            Delete Account
+                        </button>
+                    </li>
+                    <li>
                         <button type="button" class="dropdown-item" (click)="logout()">
                             <i class="ri-logout-box-r-line"></i>
                             Logout
@@ -186,5 +200,54 @@
                 </ul>
             </div>
         </nav>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal" *ngIf="showChangePasswordModal" style="display: flex; background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog-custom" role="document">
+        <div class="modal-content-custom">
+            <!-- Header with Logo -->
+            <div class="modal-header-logo">
+                <div class="logo-container">
+                    <img src="/images/logo.png" alt="Logo" class="logo-img">
+                </div>
+                <button type="button" class="close-btn" (click)="closeChangePasswordModal()">
+                    <span>&times;</span>
+                </button>
+            </div>
+            
+            <!-- Title -->
+            <div class="modal-title-section">
+                <h2 class="modal-title-text">Change Password</h2>
+                <p class="modal-subtitle-text">Secure your account with a new password</p>
+            </div>
+            
+            <!-- Form Body -->
+            <div class="modal-body-custom">
+                <form (ngSubmit)="submitChangePassword()" class="password-form">
+                    <div class="form-group-custom">
+                        <label for="oldPassword" class="form-label-custom">Old Password</label>
+                        <input type="password" class="form-control-custom" id="oldPassword" [(ngModel)]="changePasswordForm.oldPassword" name="oldPassword" placeholder="Enter your current password" required>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label for="newPassword" class="form-label-custom">New Password</label>
+                        <input type="password" class="form-control-custom" id="newPassword" [(ngModel)]="changePasswordForm.newPassword" name="newPassword" placeholder="Enter your new password" required>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label for="confirmPassword" class="form-label-custom">Confirm Password</label>
+                        <input type="password" class="form-control-custom" id="confirmPassword" [(ngModel)]="changePasswordForm.confirmPassword" name="confirmPassword" placeholder="Confirm your new password" required>
+                    </div>
+                    
+                    <!-- Buttons -->
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" (click)="closeChangePasswordModal()">Cancel</button>
+                        <button type="submit" class="btn-submit">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>

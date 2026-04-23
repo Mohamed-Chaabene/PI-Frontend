@@ -10,6 +10,7 @@ export interface PusherNotification {
     type: string;
     message: string;
     senderId: number;
+    offreEmploiId?: number;
     createdAt: string;
 }
 
@@ -32,19 +33,17 @@ export class PusherService {
      * Initialize Pusher with your credentials
      */
     private initPusher() {
-        // Enable pusher logging for debugging
         (Pusher).logToConsole = true;
 
         this.pusher = new Pusher('07a41117ca80364c7695', {
             cluster: 'eu',
             encrypted: true,
             authorizer: (channel: any) => {
-                // Handle private channel authentication
                 return {
                     authorize: (socket_id: string, callback: any) => {
                         const token = localStorage.getItem('token');
                         if (!token) {
-                            console.error('❌ No token found for channel authorization');
+                            console.error('No token found for channel authorization');
                             callback(true);
                             return;
                         }
@@ -54,9 +53,6 @@ export class PusherService {
                             channel_name: channel.name
                         });
 
-                        console.log('🔐 Requesting channel authorization for:', channel.name);
-
-                        // Use fetch directly for Pusher authorizer (more reliable)
                         fetch(`${this.apiUrl}/pusher/auth?${params}`, {
                             method: 'POST',
                             headers: {
@@ -71,26 +67,21 @@ export class PusherService {
                                 return response.json();
                             })
                             .then((data: any) => {
-                                console.log('✅ Channel authorization successful for:', channel.name);
-                                console.log('🔑 Auth data received:', data);
-                                // Backend returns { auth: 'token' }
                                 if (data && data.auth) {
                                     callback(null, data);
                                 } else {
-                                    console.error('❌ Invalid auth response format:', data);
+                                    console.error('Invalid auth response format:', data);
                                     callback(true);
                                 }
                             })
                             .catch((error) => {
-                                console.error('❌ Channel authorization failed:', error);
+                                console.error('Channel authorization failed:', error);
                                 callback(true);
                             });
                     }
                 };
             }
         });
-
-        console.log('✅ Pusher initialized with private channel authorization');
     }
 
     /**
@@ -122,27 +113,25 @@ export class PusherService {
      */
     public subscribeToNotifications(userId: number) {
         if (!userId) {
-            console.error('❌ User ID is required to subscribe to notifications');
+            console.error('User ID is required to subscribe to notifications');
             return;
         }
 
         const channelName = `private-user-${userId}`;
-        console.log('👂 Subscribing to channel:', channelName);
 
         this.channel = this.pusher.subscribe(channelName);
 
-        // Listen for follow notifications
-        this.channel.bind('new-notification', (data: PusherNotification) => {
-            console.log('📬 New notification received:', data);
-            this.notificationSubject.next(data);
-        });
-
         this.channel.bind('pusher:subscription_succeeded', () => {
-            console.log('✅ Successfully subscribed to notifications channel:', channelName);
+            console.log('Successfully subscribed to notifications channel:', channelName);
         });
 
         this.channel.bind('pusher:subscription_error', (error: any) => {
-            console.error('❌ Subscription error:', error);
+            console.error('Subscription error on channel', channelName, ':', error);
+        });
+
+        this.channel.bind('new-notification', (data: PusherNotification) => {
+            console.log('New notification received:', data);
+            this.notificationSubject.next(data);
         });
     }
 

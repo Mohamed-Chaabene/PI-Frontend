@@ -26,7 +26,7 @@ export class FormationEcriteComponent implements OnInit {
   private formationService = inject(FormationService);
   private http             = inject(HttpClient);
 
-  private readonly base = 'http://localhost:8080/api';
+  private readonly base = '/api';
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -41,16 +41,13 @@ export class FormationEcriteComponent implements OnInit {
     const w = f.writtenUrl || '';
 
     if (w && w.startsWith('http')) {
-      // URL configurée manuellement par l'admin
       this.sourceLabel = this.extractDomain(w);
       this.loadViaProxy(w);
     } else {
-      // Recherche automatique via Google
       this.searchAndLoad(f.titre, f.categorie);
     }
   }
 
-  // ── Recherche Google ───────────────────────────────────────────
   private searchAndLoad(titre: string, categorie: string): void {
     this.sourceLabel = 'Recherche en cours...';
 
@@ -59,7 +56,6 @@ export class FormationEcriteComponent implements OnInit {
       `?titre=${encodeURIComponent(titre)}`
     ).subscribe({
       next: (data) => {
-        // Google pas configuré
         if (data.error) {
           this.googleNotConfigured = true;
           this.showGoogleNotConfigured();
@@ -78,7 +74,6 @@ export class FormationEcriteComponent implements OnInit {
     });
   }
 
-  // ── Changer de source ──────────────────────────────────────────
   selectResult(index: number): void {
     if (index < 0 || index >= this.docResults.length) return;
     this.selectedIndex = index;
@@ -90,7 +85,6 @@ export class FormationEcriteComponent implements OnInit {
     this.loadViaProxy(result.url);
   }
 
-  // ── Proxy Spring → contenu dans l'app ─────────────────────────
   private loadViaProxy(url: string): void {
     this.http.get(
       `${this.base}/proxy/fetch?url=${encodeURIComponent(url)}`,
@@ -112,16 +106,13 @@ export class FormationEcriteComponent implements OnInit {
     });
   }
 
-  // ── Intercepter les clics sur les liens de la doc ────────────────
   onProxyLinkClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
     const anchor = target.closest('a');
     
-    // Si on a cliqué sur un lien marqué avec data-proxy-link
     if (anchor && anchor.getAttribute('data-proxy-link') === 'true') {
       const href = anchor.getAttribute('href');
       
-      // Assurer qu'on navigue vers une vraie page HTTP
       if (href && href.startsWith('http')) {
         event.preventDefault(); // Annuler l'ouverture du vrai site
         this.loading = true;
@@ -132,7 +123,6 @@ export class FormationEcriteComponent implements OnInit {
     }
   }
 
-  // ── Corriger les URLs relatives (Images, CSS, Liens) ─────────────
   private rewriteRelativeUrls(html: string, baseUrl: string): string {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -140,7 +130,6 @@ export class FormationEcriteComponent implements OnInit {
     try {
       const base = new URL(baseUrl);
 
-      // 1. Images (utilise setAttribute)
       doc.querySelectorAll('img').forEach((el: Element) => {
         const img = el as HTMLImageElement;
         const src = img.getAttribute('src');
@@ -162,8 +151,6 @@ export class FormationEcriteComponent implements OnInit {
         }
       });
 
-      // 2. CSS (Stylesheets)
-      // On cherche les links pour les thèmes CSS aussi
       doc.querySelectorAll('link').forEach((el: Element) => {
         const link = el as HTMLLinkElement;
         const rel = link.getAttribute('rel');
@@ -173,7 +160,6 @@ export class FormationEcriteComponent implements OnInit {
         }
       });
 
-      // 3. Liens (Anchor tags) -> Taguer pour onProxyLinkClick
       doc.querySelectorAll('a').forEach((el: Element) => {
         const a = el as HTMLAnchorElement;
         const href = a.getAttribute('href');
@@ -187,7 +173,6 @@ export class FormationEcriteComponent implements OnInit {
         }
       });
 
-      // 4. Icônes SVG (utilisation de xlink:href)
       doc.querySelectorAll('use').forEach((use: Element) => {
         const href = use.getAttribute('href') || use.getAttribute('xlink:href');
         if (href && !href.startsWith('http') && !href.startsWith('data:') && !href.startsWith('#')) {
@@ -206,7 +191,6 @@ export class FormationEcriteComponent implements OnInit {
     return doc.documentElement.outerHTML;
   }
 
-  // ── Carte snippet quand proxy bloqué ──────────────────────────
   private buildSnippetCard(result: any): string {
     if (!result) return this.buildNoContentHtml('');
     return `
@@ -237,7 +221,6 @@ export class FormationEcriteComponent implements OnInit {
       </div>`;
   }
 
-  // ── Google non configuré ───────────────────────────────────────
   private showGoogleNotConfigured(): void {
     this.safeHtml = this.sanitizer.bypassSecurityTrustHtml(`
       <div style="font-family:sans-serif;padding:40px;max-width:600px;

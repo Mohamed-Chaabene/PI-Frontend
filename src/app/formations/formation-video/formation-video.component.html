@@ -20,12 +20,14 @@
       <app-formation-player
         [formation]="formation"
         [inscriptionId]="inscriptionId"
-        [candidatId]="candidatId">
+        [candidatId]="candidatId"
+        [parcoursId]="parcoursId"
+        [niveau]="niveau"
+        [isAlreadyCompleted]="isAlreadyCompleted">
       </app-formation-player>
     </div>
   </div>
 
-  <!-- ✅ Chatbot IA -->
   <app-chatbot-formation
     *ngIf="formation"
     [formation]="formation"

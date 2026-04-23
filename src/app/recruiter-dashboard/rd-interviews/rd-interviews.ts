@@ -1,19 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ApiService } from '../../api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
 import { ActivatedRoute, Router } from '@angular/router';
+import { EmotionAnalysisService } from '../../services/emotion-analysis.service';
 
 interface EntretienForm {
   titre: string;
   description: string;
   type: string;
+  mode: string;
+  meetingLink: string;
   domaine: string;
   dateEntretien: string;
   candidatId: number | null;
+  offreId: number | null;
   photo: string;
   seuilReussite: number | null;
+  dureeMinutes: number | null;
 }
 
 @Component({
@@ -22,36 +27,66 @@ interface EntretienForm {
   templateUrl: './rd-interviews.html',
   styleUrls: ['./rd-interviews.scss'],
 })
-export class RdInterviews implements OnInit {
+export class RdInterviews implements OnInit, OnDestroy {
   entretiens: any[] = [];
+  searchTerm = '';
+  filterType = 'TOUS';
+  filterDomaine = 'TOUS';
+  filterStatus = 'TOUS';
   selectedEntretienDetails: any | null = null;
   showEntretienDetailsModal = false;
+  showEmotionRealtimeModal = false;
+  selectedEmotionEntretien: any | null = null;
+  emotionRealtimeData: any | null = null;
+  emotionRealtimeError = '';
+  emotionRealtimeLastUpdated: Date | null = null;
   candidats: any[] = [];
+  candidaturesOffre: any[] = [];
+  selectedOffreLabel = '';
   newEntretien: EntretienForm = {
     titre: '',
     description: '',
     type: '',
+    mode: 'QUESTIONS',
+    meetingLink: '',
     domaine: '',
     dateEntretien: '',
     candidatId: null,
+    offreId: null,
     photo: '',
-    seuilReussite: 70
+    seuilReussite: 70,
+    dureeMinutes: 30
   };
   showCreateForm = false;
   editingEntretien: any = null;
   currentUser: any;
   currentUserId: number | null = null;
   typesEntretien = ['TECHNIQUE', 'RH', 'MANAGERIAL', 'FINAL', 'PRESELECTION', 'TEST'];
+  modesEntretien = ['QUESTIONS', 'VIDEO'];
   private pendingCandidaturePrefill: {
     candidatId: number | null;
     nomComplet: string;
     email: string;
     poste: string;
   } | null = null;
+  private pendingJobPrefill: {
+    offreId: number | null;
+    poste: string;
+    description: string;
+    localisation: string;
+    contrat: string;
+  } | null = null;
   private candidateEmailForInterview: string | null = null;
   private candidateNameForInterview: string | null = null;
+  private emotionRealtimeIntervalId: number | null = null;
+  private emotionRealtimeErrorStreak = 0;
 
-  constructor(private apiService: ApiService, private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private apiService: ApiService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private emotionAnalysisService: EmotionAnalysisService
+  ) {}
 
   ngOnInit(): void {
     if (!this.isRecruteurSession()) {
@@ -67,8 +102,71 @@ export class RdInterviews implements OnInit {
     this.loadDomaines();
   }
 
+  ngOnDestroy(): void {
+    this.stopEmotionRealtimePolling();
+  }
+
+  get filteredEntretiens(): any[] {
+    const term = this.normalizeForSearch(this.searchTerm);
+
+    return this.entretiens.filter((item: any) => {
+      const matchesText = !term || [
+        item?.titre,
+        item?.description,
+        item?.type,
+        item?.domaine,
+        this.getCandidateName(item?.candidatId)
+      ].some((value) => this.normalizeForSearch(value).includes(term));
+
+      const itemType = String(item?.type || item?.categorie || '').toUpperCase();
+      const itemDomaine = String(item?.domaine || '').toUpperCase();
+      const itemStatus = item?.completed ? 'TERMINE' : 'EN_COURS';
+
+      const matchesType = this.filterType === 'TOUS' || itemType === this.filterType;
+      const matchesDomaine = this.filterDomaine === 'TOUS' || itemDomaine === this.filterDomaine;
+      const matchesStatus = this.filterStatus === 'TOUS' || itemStatus === this.filterStatus;
+
+      return matchesText && matchesType && matchesDomaine && matchesStatus;
+    });
+  }
+
+  get domaineFilterOptions(): string[] {
+    const set = new Set<string>();
+    this.entretiens.forEach((item: any) => {
+      const domaine = String(item?.domaine || '').toUpperCase().trim();
+      if (domaine) {
+        set.add(domaine);
+      }
+    });
+    return ['TOUS', ...Array.from(set).sort()];
+  }
+
+  private normalizeForSearch(value: any): string {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+
   private preparePrefillFromRoute(): void {
     this.route.queryParamMap.subscribe((params) => {
+      if (params.get('createFromJob') === '1') {
+        const rawOffreId = Number(params.get('offreId'));
+        this.pendingJobPrefill = {
+          offreId: Number.isFinite(rawOffreId) && rawOffreId > 0 ? rawOffreId : null,
+          poste: params.get('poste') || '',
+          description: params.get('description') || '',
+          localisation: params.get('localisation') || '',
+          contrat: params.get('contrat') || ''
+        };
+
+        this.showCreateForm = true;
+        this.applyJobPrefillIfPossible();
+        return;
+      }
+
       if (params.get('createFromCandidature') !== '1') {
         return;
       }
@@ -84,6 +182,97 @@ export class RdInterviews implements OnInit {
       this.showCreateForm = true;
       this.applyCandidaturePrefillIfPossible();
     });
+  }
+
+  private applyJobPrefillIfPossible(): void {
+    if (!this.pendingJobPrefill) {
+      return;
+    }
+
+    const prefill = this.pendingJobPrefill;
+    const posteLabel = prefill.poste || 'ce poste';
+    const contratLabel = prefill.contrat || 'non specifie';
+    const localisationLabel = prefill.localisation || 'non specifiee';
+
+    this.newEntretien = {
+      ...this.newEntretien,
+      titre: this.newEntretien.titre || `Entretien - ${posteLabel}`,
+      description: this.newEntretien.description || `Entretien lie a l'offre ${posteLabel}. Contrat: ${contratLabel}. Localisation: ${localisationLabel}.\n\n${prefill.description || ''}`,
+      type: this.newEntretien.type || 'TECHNIQUE',
+      offreId: prefill.offreId
+    };
+
+    if (prefill.offreId) {
+      this.selectedOffreLabel = posteLabel;
+      this.loadCandidaturesForOffre(prefill.offreId);
+    }
+  }
+
+  loadCandidaturesForOffre(offreId: number): void {
+    this.apiService.getCandidaturesByOffre(offreId).subscribe({
+      next: (data) => {
+        const direct = this.extractArrayPayload(data);
+        if (direct.length > 0) {
+          this.candidaturesOffre = direct.filter((c: any) => this.isAcceptedCandidature(c));
+          return;
+        }
+
+        // Fallback: certains endpoints renvoient vide/mal forme, on filtre la liste recruteur.
+        this.apiService.getAllCandidaturesForRecruteur().subscribe({
+          next: (allData) => {
+            const all = this.extractArrayPayload(allData);
+            this.candidaturesOffre = all.filter((c: any) => this.getOffreIdFromCandidature(c) === offreId && this.isAcceptedCandidature(c));
+          },
+          error: (fallbackError: any) => {
+            console.error('❌ Erreur fallback candidatures recruteur:', fallbackError);
+            this.candidaturesOffre = [];
+          }
+        });
+      },
+      error: (error: any) => {
+        console.error('❌ Erreur chargement candidatures de l\'offre:', error);
+
+        // Fallback également en cas d'erreur API directe.
+        this.apiService.getAllCandidaturesForRecruteur().subscribe({
+          next: (allData) => {
+            const all = this.extractArrayPayload(allData);
+            this.candidaturesOffre = all.filter((c: any) => this.getOffreIdFromCandidature(c) === offreId && this.isAcceptedCandidature(c));
+          },
+          error: () => {
+            this.candidaturesOffre = [];
+          }
+        });
+      }
+    });
+  }
+
+  private extractArrayPayload(payload: any): any[] {
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const nestedArray = Object.values(payload).find((value: any) => Array.isArray(value));
+      return Array.isArray(nestedArray) ? nestedArray : [];
+    }
+
+    return [];
+  }
+
+  private getOffreIdFromCandidature(candidature: any): number {
+    const raw = candidature?.offreId ?? candidature?.idOffre ?? candidature?.offre?.id ?? candidature?.offreEmploi?.id;
+    const id = Number(raw);
+    return Number.isFinite(id) ? id : 0;
+  }
+
+  private isAcceptedCandidature(candidature: any): boolean {
+    const statut = String(candidature?.statut || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .trim();
+
+    return statut === 'ACCEPTEE' || statut === 'ACCEPTE' || statut === 'ACCEPTED';
   }
 
   private applyCandidaturePrefillIfPossible(): void {
@@ -254,7 +443,6 @@ export class RdInterviews implements OnInit {
   }
 
   createEntretien(): void {
-    // Validation côté frontend
     if (!this.validateEntretienForm()) {
       return;
     }
@@ -264,10 +452,13 @@ export class RdInterviews implements OnInit {
     const payload: any = {
       titre: this.newEntretien.titre,
       description: this.newEntretien.description,
+      mode: this.newEntretien.mode,
+      meetingLink: this.newEntretien.mode === 'VIDEO' ? (this.newEntretien.meetingLink || null) : null,
       domaine: this.newEntretien.domaine,
       categorie: this.newEntretien.type,
       type: this.newEntretien.type,
       dateEntretien: this.newEntretien.dateEntretien,
+      dureeMinutes: this.newEntretien.dureeMinutes ?? 30,
       photo: this.newEntretien.photo || null,
     };
     if (isTest) {
@@ -276,7 +467,16 @@ export class RdInterviews implements OnInit {
       payload.seuilReussite = this.newEntretien.seuilReussite ?? 70;
     }
 
-    if (this.newEntretien.candidatId !== null && this.newEntretien.candidatId !== undefined) {
+    const isVideoMode = String(this.newEntretien.mode || '').toUpperCase() === 'VIDEO';
+
+    if (isVideoMode) {
+      if (this.newEntretien.offreId !== null && this.newEntretien.offreId !== undefined) {
+        payload.offreId = this.newEntretien.offreId;
+      }
+      payload.candidatId = this.newEntretien.candidatId;
+    } else if (this.newEntretien.offreId !== null && this.newEntretien.offreId !== undefined) {
+      payload.offreId = this.newEntretien.offreId;
+    } else if (this.newEntretien.candidatId !== null && this.newEntretien.candidatId !== undefined) {
       payload.candidatId = this.newEntretien.candidatId;
     }
 
@@ -294,9 +494,16 @@ export class RdInterviews implements OnInit {
   private submitCreateEntretien(payload: any, recruteurId: number, hasRetried: boolean): void {
     this.apiService.createEntretien(payload, recruteurId).subscribe({
       next: (response) => {
-        const interviewLink = this.buildInterviewLink(response);
+        const interviewLink = this.buildInterviewLink(response, payload);
+        const createdMode = String(
+          response?.mode || response?.modeEntretien || payload?.mode || this.newEntretien.mode || ''
+        ).toUpperCase();
 
-        alert(`Entretien créé avec succès!\n\nLien de l'entretien: ${interviewLink}\n\nRedirection vers l'ajout de questions...`);
+        const postCreateMessage = createdMode === 'VIDEO'
+          ? 'Redirection vers la liste des entretiens...'
+          : 'Redirection vers l\'ajout de questions...';
+
+        alert(`Entretien créé avec succès!\n\nLien de l'entretien: ${interviewLink}\n\n${postCreateMessage}`);
         this.entretiens.push(response);
         
         // Send confirmation email to candidate
@@ -305,7 +512,12 @@ export class RdInterviews implements OnInit {
         this.resetForm();
         this.showCreateForm = false;
         
-        this.router.navigate(['/recruiter-dashboard/interviews/add-questions', response.id]);
+        if (createdMode === 'VIDEO') {
+          alert('Entretien vidéo créé avec succès. Le candidat pourra rejoindre l’entretien depuis son tableau de bord.');
+          this.router.navigate(['/recruiter-dashboard/interviews']);
+        } else {
+          this.router.navigate(['/recruiter-dashboard/interviews/add-questions', response.id]);
+        }
       },
       error: (error) => {
         console.error('❌ Erreur complète:', error);
@@ -348,10 +560,20 @@ export class RdInterviews implements OnInit {
     });
   }
 
-  private buildInterviewLink(entretien: any): string {
+  private buildInterviewLink(entretien: any, fallback?: any): string {
     const origin = window.location.origin;
     const type = String(entretien?.type || entretien?.categorie || '').toUpperCase();
+    const mode = String(entretien?.mode || entretien?.modeEntretien || fallback?.mode || '').toUpperCase();
+    const meetingLink = this.resolveMeetingLink(entretien, fallback);
     const entretienId = Number(entretien?.id);
+
+    if (mode === 'VIDEO' && Number.isFinite(entretienId) && entretienId > 0) {
+      return `${origin}/entretiens/video/${entretienId}`;
+    }
+
+    if (mode === 'VIDEO' && meetingLink) {
+      return meetingLink;
+    }
 
     if (type === 'TEST' && Number.isFinite(entretienId) && entretienId > 0) {
       return `${origin}/entretiens/test/${entretienId}`;
@@ -362,6 +584,46 @@ export class RdInterviews implements OnInit {
   }
 
   private sendInterviewConfirmationEmail(entretien: any, interviewLink: string): void {
+    if (entretien?.offreId) {
+      const applicants = this.candidaturesOffre.length > 0 ? this.candidaturesOffre : [];
+
+      applicants.forEach((candidature: any) => {
+        const candidateEmail = candidature?.email;
+        if (!candidateEmail) {
+          return;
+        }
+
+        const candidateName = candidature?.nomComplet || candidature?.candidatNom || 'Candidat';
+        const sharedEmailData = {
+          receiverEmail: candidateEmail,
+          receiverName: candidateName,
+          subject: 'Entretien programmé pour votre candidature',
+          contenu: `Bonjour ${candidateName},
+
+Un entretien a été programmé pour l'offre "${entretien.offreTitre || entretien.titre || 'Offre'}".
+
+Détails de l'entretien:
+- Titre: ${entretien.titre}
+- Type: ${entretien.type}
+- Description: ${entretien.description}
+${entretien.dateEntretien ? `- Date: ${new Date(entretien.dateEntretien).toLocaleDateString('fr-FR')}` : ''}
+
+Vous pouvez consulter votre tableau de bord candidat pour accéder à cet entretien.
+
+Cordialement,
+L'équipe de recrutement`,
+          type: 'ENTRETIEN'
+        };
+
+        this.apiService.sendMessage(sharedEmailData).subscribe({
+          next: () => console.log('✅ Message d\'entretien envoyé à', candidateEmail),
+          error: (err) => console.error('❌ Erreur envoi message entretien partagé:', err)
+        });
+      });
+
+      return;
+    }
+
     // If we don't have a candidate email, try to get it from the candidats list
     let candidateEmail = this.candidateEmailForInterview;
     let candidateName = this.candidateNameForInterview;
@@ -418,14 +680,20 @@ L'équipe de recrutement`,
       titre: '',
       description: '',
       type: '',
+      mode: 'QUESTIONS',
+      meetingLink: '',
       domaine: '',
       dateEntretien: '',
       candidatId: null,
+      offreId: null,
       photo: '',
-      seuilReussite: 70
+      seuilReussite: 70,
+      dureeMinutes: 30
     };
     this.candidateEmailForInterview = null;
     this.candidateNameForInterview = null;
+    this.candidaturesOffre = [];
+    this.selectedOffreLabel = '';
   }
 
   completeEntretien(id: number): void {
@@ -433,17 +701,159 @@ L'équipe de recrutement`,
       next: () => {
         const entretien = this.entretiens.find(e => e.id === id);
         if (entretien) entretien.completed = true;
+
+        if (entretien && this.isVideoEntretien(entretien)) {
+          this.emotionAnalysisService.completeEmotionAnalysis(id).subscribe({
+            next: () => console.log('Emotion analysis marked as completed for interview', id),
+            error: (emotionError) => console.warn('Unable to complete emotion analysis automatically:', emotionError)
+          });
+        }
       },
       error: (error) => console.error('Error completing entretien', error)
     });
   }
 
-  viewResult(id: number): void {
+  viewResult(entretien: any): void {
+    if (this.isVideoEntretien(entretien)) {
+      this.openEmotionRealtime(entretien);
+      return;
+    }
+
+    const id = Number(entretien?.id);
     this.apiService.getResultat(id).subscribe({
       next: (result: any) => {
-        alert(`Score: ${result.score}%, Decision: ${result.decision}`);
+        const scoreText = result?.score != null ? `${result.score}%` : 'N/A';
+        const decisionText = result?.decision || 'N/A';
+        const reportText = result?.commentaire ? `\n\nRapport candidat:\n${result.commentaire}` : '';
+        alert(`Score: ${scoreText}, Decision: ${decisionText}${reportText}`);
       },
       error: (error: any) => console.error('Error getting result', error)
+    });
+  }
+
+  openEmotionRealtime(entretien: any): void {
+    if (!this.isVideoEntretien(entretien)) {
+      alert('Le suivi émotionnel en temps réel est disponible uniquement pour les entretiens vidéo.');
+      return;
+    }
+
+    const entretienId = Number(entretien?.id);
+    if (!Number.isFinite(entretienId) || entretienId <= 0) {
+      alert('Identifiant entretien invalide.');
+      return;
+    }
+
+    this.selectedEmotionEntretien = entretien;
+    this.showEmotionRealtimeModal = true;
+    this.emotionRealtimeError = '';
+    this.emotionRealtimeErrorStreak = 0;
+    this.loadEmotionRealtime(entretienId);
+
+    this.stopEmotionRealtimePolling();
+    this.emotionRealtimeIntervalId = window.setInterval(() => {
+      this.loadEmotionRealtime(entretienId);
+    }, 4000);
+  }
+
+  closeEmotionRealtime(): void {
+    this.showEmotionRealtimeModal = false;
+    this.selectedEmotionEntretien = null;
+    this.stopEmotionRealtimePolling();
+  }
+
+  private stopEmotionRealtimePolling(): void {
+    if (this.emotionRealtimeIntervalId != null) {
+      window.clearInterval(this.emotionRealtimeIntervalId);
+      this.emotionRealtimeIntervalId = null;
+    }
+  }
+
+  private loadEmotionRealtime(entretienId: number): void {
+    this.emotionAnalysisService.getEmotionAnalysis(entretienId).subscribe({
+      next: (response: any) => {
+        this.emotionRealtimeData = response?.data || response || null;
+        this.emotionRealtimeLastUpdated = new Date();
+        this.emotionRealtimeError = '';
+        this.emotionRealtimeErrorStreak = 0;
+      },
+      error: (error: any) => {
+        this.emotionRealtimeErrorStreak += 1;
+        this.emotionRealtimeError = `Resultat emotion non disponible (${error?.status || 'erreur'}).`;
+
+        if (this.emotionRealtimeErrorStreak >= 3) {
+          this.emotionRealtimeError = `Resultat emotion non disponible (${error?.status || 'erreur'}). Le rafraichissement auto a ete suspendu.`;
+          this.stopEmotionRealtimePolling();
+        }
+      }
+    });
+  }
+
+  formatPercent(value: any): string {
+    const n = Number(value);
+    return Number.isFinite(n) ? `${n.toFixed(0)}%` : 'N/A';
+  }
+
+  async downloadEmotionPdf(entretien: any): Promise<void> {
+    if (!this.isVideoEntretien(entretien)) {
+      alert('Le PDF émotion est disponible uniquement pour les entretiens vidéo.');
+      return;
+    }
+
+    const entretienId = Number(entretien?.id);
+    if (!Number.isFinite(entretienId) || entretienId <= 0) {
+      alert('Identifiant entretien invalide.');
+      return;
+    }
+
+    this.emotionAnalysisService.getEmotionAnalysis(entretienId).subscribe({
+      next: async (response: any) => {
+        const data = response?.data || response;
+        if (!data) {
+          alert('Aucune donnée émotion disponible pour générer le PDF.');
+          return;
+        }
+
+        const { jsPDF } = await import('jspdf');
+        const doc = new jsPDF();
+        const title = `Rapport Emotion - Entretien #${entretienId}`;
+        const generatedAt = new Date().toLocaleString('fr-FR');
+
+        doc.setFontSize(16);
+        doc.text(title, 14, 16);
+
+        doc.setFontSize(11);
+        doc.text(`Genere le: ${generatedAt}`, 14, 24);
+        doc.text(`Titre entretien: ${entretien?.titre || 'Sans titre'}`, 14, 31);
+
+        let y = 42;
+        const line = (label: string, value: string) => {
+          doc.text(`${label}: ${value}`, 14, y);
+          y += 8;
+        };
+
+        line('Etat analyse', String(data?.status || 'N/A'));
+        line('Emotion dominante', String(data?.dominantEmotion || 'N/A'));
+        line('Engagement', this.formatPercent(data?.engagementScore));
+        line('Confiance moyenne', this.formatPercent(data?.averageConfidence));
+        line('Stress moyen', this.formatPercent(data?.averageStressLevel));
+        line('Joie moyenne', this.formatPercent(data?.averageJoy));
+        line('Neutralite moyenne', this.formatPercent(data?.averageNeutral));
+        line('Frames traites', String(data?.processedFrames ?? 'N/A'));
+
+        y += 4;
+        doc.setFontSize(12);
+        doc.text('Synthese', 14, y);
+        y += 7;
+        doc.setFontSize(10);
+        const assessment = String(data?.overallAssessment || 'Aucune synthese disponible.');
+        const wrapped = doc.splitTextToSize(assessment, 180);
+        doc.text(wrapped, 14, y);
+
+        doc.save(`emotion-result-entretien-${entretienId}.pdf`);
+      },
+      error: (error: any) => {
+        alert(`Impossible de generer le PDF (${error?.status || 'erreur'}).`);
+      }
     });
   }
 
@@ -500,8 +910,42 @@ L'équipe de recrutement`,
     this.loadQuestions(entretienId);
   }
 
+  isVideoEntretien(entretien: any): boolean {
+    const mode = String(entretien?.mode || entretien?.modeEntretien || '').toUpperCase();
+    return mode === 'VIDEO';
+  }
+
+  openVideoRoom(entretien: any): void {
+    if (!this.isVideoEntretien(entretien)) {
+      alert('Cet entretien n est pas en mode video.');
+      return;
+    }
+
+    const entretienId = Number(entretien?.id);
+    if (Number.isFinite(entretienId) && entretienId > 0) {
+      this.router.navigate(['/entretiens/video', entretienId]);
+      return;
+    }
+
+    const meetingLink = this.resolveMeetingLink(entretien);
+    if (meetingLink) {
+      window.open(meetingLink, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    alert('Impossible d ouvrir la salle video: identifiant ou lien manquant.');
+  }
+
   editEntretien(entretien: any): void {
     this.editingEntretien = { ...entretien };
+    this.editingEntretien.offreId = this.resolveOffreId(entretien);
+    this.editingEntretien.candidatId = this.resolveCandidatId(entretien);
+    if (this.editingEntretien.offreId) {
+      this.loadCandidaturesForOffre(this.editingEntretien.offreId);
+    }
+    if (!this.editingEntretien.dureeMinutes) {
+      this.editingEntretien.dureeMinutes = 30;
+    }
     // Convertir la date pour l'input datetime-local
     if (this.editingEntretien.dateEntretien) {
       this.editingEntretien.dateEntretien = this.formatDateForInput(this.editingEntretien.dateEntretien);
@@ -523,19 +967,30 @@ L'équipe de recrutement`,
     }
 
     const isTestUpdate = (entretien.type || '').toUpperCase() === 'TEST';
+    const updatedMode = String(entretien.mode || entretien.modeEntretien || 'QUESTIONS').toUpperCase();
+    const resolvedOffreId = this.resolveOffreId(entretien);
+    const resolvedCandidatId = this.resolveCandidatId(entretien) || this.resolveAcceptedCandidatIdFromOffre(resolvedOffreId);
+    const submittedDate = this.normalizeUpdateDate(entretien.dateEntretien);
     const updatedData: any = {
       titre: entretien.titre,
       description: entretien.description,
       domaine: entretien.domaine,
       type: entretien.type?.toUpperCase(),
       categorie: entretien.type?.toUpperCase(),
-      dateEntretien: entretien.dateEntretien,
+      mode: updatedMode,
+      meetingLink: updatedMode === 'VIDEO' ? this.resolveMeetingLink(entretien) : null,
+      dateEntretien: submittedDate,
+      dureeMinutes: Number(entretien.dureeMinutes ?? 30),
       photo: entretien.photo || null,
     };
     updatedData.seuilReussite = isTestUpdate ? null : (entretien.seuilReussite ?? 70);
 
-    if (entretien.candidatId) {
-      updatedData.candidatId = entretien.candidatId;
+    if (resolvedCandidatId) {
+      updatedData.candidatId = resolvedCandidatId;
+    }
+
+    if (resolvedOffreId) {
+      updatedData.offreId = resolvedOffreId;
     }
 
     console.log('📤 updateEntretien payload:', updatedData);
@@ -547,6 +1002,33 @@ L'équipe de recrutement`,
         this.loadEntretiens();
       },
       error: (error: any) => {
+        const backendMessage = String(error?.error?.message || error?.error || error?.message || '');
+        const dateRelatedFailure = error?.status === 400 && /date|futur|future/i.test(backendMessage);
+
+        if (dateRelatedFailure && !updatedData._retryWithFutureDate) {
+          const retryPayload = {
+            ...updatedData,
+            dateEntretien: this.ensureFutureDateForBackend(updatedData.dateEntretien),
+            _retryWithFutureDate: true
+          };
+
+          console.warn('⚠ Retraitement updateEntretien avec date future de secours:', retryPayload);
+          this.apiService.updateEntretien(entretien.id, retryPayload).subscribe({
+            next: () => {
+              alert('Entretien mis à jour avec succès!');
+              this.editingEntretien = null;
+              this.loadEntretiens();
+            },
+            error: (retryError: any) => {
+              console.error('Erreur mise à jour entretien:', retryError);
+              console.error('🔻 body:', retryError.error);
+              console.error('🔻 status:', retryError.status, retryError.statusText);
+              alert(`Erreur mise à jour entretien: ${retryError.error?.message || retryError.message || '500 interne'}`);
+            }
+          });
+          return;
+        }
+
         console.error('Erreur mise à jour entretien:', error);
         console.error('🔻 body:', error.error);
         console.error('🔻 status:', error.status, error.statusText);
@@ -589,12 +1071,58 @@ L'équipe de recrutement`,
       return false;
     }
 
+    if (!this.newEntretien.dateEntretien || this.newEntretien.dateEntretien.trim() === '') {
+      alert('La date et heure de l\'entretien sont obligatoires.');
+      return false;
+    }
+
+    const duree = Number(this.newEntretien.dureeMinutes);
+    if (!Number.isFinite(duree) || duree < 1 || duree > 300) {
+      alert('La duree de l\'entretien doit etre entre 1 et 300 minutes.');
+      return false;
+    }
+
+    if (this.newEntretien.mode == null || this.newEntretien.mode.trim() === '') {
+      alert("Le mode de l'entretien est obligatoire.");
+      return false;
+    }
+
+    if (this.newEntretien.mode === 'VIDEO') {
+      const link = (this.newEntretien.meetingLink || '').trim();
+      if (!link) {
+        alert('Le lien de réunion est obligatoire pour un entretien vidéo.');
+        return false;
+      }
+      if (!/^https?:\/\//i.test(link)) {
+        alert('Le lien de réunion doit commencer par http:// ou https://');
+        return false;
+      }
+
+      const selectedCandidateId = Number(this.newEntretien.candidatId);
+      if (!Number.isFinite(selectedCandidateId) || selectedCandidateId <= 0) {
+        alert('Pour un entretien vidéo, veuillez sélectionner un seul candidat accepté.');
+        return false;
+      }
+
+      if (this.newEntretien.offreId && this.candidaturesOffre.length > 0) {
+        const selectedIsAccepted = this.candidaturesOffre.some((candidature: any) => {
+          const raw = candidature?.candidatId ?? candidature?.candidat?.id ?? candidature?.idCandidat;
+          return Number(raw) === selectedCandidateId;
+        });
+
+        if (!selectedIsAccepted) {
+          alert('Le candidat sélectionné doit appartenir à la liste des candidats acceptés.');
+          return false;
+        }
+      }
+    }
+
     if (this.newEntretien.domaine == null || this.newEntretien.domaine.trim() === '') {
       alert('Le domaine est obligatoire.');
       return false;
     }
 
-    if (this.newEntretien.type !== 'TEST') {
+    if (this.newEntretien.type !== 'TEST' && !this.newEntretien.offreId) {
       const s = this.newEntretien.seuilReussite;
       if (s == null || s < 0 || s > 100) {
         alert('Le seuil de réussite doit être entre 0 et 100.');
@@ -626,10 +1154,9 @@ L'équipe de recrutement`,
       return false;
     }
 
-    const selectedDate = new Date(entretien.dateEntretien);
-    const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000);
-    if (selectedDate <= oneHourFromNow) {
-      alert('La date de l\'entretien doit être au moins 1 heure dans le futur.');
+    const duree = Number(entretien.dureeMinutes);
+    if (!Number.isFinite(duree) || duree < 1 || duree > 300) {
+      alert('La duree de l\'entretien doit etre entre 1 et 300 minutes.');
       return false;
     }
 
@@ -638,9 +1165,17 @@ L'équipe de recrutement`,
       return false;
     }
 
-    if (entretien.type !== 'TEST' && !entretien.candidatId) {
-      alert('Un candidat doit être sélectionné pour ce type d\'entretien.');
-      return false;
+    const mode = String(entretien.mode || entretien.modeEntretien || 'QUESTIONS').toUpperCase();
+    if (mode === 'VIDEO') {
+      const link = this.resolveMeetingLink(entretien);
+      if (!link) {
+        alert('Le lien de réunion est obligatoire pour un entretien vidéo.');
+        return false;
+      }
+      if (!/^https?:\/\//i.test(link)) {
+        alert('Le lien de réunion doit commencer par http:// ou https://');
+        return false;
+      }
     }
 
     if (entretien.type !== 'TEST') {
@@ -654,17 +1189,89 @@ L'équipe de recrutement`,
     return true;
   }
 
+  private normalizeUpdateDate(value: string): string {
+    const trimmed = String(value || '').trim();
+    return trimmed;
+  }
+
+  private ensureFutureDateForBackend(value: string): string {
+    const parsed = new Date(value);
+    if (!Number.isFinite(parsed.getTime())) {
+      return new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    }
+
+    const minimumFuture = Date.now() + 5 * 60 * 1000;
+    if (parsed.getTime() <= minimumFuture) {
+      return new Date(minimumFuture).toISOString();
+    }
+
+    return parsed.toISOString();
+  }
+
+  private resolveOffreId(entretien: any): number | null {
+    const raw = entretien?.offreId ?? entretien?.offre?.id ?? entretien?.offreEmploi?.id ?? entretien?.offreEmploiId;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  private resolveCandidatId(entretien: any): number | null {
+    const raw = entretien?.candidatId ?? entretien?.candidat?.id;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  private resolveAcceptedCandidatIdFromOffre(offreId: number | null): number | null {
+    if (!offreId) {
+      return null;
+    }
+
+    const acceptedCandidate = this.candidaturesOffre.find((candidature: any) => this.isAcceptedCandidature(candidature));
+    const raw = acceptedCandidate?.candidatId ?? acceptedCandidate?.candidat?.id ?? acceptedCandidate?.idCandidat;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
   // Méthode utilitaire pour formater les dates
   formatDateForInput(dateString: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toISOString().slice(0, 16); // Format YYYY-MM-DDTHH:MM
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+
+    // Build datetime-local in local timezone (avoids UTC shift to past dates).
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
   // Méthode pour obtenir le nom du candidat
   getCandidateName(candidatId: number): string {
     const candidat = this.candidats.find(c => c.id === candidatId);
     return candidat ? `${candidat.nom} ${candidat.prenom}` : 'Candidat inconnu';
+  }
+
+  private resolveMeetingLink(primary: any, fallback?: any): string {
+    return String(
+      primary?.meetingLink || primary?.lienEntretien || primary?.videoUrl ||
+      fallback?.meetingLink || fallback?.lienEntretien || ''
+    ).trim();
+  }
+
+  generateMeetingLinkForCreate(): void {
+    const slug = `jobmatch-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    this.newEntretien.meetingLink = `https://meet.jit.si/${slug}`;
+  }
+
+  generateMeetingLinkForEdit(): void {
+    if (!this.editingEntretien) {
+      return;
+    }
+    const slug = `jobmatch-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    this.editingEntretien.meetingLink = `https://meet.jit.si/${slug}`;
   }
 
   // Méthodes pour la gestion des questions

@@ -44,7 +44,6 @@ export class NavbarComponent implements OnInit {
         motDePasse: '',
         cv: '',
         niveauEtude: '',
-        competences: '',
         experience: null,
         entreprise: '',
         poste: '',
@@ -71,7 +70,6 @@ export class NavbarComponent implements OnInit {
             motDePasse: '',
             cv: '',
             niveauEtude: '',
-            competences: '',
             experience: null,
             entreprise: '',
             poste: '',
@@ -115,10 +113,54 @@ export class NavbarComponent implements OnInit {
         const token = localStorage.getItem('token');
         const savedUserName = localStorage.getItem('userName');
         const savedUserRole = localStorage.getItem('userRole');
-        if (token && savedUserName) {
+        const hasValidToken = !!token && token !== 'undefined' && token !== 'null';
+
+        if (hasValidToken && !this.isTokenExpired(token!)) {
+            const fallbackRole = this.extractRoleFromToken(token!);
             this.isLoggedIn = true;
-            this.userName = savedUserName;
-            this.userRole = savedUserRole || 'CANDIDAT';
+            this.userName = savedUserName || this.extractNameFromToken(token!) || '';
+            this.userRole = savedUserRole || fallbackRole || 'CANDIDAT';
+            return;
+        }
+
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('recruteurId');
+        this.isLoggedIn = false;
+        this.userName = '';
+        this.userRole = '';
+    }
+
+    private isTokenExpired(token: string): boolean {
+        try {
+            const decoded: any = jwtDecode(token);
+            const exp = Number(decoded?.exp || 0);
+            if (!exp) {
+                return false;
+            }
+            return exp <= Math.floor(Date.now() / 1000);
+        } catch {
+            return true;
+        }
+    }
+
+    private extractRoleFromToken(token: string): string {
+        try {
+            const decoded: any = jwtDecode(token);
+            return String(decoded?.role || decoded?.roles || decoded?.authorities || '')
+                .toUpperCase()
+                .replace(/^ROLE_/, '');
+        } catch {
+            return '';
+        }
+    }
+
+    private extractNameFromToken(token: string): string {
+        try {
+            const decoded: any = jwtDecode(token);
+            return String(decoded?.name || decoded?.sub || decoded?.email || '').trim();
+        } catch {
+            return '';
         }
     }
 
@@ -218,6 +260,10 @@ export class NavbarComponent implements OnInit {
         this.apiService.login(this.loginData).subscribe(
             response => {
                 const token = typeof response === 'string' ? response : response.token;
+                if (!token || token === 'undefined' || token === 'null') {
+                    alert('Erreur de connexion: token invalide renvoye par le backend.');
+                    return;
+                }
                 localStorage.setItem('token', token);
 
                 let recruteurId: number | undefined;
@@ -240,13 +286,7 @@ export class NavbarComponent implements OnInit {
                     : undefined;
                 const role = this.getRoleFromDecodedToken(decoded, roleFromResponse);
                 const normalizedExtractedRole = this.normalizeRole(role);
-                const normalizedInferredRole = this.normalizeRole(this.inferRoleFromEmail(this.loginData.email));
-                const selectedRoleFromTab = this.currentInnerTab === 'organisateur' ? 'ORGANISATEUR' : '';
-                const roleFinal = selectedRoleFromTab === 'ORGANISATEUR'
-                    ? 'ORGANISATEUR'
-                    : (normalizedInferredRole === 'ORGANISATEUR'
-                        ? 'ORGANISATEUR'
-                        : (normalizedExtractedRole || normalizedInferredRole || 'CANDIDAT'));
+                const roleFinal = normalizedExtractedRole || 'CANDIDAT';
                 console.log('[AUTH DEBUG] roleFromResponse=', roleFromResponse);
                 console.log('[AUTH DEBUG] token.role=', decoded?.role, 'token.roles=', decoded?.roles, 'token.authorities=', decoded?.authorities);
                 console.log('[AUTH DEBUG] extractedRole=', role, 'roleFinal=', roleFinal);
@@ -289,12 +329,24 @@ export class NavbarComponent implements OnInit {
                 setTimeout(() => { this.redirectAfterLogin(roleFinal); }, 100);
             },
             error => {
-                const serverMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
                 const isNetworkOrCors = error?.status === 0;
-                const finalMessage = isNetworkOrCors
-                    ? 'Impossible de joindre le backend. Verifiez que Spring Boot tourne sur http://localhost:8080 et que le front est lance via ng serve (proxy actif).'
-                    : serverMessage;
-                alert(`Erreur lors de la connexion (${error.status || '?'}): ${finalMessage}`);
+                let finalMessage = '';
+
+                if (isNetworkOrCors) {
+                    finalMessage = 'Impossible de joindre le backend. Vérifiez que Spring Boot tourne sur http://localhost:8080 et que le front est lancé via ng serve (proxy actif).';
+                } else if (error?.status === 401 || error?.status === 400) {
+                    finalMessage = 'Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.';
+                } else if (error?.status === 500) {
+                    const errorMessage = error?.error?.message?.toLowerCase() || '';
+                    if (errorMessage.includes('unrecognized field') || errorMessage.includes('json parse')) {
+                        finalMessage = 'Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.';
+                    } else {
+                        finalMessage = error?.error?.message || 'Une erreur serveur s\'est produite. Veuillez réessayer.';
+                    }
+                } else {
+                    finalMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
+                }
+                alert(`Erreur lors de la connexion: ${finalMessage}`);
             }
         );
     }
@@ -441,12 +493,12 @@ export class NavbarComponent implements OnInit {
 
         // Call API to send new temporary password to phone
         this.apiService.resetPassword(this.forgotPasswordData.phone).subscribe(
-            response => {
+            (response: any) => {
                 alert('Nouveau mot de passe temporaire envoyé à votre numéro de téléphone! Vérifiez vos SMS.');
                 this.forgotPasswordData = { phone: '' };
                 this.currentTab = 'tab1';
             },
-            error => {
+            (error: any) => {
                 const serverMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
                 alert(`Erreur lors de la réinitialisation (${error.status || '?'}): ${serverMessage}`);
             }

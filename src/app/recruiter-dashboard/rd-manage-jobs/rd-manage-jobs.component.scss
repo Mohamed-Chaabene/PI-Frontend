@@ -97,6 +97,81 @@
                     border-color: var(--matchy-blue-dark);
                 }
             }
+
+            .decision-metric {
+                height: 100%;
+                border: 1px solid #e6edf5;
+                border-radius: 10px;
+                padding: 14px 16px;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+
+                span {
+                    font-size: 0.8rem;
+                    color: var(--matchy-blue-light);
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                }
+
+                strong {
+                    font-size: 1.15rem;
+                    color: var(--matchy-blue-dark);
+                }
+            }
+
+            .decision-metric-highlight {
+                border-color: rgba(245, 124, 0, 0.25);
+                background: linear-gradient(180deg, rgba(245, 124, 0, 0.08) 0%, rgba(255, 255, 255, 1) 100%);
+            }
+
+            .decision-table {
+                thead th {
+                    white-space: nowrap;
+                }
+
+                tbody td {
+                    vertical-align: top;
+                }
+            }
         }
+    }
+}
+
+/* Recommendation Widget Styles */
+.recommendation-row {
+    background-color: #f8f9fa;
+    
+    td {
+        padding: 20px !important;
+        border: none !important;
+    }
+}
+
+/* Button for recommendations */
+.btn-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    
+    &:hover {
+        background-color: #e0a800 !important;
+        border-color: #e0a800 !important;
+    }
+    
+    i {
+        animation: pulse 2s infinite;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
     }
 }

@@ -1,4 +1,3 @@
-// ─── Variables ────────────────────────────────────────────────────────────────
 $primary:      #667eea;
 $primary-lt:   #e0e7ff;
 $primary-dk:   #764ba2;
@@ -16,7 +15,6 @@ $shadow:       0 25px 60px rgba(0, 0, 0, 0.2);
   min-height: 80vh;
   padding: 36px 0 60px;
 
-  // ── Bannière stats ─────────────────────────────────────────────────────
   .stats-banner {
     background: $bg-card;
     border: none;
@@ -66,7 +64,6 @@ $shadow:       0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // Distribution barres
   .distribution {
     display: flex;
     flex-direction: column;
@@ -109,7 +106,6 @@ $shadow:       0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // Stat cards côté droit
   .stat-cards {
     display: flex;
     flex-direction: column;
@@ -141,7 +137,6 @@ $shadow:       0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ── Header page ────────────────────────────────────────────────────────
   .page-header {
     display: flex;
     align-items: center;
@@ -181,7 +176,6 @@ $shadow:       0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ── Grille feedbacks ───────────────────────────────────────────────────
   .feedbacks-grid {
     display: flex;
     flex-direction: column;
@@ -295,7 +289,6 @@ $shadow:       0 25px 60px rgba(0, 0, 0, 0.2);
     }
   }
 
-  // ── Tags notes ────────────────────────────────────────────────────────
   .note-tag {
     display: inline-block;
     padding: 3px 10px;
@@ -314,4 +307,79 @@ $shadow:       0 25px 60px rgba(0, 0, 0, 0.2);
     color: $text-muted;
     font-size: 0.9rem;
   }
+
+  // ── Alertes flash admin ──────────────────────────────────────────
+  .alert-success,
+  .alert-error {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 18px;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    animation: fadeIn 0.25s ease;
+
+    i { font-size: 16px; }
+  }
+
+  .alert-success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+  }
+
+  .alert-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  // ── Bouton supprimer admin ───────────────────────────────────────
+  .btn-delete-admin {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1.5px solid #fca5a5;
+    border-radius: 8px;
+    background: #fff5f5;
+    color: #dc2626;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: auto;
+    transition: all 0.18s ease;
+
+    i { font-size: 13px; }
+
+    &:hover:not(:disabled) {
+      background: #dc2626;
+      color: #fff;
+      border-color: #dc2626;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ── Animation spin (loader) ──────────────────────────────────────────
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
 }

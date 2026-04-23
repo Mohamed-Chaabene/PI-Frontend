@@ -1,6 +1,5 @@
 <div class="feedback-section">
 
-  <!-- Header -->
   <div class="feedback-header">
     <div class="feedback-header-left">
       <h3 class="feedback-title">
@@ -17,9 +16,8 @@
       </div>
     </div>
 
-    <!-- Bouton "Donner mon avis" -->
     <button
-      *ngIf="peutDonnerFeedback && !showForm"
+      *ngIf="peutDonnerFeedback && !showForm && !parcoursId"
       type="button"
       class="add-feedback-btn"
       (click)="openCreate()">
@@ -27,25 +25,21 @@
     </button>
   </div>
 
-  <!-- Message succès -->
   <div class="alert-success" *ngIf="successMsg">
     <i class="ri-checkbox-circle-line"></i> {{ successMsg }}
   </div>
 
-  <!-- Message : doit terminer la formation -->
-  <div class="info-terminer" *ngIf="isCandidat && !aTermine && !checkingTermine && !myFeedback">
+  <div class="info-terminer" *ngIf="isCandidat && !aTermine && !checkingTermine && !myFeedback && !parcoursId">
     <i class="ri-lock-line"></i>
     <span>Terminez cette formation pour pouvoir laisser un avis.</span>
   </div>
 
-  <!-- Formulaire de création / modification d'avis -->
   <div class="feedback-form-card" *ngIf="showForm && isCandidat && aTermine">
 
     <h4 class="form-title">{{ editing ? 'Modifier mon avis' : 'Partager mon expérience' }}</h4>
 
     <form [formGroup]="form" (ngSubmit)="submit()">
 
-      <!-- Note (étoiles) avec validation -->
       <div class="stars-group">
         <label class="form-label">Ma note <span class="required">*</span></label>
         <div class="stars-row">
@@ -58,10 +52,8 @@
           >★</span>
           <span class="note-label" *ngIf="form.value.note > 0">{{ noteLabel }}</span>
         </div>
-        <!-- ✅ SUPPRIMÉ : l'erreur note n'est plus ici -->
       </div>
 
-      <!-- Commentaire avec validation -->
       <div class="form-group">
         <label class="form-label">Commentaire <span class="required">*</span></label>
         <textarea
@@ -79,13 +71,11 @@
           {{ commentaireRestant }} caractères restants
         </div>
 
-        <!-- Erreur commentaire -->
         <div class="invalid-feedback" *ngIf="hasError('commentaire')">
           {{ getError('commentaire') }}
         </div>
       </div>
 
-     <!-- Erreur globale : note + autres erreurs serveur -->
 <div class="alert-error" 
      *ngIf="errorMsg || (form.get('note')?.invalid && form.get('note')?.dirty && form.value.note < 1)">
   <i class="ri-error-warning-line"></i>
@@ -97,7 +87,6 @@
   </span>
 </div>
 
-      <!-- Actions du formulaire -->
       <div class="form-actions">
         <button type="button" class="btn-cancel" (click)="cancelForm()">
           Annuler
@@ -115,7 +104,6 @@
     </form>
   </div>
 
-  <!-- Mon propre feedback (en mode lecture) -->
   <div class="my-feedback-card" *ngIf="myFeedback && !showForm">
     <div class="my-feedback-header">
       <div class="my-badge"><i class="ri-user-line"></i> Mon avis</div>
@@ -140,12 +128,10 @@
     </div>
   </div>
 
-  <!-- Chargement -->
   <div class="loading-state" *ngIf="loading">
     <span class="text-muted">Chargement des avis...</span>
   </div>
 
-  <!-- Liste des feedbacks -->
   <div class="feedbacks-list" *ngIf="!loading">
 
     <div class="empty-feedbacks" *ngIf="feedbacks.length === 0">
@@ -156,6 +142,7 @@
 
     <div
       *ngFor="let f of feedbacks"
+      [hidden]="f.id === myFeedback?.id"
       class="feedback-card"
       [class.is-mine]="f.candidat?.id === candidatId"
     >
@@ -164,8 +151,13 @@
           {{ (f.candidat?.nom || f.candidat?.email || 'A')[0].toUpperCase() }}
         </div>
         <div class="feedback-meta">
-          <span class="feedback-author">{{ f.candidat?.nom || f.candidat?.email || 'Anonyme' }}</span>
-          <span class="feedback-date">{{ formatDate(f.dateCreation) }}</span>
+          <div class="meta-top">
+            <span class="feedback-author">{{ f.candidat?.nom || f.candidat?.email || 'Anonyme' }}</span>
+            <span class="level-badge" *ngIf="f.displayLevel" [class.macro]="f.type === 'MACRO'">
+              {{ f.displayLevel }}
+            </span>
+          </div>
+          <span class="feedback-date">{{ formatDate(f.dateCreation || f.createdAt) }}</span>
         </div>
         <div class="stars-row static ms-auto">
           <span *ngFor="let s of stars" [class]="getDisplayStarClass(f.note, s)">★</span>

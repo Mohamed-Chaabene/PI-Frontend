@@ -16,11 +16,13 @@ export class FeedbackAdminComponent implements OnInit {
   formation: Formation | null = null;
   feedbacks: Feedback[] = [];
   stats: FeedbackStats = { moyenne: 0, total: 0 };
-  loading = false;
+  loading    = false;
   formationId!: number;
-  stars = [1, 2, 3, 4, 5];
+  stars      = [1, 2, 3, 4, 5];
+  deletingId: number | null = null;
+  successMsg = '';
+  errorMsg   = '';
 
-  // Distribution des notes
   get distribution(): number[] {
     const dist = [0, 0, 0, 0, 0];
     this.feedbacks.forEach(f => { if (f.note >= 1 && f.note <= 5) dist[f.note - 1]++; });
@@ -47,15 +49,13 @@ export class FeedbackAdminComponent implements OnInit {
   private loadData(): void {
     this.loading = true;
 
-    // Charger la formation
     this.formationService.getFormationById(this.formationId).subscribe({
       next: (f) => { this.formation = f; }
     });
 
-    // Charger les feedbacks
     this.feedbackService.getByFormation(this.formationId).subscribe({
-      next: (data) => {
-        this.feedbacks = data.sort((a, b) =>
+      next: (data: any) => {
+        this.feedbacks = data.sort((a: any, b: any) =>
           new Date(b.dateCreation).getTime() - new Date(a.dateCreation).getTime()
         );
         this.loading = false;
@@ -63,7 +63,6 @@ export class FeedbackAdminComponent implements OnInit {
       error: () => { this.loading = false; }
     });
 
-    // Charger les stats
     this.feedbackService.getStats(this.formationId).subscribe({
       next: (s) => { this.stats = s; }
     });
@@ -90,5 +89,34 @@ export class FeedbackAdminComponent implements OnInit {
     if (note >= 4) return 'tag-green';
     if (note === 3) return 'tag-amber';
     return 'tag-red';
+  }
+
+  deleteFeedback(feedback: Feedback): void {
+    const nom = feedback.candidat?.nom || feedback.candidat?.email || 'ce candidat';
+    if (!confirm(`Supprimer le feedback de ${nom} ? Cette action est irréversible.`)) return;
+
+    this.deletingId = feedback.id;
+    this.errorMsg   = '';
+
+    this.feedbackService.delete(feedback.id).subscribe({
+      next: () => {
+        this.deletingId = null;
+        this.successMsg = `Feedback de ${nom} supprimé avec succès.`;
+        this.feedbacks  = this.feedbacks.filter(f => f.id !== feedback.id);
+        this.loadStats();
+        setTimeout(() => this.successMsg = '', 4000);
+      },
+      error: () => {
+        this.deletingId = null;
+        this.errorMsg   = 'Erreur lors de la suppression. Veuillez réessayer.';
+        setTimeout(() => this.errorMsg = '', 4000);
+      }
+    });
+  }
+
+  private loadStats(): void {
+    this.feedbackService.getStats(this.formationId).subscribe({
+      next: (s) => { this.stats = s; }
+    });
   }
 }

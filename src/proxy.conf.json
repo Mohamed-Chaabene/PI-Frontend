@@ -3,5 +3,21 @@
     "target": "http://localhost:8080",
     "secure": false,
     "changeOrigin": true
+  },
+  "/ml": {
+    "target": "http://localhost:8000",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/ml": ""
+    }
+  },
+  "/oss": {
+    "target": "https://enter.pollinations.ai",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/oss": ""
+    }
   }
 }

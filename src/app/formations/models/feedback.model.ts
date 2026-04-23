@@ -7,14 +7,16 @@ export interface Feedback {
   commentaire: string;
   dateCreation: string;
   dateModification: string;
-  formation: Formation;
+  formation?: Formation;
+  parcours?: any;
   candidat?: Candidat;
 }
 
 export interface FeedbackCreatePayload {
   note: number;
   commentaire: string;
-  formation: { id: number };
+  formation?: { id: number };
+  parcours?: { id: number };
   candidat: { id: number };
 }
 
