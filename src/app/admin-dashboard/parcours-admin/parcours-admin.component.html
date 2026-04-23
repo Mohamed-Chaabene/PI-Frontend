@@ -94,6 +94,9 @@
                 <a [routerLink]="['/admin-dashboard/formations', row.id, 'feedbacks']" class="action-btn btn-feedback">
                   <i class="ri-chat-3-line"></i> Feedbacks
                 </a>
+                <a [routerLink]="['/admin-dashboard/parcours', row.parcoursId, 'macro-feedbacks']" class="action-btn btn-macro-feedback">
+                  <i class="ri-chat-heart-line"></i> Macro Feedbacks
+                </a>
                 <a [routerLink]="['/admin-dashboard/formations/edit', row.id]" class="action-btn btn-edit">
                   <i class="ri-edit-line"></i> Modifier
                 </a>

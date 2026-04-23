@@ -124,6 +124,7 @@ import { ParcoursAdminComponent } from './admin-dashboard/parcours-admin/parcour
 import { ParcoursCreateComponent } from './admin-dashboard/parcours-create/parcours-create.component';
 import { CheckFormationsComponent } from './admin-dashboard/check-formations.component';
 import { ContentManagementComponent } from './admin-dashboard/content-management/content-management.component';
+import { ParcoursFeedbackAdminComponent } from './admin-dashboard/parcours-feedback-admin/parcours-feedback-admin.component';
 // Banner components are now in SharedModule
 // participations
 
@@ -223,6 +224,7 @@ registerLocaleData(localeFr);
         ParcoursCreateComponent,
         CheckFormationsComponent,
         ContentManagementComponent,
+        ParcoursFeedbackAdminComponent,
         
         
         

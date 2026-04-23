@@ -124,15 +124,21 @@
           <div class="form-group">
             <label class="form-label required">Titre de la formation</label>
             <input type="text" class="form-control"
+                   [class.is-invalid]="hasError(currentStep, 'titre')"
                    [(ngModel)]="steps[currentStep].titre"
                    placeholder="Titre de la formation">
+            <div class="invalid-feedback" *ngIf="hasError(currentStep, 'titre')">
+              {{ getError(currentStep, 'titre') }}
+            </div>
           </div>
 
           <div class="row mb-3">
             <div class="col-md-6">
               <div class="form-group">
                 <label class="form-label required">Catégorie</label>
-                <select class="form-select" [(ngModel)]="steps[currentStep].categorie">
+                <select class="form-select"
+                        [class.is-invalid]="hasError(currentStep, 'categorie')"
+                        [(ngModel)]="steps[currentStep].categorie">
                   <option value="">-- Choisir --</option>
                   <option value="Frontend">Frontend</option>
                   <option value="Backend">Backend</option>
@@ -143,12 +149,17 @@
                   <option value="Mobile">Mobile</option>
                   <option value="Développement">Développement</option>
                 </select>
+                <div class="invalid-feedback" *ngIf="hasError(currentStep, 'categorie')">
+                  {{ getError(currentStep, 'categorie') }}
+                </div>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
                 <label class="form-label required">Plateforme</label>
-                <select class="form-select" [(ngModel)]="steps[currentStep].plateforme">
+                <select class="form-select"
+                        [class.is-invalid]="hasError(currentStep, 'plateforme')"
+                        [(ngModel)]="steps[currentStep].plateforme">
                   <option value="YouTube">YouTube</option>
                   <option value="Udemy">Udemy</option>
                   <option value="Coursera">Coursera</option>
@@ -156,6 +167,9 @@
                   <option value="LinkedIn Learning">LinkedIn Learning</option>
                   <option value="Autre">Autre</option>
                 </select>
+                <div class="invalid-feedback" *ngIf="hasError(currentStep, 'plateforme')">
+                  {{ getError(currentStep, 'plateforme') }}
+                </div>
               </div>
             </div>
           </div>
@@ -179,7 +193,11 @@
               <div class="form-group">
                 <label class="form-label required">Durée</label>
                 <input type="text" class="form-control"
+                       [class.is-invalid]="hasError(currentStep, 'duree')"
                        [(ngModel)]="steps[currentStep].duree" placeholder="Ex: 5h">
+                <div class="invalid-feedback" *ngIf="hasError(currentStep, 'duree')">
+                  {{ getError(currentStep, 'duree') }}
+                </div>
               </div>
             </div>
             <div class="col-md-4">
@@ -201,7 +219,11 @@
                 <div class="form-group">
                   <label class="form-label">Playlist YouTube</label>
                   <input type="text" class="form-control"
+                         [class.is-invalid]="hasError(currentStep, 'playlistId')"
                          [(ngModel)]="steps[currentStep].playlistId" placeholder="PLxxxx">
+                  <div class="invalid-feedback" *ngIf="hasError(currentStep, 'playlistId')">
+                    {{ getError(currentStep, 'playlistId') }}
+                  </div>
                 </div>
               </div>
               <div class="col-md-4">
@@ -289,13 +311,23 @@
           <div class="recap-meta">
             <div class="field">
               <label>Titre du parcours</label>
-              <input type="text" [(ngModel)]="parcoursTitre" [placeholder]="autoTitre">
+              <input type="text"
+                     [class.is-invalid]="hasError(4, 'parcoursTitre')"
+                     [(ngModel)]="parcoursTitre" [placeholder]="autoTitre">
+              <div class="invalid-feedback" *ngIf="hasError(4, 'parcoursTitre')">
+                {{ getError(4, 'parcoursTitre') }}
+              </div>
             </div>
             <div class="field-row">
               <div class="field">
                 <label>Catégorie</label>
-                <input type="text" [(ngModel)]="parcoursCategorie"
+                <input type="text"
+                       [class.is-invalid]="hasError(4, 'parcoursCategorie')"
+                       [(ngModel)]="parcoursCategorie"
                        [placeholder]="steps[0].categorie || 'Développement'">
+                <div class="invalid-feedback" *ngIf="hasError(4, 'parcoursCategorie')">
+                  {{ getError(4, 'parcoursCategorie') }}
+                </div>
               </div>
               <div class="field">
                 <label>Image URL (optionnel)</label>

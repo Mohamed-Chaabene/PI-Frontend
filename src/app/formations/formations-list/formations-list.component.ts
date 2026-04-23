@@ -274,6 +274,14 @@ export class FormationsListComponent implements OnInit {
     return this.formations.filter(f => f.statut === 'Disponible').length;
   }
 
+  get totalCount(): number {
+    const usedIds = this.usedFormationIds;
+    // Formations qui ne sont pas dans un parcours
+    const standaloneCount = this.formations.filter(f => !usedIds.has(Number(f.id))).length;
+    // Plus le nombre de parcours
+    return standaloneCount + this.parcours.length;
+  }
+
   getRankClass(index: number): string {
     if (index === 0) return 'rank-gold';
     if (index === 1) return 'rank-silver';

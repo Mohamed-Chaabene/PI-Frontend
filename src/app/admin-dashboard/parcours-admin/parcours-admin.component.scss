@@ -241,6 +241,7 @@ $shadow-card:   0 16px 40px rgba(15, 23, 42, 0.08);
 
     &.btn-view { color: $primary; border-color: rgba($primary, 0.3); &:hover { background: $primary-light; } }
     &.btn-feedback { color: #534AB7; border-color: rgba(#534AB7, 0.3); &:hover { background: #EEEDFE; } }
+    &.btn-macro-feedback { color: #7e22ce; border-color: rgba(#7e22ce, 0.3); &:hover { background: #f3e8ff; } }
     &.btn-edit { color: $primary-dark; border-color: rgba($primary-dark, 0.3); &:hover { background: $primary-light; } }
     &.btn-archive { color: #f77205; border-color: rgba(#f77205, 0.3); &:hover { background: #FAEEDA; } }
     &.btn-delete { color: #ef4444; border-color: rgba(#ef4444, 0.3); &:hover { background: #fef2f2; } }

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ParcoursService } from '../services/parcours.service';
+import { FeedbackService } from '../services/feedback.service';
 
 @Component({
   selector: 'app-macro-feedback',
@@ -408,7 +409,8 @@ export class MacroFeedbackComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
-    private parcoursService: ParcoursService
+    private parcoursService: ParcoursService,
+    private feedbackService: FeedbackService
   ) {}
 
   ngOnInit(): void {
@@ -420,8 +422,23 @@ export class MacroFeedbackComponent implements OnInit {
       this.parcoursService.getInscription(Number(candidatId), this.parcoursId).subscribe({
         next: (insc) => {
           localStorage.setItem('currentParcoursInscription', JSON.stringify(insc));
-          if (insc && !insc.evaluationParcoursRequise) {
-            this.router.navigate(['/formations/parcours', this.parcoursId]);
+          
+          // Charger le feedback existant s'il y en a un
+          if (insc && insc.id) {
+            this.feedbackService.getMacroByInscription(insc.id).subscribe({
+              next: (feedback) => {
+                if (feedback) {
+                  this.formData = {
+                    noteGlobale: feedback.noteGlobale || 0,
+                    progression: feedback.progression || '',
+                    experienceQuiz: feedback.experienceQuiz || '',
+                    recommandation: feedback.recommandation || '',
+                    commentaireLibre: feedback.commentaireLibre || ''
+                  };
+                }
+              },
+              error: (err) => console.log("Pas de feedback existant ou erreur:", err)
+            });
           }
         },
         error: (err) => console.error("Erreur chargement inscription feedback:", err)
@@ -491,7 +508,7 @@ export class MacroFeedbackComponent implements OnInit {
             localStorage.setItem('currentParcoursInscription', JSON.stringify(ins));
           }
           
-          alert("Merci pour votre avis ! Votre parcours est validé.");
+          alert("Merci pour votre avis !");
           this.router.navigate(['/formations/parcours', this.parcoursId]); 
         },
         error: (err) => {

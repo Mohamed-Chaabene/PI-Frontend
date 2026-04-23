@@ -716,8 +716,6 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         // Redirection spécifique selon le type
         if (notification.type === 'PARCOURS_COMPLETED') {
             this.showNotificationPanel = false;
-            // On supprime immédiatement de la liste locale pour éviter d'y revenir
-            this.notifications = this.notifications.filter(n => n.id !== notificationId && String(n.id) !== String(notificationId));
             
             // On récupère l'ID du parcours stocké (temporairement dans offreEmploiId ou autre)
             const parcoursId = notification.offreEmploiId; 

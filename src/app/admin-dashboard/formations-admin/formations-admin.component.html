@@ -150,7 +150,7 @@
               <th>Statut</th>
               <th>Badge</th>
               <th>Stats</th>
-              <th class="text-end">Actions</th>
+              <th class="text-start">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -221,8 +221,11 @@
                        'feedbacks']" class="action-btn btn-feedback">
                     <i class="ri-chat-3-line"></i> Feedbacks
                   </a>
+                  <a [routerLink]="['/admin-dashboard/parcours', item.id, 'macro-feedbacks']" class="action-btn btn-macro-feedback">
+                    <i class="ri-chat-heart-line"></i> Macro Feedbacks
+                  </a>
                   <a [routerLink]="['/admin-dashboard/parcours', item.id, 'edit']" class="action-btn btn-edit">
-                    <i class="ri-edit-line"></i> Éditer
+                    <i class="ri-edit-line"></i> Modifier
                   </a>
                   <button
                     type="button"

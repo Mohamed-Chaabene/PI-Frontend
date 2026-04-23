@@ -57,4 +57,8 @@ export class FeedbackService {
   getMacrosByParcours(parcoursId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.api}/parcours/${parcoursId}/macro`);
   }
+
+  getMacroByInscription(inscriptionId: number): Observable<any> {
+    return this.http.get<any>(`${this.api}/inscription/${inscriptionId}/macro`);
+  }
 }

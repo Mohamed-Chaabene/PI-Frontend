@@ -175,10 +175,64 @@ export class ParcoursCreateComponent implements OnInit {
   }
 
   // ── Navigation ────────────────────────────────────────────────
+  hasError(stepIndex: number, field: string): boolean {
+    const step = this.steps[stepIndex];
+    if (!step) return false;
+
+    // On ne montre l'erreur que si l'utilisateur a déjà interagi ou essayé de passer à l'étape suivante
+    if (!step.titre && field !== 'titre') return false; 
+
+    switch (field) {
+      case 'titre':
+        return !step.titre || step.titre.trim().length < 3;
+      case 'categorie':
+        return !step.categorie;
+      case 'plateforme':
+        return !step.plateforme;
+      case 'duree':
+        return !step.duree || step.duree.trim().length === 0;
+      case 'playlistId':
+        // Requis si Disponible et pas de lien externe
+        return step.statut === 'Disponible' && !step.playlistId && !step.lienExterne;
+      case 'parcoursTitre':
+        return !this.parcoursTitre && !this.autoTitre;
+      case 'parcoursCategorie':
+        return !this.parcoursCategorie && !this.steps[0].categorie;
+      default:
+        return false;
+    }
+  }
+
+  getError(stepIndex: number, field: string): string {
+    switch (field) {
+      case 'titre':
+        return "Le titre est requis (min. 3 caractères)";
+      case 'categorie':
+        return "Veuillez choisir une catégorie";
+      case 'plateforme':
+        return "Veuillez choisir une plateforme";
+      case 'duree':
+        return "La durée est requise (ex: 5h)";
+      case 'playlistId':
+        return "Une playlist YouTube ou un lien externe est requis pour une formation disponible";
+      case 'parcoursTitre':
+        return "Le titre du parcours est requis";
+      case 'parcoursCategorie':
+        return "La catégorie du parcours est requise";
+      default:
+        return "";
+    }
+  }
+
   get canProceed(): boolean {
     if (this.currentStep >= 4) return false;
-    const step = this.steps[this.currentStep];
-    return !!(step.titre && step.titre.trim().length >= 3);
+    
+    // Pour pouvoir passer à l'étape suivante, tous les champs requis doivent être valides
+    return !this.hasError(this.currentStep, 'titre') &&
+           !this.hasError(this.currentStep, 'categorie') &&
+           !this.hasError(this.currentStep, 'plateforme') &&
+           !this.hasError(this.currentStep, 'duree') &&
+           !this.hasError(this.currentStep, 'playlistId');
   }
 
   nextStep(): void { if (this.canProceed && this.currentStep < 4) this.currentStep++; }

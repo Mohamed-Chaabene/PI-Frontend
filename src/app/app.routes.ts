@@ -88,6 +88,7 @@ import { ChatEvenementComponent } from './candidates-dashboard/evenement-candida
 import { EvenementChatComponent } from './evenement-dashboard/evenement-chat/evenement-chat.component';
 import { ParcoursAdminComponent } from './admin-dashboard/parcours-admin/parcours-admin.component';
 import { ParcoursCreateComponent } from './admin-dashboard/parcours-create/parcours-create.component';
+import { ParcoursFeedbackAdminComponent } from './admin-dashboard/parcours-feedback-admin/parcours-feedback-admin.component';
 
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
@@ -216,9 +217,10 @@ export const routes: Routes = [
             { path: 'formations/edit/:id', component: FormationEditComponent },
             { path: 'formations/:id/participants', component: FormationParticipantsComponent },
             { path: 'formations/:id/feedbacks', component: FeedbackAdminComponent },
-            { path: 'parcours', component: ParcoursAdminComponent },
+            { path: 'formations/:id/macro-feedbacks', component: ParcoursFeedbackAdminComponent },
             { path: 'parcours/create', component: ParcoursCreateComponent },
             { path: 'parcours/:id/edit', component: ParcoursCreateComponent },
+            { path: 'parcours/:id/macro-feedbacks', component: ParcoursFeedbackAdminComponent },
         ]
     },
 
