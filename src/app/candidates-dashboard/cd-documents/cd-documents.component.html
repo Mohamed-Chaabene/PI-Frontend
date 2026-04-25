@@ -118,7 +118,7 @@
                     <i [class]="getTypeIcon(doc.type)" [style.color]="getTypeColor(doc.type)"></i>
                 </div>
                 <div class="document-info">
-                    <h3>{{ doc.nom || getTypeLabel(doc.type) }}</h3>
+                    <h3>{{ doc.nomFichier || doc.nom || getTypeLabel(doc.type) }}</h3>
                     <span class="badge" [ngClass]="{'badge-success': doc.compatibleATS, 'badge-warning': !doc.compatibleATS}">
                         {{ doc.compatibleATS ? 'ATS compatible' : 'ATS à améliorer' }}
                     </span>

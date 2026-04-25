@@ -236,9 +236,9 @@ export class ChatbotFormationComponent
       fileData:       fileDataToSend,              // base64 seulement si pas de texte extrait
       fileName:       fileName          || null,
       fileText:       truncatedFileText || null,   // texte extrait (tronqué à 15k chars)
-      titreFormation: this.formation?.titre     || '',
-      categorie:      this.formation?.categorie || '',
-      niveau:         this.formation?.niveau    || '',
+      titreFormation: (this.formation?.titre     || '').trim(),
+      categorie:      (this.formation?.categorie || '').trim(),
+      niveau:         (this.formation?.niveau    || '').trim(),
       context:        this.context,
       formationId:    this.formation?.id,
       candidatId:     this.candidatId,

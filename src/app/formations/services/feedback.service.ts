@@ -6,7 +6,7 @@ import { Feedback, FeedbackCreatePayload, FeedbackUpdatePayload, FeedbackStats }
 @Injectable({ providedIn: 'root' })
 export class FeedbackService {
 
-  private api = '/api/feedbacks';
+  private api = 'http://localhost:8080/api/feedbacks';
 
   constructor(private http: HttpClient) {}
 

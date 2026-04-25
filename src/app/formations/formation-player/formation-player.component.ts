@@ -499,7 +499,7 @@ export class FormationPlayerComponent
     this.progression = Math.round(validVuesCount / t * 100);
     if (this.progression >= 100 && !this.isAlreadyCompleted && !this.quizLaunched) {
       this.quizLaunched = true;
-      setTimeout(() => this.lancerQuizFinal(), 2000);
+      setTimeout(() => this.lancerQuizFinal(), 4000);
     }
   }
 
@@ -689,5 +689,18 @@ export class FormationPlayerComponent
     if (this.progression >= 100) return '#16a34a'; // Green stays for completion
     if (this.progression >= 50)  return '#fbbf24'; // Brighter amber/orange
     return '#fcd34d'; // Lighter amber for low progression
+  }
+
+  getQuizLabel(): string {
+    if (this.parcoursId && this.niveau) {
+      if (this.niveau === 'EXPERT') return 'Évaluation finale';
+      const labels: any = {
+        'DEBUTANT': 'Quiz Débutant',
+        'INTERMEDIAIRE': 'Quiz Intermédiaire',
+        'AVANCE': 'Quiz Avancé'
+      };
+      return labels[this.niveau] || 'Évaluation de niveau';
+    }
+    return 'Évaluation finale';
   }
 }

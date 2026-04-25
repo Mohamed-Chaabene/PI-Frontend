@@ -15,7 +15,7 @@
     }
   },
   "/oss": {
-    "target": "https://enter.pollinations.ai",
+    "target": "https://text.pollinations.ai",
     "secure": true,
     "changeOrigin": true,
     "logLevel": "info",
