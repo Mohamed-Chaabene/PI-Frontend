@@ -207,8 +207,16 @@
               <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'all'" (click)="onTypeChange('all')">Tout</button>
               <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'formation'" (click)="onTypeChange('formation')">Formations</button>
               <button type="button" class="filter-chip" [class.active]="contentTypeFilter === 'parcours'" (click)="onTypeChange('parcours')">Parcours complets</button>
+              <!-- BOUTON RECOMMANDATIONS ML -->
+              <button type="button"
+                      class="filter-chip ai-chip"
+                      [class.active]="isRecommandationMode"
+                      (click)="activerRecommandations()"
+                      style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; border: none; font-weight: 600;">
+                🤖 Pour vous
+              </button>
             </div>
-            <div class="filters-row d-flex gap-3">
+            <div class="filters-row d-flex gap-3" *ngIf="!isRecommandationMode">
               <select class="form-select form-select-sm premium-select" [(ngModel)]="activeFilter" (change)="applySearch()" style="width: auto;">
                 <option *ngFor="let f of filters" [value]="f">{{ f === 'Toutes' ? 'Tous les niveaux' : f }}</option>
               </select>
@@ -261,7 +269,78 @@
             </div>
           </div>
 
-          <div class="row g-4 justify-content-center" *ngIf="!loading && unifiedFiltered.length">
+          <!-- ======= SECTION RECOMMANDATIONS ML ======= -->
+          <div *ngIf="isRecommandationMode" style="margin-bottom: 32px;">
+
+            <div *ngIf="loadingRecommandations" style="text-align: center; padding: 60px 0;">
+              <div style="display: inline-block; width: 48px; height: 48px; border: 4px solid #a29bfe; border-top-color: #6c5ce7; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+              <p style="margin-top: 16px; color: #6c5ce7; font-weight: 600;">L'IA analyse votre profil...</p>
+            </div>
+
+            <div *ngIf="!loadingRecommandations && recommandations.length === 0" style="text-align: center; padding: 60px 0;">
+              <div style="font-size: 64px;">🤖</div>
+              <p style="color: #6b7280; margin-top: 12px;">Aucune recommandation disponible. Ajoutez des compétences à votre profil pour de meilleures suggestions !</p>
+            </div>
+
+            <div *ngIf="!loadingRecommandations && recommandations.length > 0">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                <div style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); width: 4px; height: 28px; border-radius: 4px;"></div>
+                <h3 style="margin: 0; font-size: 20px; font-weight: 700; color: #1e293b;">
+                  Formations recommandées pour vous 🤖
+                </h3>
+                <span style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; padding: 2px 10px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                  {{ recommandations.length }} résultats
+                </span>
+              </div>
+
+              <div class="row g-4 justify-content-center">
+                <div class="col-lg-4 col-md-6 col-sm-12" *ngFor="let rec of recommandations">
+                  <div class="formation-card" style="border: 2px solid #a29bfe; position: relative;">
+
+                    <!-- Badge match % -->
+                    <div style="position: absolute; top: 12px; right: 12px; z-index: 10;
+                                background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+                                color: white; padding: 4px 10px; border-radius: 20px;
+                                font-size: 12px; font-weight: 700; box-shadow: 0 2px 8px rgba(108,92,231,.4);">
+                      🤖 Match {{ rec.score_match | number:'1.0-0' }}%
+                    </div>
+
+                    <div class="card-top-banner position-relative"
+                         [ngClass]="getCatClass(rec.formation.categorie)"
+                         [style.background-image]="rec.formation.imageUrl ? 'url(' + rec.formation.imageUrl + ')' : ''"
+                         [style.background-size]="'cover'"
+                         [style.background-position]="'center'">
+                      <span class="cat-emoji" *ngIf="!rec.formation.imageUrl">
+                        {{ getIconEmoji(rec.formation.categorie) || '💻' }}
+                      </span>
+                      <span class="statut-badge" [ngClass]="getStatutClass(rec.formation.statut || 'Disponible')">{{ rec.formation.statut || 'Disponible' }}</span>
+                    </div>
+
+                    <div class="card-body">
+                      <div class="card-plateforme">{{ rec.formation.plateforme }}</div>
+                      <h3 class="card-title">
+                        <a [routerLink]="['/formations', rec.formation.id]">{{ rec.formation.titre }}</a>
+                      </h3>
+                      <div class="card-meta">
+                        <span><i class="ri-folder-line"></i> {{ rec.formation.categorie }}</span>
+                        <span><i class="ri-time-line"></i> {{ rec.formation.duree }}</span>
+                      </div>
+                    </div>
+
+                    <div class="card-footer">
+                      <span class="niveau-badge" [ngClass]="getNiveauClass(rec.formation.niveau || 'Débutant')">{{ rec.formation.niveau }}</span>
+                      <a [routerLink]="['/formations', rec.formation.id]" class="voir-btn">
+                        Voir détails <i class="ri-arrow-right-line"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- ======= FIN RECOMMANDATIONS ML ======= -->
+
+          <div class="row g-4 justify-content-center" *ngIf="!loading && unifiedFiltered.length && !isRecommandationMode">
             <div class="col-lg-4 col-md-6 col-sm-12" *ngFor="let item of unifiedFiltered">
               <div class="formation-card">
                 <div class="card-top-banner position-relative" 

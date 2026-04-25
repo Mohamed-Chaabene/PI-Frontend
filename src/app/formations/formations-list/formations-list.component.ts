@@ -33,6 +33,11 @@ export class FormationsListComponent implements OnInit {
 
   unifiedFiltered: any[] = [];
 
+  // --- RECOMMANDATIONS ML ---
+  isRecommandationMode = false;
+  recommandations: { formation: Formation; score_match: number; raisons: string[] }[] = [];
+  loadingRecommandations = false;
+
   readonly badges = ['', 'Tendance', 'Populaire', 'Top noté', 'Bien noté', 'En progression'];
   readonly categories = [
     '', 'Frontend', 'Backend', 'IA', 'Data',
@@ -193,12 +198,46 @@ export class FormationsListComponent implements OnInit {
 
   onTypeChange(type: 'all' | 'formation' | 'parcours'): void {
     this.contentTypeFilter = type;
+    this.isRecommandationMode = false;
+    this.activeFilter = 'Toutes'; // Réinitialiser le filtre de niveau pour éviter la page vide
     this.applySearch();
   }
 
   applyFilter(filter: string): void {
     this.activeFilter = filter;
+    this.isRecommandationMode = false;
     this.applySearch();
+  }
+
+  activerRecommandations(): void {
+    this.isRecommandationMode = true;
+    this.activeFilter = '';
+
+    const candidatId = Number(localStorage.getItem('candidatId'));
+    if (!candidatId) {
+      alert('Vous devez être connecté en tant que candidat pour voir vos recommandations.');
+      this.isRecommandationMode = false;
+      this.activeFilter = 'Toutes';
+      return;
+    }
+
+    this.loadingRecommandations = true;
+    this.formationService.getFormationsRecommandees(candidatId).subscribe({
+      next: (data: any[]) => {
+        this.recommandations = data.map(item => ({
+          formation: item.formation as Formation,
+          score_match: item.score_match || 0,
+          raisons: item.raisons || []
+        }));
+        this.loadingRecommandations = false;
+      },
+      error: () => {
+        this.loadingRecommandations = false;
+        alert('Le service de recommandation IA est indisponible. Vérifiez que le serveur Python tourne sur le port 5000.');
+        this.isRecommandationMode = false;
+        this.activeFilter = 'Toutes';
+      }
+    });
   }
 
   applySearch(): void {

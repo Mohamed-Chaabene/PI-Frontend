@@ -162,4 +162,9 @@ export class FormationService {
   getFormationsPopulaires(scoreMin: number = 50): Observable<Formation[]> {
     return this.http.get<Formation[]>(`${this.base}/populaires?scoreMin=${scoreMin}`);
   }
+
+  // --- RECOMMANDATIONS ML ---
+  getFormationsRecommandees(candidatId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/recommandees/${candidatId}`);
+  }
 }
