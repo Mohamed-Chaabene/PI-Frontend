@@ -129,6 +129,10 @@ export class FormationService {
     );
   }
 
+  verifyCertificat(code: string): Observable<any> {
+    return this.http.get<any>(`${this.api}/certificats/verify/${code}`);
+  }
+
   getCandidatByEmail(email: string): Observable<{ id: number }> {
     return this.http.get<{ id: number }>(
       `${this.api}/candidats/email/${encodeURIComponent(email)}`

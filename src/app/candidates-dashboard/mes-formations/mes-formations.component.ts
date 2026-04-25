@@ -49,6 +49,25 @@ export class MesFormationsComponent implements OnInit {
     });
   }
 
+  partagerLinkedIn(cert: any): void {
+    if (!cert.verificationCode) {
+      alert("Ce certificat n'a pas encore de code de vérification. Veuillez le télécharger une fois pour le générer, puis réessayez.");
+      return;
+    }
+    
+    // LinkedIn refuse les URLs "localhost", on doit utiliser un vrai nom de domaine (même fictif pour le test)
+    const certUrl = `https://www.matchykhedma.tn/verify-certificat/${cert.verificationCode}`;
+    const issueYear = new Date(cert.dateObtention).getFullYear();
+    const issueMonth = new Date(cert.dateObtention).getMonth() + 1;
+    
+    // Remplacer les espaces par des '+' pour l'URL
+    const certName = encodeURIComponent(cert.titre);
+    
+    const linkedInUrl = `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${certName}&organizationName=MatchyKhedma&issueYear=${issueYear}&issueMonth=${issueMonth}&certUrl=${encodeURIComponent(certUrl)}&certId=${cert.verificationCode}`;
+    
+    window.open(linkedInUrl, '_blank');
+  }
+
   getProgression(ins: Inscription): number {
     return Math.round(ins.progression || 0);
   }

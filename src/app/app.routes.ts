@@ -90,9 +90,12 @@ import { ParcoursAdminComponent } from './admin-dashboard/parcours-admin/parcour
 import { ParcoursCreateComponent } from './admin-dashboard/parcours-create/parcours-create.component';
 import { ParcoursFeedbackAdminComponent } from './admin-dashboard/parcours-feedback-admin/parcours-feedback-admin.component';
 
+import { VerifyCertificatComponent } from './formations/verify-certificat/verify-certificat.component';
+
 export const routes: Routes = [
     {path: '', component: HomeDemoOneComponent},
     {path: 'login', component: HomeDemoOneComponent},
+    {path: 'verify-certificat/:code', component: VerifyCertificatComponent},
     {path: 'index-2', component: HomeDemoTwoComponent},
     {path: 'index-3', component: HomeDemoThreeComponent},
     {path: 'index-4', component: HomeDemoFourComponent},
