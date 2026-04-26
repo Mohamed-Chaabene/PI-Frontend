@@ -4,6 +4,7 @@ import { HomeDemoTwoComponent } from './pages/home-demo-two/home-demo-two.compon
 import { HomeDemoThreeComponent } from './pages/home-demo-three/home-demo-three.component';
 import { HomeDemoFourComponent } from './pages/home-demo-four/home-demo-four.component';
 import { NotFoundComponent } from './common/not-found/not-found.component';
+import { VideoInterviewRoomPageComponent } from './pages/video-interview-room-page/video-interview-room-page.component';
 import { JobsGridPageComponent } from './pages/jobs-grid-page/jobs-grid-page.component';
 import { JobsListingPageComponent } from './pages/jobs-listing-page/jobs-listing-page.component';
 import { JobDetailsPageComponent } from './pages/job-details-page/job-details-page.component';
@@ -107,6 +108,7 @@ export const routes: Routes = [
     {path: 'candidate-details/:id', component: CandidateDetailsPageComponent},
     {path: 'candidate-details', component: CandidateDetailsPageComponent, pathMatch: 'full'},
     {path: 'candidate-entretiens', component: CandidateEntretiensPageComponent},
+    {path: 'entretiens/video/:id', component: VideoInterviewRoomPageComponent },
     {path: 'employers', component: EmployersPageComponent},
     {path: 'employer-details', component: EmployerDetailsPageComponent},
     {path: 'faq', component: FaqPageComponent},
@@ -118,6 +120,7 @@ export const routes: Routes = [
     {path: 'partenaires', component: PartenaireListComponent},
     {path: 'partenaires/:id/offres', component: OffreListComponent},
     {path: 'entretiens/test/:id', component: PublicTestPassPageComponent},
+    
     {
         path: 'dashboard',
         component: EmployersDashboardComponent,
