@@ -83,8 +83,7 @@
                         <div class="search-status" *ngIf="!isSearching && searchResults.length === 0 && searchTerm">
                             No users found
                         </div>
-                        <button
-                            type="button"
+                        <div
                             class="search-result-item"
                             *ngFor="let user of searchResults"
                             (click)="selectUser(user)"
@@ -105,7 +104,7 @@
                                     <span class="result-tag" *ngIf="user.role">{{ user.role }}</span>
                                 </div>
                             </div>
-                        </button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -106,6 +106,7 @@ import { LOCALE_ID } from '@angular/core';
 import localeFr from '@angular/common/locales/fr';
 registerLocaleData(localeFr);
 import { EvenementHeaderComponent } from './evenement-dashboard/evenement-header/evenement-header.component';
+import { EvenementTemplateComponent } from './evenement-dashboard/evenement-template/evenement-template.component';
 import { EvenementDemandesComponent } from './evenement-dashboard/evenement-demandes/evenement-demandes.component';
 import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
@@ -184,6 +185,7 @@ registerLocaleData(localeFr);
         RdChangePasswordComponent,
         CdDocumentsComponent, 
         EvenementDashboardComponent,
+        EvenementTemplateComponent,
         EvenementSidebarComponent,
         EvenementFormComponent,
         EvenementListComponent, 

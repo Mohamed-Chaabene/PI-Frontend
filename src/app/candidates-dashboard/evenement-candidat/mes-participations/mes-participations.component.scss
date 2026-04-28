@@ -1,3 +1,6 @@
+@use 'sass:color';
+
+
 // =============================================
 // VARIABLES — système de design unifié
 // =============================================
@@ -258,13 +261,13 @@ $modal-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
 
         &.statut-attente {
             background: $warning-soft;
-            color: darken($warning, 15%);
+            color: color.adjust($warning, $lightness: -15%);
             .status-dot { background: $warning; }
         }
 
         &.statut-refuse {
             background: $danger-soft;
-            color: darken($danger, 10%);
+            color: color.adjust($danger, $lightness: -10%);
             .status-dot { background: $danger; }
         }
 
@@ -313,8 +316,8 @@ $modal-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
     font-weight: 600;
 
     &.statut-confirme { background: $success-soft;  color: $success-dark; }
-    &.statut-attente  { background: $warning-soft;  color: darken($warning, 15%); }
-    &.statut-refuse   { background: $danger-soft;   color: darken($danger, 10%); }
+    &.statut-attente  { background: $warning-soft;  color: color.adjust($warning, $lightness: -15%); }
+    &.statut-refuse   { background: $danger-soft;   color: color.adjust($danger, $lightness: -10%); }
     &.statut-annule   { background: $gray-100;      color: $gray-500; }
 }
 
@@ -403,7 +406,7 @@ $modal-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
     margin: 0 1.25rem;
     padding: 0.75rem 1rem;
     background: $warning-soft;
-    color: darken($warning, 15%);
+    color: color.adjust($warning, $lightness: -15%);
     border: 1px solid rgba($warning, 0.3);
     border-radius: 0.75rem;
     font-size: 0.78rem;
@@ -669,97 +672,6 @@ $modal-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
 // =============================================
 // VARIABLES
 // =============================================
-$primary:       #153d93;
-$primary-dark:  #1d4ed8;
-$primary-light: #3b82f6;
-$primary-soft:  #dbeafe;
-$success:       #10b981;
-$success-soft:  rgba(#10b981, 0.1);
-$gray-100:      #f1f5f9;
-$gray-200:      #e2e8f0;
-$gray-400:      #94a3b8;
-$gray-500:      #64748b;
-$gray-600:      #475569;
-$gray-800:      #1e293b;
-
-@mixin flex-center { display: flex; align-items: center; justify-content: center; }
-@mixin transition  { transition: all 0.2s ease; }
-
-// =============================================
-// WRAPPER BOUTONS
-// =============================================
-.cal-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-    padding: 0.75rem 0 0.25rem;
-}
-
-// =============================================
-// BOUTON BASE
-// =============================================
-.btn-cal {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.55rem 1.1rem;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    @include transition;
-
-    i {
-        font-size: 0.95rem;
-    }
-
-    img {
-        flex-shrink: 0;
-    }
-
-    &:hover {
-        transform: translateY(-2px);
-    }
-
-    &:active {
-        transform: translateY(0);
-    }
-}
-
-// =============================================
-// VARIANTE ICS
-// =============================================
-.btn-ics {
-    background: $primary-soft;
-    color: $primary;
-    border: 1px solid rgba($primary, 0.18);
-
-    &:hover {
-        background: darken($primary-soft, 4%);
-        box-shadow: 0 4px 12px rgba($primary, 0.15);
-    }
-}
-
-// =============================================
-// VARIANTE GOOGLE
-// =============================================
-.btn-google {
-    background: #fff;
-    color: $gray-800;
-    border: 1px solid $gray-200;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-
-    &:hover {
-        background: $gray-100;
-        border-color: $gray-400;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-}
-// =============================================
-// VARIABLES
-// =============================================
 $primary:      #153d93;
 $primary-dark: #1d4ed8;
 $primary-light:#3b82f6;
@@ -843,7 +755,7 @@ $gray-800:     #1e293b;
     align-items: center;
     gap: 0.5rem;
     background: $warning-soft;
-    color: darken($warning, 20%);
+    color: color.adjust($warning, $lightness: -20%);
     border: 1px solid rgba($warning, 0.2);
     padding: 0.5rem 1rem;
     border-radius: 999px;

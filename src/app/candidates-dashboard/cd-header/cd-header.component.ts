@@ -220,9 +220,13 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         this.apiService.isFollowing(userId, token).subscribe({
             next: (response) => {
                 if (response.isFollowing) {
-                    this.followedUsers.add(userId);
-                    this.followingUsers.add(userId);
-                    console.log('✅ User', userId, 'is already followed');
+                    this.ngZone.run(() => {
+                        this.followedUsers.add(userId);
+                        this.followingUsers.add(userId);
+                        this.changeDetectorRef.markForCheck();
+                        this.changeDetectorRef.detectChanges();
+                        console.log('✅ User', userId, 'is already followed');
+                    });
                 }
             },
             error: (error) => {
@@ -237,6 +241,7 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
     }
 
     followUser(user: SearchResult) {
+        console.log('🟢 followUser clicked', user.id, user.nom);
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('❌ No token found. User not authenticated.');
@@ -249,8 +254,12 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
             this.apiService.unfollowUser(user.id, token).subscribe({
                 next: (response) => {
                     console.log('✅ Successfully unfollowed user:', response);
-                    this.followedUsers.delete(user.id);
-                    this.followingUsers.delete(user.id);
+                    this.ngZone.run(() => {
+                        this.followedUsers.delete(user.id);
+                        this.followingUsers.delete(user.id);
+                        this.changeDetectorRef.markForCheck();
+                        this.changeDetectorRef.detectChanges();
+                    });
                 },
                 error: (error) => {
                     console.error('❌ Error unfollowing user:', error);
@@ -262,8 +271,12 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
             this.apiService.followUser(user.id, token).subscribe({
                 next: (response) => {
                     console.log('✅ Successfully followed user:', response);
-                    this.followedUsers.add(user.id);
-                    this.followingUsers.add(user.id);
+                    this.ngZone.run(() => {
+                        this.followedUsers.add(user.id);
+                        this.followingUsers.add(user.id);
+                        this.changeDetectorRef.markForCheck();
+                        this.changeDetectorRef.detectChanges();
+                    });
                 },
                 error: (error) => {
                     console.error('❌ Error following user:', error);

@@ -4,6 +4,7 @@ import { HomeDemoTwoComponent } from './pages/home-demo-two/home-demo-two.compon
 import { HomeDemoThreeComponent } from './pages/home-demo-three/home-demo-three.component';
 import { HomeDemoFourComponent } from './pages/home-demo-four/home-demo-four.component';
 import { NotFoundComponent } from './common/not-found/not-found.component';
+import { VideoInterviewRoomPageComponent } from './pages/video-interview-room-page/video-interview-room-page.component';
 import { JobsGridPageComponent } from './pages/jobs-grid-page/jobs-grid-page.component';
 import { JobsListingPageComponent } from './pages/jobs-listing-page/jobs-listing-page.component';
 import { JobDetailsPageComponent } from './pages/job-details-page/job-details-page.component';
@@ -73,7 +74,7 @@ import { CandidatsListComponent } from './admin-dashboard/candidats-list/candida
 import { recruteurGuard, recruteurChildGuard } from './guards/recruteur.guard';
 import { PartenaireCandidatComponent } from './candidates-dashboard/partenaire-candidat/partenaire-candidat.component';
 import { OffreCandidatComponent } from './candidates-dashboard/offre-candidat/offre-candidat.component';
-import { EvenementDemandesComponent } from './evenement-dashboard/evenement-demandes/evenement-demandes.component'
+import { EvenementDemandesComponent } from './evenement-dashboard/evenement-demandes/evenement-demandes.component';
 import { MesParticipationsComponent } from './candidates-dashboard/evenement-candidat/mes-participations/mes-participations.component';
 import { EvenementCalendrierComponent } from './evenement-dashboard/evenement-calendar/evenement-calendar.component';
 import { MaCalendarComponent } from './candidates-dashboard/evenement-candidat/ma-calendar/ma-calendar.component';
@@ -89,99 +90,97 @@ import { EvenementChatComponent } from './evenement-dashboard/evenement-chat/eve
 import { ParcoursAdminComponent } from './admin-dashboard/parcours-admin/parcours-admin.component';
 import { ParcoursCreateComponent } from './admin-dashboard/parcours-create/parcours-create.component';
 import { ParcoursFeedbackAdminComponent } from './admin-dashboard/parcours-feedback-admin/parcours-feedback-admin.component';
-import { VideoInterviewRoomPageComponent } from './pages/video-interview-room-page/video-interview-room-page.component';
-
 import { VerifyCertificatComponent } from './formations/verify-certificat/verify-certificat.component';
 
 export const routes: Routes = [
-    {path: '', component: HomeDemoOneComponent},
-    {path: 'login', component: HomeDemoOneComponent},
-    {path: 'verify-certificat/:code', component: VerifyCertificatComponent},
-    {path: 'index-2', component: HomeDemoTwoComponent},
-    {path: 'index-3', component: HomeDemoThreeComponent},
-    {path: 'index-4', component: HomeDemoFourComponent},
-    {path: 'about', component: AboutPageComponent},
-    {path: 'pricing', component: PricingPageComponent},
-    {path: 'jobs-grid', component: JobsGridPageComponent},
-    {path: 'jobs-listing', component: JobsListingPageComponent},
-    {path: 'job-details/:id', component: JobDetailsPageComponent},
-    {path: 'job-details', component: JobDetailsPageComponent},
-    {path: 'categories', component: CategoriesPageComponent},
-    {path: 'candidates', component: CandidatesPageComponent},
-    {path: 'candidate-details/:id', component: CandidateDetailsPageComponent},
-    {path: 'candidate-details', component: CandidateDetailsPageComponent, pathMatch: 'full'},
-    {path: 'candidate-entretiens', component: CandidateEntretiensPageComponent},
-    {path: 'employers', component: EmployersPageComponent},
-    {path: 'employer-details', component: EmployerDetailsPageComponent},
-    {path: 'faq', component: FaqPageComponent},
-    {path: 'privacy-policy', component: PrivacyPolicyPageComponent},
-    {path: 'terms-conditions', component: TermsConditionsPageComponent},
-    {path: 'blog', component: BlogPageComponent},
-    {path: 'blog-details', component: BlogDetailsPageComponent},
-    {path: 'contact', component: ContactPageComponent},
-    {path: 'partenaires', component: PartenaireListComponent},
-    {path: 'partenaires/:id/offres', component: OffreListComponent},
-    {path: 'entretiens/video/:id', component: VideoInterviewRoomPageComponent},
-    {path: 'entretiens/test/:id', component: PublicTestPassPageComponent},
+    { path: '', component: HomeDemoOneComponent },
+    { path: 'login', component: HomeDemoOneComponent },
+    { path: 'verify-certificat/:code', component: VerifyCertificatComponent },
+    { path: 'index-2', component: HomeDemoTwoComponent },
+    { path: 'index-3', component: HomeDemoThreeComponent },
+    { path: 'job-details/:id', component: JobDetailsPageComponent },
+    { path: 'job-details', component: JobDetailsPageComponent },
+    { path: 'categories', component: CategoriesPageComponent },
+    { path: 'candidates', component: CandidatesPageComponent },
+    { path: 'employer-details', component: EmployerDetailsPageComponent },
+    { path: 'faq', component: FaqPageComponent },
+    { path: 'privacy-policy', component: PrivacyPolicyPageComponent },
+    { path: 'terms-conditions', component: TermsConditionsPageComponent },
+    { path: 'blog', component: BlogPageComponent },
+    { path: 'blog-details', component: BlogDetailsPageComponent },
+    { path: 'contact', component: ContactPageComponent },
+    { path: 'partenaires', component: PartenaireListComponent },
+    { path: 'partenaires/:id/offres', component: OffreListComponent },
+    { path: 'entretiens/video/:id', component: VideoInterviewRoomPageComponent },
+    { path: 'entretiens/test/:id', component: PublicTestPassPageComponent },
+
     {
         path: 'dashboard',
         component: EmployersDashboardComponent,
         children: [
-            {path: '', component: EDashboardComponent},
-            {path: 'company-profile', component: EdCompanyProfileComponent},
-            {path: 'post-a-new-job', component: EdPostANewJobComponent},
-            {path: 'manage-jobs', component: EdManageJobsComponent},
-            {path: 'all-applicants', component: EdAllApplicantsComponent},
-            {path: 'resumes', component: EdResumesComponent},
-            {path: 'message', component: EdMessageComponent},
-            {path: 'change-password', component: EdChangePasswordComponent},
+            { path: '', component: EDashboardComponent },
+            { path: 'company-profile', component: EdCompanyProfileComponent },
+            { path: 'post-a-new-job', component: EdPostANewJobComponent },
+            { path: 'manage-jobs', component: EdManageJobsComponent },
+            { path: 'all-applicants', component: EdAllApplicantsComponent },
+            { path: 'resumes', component: EdResumesComponent },
+            { path: 'message', component: EdMessageComponent },
+            { path: 'change-password', component: EdChangePasswordComponent },
         ]
     },
+
     {
         path: 'candidates-dashboard',
         component: CandidatesDashboardComponent,
         children: [
-        {path: '', component: CDashboardComponent},
-            {path: 'my-profile', component: CdProfileComponent},
+            { path: '', component: CDashboardComponent },
+            { path: 'my-profile', component: CdProfileComponent },
             { path: 'documents', component: CdDocumentsComponent },
-            {path: 'bookmarks', component: CdBookmarksComponent},
-            {path: 'applied-jobs', component: CdAppliedJobsComponent},
-            {path: 'alert-jobs', component: CdAlertJobsComponent},
-            {path: 'news', component: CdNewsComponent},
-            {path: 'message', component: CdMessageComponent},
-            {path: 'change-password', component: CdChangePasswordComponent},
+            { path: 'bookmarks', component: CdBookmarksComponent },
+            { path: 'applied-jobs', component: CdAppliedJobsComponent },
+            { path: 'alert-jobs', component: CdAlertJobsComponent },
+            { path: 'news', component: CdNewsComponent },
+            { path: 'message', component: CdMessageComponent },
+            { path: 'change-password', component: CdChangePasswordComponent },
             { path: 'mes-formations', component: MesFormationsComponent },
             { path: 'partenaires', component: PartenaireCandidatComponent },
             { path: 'partenaires/:id/offres', component: OffreCandidatComponent },
             { path: 'evenements', component: EvenementCandidatComponent },
+            { path: 'ma-calendar', component: MaCalendarComponent },
+            { path: 'mes-participations', component: MesParticipationsComponent },
         ]
     },
+
     {
         path: 'recruiter-dashboard',
         component: RecruiterDashboardComponent,
         canActivate: [recruteurGuard],
         canActivateChild: [recruteurChildGuard],
         children: [
-            {path: '', component: RdDashboardComponent},
-            {path: 'post-job', component: RdPostJobComponent},
-            {path: 'manage-jobs', component: RdManageJobsComponent},
-            {path: 'applicants', component: RdApplicantsComponent},
-            {path: 'messages', component: RdMessagesComponent},
-            {path: 'profile', component: RdProfileComponent},
-            {path: 'change-password', component: RdChangePasswordComponent},
-            {path: 'interviews', component: RdInterviews},
-            {path: 'interviews/add-questions/:id', component: RdAddQuestions},
-            {path: 'candidatures', component: RdCandidaturesListComponent},
-            {path: 'offre-statistiques', component: OffreStatistiquesComponent},
-            {path: 'offre-recherche-avancee', component: OffreRechercheAvanceeComponent},
+            { path: '', component: RdDashboardComponent },
+            { path: 'post-job', component: RdPostJobComponent },
+            { path: 'manage-jobs', component: RdManageJobsComponent },
+            { path: 'applicants', component: RdApplicantsComponent },
+            { path: 'messages', component: RdMessagesComponent },
+            { path: 'profile', component: RdProfileComponent },
+            { path: 'change-password', component: RdChangePasswordComponent },
+            { path: 'interviews', component: RdInterviews },
+            { path: 'interviews/add-questions/:id', component: RdAddQuestions },
+            { path: 'candidatures', component: RdCandidaturesListComponent },
+            { path: 'offre-statistiques', component: OffreStatistiquesComponent },
+            { path: 'offre-recherche-avancee', component: OffreRechercheAvanceeComponent },
         ]
+    },
 
-    },{
-  path: 'formations',
-  loadChildren: () =>
-    import('./formations/formations.module').then(m => m.FormationsModule)
-},
-{path: 'evenement-dashboard', component: EvenementDashboardComponent,
+    {
+        path: 'formations',
+        loadChildren: () =>
+            import('./formations/formations.module').then(m => m.FormationsModule)
+    },
+
+    {
+        path: 'evenement-dashboard',
+        component: EvenementDashboardComponent,
         children: [
             { path: '', component: EvenementTemplateComponent },
             { path: 'ajouter', component: EvenementFormComponent },
@@ -192,9 +191,10 @@ export const routes: Routes = [
             { path: 'calendrier', component: EvenementCalendrierComponent },
             { path: 'feedbacks', component: EvenementFeedbacksComponent },
             { path: 'chats', component: EvenementChatComponent },
-            { path: 'chat/:evenementId', component: ChatEvenementComponent }
+            { path: 'chat/:evenementId', component: ChatEvenementComponent },
         ]
     },
+
     {
         path: 'admin-dashboard',
         component: AdminDashboardComponent,
@@ -219,6 +219,5 @@ export const routes: Routes = [
         ]
     },
 
-    {path: '**', component: NotFoundComponent}, // This line will remain down from the whole pages component list
-
+    { path: '**', component: NotFoundComponent },
 ];
