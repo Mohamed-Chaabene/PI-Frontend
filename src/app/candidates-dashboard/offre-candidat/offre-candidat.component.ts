@@ -104,16 +104,16 @@ export class OffreCandidatComponent implements OnInit {
   }
 
   getEmailCandidat(): string {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.sub || payload.email || '';
-      } catch { return ''; }
-    }
-    return '';
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      console.log('JWT payload complet :', payload); // ← regarde F12
+      return payload.email ?? payload.mail ?? payload.sub ?? '';
+    } catch { return ''; }
   }
-
+  return '';
+}
   onCvSelected(event: any) {
     const file = event.target.files[0];
     if (file) this.cvFile = file;
@@ -169,4 +169,18 @@ export class OffreCandidatComponent implements OnInit {
     const input = document.getElementById('cvInput') as HTMLInputElement;
     if (input) input.value = '';
   }
+
+  getJoursDepuis(dateStr: string): string {
+  if (!dateStr) return 'Date inconnue';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffJours = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffJours === 0) return "Publié aujourd'hui";
+  if (diffJours === 1) return 'Publié il y a 1 jour';
+  if (diffJours < 30)  return `Publié il y a ${diffJours} jours`;
+  if (diffJours < 60)  return 'Publié il y a 1 mois';
+  return `Publié il y a ${Math.floor(diffJours / 30)} mois`;
+}
 }

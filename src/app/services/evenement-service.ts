@@ -74,7 +74,11 @@ exporterMesEvenementsConfirmes(candidatId: number): void {
 getMesParticipationsConfirmees(candidatId: number): Observable<any[]> {
   const token = localStorage.getItem('token');
   return this.http.get<any[]>(
+<<<<<<< HEAD
     `/api/participations/confirmed/${candidatId}`,
+=======
+    `http://localhost:8080/api/participations/confirmed/${candidatId}`,
+>>>>>>> partenaire4
     { headers: { Authorization: `Bearer ${token}` } }
   );
   
