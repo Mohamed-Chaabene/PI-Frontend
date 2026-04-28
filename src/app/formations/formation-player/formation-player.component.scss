@@ -1,3 +1,6 @@
+@use 'sass:color';
+
+
 $primary:       #0965A4;
 $primary-light: #E1F5EE;
 $primary-dark:  #0965A4;
@@ -405,7 +408,7 @@ $text-muted:    #6b7280;
     cursor: pointer;
     transition: background 0.2s;
 
-    &:hover { background: darken(#0965A4, 8%); }
+    &:hover { background: color.adjust(#0965A4, $lightness: -8%); }
   }
 }
 
@@ -664,7 +667,7 @@ $text-muted:    #6b7280;
     cursor: pointer;
     transition: background 0.2s;
 
-    &:hover { background: darken(#0965A4, 8%); }
+    &:hover { background: color.adjust(#0965A4, $lightness: -8%); }
     i { font-size: 16px; }
   }
 }
@@ -719,7 +722,7 @@ $text-muted:    #6b7280;
   cursor: pointer;
   transition: background 0.2s;
 
-  &:hover { background: darken(#16a34a, 8%); }
+  &:hover { background: color.adjust(#16a34a, $lightness: -8%); }
 }
 
 .btn-retry-final {

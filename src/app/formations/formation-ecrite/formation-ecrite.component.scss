@@ -1,3 +1,6 @@
+@use 'sass:color';
+
+
 $primary:     #0965A4;
 $primary-light:#E6F1FB;
 $text-main:   #1a1a2e;
@@ -107,7 +110,7 @@ $bg-page:     #f8fafc;
   a {
     color: $primary;
     text-decoration: underline;
-    &:hover { color: darken($primary, 10%); }
+    &:hover { color: color.adjust($primary, $lightness: -10%); }
   }
 
   code {
@@ -158,7 +161,7 @@ $bg-page:     #f8fafc;
     padding: 12px 16px;
     margin: 16px 0;
     border-radius: 0 8px 8px 0;
-    color: darken($primary, 10%);
+    color: color.adjust($primary, $lightness: -10%);
     font-style: italic;
   }
 
@@ -173,7 +176,7 @@ $bg-page:     #f8fafc;
       font-weight: 600;
       padding: 10px 14px;
       text-align: left;
-      border: 1px solid lighten($primary, 40%);
+      border: 1px solid color.adjust($primary, $lightness: 40%);
     }
 
     td {

@@ -1,3 +1,6 @@
+@use 'sass:color';
+
+
 $primary:       #667eea;
 $primary-light: #e0e7ff;
 $primary-dark:  #764ba2;
@@ -600,7 +603,7 @@ $amber-dk:      #e4762c;
       border-color: rgba($primary, 0.35);
       background: $primary-light;
       font-weight: 600;
-      &:hover { background: darken($primary-light, 4%); border-color: $primary; }
+      &:hover { background: color.adjust($primary-light, $lightness: -4%); border-color: $primary; }
       &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
 

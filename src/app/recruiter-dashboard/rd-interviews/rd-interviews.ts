@@ -805,6 +805,7 @@ L'équipe de recrutement`,
       return;
     }
 
+    // Récupérer d'abord l'analyse globale, puis les frames détaillées
     this.emotionAnalysisService.getEmotionAnalysis(entretienId).subscribe({
       next: async (response: any) => {
         const data = response?.data || response;
@@ -813,43 +814,182 @@ L'équipe de recrutement`,
           return;
         }
 
-        const { jsPDF } = await import('jspdf');
-        const doc = new jsPDF();
-        const title = `Rapport Emotion - Entretien #${entretienId}`;
-        const generatedAt = new Date().toLocaleString('fr-FR');
+        // Récupérer les frames détaillées
+        this.emotionAnalysisService.getEmotionFrames(entretienId).subscribe({
+          next: async (frames: any[]) => {
+            const { jsPDF } = await import('jspdf');
+            // @ts-ignore
+            const Chart = (await import('chart.js/auto')).default;
+            const doc = new jsPDF();
+            const title = `Rapport Emotion - Entretien #${entretienId}`;
+            const generatedAt = new Date().toLocaleString('fr-FR');
 
-        doc.setFontSize(16);
-        doc.text(title, 14, 16);
+            doc.setFontSize(16);
+            doc.text(title, 14, 16);
 
-        doc.setFontSize(11);
-        doc.text(`Genere le: ${generatedAt}`, 14, 24);
-        doc.text(`Titre entretien: ${entretien?.titre || 'Sans titre'}`, 14, 31);
+            doc.setFontSize(11);
+            doc.text(`Genere le: ${generatedAt}`, 14, 24);
+            doc.text(`Titre entretien: ${entretien?.titre || 'Sans titre'}`, 14, 31);
 
-        let y = 42;
-        const line = (label: string, value: string) => {
-          doc.text(`${label}: ${value}`, 14, y);
-          y += 8;
-        };
+            let y = 42;
+            const line = (label: string, value: string) => {
+              doc.text(`${label}: ${value}`, 14, y);
+              y += 8;
+            };
 
-        line('Etat analyse', String(data?.status || 'N/A'));
-        line('Emotion dominante', String(data?.dominantEmotion || 'N/A'));
-        line('Engagement', this.formatPercent(data?.engagementScore));
-        line('Confiance moyenne', this.formatPercent(data?.averageConfidence));
-        line('Stress moyen', this.formatPercent(data?.averageStressLevel));
-        line('Joie moyenne', this.formatPercent(data?.averageJoy));
-        line('Neutralite moyenne', this.formatPercent(data?.averageNeutral));
-        line('Frames traites', String(data?.processedFrames ?? 'N/A'));
+            // Résumé global facial & vocal
+            line('Etat analyse', String(data?.status || 'N/A'));
+            line('Emotion dominante', String(data?.dominantEmotion || 'N/A'));
+            line('Engagement', this.formatPercent(data?.engagementScore));
+            line('Confiance moyenne', this.formatPercent(data?.averageConfidence));
+            line('Stress moyen', this.formatPercent(data?.averageStressLevel));
+            line('Joie moyenne', this.formatPercent(data?.averageJoy));
+            line('Neutralite moyenne', this.formatPercent(data?.averageNeutral));
+            line('Tristesse moyenne', this.formatPercent(data?.averageSadness));
+            line('Colère moyenne', this.formatPercent(data?.averageAnger));
+            line('Surprise moyenne', this.formatPercent(data?.averageSurprise));
+            line('Peur moyenne', this.formatPercent(data?.averageFear));
+            // Ajout vocal si dispo
+            if (typeof data?.averagePitchVariation !== 'undefined') {
+              line('Variation moyenne du pitch', String(data?.averagePitchVariation));
+            }
+            if (typeof data?.speakingRate !== 'undefined') {
+              line('Débit de parole', String(data?.speakingRate) + ' mots/min');
+            }
+            if (typeof data?.silenceDuration !== 'undefined') {
+              line('Durée silence', String(data?.silenceDuration) + ' sec');
+            }
+            line('Frames traités', String(data?.processedFrames ?? 'N/A'));
 
-        y += 4;
-        doc.setFontSize(12);
-        doc.text('Synthese', 14, y);
-        y += 7;
-        doc.setFontSize(10);
-        const assessment = String(data?.overallAssessment || 'Aucune synthese disponible.');
-        const wrapped = doc.splitTextToSize(assessment, 180);
-        doc.text(wrapped, 14, y);
+            y += 4;
+            doc.setFontSize(12);
+            doc.text('Synthese automatique', 14, y);
+            y += 7;
+            doc.setFontSize(10);
+            // Synthèse IA simple (exemple)
+            let synthese = '';
+            if (data?.averageStressLevel > 0.5) {
+              synthese += 'Le candidat a montré un niveau de stress notable.\n';
+            } else {
+              synthese += 'Le candidat est resté globalement calme.\n';
+            }
+            if (data?.averageJoy > 0.5) {
+              synthese += 'Une attitude positive et joyeuse a été observée.\n';
+            }
+            if (data?.averageConfidence > 0.5) {
+              synthese += 'Bonne confiance vocale détectée.\n';
+            }
+            if (data?.averageSadness > 0.4) {
+              synthese += 'Des signes de tristesse ont été détectés.\n';
+            }
+            if (data?.dominantEmotion) {
+              synthese += `Emotion dominante: ${data.dominantEmotion}.\n`;
+            }
+            // Recommandations automatiques
+            let recommandations = '';
+            if (data?.averageStressLevel < 0.4 && data?.averageConfidence > 0.5) {
+              recommandations += 'Candidat recommandé pour des postes nécessitant calme et assurance.';
+            } else if (data?.averageStressLevel > 0.7) {
+              recommandations += 'Prévoir un accompagnement pour la gestion du stress.';
+            } else {
+              recommandations += 'A approfondir lors d’un second entretien.';
+            }
+            const assessment = String(data?.overallAssessment || '');
+            const wrapped = doc.splitTextToSize(synthese + '\n' + assessment, 180);
+            doc.text(wrapped, 14, y);
+            y += wrapped.length * 5 + 5;
+            doc.setFontSize(11);
+            doc.text('Recommandations:', 14, y);
+            y += 6;
+            doc.setFontSize(10);
+            const wrappedRec = doc.splitTextToSize(recommandations, 180);
+            doc.text(wrappedRec, 14, y);
 
-        doc.save(`emotion-result-entretien-${entretienId}.pdf`);
+            // Génération du graphique (courbe d’évolution de la joie, stress, confiance)
+            // Création d’un canvas temporaire pour Chart.js
+            const canvas = document.createElement('canvas');
+            canvas.width = 600;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            const labels = (frames || []).map(f => f.timestampSeconds);
+            const joy = (frames || []).map(f => f.joy);
+            const stress = (frames || []).map(f => f.voiceStress ?? 0);
+            const confidence = (frames || []).map(f => f.voiceConfidence ?? 0);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const chart = new Chart(ctx!, {
+              type: 'line',
+              data: {
+                labels,
+                datasets: [
+                  { label: 'Joie', data: joy, borderColor: 'green', fill: false },
+                  { label: 'Stress vocal', data: stress, borderColor: 'red', fill: false },
+                  { label: 'Confiance vocale', data: confidence, borderColor: 'blue', fill: false }
+                ]
+              },
+              options: {
+                responsive: false,
+                plugins: { legend: { display: true } },
+                scales: { x: { title: { display: true, text: 'Temps (s)' } }, y: { min: 0, max: 1 } }
+              }
+            });
+            // Attendre le rendu du graphique
+            await new Promise(res => setTimeout(res, 500));
+            const chartImg = canvas.toDataURL('image/png');
+            doc.addPage();
+            doc.setFontSize(13);
+            doc.text('Courbe d’évolution des émotions', 14, 16);
+            doc.addImage(chartImg, 'PNG', 14, 22, 180, 80);
+
+            // Nouvelle page pour le tableau détaillé
+            doc.addPage();
+            doc.setFontSize(13);
+            doc.text('Tableau détaillé des frames (émotions faciales & vocales)', 14, 16);
+            doc.setFontSize(9);
+
+            // En-têtes du tableau
+            const headers = [
+              'Frame', 'Temps (s)', 'Joie', 'Colère', 'Tristesse', 'Surprise', 'Peur', 'Neutre', 'Face?', 'Stress vocal', 'Confiance vocale', 'Pitch', 'Volume', 'Notes'
+            ];
+            let tableY = 24;
+            doc.text(headers.join(' | '), 14, tableY);
+            tableY += 5;
+
+            // Afficher max 30 frames pour éviter surcharge PDF
+            const maxRows = 30;
+            (frames || []).slice(0, maxRows).forEach((f) => {
+              const row = [
+                f.frameNumber,
+                f.timestampSeconds,
+                f.joy,
+                f.anger,
+                f.sadness,
+                f.surprise,
+                f.fear,
+                f.neutral,
+                f.faceDetected ? 'Oui' : 'Non',
+                f.voiceStress ?? '',
+                f.voiceConfidence ?? '',
+                f.pitch ?? '',
+                f.volumeLevel ?? '',
+                f.notes ?? ''
+              ];
+              doc.text(row.map(String).join(' | '), 14, tableY);
+              tableY += 5;
+              if (tableY > 270) {
+                doc.addPage();
+                tableY = 16;
+              }
+            });
+            if ((frames || []).length > maxRows) {
+              doc.text(`... (${frames.length - maxRows} frames supplémentaires non affichées)`, 14, tableY);
+            }
+
+            doc.save(`emotion-result-entretien-${entretienId}.pdf`);
+          },
+          error: (error: any) => {
+            alert(`Impossible de récupérer les frames détaillées (${error?.status || 'erreur'}).`);
+          }
+        });
       },
       error: (error: any) => {
         alert(`Impossible de generer le PDF (${error?.status || 'erreur'}).`);

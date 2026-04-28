@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // =============================================
 // VARIABLES — système de design unifié
 // =============================================
@@ -482,14 +484,14 @@ $modal-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
 
     &.attente {
         background: $warning-soft;
-        color: darken($warning, 20%);
+        color: color.adjust($warning, $lightness: -20%);
         border-color: rgba($warning, 0.3);
         .status-dot { background: $warning; }
     }
 
     &.refuse {
         background: $danger-soft;
-        color: darken($danger, 10%);
+        color: color.adjust($danger, $lightness: -10%);
         border-color: rgba($danger, 0.25);
         .status-dot { background: $danger; }
     }

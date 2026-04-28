@@ -96,20 +96,10 @@ export const routes: Routes = [
     {path: 'login', component: HomeDemoOneComponent},
     {path: 'index-2', component: HomeDemoTwoComponent},
     {path: 'index-3', component: HomeDemoThreeComponent},
-    {path: 'index-4', component: HomeDemoFourComponent},
-    {path: 'about', component: AboutPageComponent},
-    {path: 'pricing', component: PricingPageComponent},
-    {path: 'jobs-grid', component: JobsGridPageComponent},
-    {path: 'jobs-listing', component: JobsListingPageComponent},
     {path: 'job-details/:id', component: JobDetailsPageComponent},
     {path: 'job-details', component: JobDetailsPageComponent},
     {path: 'categories', component: CategoriesPageComponent},
     {path: 'candidates', component: CandidatesPageComponent},
-    {path: 'candidate-details/:id', component: CandidateDetailsPageComponent},
-    {path: 'candidate-details', component: CandidateDetailsPageComponent, pathMatch: 'full'},
-    {path: 'candidate-entretiens', component: CandidateEntretiensPageComponent},
-    {path: 'entretiens/video/:id', component: VideoInterviewRoomPageComponent },
-    {path: 'employers', component: EmployersPageComponent},
     {path: 'employer-details', component: EmployerDetailsPageComponent},
     {path: 'faq', component: FaqPageComponent},
     {path: 'privacy-policy', component: PrivacyPolicyPageComponent},
@@ -139,11 +129,6 @@ export const routes: Routes = [
         path: 'candidates-dashboard',
         component: CandidatesDashboardComponent,
         children: [
-    {
-        path: 'freelance',
-        loadChildren: () =>
-            import('./freelance/freelance.module').then(m => m.FreelanceModule)
-    },
             {path: '', component: CDashboardComponent},
             {path: 'my-profile', component: CdProfileComponent},
             { path: 'documents', component: CdDocumentsComponent },
@@ -184,11 +169,7 @@ export const routes: Routes = [
   loadChildren: () =>
     import('./formations/formations.module').then(m => m.FormationsModule)
 },
-{
-    path: 'freelance',
-    loadChildren: () =>
-        import('./freelance/freelance.module').then(m => m.FreelanceModule)
-},
+// ...existing code...
 {path: 'evenement-dashboard', component: EvenementDashboardComponent,
         children: [
             { path: '', component: EvenementTemplateComponent },

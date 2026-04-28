@@ -1,3 +1,6 @@
+@use 'sass:color';
+
+
 // =============================================
 // VARIABLES
 // =============================================
@@ -273,7 +276,7 @@ $card-shadow-hover: 0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,
 
     &.chat-ferme {
         background: $warning-soft;
-        color: darken($warning, 18%);
+        color: color.adjust($warning, $lightness: -18%);
 
         .statut-dot { background: $warning; }
     }

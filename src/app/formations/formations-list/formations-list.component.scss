@@ -1,3 +1,6 @@
+@use 'sass:color';
+
+
 $primary:       #0965A4;
 $primary-light: #E1F5EE;
 $primary-dark:  #0965A4;
@@ -205,6 +208,7 @@ $shadow-hover:  0 8px 24px rgba(9,101,164,0.12), 0 2px 8px rgba(0,0,0,0.06);
     .tc-title {
       font-size: 0.875rem; font-weight: 600; color: $text-main; line-height: 1.4;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      line-clamp: 2; // Ajout de la propriété standard pour compatibilité
     }
 
     // Stats pills (rating + participants)
@@ -356,7 +360,7 @@ $shadow-hover:  0 8px 24px rgba(9,101,164,0.12), 0 2px 8px rgba(0,0,0,0.06);
         &:last-child { margin-bottom: 0; }
         i { font-size: 16px; }
         &.btn-primary { background: $primary; color: #fff; border: none;
-          &:hover { background: darken($primary, 6%); transform: translateY(-1px); color: #fff; }
+          &:hover { background: color.adjust($primary, $lightness: -6%); transform: translateY(-1px); color: #fff; }
         }
         &.btn-outline { background: transparent; color: $primary; border: 1.5px solid $primary;
           &:hover { background: $primary-light; }
