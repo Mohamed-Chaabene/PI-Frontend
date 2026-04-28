@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class ChatService {
 
-    private api = 'http://localhost:8086/api/chat';
+    private api = 'http://localhost:8080/api/chat';
 
     constructor(private http: HttpClient) {}
 

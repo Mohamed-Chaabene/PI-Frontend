@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 export class NotificationPartenaireService {
 
   private apiUrl =
-    'http://localhost:8086/api/notifications-partenaire';
+    'http://localhost:8080/api/notifications-partenaire';
 
   constructor(private http: HttpClient) {}
 

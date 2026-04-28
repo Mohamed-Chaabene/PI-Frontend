@@ -11,7 +11,7 @@ export class WebsocketService {
   private pollingSubscription?: Subscription;
   isConnected = false;
 
-  private api = 'http://localhost:8086/api/dashboard';
+  private api = 'http://localhost:8080/api/dashboard';
 
   constructor(private http: HttpClient) {}
 
