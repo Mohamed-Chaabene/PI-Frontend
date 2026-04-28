@@ -89,6 +89,7 @@ import { EvenementChatComponent } from './evenement-dashboard/evenement-chat/eve
 import { ParcoursAdminComponent } from './admin-dashboard/parcours-admin/parcours-admin.component';
 import { ParcoursCreateComponent } from './admin-dashboard/parcours-create/parcours-create.component';
 import { ParcoursFeedbackAdminComponent } from './admin-dashboard/parcours-feedback-admin/parcours-feedback-admin.component';
+import { VideoInterviewRoomPageComponent } from './pages/video-interview-room-page/video-interview-room-page.component';
 
 import { VerifyCertificatComponent } from './formations/verify-certificat/verify-certificat.component';
 
@@ -120,6 +121,7 @@ export const routes: Routes = [
     {path: 'contact', component: ContactPageComponent},
     {path: 'partenaires', component: PartenaireListComponent},
     {path: 'partenaires/:id/offres', component: OffreListComponent},
+    {path: 'entretiens/video/:id', component: VideoInterviewRoomPageComponent},
     {path: 'entretiens/test/:id', component: PublicTestPassPageComponent},
     {
         path: 'dashboard',
