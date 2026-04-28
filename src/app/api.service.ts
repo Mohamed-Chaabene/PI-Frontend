@@ -10,7 +10,7 @@ export class ApiService {
 
   // Use relative URL so Angular dev proxy can forward to Spring Boot and avoid CORS issues.
 
-  private apiUrl = '/api';
+  private apiUrl = 'http://localhost:8080/api';
   private mlUrl = 'http://localhost:8000';
   private mlAvailable = true;
 

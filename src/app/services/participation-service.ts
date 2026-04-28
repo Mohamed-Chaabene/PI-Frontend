@@ -51,8 +51,6 @@ export class ParticipationService {
         `http://localhost:8080/api/participations/stats/candidat/${candidatId}`
     );
 
-
-    
     
   }
 

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { EvenementService } from '../../services/evenement-service';
 
 @Component({
@@ -13,8 +14,15 @@ export class EvenementListAdminComponent implements OnInit {
     filteredEvenements: any[] = [];
     isLoading = true;
     searchTerm = '';
+    
+    // pour le modal detail
+    selectedEvenement: any = null;
+    showDetail = false;
 
-    constructor(private evenementService: EvenementService) {}
+    constructor(
+        private evenementService: EvenementService,
+        private router: Router
+    ) {}
 
     ngOnInit(): void {
         this.loadEvenements();
@@ -64,13 +72,23 @@ export class EvenementListAdminComponent implements OnInit {
         return date.toLocaleDateString('fr-FR');
     }
 
-   
-   supprimer(id: number) {
-    if (confirm('Voulez-vous supprimer cet événement ?')) {
-        this.evenementService.annulerAdmin(id).subscribe({ // ✅ utilise annulerAdmin
-            next: () => this.loadEvenements(),
-            error: (err) => console.error('Erreur suppression:', err)
-        });
+    consulter(evenement: any): void {
+        console.log('Evenement:', evenement); 
+        this.selectedEvenement = evenement;
+        this.showDetail = true;
     }
-}
+
+    fermerDetail(): void {
+        this.showDetail = false;
+        this.selectedEvenement = null;
+    }
+
+    supprimer(id: number) {
+        if (confirm('Voulez-vous supprimer cet événement ?')) {
+            this.evenementService.annulerAdmin(id).subscribe({
+                next: () => this.loadEvenements(),
+                error: (err) => console.error('Erreur suppression:', err)
+            });
+        }
+    }
 }

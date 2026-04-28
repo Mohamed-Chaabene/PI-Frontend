@@ -82,6 +82,7 @@ import { FormationParticipantsComponent } from './admin-dashboard/formation-part
 import { FeedbackAdminComponent } from './admin-dashboard/feedback-admin/feedback-admin.component';
 import { ChatEvenementComponent } from './candidates-dashboard/evenement-candidat/evenement-chat/evenement-chat.component';
 import { EvenementChatComponent } from './evenement-dashboard/evenement-chat/evenement-chat.component';
+import { OrganisateursListComponent } from './admin-dashboard/organisateurs-list/organisateurs-list.component';
 
 export const routes: Routes = [
     { path: '', component: HomeDemoOneComponent },
@@ -214,6 +215,7 @@ export const routes: Routes = [
             { path: 'formations/edit/:id', component: FormationEditComponent },
             { path: 'formations/:id/participants', component: FormationParticipantsComponent },
             { path: 'formations/:id/feedbacks', component: FeedbackAdminComponent },
+            {path: 'organisateurs',component: OrganisateursListComponent},
         ]
     },
 

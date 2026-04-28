@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';   // ← ajouter
+import { Component, OnInit, OnDestroy, Input, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { ChatService } from '../../../services/chat-service';
 import Pusher from 'pusher-js';
 import { jwtDecode } from 'jwt-decode';
@@ -10,9 +10,10 @@ import { jwtDecode } from 'jwt-decode';
     templateUrl: './evenement-chat.component.html',
     styleUrls: ['./evenement-chat.component.scss']
 })
-export class ChatEvenementComponent implements OnInit, OnDestroy {
+export class ChatEvenementComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     @Input() evenementId!: number;
+    @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
 
     messages: any[] = [];
     nouveauMessage = '';
@@ -20,24 +21,23 @@ export class ChatEvenementComponent implements OnInit, OnDestroy {
     nomCandidat = '';
     chatOuvert = false;
     isLoading = true;
-    erreur = '';                                     // ← ajouter pour afficher les erreurs
+    erreur = '';
+    envoyerEnCours = false;
 
     private channel: any;
     private pusher: any;
+    private doitScroller = false;
 
     constructor(
         private chatService: ChatService,
-        private route: ActivatedRoute              // ← ajouter
+        private route: ActivatedRoute
     ) {}
 
     ngOnInit() {
-        // Récupère l'ID depuis l'URL si pas reçu via @Input()
         const idFromRoute = this.route.snapshot.paramMap.get('evenementId');
         if (idFromRoute) {
-            this.evenementId = Number(idFromRoute);  // ← priorité à la route
+            this.evenementId = Number(idFromRoute);
         }
-
-        console.log('evenementId:', this.evenementId); // ← vérifie dans la console
 
         if (!this.evenementId) {
             this.erreur = 'Événement non trouvé';
@@ -63,46 +63,60 @@ export class ChatEvenementComponent implements OnInit, OnDestroy {
             },
             error: (err) => {
                 console.error('Erreur statut chat:', err);
-                this.erreur = 'Impossible de joindre le backend. Vérifiez que Spring Boot tourne sur http://localhost:8081';
+                this.erreur = 'Impossible de joindre le backend.';
                 this.isLoading = false;
             }
         });
     }
 
+    ngAfterViewChecked() {
+        if (this.doitScroller) {
+            this.scrollerVersLeBas();
+            this.doitScroller = false;
+        }
+    }
+
     chargerMessages() {
         this.chatService.getMessages(this.evenementId, this.candidatId).subscribe({
-            next: (data) => this.messages = data,
+            next: (data) => {
+                this.messages = data;
+                this.doitScroller = true;
+            },
             error: (err) => console.error('Erreur messages:', err)
         });
     }
 
     connecterPusher() {
-        try {
-            this.pusher = new Pusher('07a41117ca80364c7695', {
-                cluster: 'eu'
-            });
+        // ✅ SOLUTION : nouvelle instance Pusher SANS authorizer
+        // L'instance du PusherService a un authorizer qui intercepte tous les canaux.
+        // Ici on crée une instance fraîche, minimaliste, uniquement pour le chat public.
+        // Les canaux publics (sans préfixe "private-") ne déclenchent jamais d'auth.
+        this.pusher = new Pusher('07a41117ca80364c7695', {
+            cluster: 'eu'
+            // Pas d'authorizer → Pusher ne tentera jamais d'appeler /pusher/auth
+        });
 
-            this.pusher.connection.bind('connected', () => {
-                console.log('Pusher connecté ✅');
-            });
+        this.pusher.connection.bind('connected', () => {
+            console.log('Pusher chat connecté ✅');
+        });
 
-            this.pusher.connection.bind('error', (err: any) => {
-                console.error('Pusher error:', err);
-            });
+        // Canal public : "chat-evenement-X" sans préfixe "private-"
+        this.channel = this.pusher.subscribe(`chat-evenement-${this.evenementId}`);
 
-            this.channel = this.pusher.subscribe(`chat-evenement-${this.evenementId}`);
+        this.channel.bind('pusher:subscription_succeeded', () => {
+            console.log('Abonné au canal chat ✅');
+        });
 
-            this.channel.bind('nouveau-message', (data: any) => {
-                this.messages.push(data);
-            });
-
-        } catch (err) {
-            console.error('Erreur Pusher:', err);
-        }
+        // Chaque message reçu est ajouté à la liste — valable pour tous les utilisateurs
+        // y compris l'expéditeur lui-même (donc ne pas faire push dans envoyer())
+        this.channel.bind('nouveau-message', (data: any) => {
+            this.messages.push(data);
+            this.doitScroller = true;
+        });
     }
 
     envoyer() {
-        if (!this.nouveauMessage.trim()) return;
+        if (!this.nouveauMessage.trim() || this.envoyerEnCours) return;
 
         const payload = {
             evenementId: this.evenementId,
@@ -110,16 +124,41 @@ export class ChatEvenementComponent implements OnInit, OnDestroy {
             contenu: this.nouveauMessage.trim()
         };
 
+        this.envoyerEnCours = true;
+
         this.chatService.envoyer(payload).subscribe({
-            next: () => this.nouveauMessage = '',
-            error: (err) => console.error('Erreur envoi:', err)
+            next: () => {
+                // ✅ On vide le champ uniquement — le message arrive via Pusher
+                // Ne jamais faire this.messages.push(...) ici → doublon garanti
+                this.nouveauMessage = '';
+                this.envoyerEnCours = false;
+            },
+            error: (err) => {
+                console.error('Erreur envoi:', err);
+                this.envoyerEnCours = false;
+            }
         });
+    }
+
+    // Envoyer avec Entrée (Shift+Entrée = saut de ligne)
+    onKeyDown(event: KeyboardEvent) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            this.envoyer();
+        }
     }
 
     formatHeure(value: any): string {
         if (!value) return '';
         const date = new Date(value);
         return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    private scrollerVersLeBas() {
+        try {
+            const el = this.messagesContainer.nativeElement;
+            el.scrollTop = el.scrollHeight;
+        } catch (err) {}
     }
 
     ngOnDestroy() {

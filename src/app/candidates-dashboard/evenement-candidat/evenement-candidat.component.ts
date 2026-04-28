@@ -39,6 +39,10 @@ export class EvenementCandidatComponent implements OnInit, OnDestroy {
     private searchSubject = new Subject<string>();
     private destroy$ = new Subject<void>();
 
+    // ── IA ──
+    recommendedEvents: any[] = [];
+    loadingReco = true;
+
     constructor(
         private evenementService: EvenementService,
         private participationService: ParticipationService,
@@ -68,6 +72,8 @@ export class EvenementCandidatComponent implements OnInit, OnDestroy {
         this.chargerMesParticipations();
         this.chargerHistorique();
         this.chargerSuggestions();
+        // Ajouter après chargerSuggestions()
+        this.chargerRecommandations();
 
         // Debounce 400ms après chaque frappe
         this.searchSubject.pipe(
@@ -313,4 +319,41 @@ export class EvenementCandidatComponent implements OnInit, OnDestroy {
             ? datePart
             : `${datePart} à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
     }
+
+
+    //--IA RECOMMENDATIONS
+    chargerRecommandations() {
+            console.log('=== chargerRecommandations ===');
+    console.log('candidatId =', this.candidatId);
+    if (!this.candidatId) return;
+
+    // Récupérer le profil depuis le token
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const decoded: any = jwtDecode(token);
+
+    const domaine    = decoded?.domaine    || 'IT';
+    const ville      = decoded?.ville      || 'Tunis';
+    const skills     = decoded?.skills     || 'unknown';
+    const education  = decoded?.education  || 'Licence';
+    const experience = decoded?.experience || 0;
+
+    this.evenementService.getRecommended(
+        this.candidatId,
+        domaine,
+        ville,
+        skills,
+        education,
+        experience
+    ).subscribe({
+        next: (events) => {
+            this.recommendedEvents = events;
+            this.loadingReco = false;
+        },
+        error: (err) => {
+            console.error('Erreur recommandation:', err);
+            this.loadingReco = false;
+        }
+    });
+}
 }
