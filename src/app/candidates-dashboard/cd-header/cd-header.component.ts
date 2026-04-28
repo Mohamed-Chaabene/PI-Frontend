@@ -517,9 +517,7 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         });
     }
 
-    closeDeleteAccountModal(): void {
-        this.showDeleteAccountModal = false;
-    }
+
 
     confirmDeleteAccount(): void {
         // This method is no longer used with alert-based confirmation

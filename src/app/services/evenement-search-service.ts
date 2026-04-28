@@ -12,7 +12,7 @@ export interface SearchResult {
 @Injectable({ providedIn: 'root' })
 export class EvenementSearchService {
 
-  private base = 'http://localhost:8080/api/search';
+  private base = 'http://localhost:8086/api/search';
 
   constructor(private http: HttpClient) {}
 
