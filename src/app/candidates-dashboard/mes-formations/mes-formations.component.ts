@@ -28,9 +28,14 @@ export class MesFormationsComponent implements OnInit {
     this.resolveCandidatIdAndLoad();
   }
 
-  voirDetailsFormation(formationId: number): void {
-    this.router.navigate(['/formations', formationId],
-      { queryParams: { from: 'dashboard' } });
+  voirDetailsFormation(ins: Inscription): void {
+    this.router.navigate(['/formations', ins.formation.id], {
+      queryParams: {
+        from: 'dashboard',
+        parcoursId: ins.parcoursId,
+        niveau: ins.niveauContext
+      }
+    });
   }
 
   telecharger(cert: Certificat): void {
@@ -133,8 +138,20 @@ export class MesFormationsComponent implements OnInit {
 
     this.formationService.getMesInscriptions(this.candidatId).subscribe({
       next: (data: Inscription[]) => {
-        this.inscriptions = data;
-        data.forEach(ins => {
+        // Nettoyer les doublons (filtrage par formation ID unique)
+        const uniqueInscriptions = [];
+        const seenFormationIds = new Set();
+        
+        for (const ins of data) {
+          if (ins.formation && !seenFormationIds.has(ins.formation.id)) {
+            seenFormationIds.add(ins.formation.id);
+            uniqueInscriptions.push(ins);
+          }
+        }
+        
+        this.inscriptions = uniqueInscriptions;
+        
+        uniqueInscriptions.forEach(ins => {
           if (ins.formation?.id && ins.id) {
             localStorage.setItem(
               'inscription_' + ins.formation.id,

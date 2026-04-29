@@ -384,6 +384,33 @@ export class ApiService {
     });
   }
 
+  // ── New ML Recommendation v2 Methods ────────────────────────────
+
+  recommendFormations(payload: any): Observable<any[]> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post<any[]>(`${this.mlUrl}/recommend`, payload, { headers });
+  }
+
+  analyzeSkillGapML(payload: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post<any>(`${this.mlUrl}/analyze-gap`, payload, { headers });
+  }
+
+  getAvailableCareers(): Observable<any> {
+    return this.http.get(`${this.mlUrl}/careers`);
+  }
+
+  testSkillSimilarity(skillA: string, skillB: string): Observable<any> {
+    const params = { skill_a: skillA, skill_b: skillB };
+    return this.http.get(`${this.mlUrl}/skill-similarity`, { params });
+  }
+
+  getMlHealth(): Observable<any> {
+    return this.http.get(`${this.mlUrl}/health`);
+  }
+
+  // ──────────────────────────────────────────────────────────────
+
   private normalizeIncomingQuestionRows(rows: any, context: any): any[] {
     if (!Array.isArray(rows)) {
       return [];

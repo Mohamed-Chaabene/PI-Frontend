@@ -12,6 +12,7 @@ export interface Inscription {
   certificat?: Certificat;
   parcoursId?: number | null;
   niveau?: string | null;
+  niveauContext?: string | null;
 }
 
 export interface InscriptionCreatePayload {

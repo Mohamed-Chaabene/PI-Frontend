@@ -263,6 +263,21 @@ export class FormationsListComponent implements OnInit {
     this.loadingGap = true;
     this.apiService.analyzeSkillGap(candidatId, this.selectedTargetJob).subscribe({
       next: (data: any) => {
+        // Enrichir les recommandations avec les objets formations complets de notre liste locale
+        if (data && data.recommended_formations) {
+          data.recommended_formations = data.recommended_formations.map((rec: any) => {
+            const fullFormation = this.formations.find(f => f.id === rec.formation_id);
+            return {
+              ...rec,
+              formation: fullFormation || { 
+                id: rec.formation_id, 
+                titre: `Formation #${rec.formation_id}`, 
+                categorie: 'Informatique',
+                imageUrl: null
+              }
+            };
+          });
+        }
         this.gapResult = data;
         this.loadingGap = false;
       },

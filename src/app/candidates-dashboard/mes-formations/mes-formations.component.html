@@ -64,7 +64,7 @@
                    *ngFor="let ins of inscriptions">
 
                 <div class="formation-progress-card"
-                     (click)="voirDetailsFormation(ins.formation.id)"
+                     (click)="voirDetailsFormation(ins)"
                      style="cursor:pointer">
 
                   <div class="progress-card-banner">
@@ -100,6 +100,7 @@
                     </div>
 
                     <a [routerLink]="['/formations', ins.formation.id, 'video']"
+                       [queryParams]="{ parcoursId: ins.parcoursId, niveau: ins.niveauContext }"
                        class="btn-continuer"
                        (click)="$event.stopPropagation()"
                        *ngIf="ins.statut !== 'Terminé'">

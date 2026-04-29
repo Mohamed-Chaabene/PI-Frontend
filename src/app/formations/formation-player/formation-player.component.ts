@@ -1,5 +1,5 @@
 import {
-  Component, Input, OnInit, OnDestroy, AfterViewInit, inject, NgZone
+  Component, Input, OnInit, OnDestroy, AfterViewInit, inject, NgZone, OnChanges
 } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
@@ -18,7 +18,7 @@ declare global {
   styleUrls: ['./formation-player.component.scss']
 })
 export class FormationPlayerComponent
-    implements OnInit, OnDestroy, AfterViewInit {
+    implements OnInit, OnDestroy, AfterViewInit, OnChanges {
 
   @Input() formation!:    Formation;
   @Input() inscriptionId: number | null = null;
@@ -134,11 +134,7 @@ export class FormationPlayerComponent
       }
     });
 
-    if (this.niveau === 'EXPERT') {
-      this.seuilQuiz = 80;
-    } else {
-      this.seuilQuiz = 70;
-    }
+    this.updateQuizSettings();
 
     if (!this.candidatId)
       this.candidatId = Number(localStorage.getItem('candidatId')) || null;
@@ -193,6 +189,18 @@ export class FormationPlayerComponent
   }
 
   ngAfterViewInit(): void {}
+
+  ngOnChanges(): void {
+    this.updateQuizSettings();
+  }
+
+  private updateQuizSettings(): void {
+    if (this.niveau === 'EXPERT') {
+      this.seuilQuiz = 80;
+    } else {
+      this.seuilQuiz = 70;
+    }
+  }
 
   ngOnDestroy(): void {
     this.destroyPlayer();
@@ -490,6 +498,22 @@ export class FormationPlayerComponent
     });
   }
 
+  private getResolvedParcoursId(): number {
+    const urlParams = new URLSearchParams(window.location.search);
+    return this.parcoursId || Number(urlParams.get('parcoursId')) || 0;
+  }
+
+  private getResolvedNiveau(): string | null {
+    const urlParams = new URLSearchParams(window.location.search);
+    return this.niveau || urlParams.get('niveau');
+  }
+
+  private shouldAutoLaunchFinalQuiz(): boolean {
+    const pId = this.getResolvedParcoursId();
+    const niv = this.getResolvedNiveau();
+    return pId === 0 || niv === 'EXPERT';
+  }
+
   private recalculerLocal(): void {
     const t = this.playlistVideos.length || 1;
     // On ne compte que les vidéos qui appartiennent à la playlist actuelle
@@ -497,7 +521,7 @@ export class FormationPlayerComponent
     const validVuesCount = Array.from(this.videosVues).filter(id => playlistIds.has(id)).length;
     
     this.progression = Math.round(validVuesCount / t * 100);
-    if (this.progression >= 100 && !this.isAlreadyCompleted && !this.quizLaunched) {
+    if (this.progression >= 100 && !this.isAlreadyCompleted && !this.quizLaunched && this.shouldAutoLaunchFinalQuiz()) {
       this.quizLaunched = true;
       setTimeout(() => this.lancerQuizFinal(), 4000);
     }
@@ -507,20 +531,23 @@ export class FormationPlayerComponent
   lancerQuizFinal(): void {
     if (!this.inscriptionId || this.quizFinalLoading) return;
 
-    // 1. Récupération dynamique des paramètres depuis l'URL (plus fiable que les Inputs au moment du setTimeout)
+    // 1. Récupération dynamique et sécurisée des paramètres
     const urlParams = new URLSearchParams(window.location.search);
-    const pId = this.parcoursId || Number(urlParams.get('parcoursId'));
+    const pId = this.parcoursId || Number(urlParams.get('parcoursId')) || 0;
     const niv = this.niveau || urlParams.get('niveau');
 
-    // 2. Si on est dans un parcours, on redirige TOUJOURS vers le Quiz de Niveau (IA)
-    // On inclut désormais EXPERT pour avoir l'interface moderne partout
-    if (pId && niv) {
+    console.log(`[QUIZ-TRIGGER] Context check - ParcoursID: ${pId}, Niveau: ${niv}`);
+
+    // 2. Redirection vers Quiz IA pour Débutant, Intermédiaire, Avancé dans un parcours
+    if (pId > 0 && niv && niv !== 'EXPERT') {
+      console.log(`[QUIZ-TRIGGER] Redirecting to IA Level Quiz for level: ${niv}`);
       this.quizLaunched = true;
       this.router.navigate(['/formations/parcours', pId, 'quiz', niv]);
       return;
     }
 
-    // 3. Sinon (formation standalone), on utilise le modal interne
+    // 3. Sinon (Expert ou formation standalone), modal interne avec restrictions
+    console.log(`[QUIZ-TRIGGER] Launching Internal Final Quiz with restrictions (Expert or Standalone)`);
     if (this.showQuizFinal && !this.quizFinalSubmitted && !this.quizBloque) return;
     this.quizLaunched = true;
 
