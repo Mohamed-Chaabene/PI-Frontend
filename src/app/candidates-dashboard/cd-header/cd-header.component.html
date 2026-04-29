@@ -76,7 +76,7 @@
                         ✕
                     </button>
 
-                    <div class="search-results" *ngIf="showSearchResults">
+                    <div class="search-results" *ngIf="showSearchResults" (mousedown)="markSearchActionPending()">
                         <div class="search-status" *ngIf="isSearching">
                             Searching...
                         </div>

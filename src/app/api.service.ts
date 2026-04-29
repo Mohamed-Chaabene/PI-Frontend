@@ -1529,19 +1529,25 @@ export class ApiService {
   // ==================== FOLLOW FEATURE ====================
 
   followUser(userToFollowId: number, token: string): Observable<any> {
+    console.log('🌐 API: followUser called with userId:', userToFollowId);
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    return this.http.post(`${this.apiUrl}/follows/${userToFollowId}/follow`, {}, { headers });
+    const url = `${this.apiUrl}/follows/${userToFollowId}/follow`;
+    console.log('🌐 API: Making POST request to:', url);
+    return this.http.post(url, {}, { headers });
   }
 
   unfollowUser(userToUnfollowId: number, token: string): Observable<any> {
+    console.log('🌐 API: unfollowUser called with userId:', userToUnfollowId);
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    return this.http.post(`${this.apiUrl}/follows/${userToUnfollowId}/unfollow`, {}, { headers });
+    const url = `${this.apiUrl}/follows/${userToUnfollowId}/unfollow`;
+    console.log('🌐 API: Making POST request to:', url);
+    return this.http.post(url, {}, { headers });
   }
 
   getFollowers(userId: number): Observable<any> {
@@ -2213,6 +2219,22 @@ traiterPhoto(formData: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/notifications/mark-all-read`, {}, { headers });
   }
 
+  /** Freelance verification flags; falls back if the endpoint is absent. */
+  getVerificationStatus(token: string): Observable<{ emailVerified?: boolean; identityStatus?: string }> {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http
+      .get<{ emailVerified?: boolean; identityStatus?: string }>(
+        `${this.apiUrl}/freelance/verification/status`,
+        { headers }
+      )
+      .pipe(
+        catchError(() => of({ emailVerified: false, identityStatus: 'UNVERIFIED' }))
+      );
+  }
+
   deleteAllNotifications(token: string): Observable<any> {
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     if (token) {
@@ -2375,6 +2397,15 @@ restaurerCandidature(id: number): Observable<any> {
 traiterPhotoProfessionnelle(formData: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/documents/traiter-photo`, formData);
 }
+
+  getCandidatCompetences(candidatId: number): Observable<any> {
+        return this.http.get(`${this.apiUrl}/candidat/${candidatId}/competences`);
+    } 
+     // src/app/api.service.ts
+getCurrentCandidat(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidats/me`);
+}
+
 //  CHATBOT
 chatWithML(message: string, cvContent: string): Observable<any> {
     // Appel direct au serveur FastAPI sur le port 8000

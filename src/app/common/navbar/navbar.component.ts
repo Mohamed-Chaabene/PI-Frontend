@@ -31,8 +31,8 @@ export class NavbarComponent implements OnInit {
     roles = [
         { key: 'ROLE_CANDIDAT', label: 'Candidat' },
         { key: 'ROLE_RECRUTEUR', label: 'Recruteur' },
-        { key: 'ROLE_CLIENT_FREELANCE', label: 'Client Freelance' },
         { key: 'ROLE_ORGANISATEUR', label: 'Organisateur' },
+        { key: 'ROLE_CLIENT_FREELANCE', label: 'Client Freelance' },
         { key: 'ROLE_ADMIN', label: 'Admin' }
     ];
 
@@ -119,7 +119,7 @@ export class NavbarComponent implements OnInit {
             const fallbackRole = this.extractRoleFromToken(token!);
             this.isLoggedIn = true;
             this.userName = savedUserName || this.extractNameFromToken(token!) || '';
-            this.userRole = savedUserRole || fallbackRole || 'CANDIDAT';
+            this.userRole = this.normalizeRole(savedUserRole || fallbackRole || '') || 'CANDIDAT';
             return;
         }
 
@@ -241,7 +241,7 @@ export class NavbarComponent implements OnInit {
                 alert('Inscription réussie !');
                 this.closePopup();
                 this.resetAuthForms();
-                setTimeout(() => { this.router.navigate(['/index-2']); }, 500);
+                setTimeout(() => { this.router.navigate(['/']); }, 500);
             },
             error => {
                 const serverMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
@@ -286,7 +286,12 @@ export class NavbarComponent implements OnInit {
                     : undefined;
                 const role = this.getRoleFromDecodedToken(decoded, roleFromResponse);
                 const normalizedExtractedRole = this.normalizeRole(role);
-                const roleFinal = normalizedExtractedRole || 'CANDIDAT';
+                const storedRole = this.normalizeRole(localStorage.getItem('userRole') || '');
+                const inferredRole = this.normalizeRole(
+                    this.inferRoleFromEmail(this.loginData.email)
+                );
+                const roleFinal =
+                    normalizedExtractedRole || storedRole || inferredRole || 'CANDIDAT';
                 console.log('[AUTH DEBUG] roleFromResponse=', roleFromResponse);
                 console.log('[AUTH DEBUG] token.role=', decoded?.role, 'token.roles=', decoded?.roles, 'token.authorities=', decoded?.authorities);
                 console.log('[AUTH DEBUG] extractedRole=', role, 'roleFinal=', roleFinal);
@@ -337,11 +342,18 @@ export class NavbarComponent implements OnInit {
                 } else if (error?.status === 401 || error?.status === 400) {
                     finalMessage = 'Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.';
                 } else if (error?.status === 500) {
-                    const errorMessage = error?.error?.message?.toLowerCase() || '';
+                    const errBody = error?.error;
+                    const detail =
+                        typeof errBody === 'string'
+                            ? errBody
+                            : (errBody?.message || errBody?.error || errBody?.detail || '');
+                    const errorMessage = String(detail).toLowerCase();
                     if (errorMessage.includes('unrecognized field') || errorMessage.includes('json parse')) {
                         finalMessage = 'Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.';
                     } else {
-                        finalMessage = error?.error?.message || 'Une erreur serveur s\'est produite. Veuillez réessayer.';
+                        finalMessage =
+                            (detail && String(detail).trim()) ||
+                            'Une erreur serveur s\'est produite. Veuillez réessayer.';
                     }
                 } else {
                     finalMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
@@ -381,13 +393,13 @@ export class NavbarComponent implements OnInit {
         }
 
         if (normalizedRole === 'CLIENT_FREELANCE') {
-            console.log('[AUTH DEBUG] redirect -> /freelance/dashboard');
-            this.router.navigate(['/freelance/dashboard']);
+            console.log('[AUTH DEBUG] redirect -> /freelance');
+            this.router.navigate(['/freelance']);
             return;
         }
 
-        console.log('[AUTH DEBUG] redirect fallback -> /');
-        this.router.navigate(['/']);
+        console.log('[AUTH DEBUG] redirect fallback -> /login');
+        this.router.navigate(['/login']);
     }
 
     // ─── Helpers rôle ──────────────────────────────────────────────────────────

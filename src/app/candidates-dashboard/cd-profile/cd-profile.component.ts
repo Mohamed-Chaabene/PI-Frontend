@@ -873,12 +873,12 @@ export class CdProfileComponent implements OnInit {
 
     isDescriptionValid(): boolean {
         const value = (this.candidateData.description || '').trim();
-        return value.length > 0 && value.length <= 60;
+        return value.length > 0 && value.length <= 1000;
     }
 
     onDescriptionChange(): void {
-        if ((this.candidateData.description || '').length > 60) {
-            this.candidateData.description = (this.candidateData.description || '').substring(0, 60);
+        if ((this.candidateData.description || '').length > 1000) {
+            this.candidateData.description = (this.candidateData.description || '').substring(0, 1000);
         }
     }
 
