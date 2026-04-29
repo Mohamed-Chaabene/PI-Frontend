@@ -2348,6 +2348,15 @@ restaurerCandidature(id: number): Observable<any> {
 traiterPhotoProfessionnelle(formData: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/documents/traiter-photo`, formData);
 }
+
+  getCandidatCompetences(candidatId: number): Observable<any> {
+        return this.http.get(`${this.apiUrl}/candidat/${candidatId}/competences`);
+    } 
+     // src/app/api.service.ts
+getCurrentCandidat(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/candidats/me`);
+}
+
 //  CHATBOT
 chatWithML(message: string, cvContent: string): Observable<any> {
     // Appel direct au serveur FastAPI sur le port 8000

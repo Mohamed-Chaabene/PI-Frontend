@@ -31,7 +31,6 @@ export class NavbarComponent implements OnInit {
     roles = [
         { key: 'ROLE_CANDIDAT', label: 'Candidat' },
         { key: 'ROLE_RECRUTEUR', label: 'Recruteur' },
-        { key: 'ROLE_CLIENT_FREELANCE', label: 'Client Freelance' },
         { key: 'ROLE_ORGANISATEUR', label: 'Organisateur' },
         { key: 'ROLE_ADMIN', label: 'Admin' }
     ];

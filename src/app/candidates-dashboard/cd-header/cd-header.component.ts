@@ -1,12 +1,11 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ApplicationRef, NgZone } from '@angular/core';
+import { ApplicationRef, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
+import { forkJoin, of, Subscription } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { ApiService } from '../../api.service';
 import { ProfileUpdateService } from '../../services/profile-update.service';
 import { PusherService } from '../../services/pusher.service';
 import { JwtTokenUtil } from '../../utils/jwt-token.util';
-import { Subscription } from 'rxjs';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 
 interface SearchResult {
     id: number;
@@ -220,13 +219,11 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         this.apiService.isFollowing(userId, token).subscribe({
             next: (response) => {
                 if (response.isFollowing) {
-                    this.ngZone.run(() => {
-                        this.followedUsers.add(userId);
-                        this.followingUsers.add(userId);
-                        this.changeDetectorRef.markForCheck();
-                        this.changeDetectorRef.detectChanges();
-                        console.log('✅ User', userId, 'is already followed');
-                    });
+                    this.followedUsers.add(userId);
+                    this.followingUsers.add(userId);
+                    this.changeDetectorRef.markForCheck();
+                    this.changeDetectorRef.detectChanges();
+                    console.log('✅ User', userId, 'is already followed');
                 }
             },
             error: (error) => {
@@ -254,12 +251,10 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
             this.apiService.unfollowUser(user.id, token).subscribe({
                 next: (response) => {
                     console.log('✅ Successfully unfollowed user:', response);
-                    this.ngZone.run(() => {
-                        this.followedUsers.delete(user.id);
-                        this.followingUsers.delete(user.id);
-                        this.changeDetectorRef.markForCheck();
-                        this.changeDetectorRef.detectChanges();
-                    });
+                    this.followedUsers.delete(user.id);
+                    this.followingUsers.delete(user.id);
+                    this.changeDetectorRef.markForCheck();
+                    this.changeDetectorRef.detectChanges();
                 },
                 error: (error) => {
                     console.error('❌ Error unfollowing user:', error);
@@ -271,12 +266,10 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
             this.apiService.followUser(user.id, token).subscribe({
                 next: (response) => {
                     console.log('✅ Successfully followed user:', response);
-                    this.ngZone.run(() => {
-                        this.followedUsers.add(user.id);
-                        this.followingUsers.add(user.id);
-                        this.changeDetectorRef.markForCheck();
-                        this.changeDetectorRef.detectChanges();
-                    });
+                    this.followedUsers.add(user.id);
+                    this.followingUsers.add(user.id);
+                    this.changeDetectorRef.markForCheck();
+                    this.changeDetectorRef.detectChanges();
                 },
                 error: (error) => {
                     console.error('❌ Error following user:', error);
