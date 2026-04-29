@@ -22,14 +22,27 @@
 
       <div class="fl-form-group">
         <label class="fl-label">Description <span class="fl-required">*</span></label>
+        <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+          <button class="fl-btn fl-btn-secondary" type="button" (click)="genererDescriptionIA()" [disabled]="aiLoadingDescription">
+            {{ aiLoadingDescription ? '⏳ Génération IA...' : '✨ Générer description IA' }}
+          </button>
+        </div>
         <textarea formControlName="description" rows="5"
                   class="fl-input" placeholder="Décrivez la mission en détail..."></textarea>
       </div>
 
       <div class="fl-form-group">
         <label class="fl-label">Budget (TND) <span class="fl-required">*</span></label>
+        <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+          <button class="fl-btn fl-btn-secondary" type="button" (click)="suggererBudgetIA()" [disabled]="aiLoadingBudget">
+            {{ aiLoadingBudget ? '⏳ Calcul IA...' : '💰 Suggérer budget IA' }}
+          </button>
+        </div>
         <input type="number" formControlName="budget"
               class="fl-input" placeholder="Ex : 5000"/>
+        <div *ngIf="aiBudgetSuggestion" class="fl-success-inline" style="margin-top:8px;">
+          {{ aiBudgetSuggestion }}
+        </div>
       </div>
 
       <div class="fl-form-group">

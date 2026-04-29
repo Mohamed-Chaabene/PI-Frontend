@@ -72,6 +72,16 @@ export interface MatchResult {
   matchingSkills?: string[];
 }
 
+export interface AiProposalResponse {
+  proposal: string;
+}
+
+export interface AiPriceRange {
+  min: number;
+  mid: number;
+  max: number;
+}
+
 export interface FreelanceEvent {
   id: number;
   title: string;
@@ -118,6 +128,7 @@ export interface DeadlineItem {
 @Injectable({ providedIn: 'root' })
 export class FreelanceService {
   private readonly BASE = '/api/freelance';
+  private readonly AI_BASE = 'http://localhost:8000/api';
 
   /** BehaviorSubject so the client dashboard auto-refreshes after any mutation */
   private mesMissionsSubject = new BehaviorSubject<Mission[]>([]);
@@ -238,6 +249,24 @@ export class FreelanceService {
 
   getAIMatchedTalents(missionId: number): Observable<MatchResult[]> {
     return this.http.get<MatchResult[]>(`${this.BASE}/ai/match-talents/${missionId}`);
+  }
+
+  generateAiProposal(payload: {
+    job_description: string;
+    skills: string;
+    experience_years: number;
+    timeline_days: number;
+  }): Observable<AiProposalResponse> {
+    return this.http.post<AiProposalResponse>(`${this.AI_BASE}/proposal`, payload);
+  }
+
+  predictAiPrice(payload: {
+    skill: string;
+    experience_years: number;
+    rating: number;
+    location: string;
+  }): Observable<AiPriceRange> {
+    return this.http.post<AiPriceRange>(`${this.AI_BASE}/price`, payload);
   }
 
   // ── Scheduler ───────────────────────────────────────────────────────
