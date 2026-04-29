@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../api.service';
 import { Router } from '@angular/router';
+import { SalaryPredictionService } from '../../services/salary-prediction.service';
 
 @Component({
     selector: 'app-rd-post-job',
@@ -8,7 +9,7 @@ import { Router } from '@angular/router';
     templateUrl: './rd-post-job.component.html',
     styleUrls: ['./rd-post-job.component.scss']
 })
-export class RdPostJobComponent {
+export class RdPostJobComponent implements OnInit {
     loading = false;
     saving = false;
     successMessage = '';
@@ -17,6 +18,37 @@ export class RdPostJobComponent {
     submitAttempted = false;
 
     mesOffres: any[] = [];
+    // Ajout de la méthode pour générer le salaire
+    genererSalaire() {
+        if (
+            this.formulaire.titre &&
+            this.formulaire.description &&
+            this.formulaire.entreprise &&
+            this.formulaire.location &&
+            this.formulaire.typeContrat &&
+            this.formulaire.competences
+        ) {
+            const competencesList = this.formulaire.competences
+                .split(',')
+                .map((c) => c.trim())
+                .filter((c) => !!c)
+                .slice(0, 15);
+            const data = {
+                titre: this.formulaire.titre,
+                description: this.formulaire.description,
+                entreprise: this.formulaire.entreprise,
+                location: this.formulaire.location,
+                typeContrat: this.formulaire.typeContrat,
+                competences: competencesList
+            };
+            this.salaryService.predictSalary(data).subscribe(res => {
+                if (res && res.predicted_salary) {
+                    this.predictedSalary = res.predicted_salary;
+                    this.formulaire.salary = this.predictedSalary;
+                }
+            });
+        }
+    }
 
     formulaire = {
         titre: '',
@@ -29,10 +61,17 @@ export class RdPostJobComponent {
         competences: ''
     };
 
-    readonly textPattern = "^[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9 .,'()\-/+]*$";
-    readonly salaryPattern = "^[A-Za-zÀ-ÿ0-9 .,'()\-/+]*$";
+    // NOTE: Put '-' at the end inside [] to avoid invalid ranges in browsers.
+    readonly textPattern = "^[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9 .,'()/+-]*$";
+    readonly salaryPattern = "^[A-Za-zÀ-ÿ0-9 .,'()/+-]*$";
 
-    constructor(private apiService: ApiService, private router: Router) { }
+    predictedSalary: string = '';
+
+    constructor(
+        private apiService: ApiService,
+        private router: Router,
+        private salaryService: SalaryPredictionService
+    ) { }
 
     ngOnInit(): void {
         this.chargerMesOffres();
