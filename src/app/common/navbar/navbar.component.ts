@@ -241,7 +241,7 @@ export class NavbarComponent implements OnInit {
                 alert('Inscription réussie !');
                 this.closePopup();
                 this.resetAuthForms();
-                setTimeout(() => { this.router.navigate(['/index-2']); }, 500);
+                setTimeout(() => { this.router.navigate(['/index-3']); }, 500);
             },
             error => {
                 const serverMessage = error?.error?.message || error?.message || error?.statusText || 'Erreur inconnue';
@@ -527,7 +527,7 @@ export class NavbarComponent implements OnInit {
         this.userName = '';
         this.userRole = '';
         this.userDropdownOpen = false;
-        this.router.navigate(['/']);
+        this.router.navigate(['/index-3']);
     }
 
     deleteAccount(): void {

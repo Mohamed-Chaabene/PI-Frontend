@@ -71,7 +71,7 @@ import { FormationsListComponent } from './formations/formations-list/formations
 import { CandidatureListComponent } from './admin-dashboard/candidature-list/candidature-list.component';
 import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-admin/evenement-list-admin.component';
 import { CandidatsListComponent } from './admin-dashboard/candidats-list/candidats-list.component';
-import { recruteurGuard, recruteurChildGuard } from './guards/recruteur.guard';
+import { recruteurGuard, recruteurChildGuard, candidatGuard, candidatChildGuard, adminGuard, adminChildGuard, employerGuard, employerChildGuard, partenaireGuard, partenaireChildGuard } from './guards/recruteur.guard';
 import { PartenaireCandidatComponent } from './candidates-dashboard/partenaire-candidat/partenaire-candidat.component';
 import { OffreCandidatComponent } from './candidates-dashboard/offre-candidat/offre-candidat.component';
 import { EvenementDemandesComponent } from './evenement-dashboard/evenement-demandes/evenement-demandes.component';
@@ -93,8 +93,8 @@ import { ParcoursFeedbackAdminComponent } from './admin-dashboard/parcours-feedb
 import { VerifyCertificatComponent } from './formations/verify-certificat/verify-certificat.component';
 
 export const routes: Routes = [
-    { path: '', component: HomeDemoOneComponent },
-    { path: 'login', component: HomeDemoOneComponent },
+    { path: '', component: HomeDemoThreeComponent },
+    { path: 'login', component: HomeDemoThreeComponent },
     { path: 'verify-certificat/:code', component: VerifyCertificatComponent },
     { path: 'index-2', component: HomeDemoTwoComponent },
     { path: 'index-3', component: HomeDemoThreeComponent },
@@ -117,6 +117,8 @@ export const routes: Routes = [
     {
         path: 'dashboard',
         component: EmployersDashboardComponent,
+        canActivate: [employerGuard],
+        canActivateChild: [employerChildGuard],
         children: [
             { path: '', component: EDashboardComponent },
             { path: 'company-profile', component: EdCompanyProfileComponent },
@@ -132,6 +134,8 @@ export const routes: Routes = [
     {
         path: 'candidates-dashboard',
         component: CandidatesDashboardComponent,
+        canActivate: [candidatGuard],
+        canActivateChild: [candidatChildGuard],
         children: [
             { path: '', component: CDashboardComponent },
             { path: 'my-profile', component: CdProfileComponent },
@@ -181,6 +185,8 @@ export const routes: Routes = [
     {
         path: 'evenement-dashboard',
         component: EvenementDashboardComponent,
+        canActivate: [partenaireGuard],
+        canActivateChild: [partenaireChildGuard],
         children: [
             { path: '', component: EvenementTemplateComponent },
             { path: 'ajouter', component: EvenementFormComponent },
@@ -198,6 +204,8 @@ export const routes: Routes = [
     {
         path: 'admin-dashboard',
         component: AdminDashboardComponent,
+        canActivate: [adminGuard],
+        canActivateChild: [adminChildGuard],
         children: [
             { path: '', component: AdDashboardComponent },
             { path: 'partenaires', component: PartenaireListComponent },

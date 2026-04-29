@@ -883,16 +883,9 @@ export class CdHeaderComponent implements OnInit, OnDestroy {
         });
     }
 
-<<<<<<< HEAD
-/* === VERSION HEAD ==== */
-
-/* === VERSION MERGE ==== */
     closeDeleteAccountModal(): void {
         this.showDeleteAccountModal = false;
     }
-=======
-
->>>>>>> partenaire4
 
     confirmDeleteAccount(): void {
     }

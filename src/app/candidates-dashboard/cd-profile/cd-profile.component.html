@@ -64,9 +64,9 @@
                             class="form-control shadow-none" 
                             [(ngModel)]="candidateData.description" 
                             (input)="onDescriptionChange()"
-                            maxlength="60"
+                            maxlength="1000"
                             rows="5"
-                            placeholder="Parlez un peu de vous, vos passions, vos objectifs..." [style.border-color]="isDescriptionFormSubmitted && (!candidateData.description || candidateData.description.length === 0 || candidateData.description.length > 60) ? '#dc3545' : ''" [style.border-width]="isDescriptionFormSubmitted && (!candidateData.description || candidateData.description.length === 0 || candidateData.description.length > 60) ? '2px' : ''"></textarea>
+                            placeholder="Parlez un peu de vous, vos passions, vos objectifs..." [style.border-color]="isDescriptionFormSubmitted && (!candidateData.description || candidateData.description.length === 0 || candidateData.description.length > 1000) ? '#dc3545' : ''" [style.border-width]="isDescriptionFormSubmitted && (!candidateData.description || candidateData.description.length === 0 || candidateData.description.length > 1000) ? '2px' : ''"></textarea>
                         <div style="margin-top: 15px; display: flex; gap: 10px;">
                             <button (click)="isDescriptionFormSubmitted = true; saveDescriptionOnly()" class="default-btn" [disabled]="isSaving || !isDescriptionValid()" style="background-color: #85B7EB; color: white; font-weight: bold;">
                                 {{ isSaving ? 'Sauvegarde...' : 'Save' }}
