@@ -696,6 +696,13 @@ addAlertStyles(): void {
             this.chargerPrediction();
             this.chargerRelances();
             this.chargerTimeline();
+                 //ARCHIVAGE
+
+            this.archivesCount = this.getCandidaturesArchivees().length; // ← ajouter
+            console.log('Toutes candidatures:', this.candidatures);
+            console.log('Archive field sample:', this.candidatures[0]?.archive);
+console.log('Archivées count:', this.candidatures.filter(c => c.archive == 1).length);
+console.log('Archive values:', this.candidatures.map(c => ({ id: c.id, archive: c.archive })));
             // ===============================================================
         },
         error: (err) => {
@@ -2205,71 +2212,60 @@ ouvrirDoublons(): void {
 
  // ==================== GESTION DES ARCHIVES ====================
 
-    /**
-     * Récupérer les candidatures actives (non archivées)
-     */
-    getCandidaturesActives(): any[] {
-        return this.candidatures.filter(c => !c.archive);
+getCandidaturesActives(): any[] {
+    return this.candidatures.filter(c => 
+        !c.archive || c.archive === 0 || c.archive === false
+    );
+}
+
+getCandidaturesArchivees(): any[] {
+    return this.candidatures.filter(c => 
+        c.archive === true || c.archive === 1 || c.archive == 1
+    );
+}
+
+getArchivesCount(): number {
+    return this.getCandidaturesArchivees().length;
+}
+
+toggleShowArchives(): void {
+    this.showArchives = !this.showArchives;
+    console.log('showArchives:', this.showArchives);
+    console.log('Total candidatures reçues:', this.candidatures.length);
+    console.log('Archive values:', this.candidatures.map(c => ({ 
+        id: c.id, 
+        archive: c.archive,
+        type: typeof c.archive 
+    })));
+    console.log('Archivées trouvées:', this.candidatures.filter(c => c.archive == 1).length);
+}
+
+archiverCandidature(candidature: any): void {
+    if (confirm(`Archiver la candidature de ${candidature.nomComplet} ?`)) {
+        this.apiService.archiverCandidature(candidature.id).subscribe({
+            next: () => {
+                this.showMessage('Candidature archivée avec succès', 'success');
+                this.loadData();
+            },
+            error: (err) => {
+                this.showMessage('Erreur lors de l\'archivage', 'error');
+            }
+        });
     }
+}
 
-    /**
-     * Récupérer les candidatures archivées
-     */
-    getCandidaturesArchivees(): any[] {
-        return this.candidatures.filter(c => c.archive === true);
+restaurerCandidature(candidature: any): void {
+    if (confirm(`Restaurer la candidature de ${candidature.nomComplet} ?`)) {
+        this.apiService.restaurerCandidature(candidature.id).subscribe({
+            next: () => {
+                this.showMessage('Candidature restaurée avec succès', 'success');
+                this.loadData();
+            },
+            error: (err) => {
+                this.showMessage('Erreur lors de la restauration', 'error');
+            }
+        });
     }
-
-    /**
-     * Compter les candidatures archivées
-     */
-    getArchivesCount(): number {
-        return this.getCandidaturesArchivees().length;
-    }
-
-    /**
-     * Basculer entre vue active et archives
-     */
-    toggleShowArchives(): void {
-        this.showArchives = !this.showArchives;
-    }
-
-    /**
-     * Archiver manuellement une candidature
-     */
-    archiverCandidature(candidature: any): void {
-        if (confirm(`Archiver la candidature de ${candidature.nomComplet} ?`)) {
-            this.apiService.archiverCandidature(candidature.id).subscribe({
-                next: () => {
-                    this.showMessage('Candidature archivée avec succès', 'success');
-                    this.loadData();
-                },
-                error: (err) => {
-                    console.error('Erreur archiving:', err);
-                    this.showMessage('Erreur lors de l\'archivage', 'error');
-                }
-            });
-        }
-    }
-
-    /**
-     * Restaurer une candidature archivée
-     */
-    restaurerCandidature(candidature: any): void {
-        if (confirm(`Restaurer la candidature de ${candidature.nomComplet} ?`)) {
-            this.apiService.restaurerCandidature(candidature.id).subscribe({
-                next: () => {
-                    this.showMessage('Candidature restaurée avec succès', 'success');
-                    this.loadData();
-                },
-                error: (err) => {
-                    console.error('Erreur restoring:', err);
-                    this.showMessage('Erreur lors de la restauration', 'error');
-                }
-            });
-        }
-    }
-
-    
-
+}
 
 }

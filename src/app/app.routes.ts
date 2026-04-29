@@ -135,11 +135,7 @@ export const routes: Routes = [
         path: 'candidates-dashboard',
         component: CandidatesDashboardComponent,
         children: [
-    {
-        path: 'freelance',
-        loadChildren: () =>
-            import('./freelance/freelance.module').then(m => m.FreelanceModule)
-    },
+    
             {path: '', component: CDashboardComponent},
             {path: 'my-profile', component: CdProfileComponent},
             { path: 'documents', component: CdDocumentsComponent },
@@ -180,11 +176,7 @@ export const routes: Routes = [
   loadChildren: () =>
     import('./formations/formations.module').then(m => m.FormationsModule)
 },
-{
-    path: 'freelance',
-    loadChildren: () =>
-        import('./freelance/freelance.module').then(m => m.FreelanceModule)
-},
+
 {path: 'evenement-dashboard', component: EvenementDashboardComponent,
         children: [
             { path: '', component: EvenementTemplateComponent },
