@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class EvenementService {
-  private apiUrl = '/api/evenements';
+ private apiUrl = 'http://localhost:8080/api/evenements';
 
   constructor(private http: HttpClient) {}
 
@@ -74,9 +76,30 @@ exporterMesEvenementsConfirmes(candidatId: number): void {
 getMesParticipationsConfirmees(candidatId: number): Observable<any[]> {
   const token = localStorage.getItem('token');
   return this.http.get<any[]>(
-    `/api/participations/confirmed/${candidatId}`,
+    `http://localhost:8080/api/participations/confirmed/${candidatId}`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   
+}
+
+getRecommended(
+  candidateId: number,
+  domaine: string,
+  ville: string,
+  skills: string,
+  education: string,
+  experience: number
+): Observable<any[]> {
+  const params = new HttpParams()
+    .set('domaine', domaine)
+    .set('ville', ville)
+    .set('skills', skills || 'unknown')
+    .set('education', education)
+    .set('experience', experience.toString());
+
+  return this.http.get<any[]>(
+    `http://localhost:8080/api/evenements/recommended/${candidateId}`,  // ← URL complète directe
+    { params }
+  );
 }
 }

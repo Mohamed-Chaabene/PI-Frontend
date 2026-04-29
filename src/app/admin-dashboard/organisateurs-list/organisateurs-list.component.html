@@ -1,0 +1,86 @@
+<div class="page-container">
+  <!-- HEADER -->
+  <div class="page-header">
+    <h4>
+      <i class="ri-user-settings-line"></i>
+      Liste des Organisateurs
+    </h4>
+    <span class="badge-count">{{ filteredOrganisateurs.length }} organisateurs</span>
+  </div>
+
+  <!-- BARRE DE RECHERCHE -->
+  <div class="search-bar">
+    <div class="search-wrapper">
+      <i class="ri-search-line search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Rechercher par nom, email ou organisation..."
+        [value]="searchTerm"
+        (input)="onSearch($any($event.target).value)"
+      />
+      @if (searchTerm) {
+        <button class="clear-btn" type="button" (click)="onSearch('')">
+          <i class="ri-close-line"></i>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  @if (isLoading) {
+    <div class="state-box">
+      <i class="ri-loader-4-line spin"></i>
+      <p>Chargement des organisateurs...</p>
+    </div>
+  }
+
+  <!-- TABLE -->
+  @if (!isLoading && filteredOrganisateurs.length > 0) {
+    <div class="table-wrapper">
+      <table class="events-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Organisation</th>
+            <th>Téléphone</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (o of filteredOrganisateurs; track o.id; let i = $index) {
+            <tr>
+              <td class="col-index">{{ i + 1 }}</td>
+              <td class="title-col">
+                <div class="name-cell">
+                  <i class="ri-user-line"></i>
+                  {{ o.nom || '-' }}
+                </div>
+              </td>
+              <td>{{ o.email || '-' }}</td>
+              <td>{{ o.organisation || '-' }}</td>
+              <td>{{ o.telephone || '-' }}</td>
+              <td>
+                <div class="actions-cell">
+                  <button class="btn-action btn-supprimer" (click)="supprimer(o.id)">
+                    <i class="ri-delete-bin-line"></i> Supprimer
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- EMPTY -->
+  @if (!isLoading && filteredOrganisateurs.length === 0) {
+    <div class="state-box">
+      <i class="ri-inbox-line"></i>
+      <p>{{ searchTerm ? 'Aucun résultat trouvé' : 'Aucun organisateur disponible' }}</p>
+    </div>
+  }
+</div>

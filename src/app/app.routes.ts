@@ -91,6 +91,7 @@ import { ParcoursAdminComponent } from './admin-dashboard/parcours-admin/parcour
 import { ParcoursCreateComponent } from './admin-dashboard/parcours-create/parcours-create.component';
 import { ParcoursFeedbackAdminComponent } from './admin-dashboard/parcours-feedback-admin/parcours-feedback-admin.component';
 import { VerifyCertificatComponent } from './formations/verify-certificat/verify-certificat.component';
+import { OrganisateursListComponent } from './admin-dashboard/organisateurs-list/organisateurs-list.component';
 
 export const routes: Routes = [
     { path: '', component: HomeDemoOneComponent },
@@ -113,6 +114,7 @@ export const routes: Routes = [
     { path: 'partenaires/:id/offres', component: OffreListComponent },
     { path: 'entretiens/video/:id', component: VideoInterviewRoomPageComponent },
     { path: 'entretiens/test/:id', component: PublicTestPassPageComponent },
+    {path: 'organisateurs',component: OrganisateursListComponent},
 
     {
         path: 'dashboard',
@@ -148,6 +150,8 @@ export const routes: Routes = [
             { path: 'evenements', component: EvenementCandidatComponent },
             { path: 'ma-calendar', component: MaCalendarComponent },
             { path: 'mes-participations', component: MesParticipationsComponent },
+            { path: 'chat/:evenementId', component: ChatEvenementComponent }
+
         ]
     },
 
@@ -216,6 +220,8 @@ export const routes: Routes = [
             { path: 'parcours/create', component: ParcoursCreateComponent },
             { path: 'parcours/:id/edit', component: ParcoursCreateComponent },
             { path: 'parcours/:id/macro-feedbacks', component: ParcoursFeedbackAdminComponent },
+            {path: 'organisateurs',component: OrganisateursListComponent},
+
         ]
     },
 
