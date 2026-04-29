@@ -63,7 +63,7 @@ export class ChatEvenementComponent implements OnInit, OnDestroy {
             },
             error: (err) => {
                 console.error('Erreur statut chat:', err);
-                this.erreur = 'Impossible de joindre le backend. Vérifiez que Spring Boot tourne sur http://localhost:8081';
+                this.erreur = 'Impossible de joindre le backend. Vérifiez que Spring Boot tourne sur http://localhost:8080';
                 this.isLoading = false;
             }
         });

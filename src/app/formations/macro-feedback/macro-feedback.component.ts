@@ -123,10 +123,89 @@ import { FeedbackService } from '../services/feedback.service';
         </footer>
 
       </div>
+
+      <!-- MODAL SUCCESS -->
+      <div class="success-modal-overlay" *ngIf="showSuccessModal">
+        <div class="success-modal">
+          <div class="modal-icon">
+            🏆
+          </div>
+          <h3>Félicitations !</h3>
+          <p>Votre certificat de parcours est désormais disponible dans votre espace personnel.</p>
+          <button class="btn-consulter" (click)="goToCertificates()">
+            Consulter mon certificat
+          </button>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+
+    /* MODAL CSS */
+    .success-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .success-modal {
+      background: white;
+      padding: 40px;
+      border-radius: 24px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+      animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-icon {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+      font-size: 40px;
+    }
+    .success-modal h3 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 12px;
+    }
+    .success-modal p {
+      color: #475569;
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 0 0 24px;
+    }
+    .btn-consulter {
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+    }
+    .btn-consulter:hover {
+      background: #0284c7;
+      transform: translateY(-2px);
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
     :host { display: block; }
 
@@ -404,6 +483,8 @@ export class MacroFeedbackComponent implements OnInit {
   progressionOptions = ['Très fluide', 'Correcte', 'Parfois abrupte', 'Trop rapide'];
   quizOptions = ['Très pertinents', 'Adaptés', 'Trop faciles', 'Trop difficiles'];
   recommandationOptions = ['Absolument', 'Probablement', 'Pas sûr(e)', 'Non'];
+  
+  showSuccessModal = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -508,8 +589,9 @@ export class MacroFeedbackComponent implements OnInit {
             localStorage.setItem('currentParcoursInscription', JSON.stringify(ins));
           }
           
-          alert("Merci pour votre avis !");
-          this.router.navigate(['/formations/parcours', this.parcoursId]); 
+          // Afficher le modal de succès
+          this.submitting = false;
+          this.showSuccessModal = true;
         },
         error: (err) => {
           console.error(err);
@@ -517,5 +599,10 @@ export class MacroFeedbackComponent implements OnInit {
           this.submitting = false;
         }
       });
+  }
+
+  goToCertificates() {
+    this.showSuccessModal = false;
+    this.router.navigate(['/candidates-dashboard/mes-formations']);
   }
 }

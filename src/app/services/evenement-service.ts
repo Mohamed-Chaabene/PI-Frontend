@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class EvenementService {
- private apiUrl = 'http://localhost:8080/api/evenements';
+  private apiUrl = '/api/evenements';
 
   constructor(private http: HttpClient) {}
 
@@ -74,7 +74,11 @@ exporterMesEvenementsConfirmes(candidatId: number): void {
 getMesParticipationsConfirmees(candidatId: number): Observable<any[]> {
   const token = localStorage.getItem('token');
   return this.http.get<any[]>(
-    `http://localhost:8081/api/participations/confirmed/${candidatId}`,
+<<<<<<< HEAD
+    `/api/participations/confirmed/${candidatId}`,
+=======
+    `http://localhost:8080/api/participations/confirmed/${candidatId}`,
+>>>>>>> partenaire4
     { headers: { Authorization: `Bearer ${token}` } }
   );
   

@@ -25,8 +25,8 @@ export type FormationUpdatePayload = Partial<FormationCreatePayload>;
 @Injectable({ providedIn: 'root' })
 export class FormationService {
 
-  private readonly base = '/api/formations';
-  private readonly api  = '/api';
+  private readonly base = 'http://localhost:8080/api/formations';
+  private readonly api  = 'http://localhost:8080/api';
 
   constructor(private http: HttpClient) {}
 
@@ -129,6 +129,10 @@ export class FormationService {
     );
   }
 
+  verifyCertificat(code: string): Observable<any> {
+    return this.http.get<any>(`${this.api}/certificats/verify/${code}`);
+  }
+
   getCandidatByEmail(email: string): Observable<{ id: number }> {
     return this.http.get<{ id: number }>(
       `${this.api}/candidats/email/${encodeURIComponent(email)}`
@@ -157,5 +161,10 @@ export class FormationService {
 
   getFormationsPopulaires(scoreMin: number = 50): Observable<Formation[]> {
     return this.http.get<Formation[]>(`${this.base}/populaires?scoreMin=${scoreMin}`);
+  }
+
+  // --- RECOMMANDATIONS ML ---
+  getFormationsRecommandees(candidatId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/recommandees/${candidatId}`);
   }
 }

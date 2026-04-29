@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Formation, FormationStats } from '../models/formation.model';
 import { FormationService } from '../services/formation.service';
 import { FeedbackService } from '../services/feedback.service';
+import { ApiService } from '../../api.service';
 import { ParcoursService } from '../services/parcours.service';
 import { ParcoursFormation } from '../models/parcours.model';
 
@@ -33,21 +34,60 @@ export class FormationsListComponent implements OnInit {
 
   unifiedFiltered: any[] = [];
 
+  // --- RECOMMANDATIONS ML ---
+  isRecommandationMode = false;
+  recommandations: { formation: Formation; score_match: number; raisons: string[] }[] = [];
+  loadingRecommandations = false;
+
   readonly badges = ['', 'Tendance', 'Populaire', 'Top noté', 'Bien noté', 'En progression'];
   readonly categories = [
     '', 'Frontend', 'Backend', 'IA', 'Data',
     'DevOps', 'Design', 'Mobile', 'Développement'
   ];
+  // Skill Gap Analysis
+  isGapAnalysisMode: boolean = false;
+  gapResult: any = null;
+  selectedTargetJob: string = 'DevOps Engineer';
+  targetJobs: string[] = [
+    'Full Stack Developer',
+    'Backend Developer',
+    'Frontend Developer',
+    'Data Scientist',
+    'Data Engineer',
+    'DevOps Engineer',
+    'Cloud Architect',
+    'Mobile Developer',
+    'Cybersecurity Analyst',
+    'AI Engineer',
+    'UI/UX Designer',
+    'Product Manager',
+    'QA Automation Engineer'
+  ];
+  loadingGap: boolean = false;
 
   constructor(
     private formationService: FormationService,
     private feedbackService:  FeedbackService,
-    private parcoursService: ParcoursService
+    private parcoursService: ParcoursService,
+    private apiService:       ApiService
   ) {}
 
   ngOnInit(): void {
     const role = (localStorage.getItem('userRole') || '').toUpperCase().replace('ROLE_', '');
     this.isAdmin = role === 'ADMIN';
+
+    // Sécurité : récupérer le candidatId s'il manque mais que l'utilisateur est connecté
+    const email = localStorage.getItem('userEmail');
+    const existingId = localStorage.getItem('candidatId');
+    if (role === 'CANDIDAT' && email && !existingId) {
+      this.apiService.getCandidateByEmail(email).subscribe({
+        next: (cand: any) => {
+          if (cand && cand.id) {
+            localStorage.setItem('candidatId', String(cand.id));
+          }
+        }
+      });
+    }
 
     this.loadAll();
     this.loadParcours();
@@ -193,12 +233,76 @@ export class FormationsListComponent implements OnInit {
 
   onTypeChange(type: 'all' | 'formation' | 'parcours'): void {
     this.contentTypeFilter = type;
+    this.isRecommandationMode = false;
+    this.isGapAnalysisMode = false;
+    this.activeFilter = 'Toutes'; 
     this.applySearch();
   }
 
   applyFilter(filter: string): void {
     this.activeFilter = filter;
+    this.isRecommandationMode = false;
+    this.isGapAnalysisMode = false;
     this.applySearch();
+  }
+
+  activerGapAnalysis(): void {
+    this.isGapAnalysisMode = true;
+    this.isRecommandationMode = false;
+    this.activeFilter = '';
+    this.gapResult = null;
+  }
+
+  analyzeGap(): void {
+    const candidatId = Number(localStorage.getItem('candidatId'));
+    if (!candidatId) {
+      alert('Vous devez être connecté pour analyser votre carrière.');
+      return;
+    }
+
+    this.loadingGap = true;
+    this.apiService.analyzeSkillGap(candidatId, this.selectedTargetJob).subscribe({
+      next: (data: any) => {
+        this.gapResult = data;
+        this.loadingGap = false;
+      },
+      error: () => {
+        alert('Erreur lors de l\'analyse de l\'écart de compétences.');
+        this.loadingGap = false;
+      }
+    });
+  }
+
+  activerRecommandations(): void {
+    this.isRecommandationMode = true;
+    this.isGapAnalysisMode = false;
+    this.activeFilter = '';
+
+    const candidatId = Number(localStorage.getItem('candidatId'));
+    if (!candidatId) {
+      alert('Vous devez être connecté en tant que candidat pour voir vos recommandations.');
+      this.isRecommandationMode = false;
+      this.activeFilter = 'Toutes';
+      return;
+    }
+
+    this.loadingRecommandations = true;
+    this.formationService.getFormationsRecommandees(candidatId).subscribe({
+      next: (data: any[]) => {
+        this.recommandations = data.map(item => ({
+          formation: item.formation as Formation,
+          score_match: item.score_match || 0,
+          raisons: item.raisons || []
+        }));
+        this.loadingRecommandations = false;
+      },
+      error: () => {
+        this.loadingRecommandations = false;
+        alert('Le service de recommandation IA est indisponible. Vérifiez que le serveur Python tourne sur le port 5000.');
+        this.isRecommandationMode = false;
+        this.activeFilter = 'Toutes';
+      }
+    });
   }
 
   applySearch(): void {

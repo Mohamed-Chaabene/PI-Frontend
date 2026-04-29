@@ -44,20 +44,6 @@ export class QuizNiveauComponent implements OnInit {
     this.parcoursId = Number(this.route.snapshot.paramMap.get('parcoursId'));
     this.niveau = (this.route.snapshot.paramMap.get('niveau') || 'DEBUTANT') as NiveauOrdre;
 
-    // Le niveau EXPERT doit toujours passer par le FormationPlayer pour avoir les restrictions
-    if (this.niveau === 'EXPERT') {
-      this.parcoursService.getById(this.parcoursId).subscribe(p => {
-        if (p?.niveauExpert) {
-          this.router.navigate(['/formations', p.niveauExpert.id], {
-            queryParams: { parcoursId: this.parcoursId, niveau: 'EXPERT' }
-          });
-        } else {
-          this.router.navigate(['/formations/parcours', this.parcoursId]);
-        }
-      });
-      return;
-    }
-
     // Check if we are in review mode
     const reviewId = this.route.snapshot.queryParamMap.get('reviewId');
     if (reviewId) {

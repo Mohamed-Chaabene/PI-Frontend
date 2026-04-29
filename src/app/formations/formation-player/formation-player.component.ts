@@ -499,25 +499,30 @@ export class FormationPlayerComponent
     this.progression = Math.round(validVuesCount / t * 100);
     if (this.progression >= 100 && !this.isAlreadyCompleted && !this.quizLaunched) {
       this.quizLaunched = true;
-      setTimeout(() => this.lancerQuizFinal(), 2000);
+      setTimeout(() => this.lancerQuizFinal(), 4000);
     }
   }
 
 
   lancerQuizFinal(): void {
     if (!this.inscriptionId || this.quizFinalLoading) return;
-    
-    // Si le quiz est déjà affiché et qu'on n'est pas en mode résultat/bloqué, on ignore
-    if (this.showQuizFinal && !this.quizFinalSubmitted && !this.quizBloque) return;
 
-    this.quizLaunched = true;
+    // 1. Récupération dynamique des paramètres depuis l'URL (plus fiable que les Inputs au moment du setTimeout)
+    const urlParams = new URLSearchParams(window.location.search);
+    const pId = this.parcoursId || Number(urlParams.get('parcoursId'));
+    const niv = this.niveau || urlParams.get('niveau');
 
-    // Si on est dans un parcours, on redirige vers le quiz de niveau
-    // SAUF pour le niveau EXPERT qui utilise le quiz interne avec protection anti-triche
-    if (this.parcoursId && this.niveau && this.niveau !== 'EXPERT') {
-      this.router.navigate(['/formations/parcours', this.parcoursId, 'quiz', this.niveau]);
+    // 2. Si on est dans un parcours, on redirige TOUJOURS vers le Quiz de Niveau (IA)
+    // On inclut désormais EXPERT pour avoir l'interface moderne partout
+    if (pId && niv) {
+      this.quizLaunched = true;
+      this.router.navigate(['/formations/parcours', pId, 'quiz', niv]);
       return;
     }
+
+    // 3. Sinon (formation standalone), on utilise le modal interne
+    if (this.showQuizFinal && !this.quizFinalSubmitted && !this.quizBloque) return;
+    this.quizLaunched = true;
 
     if (this.tentativesUtilisees >= this.MAX_TENTATIVES) return;
 
@@ -689,5 +694,18 @@ export class FormationPlayerComponent
     if (this.progression >= 100) return '#16a34a'; // Green stays for completion
     if (this.progression >= 50)  return '#fbbf24'; // Brighter amber/orange
     return '#fcd34d'; // Lighter amber for low progression
+  }
+
+  getQuizLabel(): string {
+    if (this.parcoursId && this.niveau) {
+      if (this.niveau === 'EXPERT') return 'Évaluation finale';
+      const labels: any = {
+        'DEBUTANT': 'Quiz Débutant',
+        'INTERMEDIAIRE': 'Quiz Intermédiaire',
+        'AVANCE': 'Quiz Avancé'
+      };
+      return labels[this.niveau] || 'Évaluation de niveau';
+    }
+    return 'Évaluation finale';
   }
 }

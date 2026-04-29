@@ -11,6 +11,7 @@ export interface Inscription {
   candidat?: Candidat;
   certificat?: Certificat;
   parcoursId?: number | null;
+  niveau?: string | null;
 }
 
 export interface InscriptionCreatePayload {

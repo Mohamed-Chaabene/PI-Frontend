@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
 import { EvenementService } from '../../services/evenement-service';
+import { jwtDecode } from 'jwt-decode';
 
 @Component({
     selector: 'app-evenement-edit',
@@ -14,6 +15,7 @@ export class EvenementEditComponent implements OnInit {
     success = false;
     error = false;
     id!: number;
+    organisateurId!: number;
 
     constructor(
         private service: EvenementService,
@@ -22,6 +24,12 @@ export class EvenementEditComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const decoded: any = jwtDecode(token);
+            this.organisateurId = decoded?.id;
+        }
+
         this.id = Number(this.route.snapshot.paramMap.get('id'));
         this.service.getById(this.id).subscribe({
             next: (data) => {
@@ -37,13 +45,20 @@ export class EvenementEditComponent implements OnInit {
 
     modifier(form: NgForm) {
         if (form.valid) {
-            // ⚠️ Ajoute ':00' pour les secondes attendues par Spring
-            const payload = {
-                ...this.evenement,
-                dateHeure: this.evenement.dateHeure + ':00' // ← nouveau
+            // On construit un payload propre, sans l'objet organisateur complet qui peut causer des 500
+            const payload: any = {
+                titre: this.evenement.titre,
+                dateHeure: this.evenement.dateHeure.includes(':') && this.evenement.dateHeure.length === 16 
+                           ? this.evenement.dateHeure + ':00' 
+                           : this.evenement.dateHeure,
+                lieu: this.evenement.lieu,
+                type: this.evenement.type,
+                organisateurId: this.evenement.organisateurId || this.evenement.organisateur?.id || this.organisateurId
             };
 
-            this.service.modifier(this.id, payload).subscribe({ // ← payload au lieu de this.evenement
+            console.log('Sending PUT payload:', payload);
+
+            this.service.modifier(this.id, payload).subscribe({
                 next: (res) => {
                     console.log('Événement modifié ✅', res);
                     this.success = true;

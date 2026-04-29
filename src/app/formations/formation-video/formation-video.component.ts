@@ -53,6 +53,14 @@ export class FormationVideoComponent implements OnInit {
             next: (found) => {
               if (found) {
                 this.inscriptionId = found.id;
+                // Si l'URL n'avait pas les paramètres de parcours, on les restaure depuis la base
+                if (!this.parcoursId && found.parcoursId) {
+                  this.parcoursId = found.parcoursId;
+                }
+                if (!this.niveau && found.niveau) {
+                  this.niveau = found.niveau;
+                }
+                
                 // Persist with user-scoped key
                 const scopedKey = `candidat_${this.candidatId}_ins_${f.id}` + (this.parcoursId ? `_p${this.parcoursId}` : '');
                 localStorage.setItem(scopedKey, String(found.id));

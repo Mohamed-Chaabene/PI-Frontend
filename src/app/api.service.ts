@@ -2473,9 +2473,10 @@ chatRecruiterAssistant(message: string, context?: { theme?: string; type?: strin
     const headers = this.buildAuthHeaders();
     return this.http.get<any[]>(`${this.apiUrl}/connections/all-stats`, { headers });
   }
-
-
-
+  analyzeSkillGap(candidatId: number, targetJob: string): Observable<any> {
+    const headers = this.buildAuthHeaders();
+    return this.http.post(`${this.apiUrl}/formations/analyze-gap/${candidatId}`, { targetJob }, { headers });
+  }
 }
 
 

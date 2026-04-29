@@ -22,7 +22,7 @@
 
       <div class="quiz-final-loading" *ngIf="quizFinalLoading">
         <div class="loading-spinner"></div>
-        <h3>Génération de votre évaluation finale...</h3>
+        <h3>Génération de votre {{ getQuizLabel() }}...</h3>
       </div>
 
       <div class="quiz-bloque-panel" *ngIf="quizBloque && !quizFinalLoading">
@@ -67,7 +67,7 @@
                            && !quizBloque">
 
         <div class="quiz-final-header">
-          <div class="quiz-final-badge">🎓 Évaluation finale</div>
+          <div class="quiz-final-badge">🎓 {{ getQuizLabel() }}</div>
           <h2>{{ formation.titre }}</h2>
           <div class="quiz-final-progress-info">
             <span>{{ quizFinalQuestions.length }} questions</span>
@@ -123,7 +123,7 @@
                   (click)="submitQuizFinal()"
                   type="button">
             <i class="ri-send-plane-line"></i>
-            Soumettre mon évaluation
+            Soumettre mon quiz
           </button>
         </div>
       </ng-container>
@@ -194,7 +194,7 @@
     <div class="confetti-message">
       <span>🎉</span>
       <h3>Toutes les vidéos terminées !</h3>
-      <p>Votre évaluation finale va commencer...</p>
+      <p>Votre {{ getQuizLabel() }} va commencer...</p>
     </div>
   </div>
 
@@ -231,7 +231,7 @@
                      display:flex;align-items:center;gap:6px">
         <i class="ri-medal-fill" style="font-size:16px"></i>
         <ng-container *ngIf="MAX_TENTATIVES === INFINITY || tentativesUtilisees < MAX_TENTATIVES">
-          Passer l'évaluation finale
+          Passer le {{ getQuizLabel() }}
         </ng-container>
         <ng-container *ngIf="MAX_TENTATIVES !== INFINITY && tentativesUtilisees >= MAX_TENTATIVES">
           Tentatives épuisées
