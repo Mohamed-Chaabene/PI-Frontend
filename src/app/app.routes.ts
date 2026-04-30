@@ -14,7 +14,6 @@ import { OffreListComponent } from './admin-dashboard/offre-list/offre-list.comp
 import { ParcoursCreateComponent } from './admin-dashboard/parcours-create/parcours-create.component';
 import { ParcoursFeedbackAdminComponent } from './admin-dashboard/parcours-feedback-admin/parcours-feedback-admin.component';
 import { PartenaireListComponent } from './admin-dashboard/partenaire-list/partenaire-list.component';
-import { OrganisateursListComponent } from './admin-dashboard/organisateurs-list/organisateurs-list.component';
 import { CDashboardComponent } from './candidates-dashboard/c-dashboard/c-dashboard.component';
 import { CandidatesDashboardComponent } from './candidates-dashboard/candidates-dashboard.component';
 import { CdAlertJobsComponent } from './candidates-dashboard/cd-alert-jobs/cd-alert-jobs.component';
@@ -107,7 +106,6 @@ export const routes: Routes = [
     { path: 'candidate-entretiens', component: CandidateEntretiensPageComponent },
     { path: 'entretiens/video/:id', component: VideoInterviewRoomPageComponent },
     { path: 'entretiens/test/:id', component: PublicTestPassPageComponent },
-    { path: 'organisateurs', component: OrganisateursListComponent },
 
     {
         path: 'dashboard',
@@ -143,7 +141,6 @@ export const routes: Routes = [
             { path: 'evenements', component: EvenementCandidatComponent },
             { path: 'ma-calendar', component: MaCalendarComponent },
             { path: 'mes-participations', component: MesParticipationsComponent },
-            { path: 'chat/:evenementId', component: ChatEvenementComponent }
         ]
     },
 
@@ -220,7 +217,6 @@ export const routes: Routes = [
             { path: 'parcours/create', component: ParcoursCreateComponent },
             { path: 'parcours/:id/edit', component: ParcoursCreateComponent },
             { path: 'parcours/:id/macro-feedbacks', component: ParcoursFeedbackAdminComponent },
-            { path: 'organisateurs', component: OrganisateursListComponent },
         ]
     },
 

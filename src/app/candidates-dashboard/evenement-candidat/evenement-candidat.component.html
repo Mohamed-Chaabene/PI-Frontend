@@ -28,209 +28,121 @@
             </div>
         </div>
 
-        <!-- ══ SECTION RECOMMANDATIONS IA ══ -->
-        <div class="reco-section">
+        <!-- Barre de recherche intelligente -->
+                    <div class="search-section">
+                        <form class="search-form" (submit)="$event.preventDefault()">
+                            <div class="search-input-wrapper" style="position: relative;">
+                                <i class="ri-search-line search-icon"></i>
 
-            <!-- Header -->
-            <div class="reco-header">
-                <div class="reco-title-group">
-                    <div class="reco-icon-wrapper">
-                        <i class="ri-cpu-line"></i>
-                    </div>
-                    <div>
-                        <h2 class="reco-title">Recommandés pour vous</h2>
-                        <p class="reco-subtitle">Sélectionnés par IA selon votre profil</p>
-                    </div>
-                </div>
-                <span class="reco-ai-badge">
-                    <i class="ri-sparkling-line"></i> IA
-                </span>
-            </div>
+                                <input
+                                    type="text"
+                                    class="search-input"
+                                    placeholder="Rechercher par titre, lieu, type, date..."
+                                    [ngModel]="searchTerm"
+                                    (ngModelChange)="onSearch($event)"
+                                    (focus)="showDropdown = true"
+                                    (blur)="fermerDropdown()"
+                                    name="search"
+                                    autocomplete="off">
 
-            <!-- Loading -->
-            <div *ngIf="loadingReco" class="reco-loading">
-                <div class="spinner-ring"></div>
-                <p>Analyse de votre profil...</p>
-            </div>
+                                <!-- Spinner pendant la recherche -->
+                                <span class="search-spinner" *ngIf="isSearching">
+                                    <i class="ri-loader-4-line"></i>
+                                </span>
 
-            <!-- Grid recommandations -->
-            <div *ngIf="!loadingReco && recommendedEvents.length > 0" class="reco-grid">
+                                <!-- Bouton effacer -->
+                                <button type="button" class="btn-clear-search"
+                                        *ngIf="searchTerm"
+                                        (click)="effacerRecherche()">
+                                    <i class="ri-close-line"></i>
+                                </button>
 
-                <div class="reco-card"
-                     *ngFor="let event of recommendedEvents; let i = index"
-                     [style.animation-delay]="i * 80 + 'ms'"
-                     (click)="ouvrirDetail(event)">
+                                <button type="button" class="search-btn" (click)="executerRecherche(searchTerm)">
+                                    <i class="ri-search-line"></i>
+                                    <span>Rechercher</span>
+                                </button>
+                            </div>
 
-                    <!-- Badge rang -->
-                    <div class="reco-rank">#{{ i + 1 }}</div>
+                            <!-- ── Dropdown intelligent ── -->
+                            <div class="search-dropdown" *ngIf="showDropdown">
 
-                    <!-- Header carte -->
-                    <div class="reco-card-header">
-                        <div class="reco-event-icon">
-                            <i class="ri-presentation-line" *ngIf="event.type === 'CONFERENCE'"></i>
-                            <i class="ri-tools-line"        *ngIf="event.type === 'WORKSHOP'"></i>
-                            <i class="ri-links-line"        *ngIf="event.type === 'NETWORKING'"></i>
-                            <i class="ri-briefcase-line"    *ngIf="event.type === 'JOB_FAIR'"></i>
-                        </div>
-                        <div class="reco-event-info">
-                            <h4 class="reco-event-titre">{{ event.titre }}</h4>
-                            <span class="reco-type-badge reco-type-{{ event.type | lowercase }}">
-                                {{ event.type }}
+                                <!-- Historique des recherches -->
+                                <div class="dropdown-section" *ngIf="historique.length > 0 && !searchTerm">
+                                    <div class="dropdown-label">
+                                        <i class="ri-history-line"></i> Recherches récentes
+                                    </div>
+                                    <div class="dropdown-item historique-item"
+                                        *ngFor="let h of historique"
+                                        (mousedown)="selectionnerHistorique(h)">
+                                        <i class="ri-time-line"></i>
+                                        <span>{{ h }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Suggestions personnalisées -->
+                                <div class="dropdown-section" *ngIf="suggestions.length > 0 && !searchTerm">
+                                    <div class="dropdown-label">
+                                        <i class="ri-magic-line"></i> Recommandés pour vous
+                                    </div>
+                                    <div class="dropdown-item suggestion-item"
+                                        *ngFor="let s of suggestions"
+                                        (mousedown)="selectionnerSuggestion(s)">
+                                        <div class="suggestion-info">
+                                            <span class="suggestion-titre">{{ s.titre }}</span>
+                                            <span class="suggestion-meta">
+                                                <i class="ri-map-pin-line"></i> {{ s.lieu }} ·
+                                                <i class="ri-price-tag-3-line"></i> {{ s.type }}
+                                            </span>
+                                        </div>
+                                        <span class="suggestion-badge">✨ Suggéré</span>
+                                    </div>
+                                </div>
+
+                                <!-- Résultats en temps réel pendant la saisie -->
+                                <div class="dropdown-section" *ngIf="searchTerm && filteredEvenements.length > 0">
+                                    <div class="dropdown-label">
+                                        <i class="ri-search-line"></i>
+                                        {{ filteredEvenements.length }} résultat(s)
+                                        <span class="mode-badge" *ngIf="modeRecherche === 'backend'">
+                                            IA
+                                        </span>
+                                    </div>
+                                    <div class="dropdown-item result-item"
+                                        *ngFor="let e of filteredEvenements | slice:0:4"
+                                        (mousedown)="selectionnerSuggestion(e)">
+                                        <i class="ri-calendar-event-line"></i>
+                                        <div>
+                                            <span class="result-titre">{{ e.titre }}</span>
+                                            <span class="result-meta">{{ e.lieu }} · {{ e.type }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Aucun résultat -->
+                                <div class="dropdown-empty"
+                                    *ngIf="searchTerm && filteredEvenements.length === 0 && !isSearching">
+                                    <i class="ri-search-eye-line"></i>
+                                    <span>Aucun événement trouvé pour "{{ searchTerm }}"</span>
+                                </div>
+
+                            </div>
+                        </form>
+
+                        <!-- Indicateur mode recherche -->
+                        <div class="search-meta" *ngIf="searchTerm">
+                            <span class="results-count">
+                                <i class="ri-filter-line"></i>
+                                {{ filteredEvenements.length }} événement(s) trouvé(s)
+                            </span>
+                            <span class="mode-label" [class.backend]="modeRecherche === 'backend'">
+                                <i class="ri-cpu-line" *ngIf="modeRecherche === 'backend'"></i>
+                                <i class="ri-search-line" *ngIf="modeRecherche === 'local'"></i>
+                                {{ modeRecherche === 'backend' ? 'Recherche intelligente' : 'Recherche locale' }}
                             </span>
                         </div>
                     </div>
 
-                    <!-- Meta -->
-                    <div class="reco-meta">
-                        <div class="reco-meta-item">
-                            <i class="ri-map-pin-line"></i>
-                            <span>{{ event.lieu }}</span>
-                        </div>
-                        <div class="reco-meta-item">
-                            <i class="ri-calendar-line"></i>
-                            <span>{{ formatDate(event.dateHeure) }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="reco-card-footer">
-                        <button
-                            class="btn-reco-inscrire"
-                            *ngIf="!aDejaDemandeA(event.id)"
-                            (click)="participer(event.id); $event.stopPropagation()">
-                            <i class="ri-user-add-line"></i> S'inscrire
-                        </button>
-
-                        <span class="reco-statut-badge"
-                              *ngIf="aDejaDemandeA(event.id)"
-                              [class.accepted]="getStatutEvenement(event.id) === 'CONFIRME'"
-                              [class.pending]="getStatutEvenement(event.id) === 'EN_ATTENTE'"
-                              [class.rejected]="getStatutEvenement(event.id) === 'REFUSE'">
-                            <span class="status-dot"></span>
-                            {{ getStatutEvenement(event.id) }}
-                        </span>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Empty -->
-            <div *ngIf="!loadingReco && recommendedEvents.length === 0" class="reco-empty">
-                <div class="empty-illustration">
-                    <i class="ri-search-eye-line"></i>
-                </div>
-                <h3>Aucune recommandation disponible</h3>
-                <p>Complétez votre profil pour obtenir des suggestions personnalisées.</p>
-            </div>
-
-        </div>
-
-        <!-- ══ BARRE DE RECHERCHE ══ -->
-        <div class="search-section">
-            <form class="search-form" (submit)="$event.preventDefault()">
-                <div class="search-input-wrapper" style="position: relative;">
-                    <i class="ri-search-line search-icon"></i>
-
-                    <input
-                        type="text"
-                        class="search-input"
-                        placeholder="Rechercher par titre, lieu, type, date..."
-                        [ngModel]="searchTerm"
-                        (ngModelChange)="onSearch($event)"
-                        (focus)="showDropdown = true"
-                        (blur)="fermerDropdown()"
-                        name="search"
-                        autocomplete="off">
-
-                    <span class="search-spinner" *ngIf="isSearching">
-                        <i class="ri-loader-4-line"></i>
-                    </span>
-
-                    <button type="button" class="btn-clear-search"
-                            *ngIf="searchTerm"
-                            (click)="effacerRecherche()">
-                        <i class="ri-close-line"></i>
-                    </button>
-
-                    <button type="button" class="search-btn" (click)="executerRecherche(searchTerm)">
-                        <i class="ri-search-line"></i>
-                        <span>Rechercher</span>
-                    </button>
-                </div>
-
-                <!-- Dropdown intelligent -->
-                <div class="search-dropdown" *ngIf="showDropdown">
-
-                    <div class="dropdown-section" *ngIf="historique.length > 0 && !searchTerm">
-                        <div class="dropdown-label">
-                            <i class="ri-history-line"></i> Recherches récentes
-                        </div>
-                        <div class="dropdown-item historique-item"
-                             *ngFor="let h of historique"
-                             (mousedown)="selectionnerHistorique(h)">
-                            <i class="ri-time-line"></i>
-                            <span>{{ h }}</span>
-                        </div>
-                    </div>
-
-                    <div class="dropdown-section" *ngIf="suggestions.length > 0 && !searchTerm">
-                        <div class="dropdown-label">
-                            <i class="ri-magic-line"></i> Recommandés pour vous
-                        </div>
-                        <div class="dropdown-item suggestion-item"
-                             *ngFor="let s of suggestions"
-                             (mousedown)="selectionnerSuggestion(s)">
-                            <div class="suggestion-info">
-                                <span class="suggestion-titre">{{ s.titre }}</span>
-                                <span class="suggestion-meta">
-                                    <i class="ri-map-pin-line"></i> {{ s.lieu }} ·
-                                    <i class="ri-price-tag-3-line"></i> {{ s.type }}
-                                </span>
-                            </div>
-                            <span class="suggestion-badge">✨ Suggéré</span>
-                        </div>
-                    </div>
-
-                    <div class="dropdown-section" *ngIf="searchTerm && filteredEvenements.length > 0">
-                        <div class="dropdown-label">
-                            <i class="ri-search-line"></i>
-                            {{ filteredEvenements.length }} résultat(s)
-                            <span class="mode-badge" *ngIf="modeRecherche === 'backend'">IA</span>
-                        </div>
-                        <div class="dropdown-item result-item"
-                             *ngFor="let e of filteredEvenements | slice:0:4"
-                             (mousedown)="selectionnerSuggestion(e)">
-                            <i class="ri-calendar-event-line"></i>
-                            <div>
-                                <span class="result-titre">{{ e.titre }}</span>
-                                <span class="result-meta">{{ e.lieu }} · {{ e.type }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="dropdown-empty"
-                         *ngIf="searchTerm && filteredEvenements.length === 0 && !isSearching">
-                        <i class="ri-search-eye-line"></i>
-                        <span>Aucun événement trouvé pour "{{ searchTerm }}"</span>
-                    </div>
-
-                </div>
-            </form>
-
-            <div class="search-meta" *ngIf="searchTerm">
-                <span class="results-count">
-                    <i class="ri-filter-line"></i>
-                    {{ filteredEvenements.length }} événement(s) trouvé(s)
-                </span>
-                <span class="mode-label" [class.backend]="modeRecherche === 'backend'">
-                    <i class="ri-cpu-line"    *ngIf="modeRecherche === 'backend'"></i>
-                    <i class="ri-search-line" *ngIf="modeRecherche === 'local'"></i>
-                    {{ modeRecherche === 'backend' ? 'Recherche intelligente' : 'Recherche locale' }}
-                </span>
-            </div>
-        </div>
-
-        <!-- ══ TOUS LES ÉVÉNEMENTS ══ -->
+        <!-- Loading State -->
         <div *ngIf="isLoading" class="loading-container">
             <div class="loading-spinner">
                 <div class="spinner-ring"></div>
@@ -238,8 +150,10 @@
             </div>
         </div>
 
+        <!-- Liste événements -->
         <div class="evenements-grid" *ngIf="!isLoading">
 
+            <!-- Empty State -->
             <div class="empty-state-modern" *ngIf="filteredEvenements.length === 0">
                 <div class="empty-illustration">
                     <i class="ri-calendar-event-line"></i>
@@ -248,6 +162,7 @@
                 <p>Essayez de modifier votre recherche ou revenez plus tard.</p>
             </div>
 
+            <!-- Cards événements -->
             <div class="evenement-card" *ngFor="let evenement of filteredEvenements">
 
                 <div class="card-header">
@@ -259,21 +174,28 @@
                         <span class="event-type-badge">{{ evenement.type }}</span>
                     </div>
                     <div class="event-status-area">
+
+                        <!-- CONFIRME -->
                         <div class="status-indicator accepted"
                              *ngIf="getStatutEvenement(evenement.id) === 'CONFIRME'">
                             <span class="status-dot"></span>
                             <span>Inscrit</span>
                         </div>
+
+                        <!-- EN_ATTENTE -->
                         <div class="status-indicator pending"
                              *ngIf="getStatutEvenement(evenement.id) === 'EN_ATTENTE'">
                             <span class="status-dot"></span>
                             <span>En attente</span>
                         </div>
+
+                        <!-- REFUSE -->
                         <div class="status-indicator rejected"
                              *ngIf="getStatutEvenement(evenement.id) === 'REFUSE'">
                             <span class="status-dot"></span>
                             <span>Refusé</span>
                         </div>
+
                     </div>
                 </div>
 
@@ -284,7 +206,7 @@
                     </div>
                     <div class="info-row">
                         <i class="ri-calendar-line"></i>
-                        <span>{{ formatDate(evenement.dateHeure) }}</span>
+                        <span>{{ formatDate(evenement.dateHeure) }}</span>  <!-- ← date → dateHeure -->
                     </div>
                     <div class="info-row">
                         <i class="ri-price-tag-3-line"></i>
@@ -293,11 +215,13 @@
                 </div>
 
                 <div class="card-footer">
+                    <!-- Voir avis -->
                     <button class="btn-avis" (click)="ouvrirDetail(evenement)">
                         <i class="ri-information-line"></i>
                         <span>Voir les avis</span>
                     </button>
 
+                    <!-- Déjà inscrit -->
                     <button class="btn-card btn-inscrit"
                             *ngIf="getStatutEvenement(evenement.id) === 'CONFIRME'"
                             disabled>
@@ -305,6 +229,7 @@
                         <span>Déjà inscrit</span>
                     </button>
 
+                    <!-- EN_ATTENTE + annuler -->
                     <div class="btn-attente-group"
                          *ngIf="getStatutEvenement(evenement.id) === 'EN_ATTENTE'">
                         <button class="btn-card btn-attente" disabled>
@@ -318,6 +243,7 @@
                         </button>
                     </div>
 
+                    <!-- Refusé -->
                     <button class="btn-card btn-refuse"
                             *ngIf="getStatutEvenement(evenement.id) === 'REFUSE'"
                             disabled>
@@ -325,6 +251,7 @@
                         <span>Refusé</span>
                     </button>
 
+                    <!-- Participer -->
                     <button class="btn-card btn-participer"
                             *ngIf="!aDejaDemandeA(evenement.id)"
                             (click)="participer(evenement.id)">
@@ -339,7 +266,7 @@
     </div>
 </div>
 
-<!-- ══ POPUP DÉTAIL + RÉPUTATION ══ -->
+<!-- ==================== POPUP DÉTAIL + RÉPUTATION ==================== -->
 <div class="modal-overlay" *ngIf="popupDetailOuvert" (click)="fermerDetail()">
     <div class="modal-container modal-reputation" (click)="$event.stopPropagation()">
 
@@ -358,6 +285,7 @@
 
         <div class="modal-body">
 
+            <!-- Infos événement -->
             <div class="event-meta-strip">
                 <span class="meta-item">
                     <i class="ri-map-pin-line"></i>
@@ -365,7 +293,7 @@
                 </span>
                 <span class="meta-item">
                     <i class="ri-calendar-line"></i>
-                    {{ formatDate(evenementSelectionne?.dateHeure) }}
+                    {{ formatDate(evenementSelectionne?.dateHeure) }}  <!-- ← date → dateHeure -->
                 </span>
                 <span class="meta-item">
                     <i class="ri-user-line"></i>
@@ -373,6 +301,7 @@
                 </span>
             </div>
 
+            <!-- Loading réputation -->
             <div class="loading-container" *ngIf="loadingReputation" style="padding: 2rem;">
                 <div class="loading-spinner">
                     <div class="spinner-ring"></div>
@@ -380,8 +309,10 @@
                 </div>
             </div>
 
+            <!-- Réputation -->
             <div class="reputation-sections" *ngIf="!loadingReputation && reputationData">
 
+                <!-- Niveau 1 — Global -->
                 <div class="rep-card">
                     <div class="rep-card-header">
                         <div class="rep-icon-wrapper global">
@@ -407,6 +338,7 @@
                     </div>
                 </div>
 
+                <!-- Niveau 2 — Par type -->
                 <div class="rep-card">
                     <div class="rep-card-header">
                         <div class="rep-icon-wrapper type">
@@ -432,6 +364,7 @@
                     </div>
                 </div>
 
+                <!-- Niveau 3 — Par titre -->
                 <div class="rep-card" *ngIf="reputationData.noteMoyenneTitrePasse > 0">
                     <div class="rep-card-header">
                         <div class="rep-icon-wrapper history">
@@ -455,8 +388,8 @@
 
             </div>
 
-            <div class="empty-state-modern"
-                 *ngIf="!loadingReputation && !reputationData"
+            <!-- Erreur -->
+            <div class="empty-state-modern" *ngIf="!loadingReputation && !reputationData"
                  style="padding: 2rem;">
                 <div class="empty-illustration" style="width:3rem;height:3rem;">
                     <i class="ri-chat-3-line" style="font-size:1.5rem;"></i>

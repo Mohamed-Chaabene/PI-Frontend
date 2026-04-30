@@ -24,7 +24,6 @@ import { EntretienListComponent } from './admin-dashboard/entretien-list/entreti
 
 import { CandidatureListComponent } from './admin-dashboard/candidature-list/candidature-list.component';
 import { EvenementListAdminComponent } from './admin-dashboard/evenement-list-admin/evenement-list-admin.component';
-import { OrganisateursListComponent } from './admin-dashboard/organisateurs-list/organisateurs-list.component';
 import { routes } from './app.routes';
 import { App } from './app';
 
@@ -228,10 +227,6 @@ registerLocaleData(localeFr);
         CheckFormationsComponent,
         ContentManagementComponent,
         ParcoursFeedbackAdminComponent,
-        RdMessagesMailboxComponent,
-        ChatEvenementComponent,
-        EvenementChatComponent,
-        
         
         
         

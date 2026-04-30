@@ -1,4 +1,5 @@
 <div class="page-container">
+
     <!-- HEADER -->
     <div class="page-header">
         <h4>
@@ -16,132 +17,71 @@
                 type="text"
                 class="search-input"
                 placeholder="Rechercher par titre, lieu, type ou organisateur..."
-                [value]="searchTerm"
-                (input)="onSearch($any($event.target).value)"
+                [ngModel]="searchTerm"
+                (ngModelChange)="onSearch($event)"
             />
-            @if (searchTerm) {
-                <button class="clear-btn" type="button" (click)="onSearch('')">
-                    <i class="ri-close-line"></i>
-                </button>
-            }
+            <button *ngIf="searchTerm" class="clear-btn" type="button" (click)="onSearch('')">
+                <i class="ri-close-line"></i>
+            </button>
         </div>
     </div>
 
     <!-- LOADING -->
-    @if (isLoading) {
-        <div class="state-box">
-            <i class="ri-loader-4-line spin"></i>
-            <p>Chargement des événements...</p>
-        </div>
-    }
+    <div class="state-box" *ngIf="isLoading">
+        <i class="ri-loader-4-line spin"></i>
+        <p>Chargement des événements...</p>
+    </div>
 
     <!-- TABLE -->
-    @if (!isLoading && filteredEvenements.length > 0) {
-        <div class="table-wrapper">
-            <table class="events-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Titre</th>
-                        <th>Description</th>
-                        <th>Type</th>
-                        <th>Lieu</th>
-                        <th>Date</th>
-                        <th>Organisateur</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (e of filteredEvenements; track e.id; let i = $index) {
-                        <tr>
-                            <td class="col-index">{{ i + 1 }}</td>
-                            <td class="title-col">
-                                <div class="name-cell">
-                                    <i class="ri-calendar-event-line"></i>
-                                    {{ e.titre || '-' }}
-                                </div>
-                            </td>
-                            <td>{{ e.description || '-' }}</td>
-                            <td>
-                                <span class="type-badge"
-                                    [class.tag-blue]="e.type === 'JOB_FAIR'"
-                                    [class.tag-purple]="e.type !== 'JOB_FAIR'">
-                                    {{ e.type || '-' }}
-                                </span>
-                            </td>
-                            <td>{{ e.lieu || '-' }}</td>
-                            <td>{{ formatDate(e.dateHeure) }}</td>
-                            <td>{{ e.nomOrganisateur || '-' }}</td>
-                            <td>
-                                <div class="actions-cell">
-                                    <button class="btn-action btn-consulter" (click)="consulter(e)">
-                                        <i class="ri-eye-line"></i> Consulter
-                                    </button>
-                                    <button class="btn-action btn-supprimer" (click)="supprimer(e.id)">
-                                        <i class="ri-delete-bin-line"></i> Supprimer
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
+    <div class="table-wrapper" *ngIf="!isLoading && filteredEvenements.length > 0">
+        <table class="events-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Titre</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Lieu</th>
+                    <th>Date</th>
+                    <th>Organisateur</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let e of filteredEvenements; let i = index">
+                    <td class="col-index">{{ i + 1 }}</td>
+                    <td class="title-col">
+                        <div class="name-cell">
+                            <i class="ri-calendar-event-line"></i>
+                            {{ e.titre || '-' }}
+                        </div>
+                    </td>
+                    <td>{{ e.description || '-' }}</td>
+                    <td>
+                        <span class="type-badge"
+                            [class.entreprise]="e.type === 'JOB_FAIR'"
+                            [class.universite]="e.type !== 'JOB_FAIR'">
+                            {{ e.type || '-' }}
+                        </span>
+                    </td>
+                    <td>{{ e.lieu || '-' }}</td>
+                    <td>{{ formatDate(e.date) }}</td>
+                    <td>{{ e.nomOrganisateur || '-' }}</td>
+                    <td>
+                        <!-- ✅ Uniquement supprimer -->
+                        <button class="btn btn-supprimer" (click)="supprimer(e.id)">
+                            <i class="ri-delete-bin-line"></i> Supprimer
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     <!-- EMPTY -->
-    @if (!isLoading && filteredEvenements.length === 0) {
-        <div class="state-box">
-            <i class="ri-inbox-line"></i>
-            <p>{{ searchTerm ? 'Aucun résultat trouvé' : 'Aucun événement disponible' }}</p>
-        </div>
-    }
-
-    <!-- MODAL DETAIL -->
-    @if (showDetail && selectedEvenement) {
-        <div class="modal-overlay" (click)="fermerDetail()">
-            <div class="modal-box" (click)="$event.stopPropagation()">
-
-                <div class="modal-header">
-                    <h5>
-                        <i class="ri-calendar-event-line"></i>
-                        Détail de l'événement
-                    </h5>
-                    <button class="modal-close" (click)="fermerDetail()">
-                        <i class="ri-close-line"></i>
-                    </button>
-                </div>
-
-                <div class="modal-body">
-                    <div class="detail-row">
-                        <span class="detail-label">Titre</span>
-                        <span class="detail-value">{{ selectedEvenement.titre || '-' }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Description</span>
-                        <span class="detail-value">{{ selectedEvenement.description || '-' }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Type</span>
-                        <span class="detail-value">{{ selectedEvenement.type || '-' }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Lieu</span>
-                        <span class="detail-value">{{ selectedEvenement.lieu || '-' }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Date</span>
-                        <span class="detail-value">{{ formatDate(selectedEvenement.dateHeure) }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Organisateur</span>
-                        <span class="detail-value">{{ selectedEvenement.nomOrganisateur || '-' }}</span>
-                    </div>
-                    
-                </div>
-
-            </div>
-        </div>
-    }
+    <div class="state-box" *ngIf="!isLoading && filteredEvenements.length === 0">
+        <i class="ri-inbox-line"></i>
+        <p>{{ searchTerm ? 'Aucun résultat trouvé' : 'Aucun événement disponible' }}</p>
+    </div>
 
 </div>
