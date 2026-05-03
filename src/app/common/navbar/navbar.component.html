@@ -32,28 +32,7 @@
             </button>
             <div
                 class="collapse navbar-collapse"
-                [ngClass]="{'style-two': router.url === '/index-3'}"
             >
-                @if (router.url === '/index-3') {
-                    <div class="navbar-categories d-none d-xl-block">
-                        <button type="button" class="d-inline-block bg-transparent position-relative border-0">
-                            <i class="ri-grid-fill"></i>
-                            Browse Category
-                        </button>
-                        <ul class="categories-menu mb-0 list-unstyled">
-                            <li><a routerLink="/">Engineering</a></li>
-                            <li><a routerLink="/">Banking</a></li>
-                            <li><a routerLink="/">Beauty Care</a></li>
-                            <li><a routerLink="/">Cleaning</a></li>
-                            <li><a routerLink="/">Construction</a></li>
-                            <li><a routerLink="/">Finance</a></li>
-                            <li><a routerLink="/">Technology</a></li>
-                            <li><a routerLink="/">Healthcare</a></li>
-                            <li><a routerLink="/">IT Consultant</a></li>
-                        </ul>
-                    </div>
-                }
-
                 <ul class="navbar-nav">
 
                     <!-- Home -->
@@ -68,16 +47,6 @@
                             <li class="nav-item">
                                 <a routerLink="/index-2" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
                                     Home Demo - 2
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a routerLink="/index-3" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Home Demo - 3
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a routerLink="/index-4" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                                    Home Demo - 4
                                 </a>
                             </li>
                         </ul>
@@ -244,12 +213,12 @@
                     <!-- Numéro de téléphone -->
                     <div
                         class="option-item"
-                        [ngClass]="{'d-none': router.url === '/index-2' || router.url === '/index-3'}"
+                        [ngClass]="{'d-none': router.url === '/index-2'}"
                     >
-                        <a href="tel:+1 (514) 312-5678" class="d-inline-block hotline fw-medium">
+                        <a href="tel:+216 24 236 562" class="d-inline-block hotline fw-medium">
                             <i class="ri-phone-line"></i>
                             <span class="d-block fw-normal">Call Us</span>
-                            +1 (514) 312-5678
+                            +216 24 236 562
                         </a>
                     </div>
 

@@ -2,15 +2,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
 
-  // Use relative URL so Angular dev proxy can forward to Spring Boot and avoid CORS issues.
-
-  private apiUrl = '/api';
+  /** Relatif → proxy ng serve vers Spring ; surcharger via environment.apiUrl en prod si besoin */
+  private readonly apiUrl = environment.apiUrl;
   private mlUrl = '/ml';
   private mlAvailable = true;
   private recentFallbackQuestions = new Set<string>();

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 import { forkJoin, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
@@ -45,7 +45,7 @@ interface EntretienReminder {
 @Component({
   selector: 'app-candidate-entretiens-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, SharedModule],
+  imports: [CommonModule, SharedModule],
   templateUrl: './candidate-entretiens-page.component.html',
   styleUrls: ['./candidate-entretiens-page.component.scss']
 })

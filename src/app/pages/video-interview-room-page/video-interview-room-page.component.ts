@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { SharedModule } from '../../shared/shared.module';
 import { EmotionDetectorComponent } from '../../shared/emotion-detector/emotion-detector.component';
@@ -14,7 +14,7 @@ declare global {
 @Component({
   selector: 'app-video-interview-room-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, SharedModule, EmotionDetectorComponent],
+  imports: [CommonModule, SharedModule, EmotionDetectorComponent],
   templateUrl: './video-interview-room-page.component.html',
   styleUrls: ['./video-interview-room-page.component.scss']
 })

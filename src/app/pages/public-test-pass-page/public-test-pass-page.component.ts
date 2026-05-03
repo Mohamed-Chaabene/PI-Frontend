@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { SharedModule } from '../../shared/shared.module';
 
@@ -49,7 +49,7 @@ interface CandidateAutoReport {
 @Component({
   selector: 'app-public-test-pass-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, SharedModule],
+  imports: [CommonModule, FormsModule, SharedModule],
   templateUrl: './public-test-pass-page.component.html',
   styleUrls: ['./public-test-pass-page.component.scss']
 })

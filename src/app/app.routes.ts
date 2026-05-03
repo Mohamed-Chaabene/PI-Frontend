@@ -62,9 +62,9 @@ import { ContactPageComponent } from './pages/contact-page/contact-page.componen
 import { EmployerDetailsPageComponent } from './pages/employer-details-page/employer-details-page.component';
 import { FaqPageComponent } from './pages/faq-page/faq-page.component';
 import { HomeDemoOneComponent } from './pages/home-demo-one/home-demo-one.component';
-import { HomeDemoThreeComponent } from './pages/home-demo-three/home-demo-three.component';
 import { HomeDemoTwoComponent } from './pages/home-demo-two/home-demo-two.component';
 import { JobDetailsPageComponent } from './pages/job-details-page/job-details-page.component';
+import { JobsGridPageComponent } from './pages/jobs-grid-page/jobs-grid-page.component';
 import { PrivacyPolicyPageComponent } from './pages/privacy-policy-page/privacy-policy-page.component';
 import { PublicTestPassPageComponent } from './pages/public-test-pass-page/public-test-pass-page.component';
 import { TermsConditionsPageComponent } from './pages/terms-conditions-page/terms-conditions-page.component';
@@ -89,9 +89,9 @@ export const routes: Routes = [
     { path: 'login', component: HomeDemoOneComponent },
     { path: 'verify-certificat/:code', component: VerifyCertificatComponent },
     { path: 'index-2', component: HomeDemoTwoComponent },
-    { path: 'index-3', component: HomeDemoThreeComponent },
     { path: 'job-details/:id', component: JobDetailsPageComponent },
     { path: 'job-details', component: JobDetailsPageComponent },
+    { path: 'jobs-grid', component: JobsGridPageComponent },
     { path: 'categories', component: CategoriesPageComponent },
     { path: 'candidates', component: CandidatesPageComponent },
     { path: 'employer-details', component: EmployerDetailsPageComponent },
@@ -139,6 +139,7 @@ export const routes: Routes = [
             { path: 'partenaires', component: PartenaireCandidatComponent },
             { path: 'partenaires/:id/offres', component: OffreCandidatComponent },
             { path: 'evenements', component: EvenementCandidatComponent },
+            { path: 'chat/:evenementId', component: ChatEvenementComponent },
             { path: 'ma-calendar', component: MaCalendarComponent },
             { path: 'mes-participations', component: MesParticipationsComponent },
         ]

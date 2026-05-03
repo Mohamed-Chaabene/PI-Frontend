@@ -120,7 +120,8 @@ export class HomeDemoOneComponent {
             return false;
         }
 
-        const deadlineTime = this.getDateTime(item?.dateLimite);
+        const rawDeadline = item?.dateLimite ?? (item as { deadline?: string })?.deadline;
+        const deadlineTime = this.getDateTime(rawDeadline);
         if (Number.isFinite(deadlineTime) && deadlineTime < Date.now()) {
             return false;
         }
